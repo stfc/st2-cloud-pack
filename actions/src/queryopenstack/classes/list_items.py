@@ -63,7 +63,8 @@ class ListItems:
         '''
         res = []
         for key, args in criteria_list:
-            func = lambda dict, key=key, args=args: self.getCriteriaFunc(key)(dict, args)
+            def func(dict, key=key, args=args): return self.getCriteriaFunc(
+                key)(dict, args)
             if func:
                 res.append(func)
             else:
@@ -179,9 +180,11 @@ class ListItems:
                 created_at (string): timestamp that represents date and time
                 a resource was created
                 time_offset_in_seconds (int): number of seconds threshold
-                
+
             Returns: (bool) True if older than days given else False
         '''
-        offset_timestamp = (datetime.datetime.now()).timestamp() - time_offset_in_seconds
-        created_at_datetime = datetime.datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%SZ').timestamp()
+        offset_timestamp = (datetime.datetime.now()
+                            ).timestamp() - time_offset_in_seconds
+        created_at_datetime = datetime.datetime.strptime(
+            created_at, '%Y-%m-%dT%H:%M:%SZ').timestamp()
         return offset_timestamp > created_at_datetime

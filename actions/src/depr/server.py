@@ -5,23 +5,23 @@ from ..queryopenstack.query import Query
 
 """
 TODO: DEPRECATED - REMOVE AND ADD:
-    
+
     server update - update properties
     server create - create server
     server delete - delete server
     server show - show server
     server debug - show debug info
-    
-    server evacuate - evacuate server 
-    server migrate - migrate server 
-    
+
+    server evacuate - evacuate server
+    server migrate - migrate server
+
     server set status - change server status
-    
+
     server group create - create server group
     server group update - update server group
     server group delete - delete server group
     server group show - show server group
-    
+
 """
 
 
@@ -35,9 +35,11 @@ class Server(OpenstackAction):
             "server_list_shutoff": lambda **kwargs: self.get_output(
                 result_list=self.get_servers(
                     base_criteria=[["status", "SHUTOFF"]],
-                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys() else None,
+                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys(
+                    ) else None,
                     properties_to_select=kwargs["properties_to_select"],
-                    sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys() else None,
+                    sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys(
+                    ) else None,
                 ),
                 get_html=kwargs["get_html"],
             ),
@@ -45,9 +47,11 @@ class Server(OpenstackAction):
             "server_shutoff_per_user": lambda **kwargs: self.get_output_per_user(
                 result_list=self.get_servers(
                     base_criteria=[["status", "SHUTOFF"]],
-                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys() else None,
+                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys(
+                    ) else None,
                     properties_to_select=kwargs["properties_to_select"],
-                    sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys() else None,
+                    sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys(
+                    ) else None,
                 ),
                 get_html=kwargs["get_html"],
             ),
@@ -55,9 +59,11 @@ class Server(OpenstackAction):
             "server_list_error": lambda **kwargs: self.get_output(
                 result_list=self.get_servers(
                     base_criteria=[["status", "ERROR"]],
-                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys() else None,
+                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys(
+                    ) else None,
                     properties_to_select=kwargs["properties_to_select"],
-                    sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys() else None,
+                    sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys(
+                    ) else None,
                 ),
                 get_html=kwargs["get_html"],
             ),
@@ -65,9 +71,11 @@ class Server(OpenstackAction):
             "server_error_per_user": lambda **kwargs: self.get_output_per_user(
                 result_list=self.get_servers(
                     base_criteria=[["status", "ERROR"]],
-                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys() else None,
+                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys(
+                    ) else None,
                     properties_to_select=kwargs["properties_to_select"],
-                    sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys() else None,
+                    sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys(
+                    ) else None,
                 ),
                 get_html=kwargs["get_html"],
             ),
@@ -75,9 +83,11 @@ class Server(OpenstackAction):
             "server_list_older_than": lambda **kwargs: self.get_output(
                 result_list=self.get_servers(
                     base_criteria=[["older_than", kwargs["days"]]],
-                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys() else None,
+                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys(
+                    ) else None,
                     properties_to_select=kwargs["properties_to_select"],
-                    sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys() else None,
+                    sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys(
+                    ) else None,
                 ),
                 get_html=kwargs["get_html"],
             ),
@@ -85,9 +95,11 @@ class Server(OpenstackAction):
             "server_list_older_than_per_user": lambda **kwargs: self.get_output_per_user(
                 result_list=self.get_servers(
                     base_criteria=[["older_than", kwargs["days"]]],
-                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys() else None,
+                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys(
+                    ) else None,
                     properties_to_select=kwargs["properties_to_select"],
-                    sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys() else None,
+                    sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys(
+                    ) else None,
                 ),
                 get_html=kwargs["get_html"],
             ),
@@ -95,9 +107,11 @@ class Server(OpenstackAction):
             "server_list_younger_than": lambda **kwargs: self.get_output(
                 result_list=self.get_servers(
                     base_criteria=[["not_older_than", kwargs["days"]]],
-                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys() else None,
+                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys(
+                    ) else None,
                     properties_to_select=kwargs["properties_to_select"],
-                    sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys() else None,
+                    sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys(
+                    ) else None,
                 ),
                 get_html=kwargs["get_html"],
             ),
@@ -105,9 +119,11 @@ class Server(OpenstackAction):
             "server_list_younger_than_per_user": lambda **kwargs: self.get_output_per_user(
                 result_list=self.get_servers(
                     base_criteria=[["not_older_than", kwargs["days"]]],
-                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys() else None,
+                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys(
+                    ) else None,
                     properties_to_select=kwargs["properties_to_select"],
-                    sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys() else None,
+                    sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys(
+                    ) else None,
                 ),
                 get_html=kwargs["get_html"],
             ),
@@ -123,7 +139,8 @@ class Server(OpenstackAction):
         :param sort_by_criteria: list ["property_1", etc]: properties to sort the final results by
         :return: [{property_1: "value", property_2: "value"}, etc]: dictionary with results of server query
         """
-        criteria = base_criteria.extend(criteria_list) if criteria_list else base_criteria
+        criteria = base_criteria.extend(
+            criteria_list) if criteria_list else base_criteria
         return Query(
             by="server",
             properties_list=properties_to_select,

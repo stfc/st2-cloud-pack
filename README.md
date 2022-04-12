@@ -163,11 +163,12 @@ Optional Parameters:
 `start_time_str`: timestamp in format `YYYY-MM-DD, HH:MM:SS` for start of downtime - default: `None` - not required
 `end_time_str`: timestamp in format `YYYY-MM-DD, HH:MM:SS` for end of downtime - default: `None` - not required
 `author`: `who scheduled the downtime`
+
 - default: StackStorm
-`comment`: `reason for scheduling downtime`
+  `comment`: `reason for scheduling downtime`
 - default: Scheduled using Stackstorm - reason not given
-`is_flexible`: if icinga downtime is flexible - default: `false`
-`flexible_duration`: if flexible downtime, duration in seconds - default: 0
+  `is_flexible`: if icinga downtime is flexible - default: `false`
+  `flexible_duration`: if flexible downtime, duration in seconds - default: 0
 
 `hypervisor.service.disable`: disables hypervisor service in openstack
 

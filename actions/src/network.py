@@ -18,11 +18,11 @@ class Network(OpenstackAction):
             # network_rbac_update
         }
 
-    """ TODO: 
+    """ TODO:
         network show
         network rbac show
         network delete
-        network rbac delete 
+        network rbac delete
     """
 
     def network_show(self, network):
@@ -32,7 +32,8 @@ class Network(OpenstackAction):
         :return: (status (Bool), reason/output (String/Dict)
         """
         try:
-            network = self.conn.compute.find_hypervisor(network, ignore_missing=False)
+            network = self.conn.compute.find_hypervisor(
+                network, ignore_missing=False)
         except Exception as e:
             return False, "Network not found {}".format(repr(e))
         return True, network
@@ -44,7 +45,8 @@ class Network(OpenstackAction):
         :return:(status (Bool), reason/output (String/Dict)
         """
         try:
-            rbac_policy = self.conn.network.find_rbac_policy(rbac_policy, ignore_missing=False)
+            rbac_policy = self.conn.network.find_rbac_policy(
+                rbac_policy, ignore_missing=False)
         except Exception as e:
             return False, "RBAC policy not found, {}".format(e)
         return True, rbac_policy
@@ -57,12 +59,14 @@ class Network(OpenstackAction):
         :return: (status (Bool), reason (String))
         """
         # get project id
-        project_id = self.find_resource_id(project, self.conn.identity.find_project)
+        project_id = self.find_resource_id(
+            project, self.conn.identity.find_project)
         if not project_id:
             return False, "Project not found"
 
         try:
-            network = self.conn.network.create_network(project_id=project_id, **network_kwargs)
+            network = self.conn.network.create_network(
+                project_id=project_id, **network_kwargs)
         except Exception as e:
             return False, "Network creation failed: {}".format(e)
         return True, network
@@ -79,14 +83,16 @@ class Network(OpenstackAction):
 
         # get rbac_object ID
         if object_type.lower() == "network":
-            object_id = self.find_resource_id(rbac_object, self.conn.network.find_network)
+            object_id = self.find_resource_id(
+                rbac_object, self.conn.network.find_network)
             if not object_id:
                 return False, "No network found with name or ID {}".format(rbac_object)
         else:
             return False, "Currently only allowing network as valid rbac type"
 
         # get project ID
-        target_project_id = self.find_resource_id(target_project, self.conn.identity.find_project)
+        target_project_id = self.find_resource_id(
+            target_project, self.conn.identity.find_project)
         if not target_project_id:
             return False, "No project found with name or ID {}".format(target_project)
 
