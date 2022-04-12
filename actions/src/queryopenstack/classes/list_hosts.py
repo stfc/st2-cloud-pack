@@ -21,7 +21,7 @@ class ListHosts(ListItems):
 
     def __init__(self, conn):
         """constructor class"""
-        super().__init__(conn, lambda: conn.list_hypervisors())
+        super().__init__(conn, conn.list_hypervisors)
 
         self.criteria_func_dict.update(
             {

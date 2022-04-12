@@ -1,3 +1,5 @@
+from openstack.exceptions import ResourceNotFound
+
 from openstack_action import OpenstackAction
 
 
@@ -32,11 +34,11 @@ class Project(OpenstackAction):
 
         domain_id = self.find_resource_id(domain, self.conn.identity.find_domain)
         if not domain_id:
-            return False, "No domain found with Name or ID {}".format(domain)
+            return False, f"No domain found with Name or ID {domain}"
         try:
             project = self.conn.identity.find_project(project, domain_id=domain_id)
-        except Exception as e:
-            return False, "Finding Project Failed {}".format(e)
+        except ResourceNotFound as err:
+            return False, f"Finding Project Failed {err}"
         return True, project
 
     def project_create(self, domain, name, description, is_enabled):
@@ -51,7 +53,7 @@ class Project(OpenstackAction):
 
         domain_id = self.find_resource_id(domain, self.conn.identity.find_domain)
         if not domain_id:
-            return False, "No domain found with Name or ID {}".format(domain)
+            return False, f"No domain found with Name or ID {domain}"
         try:
             project = self.conn.identity.create_project(
                 domain_id=domain_id,
@@ -59,6 +61,6 @@ class Project(OpenstackAction):
                 description=description,
                 is_enabled=is_enabled,
             )
-        except Exception as e:
-            return False, "Project Creation Failed {}".format(e)
+        except ResourceNotFound as err:
+            return False, f"Project Creation Failed {err}"
         return True, project

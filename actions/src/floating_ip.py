@@ -1,3 +1,5 @@
+from openstack.exceptions import ResourceNotFound
+
 from openstack_action import OpenstackAction
 
 
@@ -14,25 +16,25 @@ class FloatingIP(OpenstackAction):
             # floating_ip_update
         }
 
-    def floating_ip_show(self, ip):
+    def floating_ip_show(self, ip_addr):
         """
-        Show floating ip information
-        :param ip: floating ip id (String)
+        Show floating ip_addr information
+        :param ip_addr: floating ip_addr id (String)
         :return: (status (Bool), reason/output (String/Dict))
         """
         try:
-            ip = self.conn.identity.find_ip(ip, ignore_missing=False)
-        except Exception as e:
-            return False, "IP not found {}".format(repr(e))
-        return True, ip
+            ip_addr = self.conn.identity.find_ip(ip_addr, ignore_missing=False)
+        except ResourceNotFound as err:
+            return False, f"IP not found:\n{err}"
+        return True, ip_addr
 
-    def floating_ip_delete(self, ip):
+    def floating_ip_delete(self, ip_addr):
         """
-        Delete floating ip
-        :param ip: ip id
+        Delete floating ip_addr
+        :param ip_addr: ip_addr id
         :return: (status (Bool), reason/output (String/Dict))
         """
-        raise NotImplementedError
+        raise NotImplementedError("Deleting floating IPs are not supported")
 
     def floating_ip_create(self, network, project, number_to_create):
         """
@@ -45,20 +47,17 @@ class FloatingIP(OpenstackAction):
         # get network id
         network_id = self.find_resource_id(network, self.conn.network.find_network)
         if not network_id:
-            return False, "Network not found with Name or ID {}".format(network)
+            return False, f"Network not found with Name or ID {network}"
 
-        # get project id
+        # get project id:
         project_id = self.find_resource_id(project, self.conn.identity.find_project)
         if not project_id:
-            return False, "Project not found with Name or ID {}".format(project)
+            return False, f"Project not found with Name or ID {project}"
 
-        ip_output = []
-        for i in range(number_to_create):
-            try:
-                ip = self.conn.network.create_ip(
-                    project_id=project_id, floating_network_id=network_id
-                )
-                ip_output.append(ip)
-            except Exception as e:
-                return False, "Float IP creation Failed: {0}".format(repr(e))
+        ip_output = [
+            self.conn.network.create_ip(
+                project_id=project_id, floating_network_id=network_id
+            )
+            for _ in range(number_to_create)
+        ]
         return True, ip_output

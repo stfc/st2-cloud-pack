@@ -1,3 +1,5 @@
+from openstack.exceptions import ResourceNotFound
+
 from openstack_action import OpenstackAction
 
 
@@ -33,11 +35,11 @@ class Server(OpenstackAction):
         """
         server_id = self.find_resource_id(server, self.conn.compute.find_server)
         if not server_id:
-            return False, "Server not found with Name or ID {}".format(server)
+            return False, f"Server not found with Name or ID {server}"
         try:
             server = self.conn.compute.find_server(server_id)
-        except Exception as e:
-            return False, "Finding User Failed {}".format(e)
+        except ResourceNotFound as err:
+            return False, f"Finding User Failed {err}"
         return True, server
 
     def server_change_status(self, server, status_change):
@@ -49,16 +51,14 @@ class Server(OpenstackAction):
         """
         server_id = self.find_resource_id(server, self.conn.compute.find_server)
         if not server_id:
-            return False, "Server not found with Name or ID {}".format(server)
+            return False, f"Server not found with Name or ID {server}"
 
         hypervisor_identifier = self.conn.compute.find_server(server_id)[
             "hypervisor_hostname"
         ]
         hypervisor = self.conn.compute.find_hypervisor(hypervisor_identifier)
         if not hypervisor:
-            return False, "Error finding hypervisor hosting server with ID {}".format(
-                server_id
-            )
+            return False, f"Error finding hypervisor hosting server with ID {server_id}"
 
         server_func, new_status = {
             "suspend": (self.conn.compute.suspend_server, "SUSPENDED"),
@@ -76,9 +76,7 @@ class Server(OpenstackAction):
         }.get(status_change, (None, None))
 
         if not server_func:
-            return False, 'Server "status_change" given {0} not valid'.format(
-                status_change
-            )
+            return False, f'Server "status_change" given {status_change} not valid'
         try:
             print("Scheduling Action")
             server_func(server_id)
@@ -87,9 +85,12 @@ class Server(OpenstackAction):
                 self.conn.compute.wait_for_server(
                     self.conn.compute.find_server(server_id), new_status
                 )
-        except Exception as e:
-            return False, "Failed performing server status function {0}".format(repr(e))
+            return True, "TODO: Return message"
+        except ResourceNotFound as err:
+            return False, f"Failed performing server status function {repr(err)}"
 
+    # TODO introduce data class
+    # pylint: disable=too-many-arguments
     def server_create(
         self, name, image, flavor, network=None, hypervisor=None, zone=None
     ):
@@ -112,17 +113,9 @@ class Server(OpenstackAction):
             if not hypervisor_id:
                 return (
                     False,
-                    "Hypervisor not found with Name or ID {} - aborting creation".format(
-                        hypervisor
-                    ),
+                    f"Hypervisor not found with Name or ID {hypervisor} - aborting creation",
                 )
-
-            availability_zone = "{0}:{1}".format(
-                self.conn.identity.find_hypervisor(hypervisor_id)[
-                    "hypervisor_hostname"
-                ],
-                zone,
-            )
+            availability_zone = f"{self.conn.identity.find_hypervisor(hypervisor_id)['hypervisor_hostname']}:{zone}"
 
         network_id = None
         if network:
@@ -130,25 +123,21 @@ class Server(OpenstackAction):
             if not network_id:
                 return (
                     False,
-                    "Network not found with Name or ID {} - aborting creation".format(
-                        network
-                    ),
+                    f"Network not found with Name or ID {network} - aborting creation",
                 )
 
         image_id = self.find_resource_id(image, self.conn.compute.find_image)
         if not image_id:
             return (
                 False,
-                "Image not found with Name or ID {} - aborting creation".format(image),
+                f"Image not found with Name or ID {image} - aborting creation",
             )
 
         flavor_id = self.find_resource_id(flavor, self.conn.compute.find_flavor)
         if not flavor_id:
             return (
                 False,
-                "Flavor not found with Name or ID {} - aborting creation".format(
-                    flavor
-                ),
+                f"Flavor not found with Name or ID {flavor} - aborting creation",
             )
 
         try:
@@ -156,8 +145,8 @@ class Server(OpenstackAction):
                 name, image_id, flavor_id, network_id, availability_zone
             )
             return True, "Server creation successful"
-        except Exception as e:
-            return False, "Openstack error: {0}".format(repr(e))
+        except ResourceNotFound as err:
+            return False, f"Openstack error: {repr(err)}"
 
     def server_delete(self, server):
         """
@@ -167,14 +156,13 @@ class Server(OpenstackAction):
         """
         server_id = self.find_resource_id(server, self.conn.compute.find_server)
         if not server_id:
-            return False, "Server not found with Name or ID {}".format(server)
+            return False, f"Server not found with Name or ID {server}"
 
         server = self.conn.compute.find_server(server_id)
         if server["status"] != "ACTIVE":
             self.conn.compute.delete_server(server)
             return True, "Server Deleted"
-        else:
-            return False, "Server Still ACTIVE - aborted"
+        return False, "Server Still ACTIVE - aborted"
 
     def server_restart(self, server):
         """

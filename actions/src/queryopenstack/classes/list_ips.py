@@ -9,47 +9,51 @@ class ListIps(ListItems):
     ----------
     criteria_func_dict: dict
         stores possible query criteria options -
-        criteria name (key) : function to evaluate a criteria on ip (value)
-                function (bool) - evaluate 'ip' properties against criteria
+        criteria name (key) : function to evaluate a criteria on ip_addr (value)
+                function (bool) - evaluate 'ip_addr' properties against criteria
                 overrides ListItems attribute
 
     property_func_dict: dict
-        stores possible ip property options
+        stores possible ip_addr property options
         property name (key) : function to retrieve property (value)
-                function (string/int) - returns property value from a 'ip' dictionary
+                function (string/int) - returns property value from a 'ip_addr' dictionary
     """
 
     def __init__(self, conn):
         """constructor class"""
-        super().__init__(conn, lambda: conn.list_floating_ips())
+        super().__init__(conn, conn.list_floating_ips)
 
         self.criteria_func_dict = {
-            "status": lambda dict, args: dict["status"] in args,
-            "not_status": lambda dict, args: dict["status"] not in args,
-            "attached": lambda dict, args: dict["attached"] == True,
-            "not_attached": lambda dict, args: dict["attached"] == False,
-            "id": lambda dict, args: dict["id"] in args,
-            "not_id": lambda dict, args: dict["id"] not in args,
-            "project_id": lambda dict, args: dict["project_id"] in args,
-            "not_project_id": lambda dict, args: dict["project_id"] not in args,
-            "older_than": lambda dict, args: self.isOlderThanXDays(dict, days=args),
-            "not_older_than": lambda dict, args: not self.isOlderThanXDays(
-                dict, days=args
+            "status": lambda func_dict, args: func_dict["status"] in args,
+            "not_status": lambda func_dict, args: func_dict["status"] not in args,
+            "attached": lambda func_dict, args: func_dict["attached"] is True,
+            "not_attached": lambda func_dict, args: func_dict["attached"] is False,
+            "id": lambda func_dict, args: func_dict["id"] in args,
+            "not_id": lambda func_dict, args: func_dict["id"] not in args,
+            "project_id": lambda func_dict, args: func_dict["project_id"] in args,
+            "not_project_id": lambda func_dict, args: func_dict["project_id"]
+            not in args,
+            "older_than": lambda func_dict, args: self.is_older_than_x_days(
+                func_dict, days=args
             ),
-            "project_name": lambda dict, args: self.conn.identity.find_project(
-                dict["project_id"]
+            "not_older_than": lambda func_dict, args: not self.is_older_than_x_days(
+                func_dict, days=args
+            ),
+            "project_name": lambda func_dict, args: self.conn.identity.find_project(
+                func_dict["project_id"]
             )["name"]
             in args,
-            "not project_name": lambda dict, args: self.conn.identity.find_project(
-                dict["project_id"]
+            "not project_name": lambda func_dict, args: self.conn.identity.find_project(
+                func_dict["project_id"]
             )["name"]
             not in args,
-            "project_name_contains": lambda dict, args: any(
-                arg in self.conn.identity.find_project(dict["project_id"])["name"]
+            "project_name_contains": lambda func_dict, args: any(
+                arg in self.conn.identity.find_project(func_dict["project_id"])["name"]
                 for arg in args
             ),
-            "project_name_not_contains": lambda dict, args: any(
-                arg not in self.conn.identity.find_project(dict["project_id"])["name"]
+            "project_name_not_contains": lambda func_dict, args: any(
+                arg
+                not in self.conn.identity.find_project(func_dict["project_id"])["name"]
                 for arg in args
             ),
         }

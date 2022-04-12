@@ -20,5 +20,5 @@ parameters:
     description: Comment/Reason for disabling service
     required: true
     type: string
-    default: Disabled by StackStorm - no reason given
+    default: Disabled openstack_resource StackStorm - no reason given
 runner_type: python-script

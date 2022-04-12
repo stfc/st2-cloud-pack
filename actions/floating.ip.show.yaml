@@ -2,7 +2,7 @@
 description: Show floating IP Properties
 enabled: true
 entry_point: src/floating_ip.py
-name: floating.ip.show
+name: floating.ip_addr.show
 parameters:
   submodule:
     default: floating_ip_show

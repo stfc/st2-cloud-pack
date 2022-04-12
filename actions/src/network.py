@@ -1,3 +1,5 @@
+from openstack.exceptions import ResourceNotFound
+
 from openstack_action import OpenstackAction
 
 
@@ -18,13 +20,11 @@ class Network(OpenstackAction):
             # network_rbac_update
         }
 
-    """ TODO:
-        network show
-        network rbac show
-        network delete
-        network rbac delete
-    """
-
+    # TODO:
+    # network show
+    # network rbac show
+    # network delete
+    # network rbac delete
     def network_show(self, network):
         """
         Show Network Properties
@@ -33,8 +33,8 @@ class Network(OpenstackAction):
         """
         try:
             network = self.conn.compute.find_hypervisor(network, ignore_missing=False)
-        except Exception as e:
-            return False, "Network not found {}".format(repr(e))
+        except ResourceNotFound as err:
+            return False, f"Network not found {repr(err)}"
         return True, network
 
     def network_rbac_show(self, rbac_policy):
@@ -47,8 +47,8 @@ class Network(OpenstackAction):
             rbac_policy = self.conn.network.find_rbac_policy(
                 rbac_policy, ignore_missing=False
             )
-        except Exception as e:
-            return False, "RBAC policy not found, {}".format(e)
+        except ResourceNotFound as err:
+            return False, f"RBAC policy not found, {err}"
         return True, rbac_policy
 
     def network_create(self, project, **network_kwargs):
@@ -67,8 +67,8 @@ class Network(OpenstackAction):
             network = self.conn.network.create_network(
                 project_id=project_id, **network_kwargs
             )
-        except Exception as e:
-            return False, "Network creation failed: {}".format(e)
+        except ResourceNotFound as err:
+            return False, f"Network creation failed: {err}"
         return True, network
 
     def network_rbac_create(
@@ -89,7 +89,7 @@ class Network(OpenstackAction):
                 rbac_object, self.conn.network.find_network
             )
             if not object_id:
-                return False, "No network found with name or ID {}".format(rbac_object)
+                return False, f"No network found with name or ID {rbac_object}"
         else:
             return False, "Currently only allowing network as valid rbac type"
 
@@ -98,16 +98,16 @@ class Network(OpenstackAction):
             target_project, self.conn.identity.find_project
         )
         if not target_project_id:
-            return False, "No project found with name or ID {}".format(target_project)
+            return False, f"No project found with name or ID {target_project}"
 
         try:
             rbac = self.conn.network.create_rbac_policy(
                 object_id=object_id,
                 target_project_id=target_project_id,
-                **network_kwargs
+                **network_kwargs,
             )
-        except Exception as e:
-            return False, "RBAC policy creation failed {}".format(e)
+        except ResourceNotFound as err:
+            return False, f"RBAC policy creation failed {err}"
         return True, rbac
 
     def network_delete(self, network, project):

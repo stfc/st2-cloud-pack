@@ -2,7 +2,7 @@
 description: List Float IPs
 enabled: true
 entry_point: src/search_openstack.py
-name: float.ip.list
+name: float.ip_addr.list
 parameters:
   timeout:
     default: 99999
@@ -16,7 +16,7 @@ parameters:
     type: string
     required: true
   search_by:
-    default: ip
+    default: ip_addr
     type: string
     immutable: true
   properties_to_select:
@@ -35,7 +35,7 @@ parameters:
     required: false
   sort_by_criteria:
     type: array
-    description: properties to sort list by
+    description: properties to sort list openstack_resource
     required: false
   get_html:
     default: false
@@ -43,7 +43,7 @@ parameters:
     required: true
     type: boolean
   ids:
-    description: id to search by (ignored unless query_preset=id_in etc)
+    description: id to search openstack_resource (ignored unless query_preset=id_in etc)
     type: array
     default:
       - ""

@@ -1,3 +1,5 @@
+from openstack.exceptions import ResourceNotFound
+
 from openstack_action import OpenstackAction
 
 
@@ -20,11 +22,11 @@ class User(OpenstackAction):
         # get domain id
         domain_id = self.find_resource_id(user_domain, self.conn.identity.find_domain)
         if not domain_id:
-            return False, "No domain found with Name or ID {}".format(user_domain)
+            return False, f"No domain found with Name or ID {user_domain}"
         try:
             user = self.conn.identity.find_user(user, domain_id=domain_id)
-        except Exception as e:
-            return False, "Finding User Failed {}".format(e)
+        except ResourceNotFound as err:
+            return False, f"Finding User Failed {err}"
         return True, user
 
     def user_get_email(self, user, user_domain):
@@ -39,5 +41,5 @@ class User(OpenstackAction):
             return False, output
         try:
             return True, output["email"] if output["email"] else "not found"
-        except Exception as e:
-            return False, "Finding User email Failed {}".format(e)
+        except ResourceNotFound as err:
+            return False, f"Finding User email Failed {err}"

@@ -21,5 +21,5 @@ parameters:
     description: Comment/Reason for downtime in Icinga
     required: true
     type: string
-    default: Disabled by StackStorm - hypervisor reboot
+    default: Disabled openstack_resource StackStorm - hypervisor reboot
 runner_type: python-script

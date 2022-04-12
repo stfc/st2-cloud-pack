@@ -1,7 +1,9 @@
+# pylint: skip-file
+# This file will be removed long-term as it is deprecated
 from tabulate import tabulate
 
 from ..openstack_action import OpenstackAction
-from ..queryopenstack.query import Query
+from ..queryopenstack.query import query
 
 """
 TODO: DEPRECATED - REMOVE AND ADD:
@@ -148,28 +150,29 @@ class Server(OpenstackAction):
         """
         Get Server info based on certain search criteria
         :param base_criteria: list: [["criteria_name_1", "arg1", "arg2", etc], ["criteria_name_2"], etc]
-        criteria to search servers by
+        criteria to search servers openstack_resource
         :param criteria_list: list: Extra criteria, same format as base_criteria (can be None)
         :param properties_to_select: list ["property_1", "property_2", etc]: properties to select for each server
-        :param sort_by_criteria: list ["property_1", etc]: properties to sort the final results by
+        :param sort_by_criteria: list ["property_1", etc]: properties to sort the final results openstack_resource
         :return: [{property_1: "value", property_2: "value"}, etc]: dictionary with results of server query
         """
         criteria = (
             base_criteria.extend(criteria_list) if criteria_list else base_criteria
         )
-        return Query(
-            by="server",
+        return query(
+            openstack_resource="server",
             properties_list=properties_to_select,
             criteria_list=criteria,
             sort_by_list=sort_by_criteria,
-            output_to_console=False,
+            console_output=False,
             save=False,
             save_path="",
         )
 
-    def get_output(self, result_list, get_html):
+    @staticmethod
+    def get_output(result_list, get_html):
         """
-        Get Server Query as Html or String Output
+        Get Server query as Html or String Output
         :param result_list: dictionary with results of a server query
         :param get_html: boolean to return html format or plaintext
         :return: (status (Bool), reason/output (String))
@@ -185,7 +188,7 @@ class Server(OpenstackAction):
 
     def get_output_per_user(self, result_list, get_html):
         """
-        Get Server Query per user as HTML or String Output
+        Get Server query per user as HTML or String Output
         :param result_list: dictionary with results of a server query
         :param get_html: boolean to return html format or plaintext
         :return: (status (Bool), output (Dict))

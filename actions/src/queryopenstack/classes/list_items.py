@@ -1,7 +1,11 @@
 import datetime
+from abc import ABC
+from typing import Dict
+
+from openstack.exceptions import ResourceNotFound
 
 
-class ListItems:
+class ListItems(ABC):
     """
     Base class to list openstack resources
 
@@ -22,15 +26,15 @@ class ListItems:
 
     search_func: func()
         function that will retrieve all possible instances of an openstack resource
-        (provided by subclasses)
+        (provided openstack_resource subclasses)
 
     Methods
     --------
-    listItems(criteria_list):
+    list_items(criteria_list):
         method to list openstack resources
         returns list of resouces as a Munch.munch object
 
-    getProperties(all_items_list, property_list):
+    get_properties(all_items_list, property_list):
         method to get certain properties for a list of openstack resources
         returns a list of dictionaries where each dictionary represents an
         openstack resource and its values for selected properties
@@ -41,24 +45,25 @@ class ListItems:
         """constructor class"""
         self.conn = conn
         self.search_func = search_func
+        self.property_func_dict: Dict
         self.criteria_func_dict = {
-            "name": lambda dict, args: dict["name"] in args,
-            "not_name": lambda dict, args: dict["name"] not in args,
-            "name_contains": lambda dict, args: any(
-                arg in dict["name"] for arg in args
+            "name": lambda func_dict, args: func_dict["name"] in args,
+            "not_name": lambda func_dict, args: func_dict["name"] not in args,
+            "name_contains": lambda func_dict, args: any(
+                arg in func_dict["name"] for arg in args
             ),
-            "name_not_contains": lambda dict, args: any(
-                arg not in dict["name"] for arg in args
+            "name_not_contains": lambda func_dict, args: any(
+                arg not in func_dict["name"] for arg in args
             ),
-            "id": lambda dict, args: dict["id"] in args,
-            "not_id": lambda dict, args: dict["id"] not in args,
+            "id": lambda func_dict, args: func_dict["id"] in args,
+            "not_id": lambda func_dict, args: func_dict["id"] not in args,
         }
 
-    def parseCriteria(self, criteria_list):
+    def parse_criteria(self, criteria_list):
         """
         Helper function to parse and validate a list of criteria
             Parameters:
-                criteria_list [(criteria name, [args])] : list of tuples
+                criteria_list [(criteria name, [input_args])] : list of tuples
                 containing criteria name and list of arguments
             Returns:
                 a sublist of criteria from criteria_list which are valid
@@ -67,19 +72,17 @@ class ListItems:
         res = []
         for key, args in criteria_list:
 
-            def func(dict, key=key, args=args):
-                return self.getCriteriaFunc(key)(dict, args)
+            def func(input_dict, input_key=key, input_args=args):
+                return self.get_criteria_func(input_key)(input_dict, input_args)
 
-            if func:
-                res.append(func)
-            else:
-                print("criteria name {} not found - ignoring".format(key))
+            res.append(func)
+
         if not res:
             print("no criteria selected - getting all")
-            res = [lambda dict: True]
+            res = [lambda fun_dict: True]
         return res
 
-    def parseProperties(self, property_list):
+    def parse_properties(self, property_list):
         """
         Helper function to parse a list of properties
             Parameters:
@@ -88,12 +91,12 @@ class ListItems:
                 a dictionary of {property name: function to get property} where all keys
                 are a valid sublist of names from property_list
         """
-        return {key: self.getPropertyFunc(key) for key in property_list}
+        return {key: self.get_property_func(key) for key in property_list}
 
-    def listItems(self, criteria_list):
+    def list_items(self, criteria_list):
         """
-        Function to list items by calling the function held in attribute search_func.
-        Then filter by them by a set of criteria
+        Function to list items openstack_resource calling the function held in attribute search_func.
+        Then filter openstack_resource them openstack_resource a set of criteria
             Parameters:
                 criteria_list [(criteria name, [args])] : list of tuples
                 containing criteria name and list of arguments
@@ -101,27 +104,19 @@ class ListItems:
                 [Munch.munch object] list of openstack resources
                 that match all given criteria
         """
-        criteria_list = self.parseCriteria(criteria_list)
-        """
-        try:
-            all_items = self.search_func()
-        except Exception as e:
-            print("error, could not get items")
-            print(repr(e))
-            return None
-        """
+        criteria_list = self.parse_criteria(criteria_list)
         all_items = self.search_func()
         selected_items = []
-        for i, item in enumerate(all_items):
-            res = True
+        for item in all_items:
+            valid_result = True
             for criteria in criteria_list:
                 if not criteria(item):
-                    res = False
-            if res:
+                    valid_result = False
+            if valid_result:
                 selected_items.append(item)
         return selected_items
 
-    def getProperties(self, all_items_list, property_list):
+    def get_properties(self, all_items_list, property_list):
         """
         Function to get the selected properties from a list of openstack resources
             Parameters:
@@ -129,10 +124,10 @@ class ListItems:
                 property_list [string]: list of property names to get
 
             Returns:
-                [dict] list of dictionaries where each dict contains the properties
+                [fun_dict] list of dictionaries where each fun_dict contains the properties
                 specified in property_list for each openstack resource in all_items_list
         """
-        property_dict = self.parseProperties(property_list)
+        property_dict = self.parse_properties(property_list)
 
         res = []
         for item in all_items_list:
@@ -141,12 +136,12 @@ class ListItems:
                 if val:
                     try:
                         output_dict[key] = val(item)
-                    except Exception as e:
+                    except ResourceNotFound:
                         output_dict[key] = "not found"
             res.append(output_dict)
         return res
 
-    def getCriteriaFunc(self, key):
+    def get_criteria_func(self, key):
         """
         Helper function to get criteria function given the criteria name
         Parameters:
@@ -155,7 +150,7 @@ class ListItems:
         """
         return self.criteria_func_dict.get(key, None)
 
-    def getPropertyFunc(self, key):
+    def get_property_func(self, key):
         """
         Helper function to get property function given the property name
         Parameters:
@@ -164,7 +159,7 @@ class ListItems:
         """
         return self.property_func_dict.get(key, None)
 
-    def isOlderThanXDays(self, created_at, days):
+    def is_older_than_x_days(self, created_at, days):
         """
         Function to get if openstack resource is older than a given
         number of days
@@ -175,11 +170,12 @@ class ListItems:
 
         Returns: (bool) True if older than days given else False
         """
-        return self.isCreatedAtOlderThanOffset(
+        return self.is_created_at_older_than_offset(
             created_at, datetime.timedelta(days=int(days)).total_seconds()
         )
 
-    def isCreatedAtOlderThanOffset(self, created_at, time_offset_in_seconds):
+    @staticmethod
+    def is_created_at_older_than_offset(created_at, time_offset_in_seconds):
         """
         Helper function to get if openstack resource is older than a
         given number of seconds

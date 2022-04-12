@@ -1,3 +1,5 @@
+from openstack.exceptions import ResourceNotFound
+
 from openstack_action import OpenstackAction
 
 
@@ -16,6 +18,7 @@ class Role(OpenstackAction):
 
     # TODO Show all roles on a project
 
+    # pylint: disable=missing-function-docstring
     def get_ids(self, role, project, user_domain, user):
         role_id = self.find_resource_id(role, self.conn.identity.find_role)
         project_id = self.find_resource_id(project, self.conn.identity.find_project)
@@ -41,8 +44,8 @@ class Role(OpenstackAction):
             role_assignment = self.conn.identity.assign_project_role_to_user(
                 project_id, user_id, role_id
             )
-        except Exception as e:
-            return False, "Role Assignment Failed {}".format(e)
+        except ResourceNotFound as err:
+            return False, f"Role Assignment Failed {err}"
         return True, role_assignment
 
     def role_remove(self, role, project, user_domain, user):
@@ -59,8 +62,8 @@ class Role(OpenstackAction):
             role_assignment = self.conn.identity.unassign_project_role_from_user(
                 project_id, user_id, role_id
             )
-        except Exception as e:
-            return False, "Role Assignment Failed {}".format(e)
+        except ResourceNotFound as err:
+            return False, f"Role Assignment Failed {err}"
         return True, role_assignment
 
     def validate_user(self, role, project, user_domain, user):
@@ -77,6 +80,6 @@ class Role(OpenstackAction):
             exists_bool = self.conn.identity.validate_user_has_role(
                 project_id, user_id, role_id
             )
-        except Exception as e:
-            return False, "Validation Failed {}".format(e)
+        except ResourceNotFound as err:
+            return False, f"Validation Failed {err}"
         return True, exists_bool

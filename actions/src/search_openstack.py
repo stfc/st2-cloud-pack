@@ -1,7 +1,7 @@
 from tabulate import tabulate
 
 from openstack_action import OpenstackAction
-from queryopenstack.query import Query
+from queryopenstack.query import query
 
 
 class SearchOpenstack(OpenstackAction):
@@ -11,6 +11,7 @@ class SearchOpenstack(OpenstackAction):
 
         # different methods of searching openstack
         self.func = {
+            # pylint: disable=line-too-long
             "search_openstack": lambda search_by, query_preset, get_html, search_criteria=None, properties_to_select=None, sort_by_criteria=None, **kwargs: self.output_results(
                 query_result=self.get_preset(
                     search_by=search_by,
@@ -22,6 +23,7 @@ class SearchOpenstack(OpenstackAction):
                 ),
                 get_html=get_html,
             ),
+            # pylint: disable=line-too-long
             "search_servers_per_user": lambda query_preset, get_html, search_criteria=None, properties_to_select=None, sort_by_criteria=None, **kwargs: self.search_servers_per_user(
                 query_result=self.get_preset(
                     search_by="server",
@@ -45,63 +47,59 @@ class SearchOpenstack(OpenstackAction):
         :param query_preset: preset name to use
         :param criteria_list: list of extra criteria
         :param properties_list: list of properties to find for openstack object
-        :param sort_by_list: field to sort results by
+        :param sort_by_list: field to sort results openstack_resource
         :param kwargs: other properties
         :return: dict/None - query results
         """
 
         # if no preset selected - use generic query method
         if query_preset == "no_preset":
-            return Query(
-                by=search_by,
+            return query(
+                openstack_resource=search_by,
                 properties_list=properties_list,
                 criteria_list=criteria_list,
                 sort_by_list=sort_by_list,
-                output_to_console=False,
+                console_output=False,
                 save=False,
                 save_path="",
             )
 
-        # search by ID presets (works for all openstack objects)
+        # search openstack_resource ID presets (works for all openstack objects)
         func = {
-            "id_in": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
-                by=search_by,
+            "id_in": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                openstack_resource=search_by,
                 properties_list=properties_list,
-                criteria_list=[["id", [name for name in kwargs["ids"]]]].extend(
-                    criteria_list
-                )
+                criteria_list=[["id", list(kwargs["ids"])]].extend(criteria_list)
                 if criteria_list
-                else [["id", [name for name in kwargs["ids"]]]],
+                else [["id", list(kwargs["ids"])]],
                 sort_by_list=sort_by_list,
-                output_to_console=False,
+                console_output=False,
                 save=False,
                 save_path="",
             ),
-            "id_not_in": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
-                by=search_by,
+            "id_not_in": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                openstack_resource=search_by,
                 properties_list=properties_list,
-                criteria_list=[["not_id", [name for name in kwargs["ids"]]]].extend(
-                    criteria_list
-                )
+                criteria_list=[["not_id", list(kwargs["ids"])]].extend(criteria_list)
                 if criteria_list
-                else [["not_id", [name for name in kwargs["ids"]]]],
+                else [["not_id", list(kwargs["ids"])]],
                 sort_by_list=sort_by_list,
-                output_to_console=False,
+                console_output=False,
                 save=False,
                 save_path="",
             ),
         }.get(query_preset, None)
 
-        # search by Name presets (works for all openstack objects with associated names)
-        if not func and search_by != "ip":
+        # search openstack_resource Name presets (works for all openstack objects with associated names)
+        if not func and search_by != "ip_addr":
             func = {
-                "name_in": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
-                    by=search_by,
+                "name_in": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                    openstack_resource=search_by,
                     properties_list=properties_list,
                     criteria_list=[
                         ["name"]
                         + [
-                            name if name[:7] != "http://" else name[7:]
+                            name if name[:7] != "https://" else name[7:]
                             for name in kwargs["names"]
                         ]
                     ].extend(criteria_list)
@@ -109,22 +107,22 @@ class SearchOpenstack(OpenstackAction):
                     else [
                         ["name"]
                         + [
-                            name if name[:7] != "http://" else name[7:]
+                            name if name[:7] != "https://" else name[7:]
                             for name in kwargs["names"]
                         ]
                     ],
                     sort_by_list=sort_by_list,
-                    output_to_console=False,
+                    console_output=False,
                     save=False,
                     save_path="",
                 ),
-                "name_not_in": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
-                    by=search_by,
+                "name_not_in": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                    openstack_resource=search_by,
                     properties_list=properties_list,
                     criteria_list=[
                         ["not_name"]
                         + [
-                            name if name[:7] != "http://" else name[7:]
+                            name if name[:7] != "https://" else name[7:]
                             for name in kwargs["names"]
                         ]
                     ].extend(criteria_list)
@@ -132,17 +130,17 @@ class SearchOpenstack(OpenstackAction):
                     else [
                         ["not_name"]
                         + [
-                            name if name[:7] != "http://" else name[7:]
+                            name if name[:7] != "https://" else name[7:]
                             for name in kwargs["names"]
                         ]
                     ],
                     sort_by_list=sort_by_list,
-                    output_to_console=False,
+                    console_output=False,
                     save=False,
                     save_path="",
                 ),
-                "name_contains": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
-                    by=search_by,
+                "name_contains": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                    openstack_resource=search_by,
                     properties_list=properties_list,
                     criteria_list=[
                         ["name_contains", name] for name in kwargs["name_snippets"]
@@ -150,12 +148,12 @@ class SearchOpenstack(OpenstackAction):
                     if criteria_list
                     else [["name_contains", name] for name in kwargs["name_snippets"]],
                     sort_by_list=sort_by_list,
-                    output_to_console=False,
+                    console_output=False,
                     save=False,
                     save_path="",
                 ),
-                "name_not_contains": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
-                    by=search_by,
+                "name_not_contains": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                    openstack_resource=search_by,
                     properties_list=properties_list,
                     criteria_list=[
                         ["name_not_contains", name] for name in kwargs["name_snippets"]
@@ -165,7 +163,7 @@ class SearchOpenstack(OpenstackAction):
                         ["name_not_contains", name] for name in kwargs["name_snippets"]
                     ],
                     sort_by_list=sort_by_list,
-                    output_to_console=False,
+                    console_output=False,
                     save=False,
                     save_path="",
                 ),
@@ -176,8 +174,9 @@ class SearchOpenstack(OpenstackAction):
             func = (
                 {
                     "server": {
-                        "server_error_and_shutoff": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
-                            by="server",
+                        # pylint: disable=line-too-long
+                        "server_error_and_shutoff": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            openstack_resource="server",
                             properties_list=properties_list,
                             criteria_list=[["status", "SHUTOFF", "ERROR"]].extend(
                                 criteria_list
@@ -185,34 +184,34 @@ class SearchOpenstack(OpenstackAction):
                             if criteria_list
                             else [["status", "SHUTOFF", "ERROR"]],
                             sort_by_list=sort_by_list,
-                            output_to_console=False,
+                            console_output=False,
                             save=False,
                             save_path="",
                         ),
-                        "server_shutoff": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
-                            by="server",
+                        "server_shutoff": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            openstack_resource="server",
                             properties_list=properties_list,
                             criteria_list=[["status", "SHUTOFF"]].extend(criteria_list)
                             if criteria_list
                             else [["status", "SHUTOFF"]],
                             sort_by_list=sort_by_list,
-                            output_to_console=False,
+                            console_output=False,
                             save=False,
                             save_path="",
                         ),
-                        "server_error": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
-                            by="server",
+                        "server_error": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            openstack_resource="server",
                             properties_list=properties_list,
                             criteria_list=[["status", "ERROR"]].extend(criteria_list)
                             if criteria_list
                             else [["status", "ERROR"]],
                             sort_by_list=sort_by_list,
-                            output_to_console=False,
+                            console_output=False,
                             save=False,
                             save_path="",
                         ),
-                        "server_older_than": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
-                            by="server",
+                        "server_older_than": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            openstack_resource="server",
                             properties_list=properties_list,
                             criteria_list=[["older_than", kwargs["days"]]].extend(
                                 criteria_list
@@ -220,12 +219,12 @@ class SearchOpenstack(OpenstackAction):
                             if criteria_list
                             else [["older_than", kwargs["days"]]],
                             sort_by_list=sort_by_list,
-                            output_to_console=False,
+                            console_output=False,
                             save=False,
                             save_path="",
                         ),
-                        "server_younger_than": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
-                            by="server",
+                        "server_younger_than": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            openstack_resource="server",
                             properties_list=properties_list,
                             criteria_list=[["not_older_than", kwargs["days"]]].extend(
                                 criteria_list
@@ -233,57 +232,53 @@ class SearchOpenstack(OpenstackAction):
                             if criteria_list
                             else [["not_older_than", kwargs["days"]]],
                             sort_by_list=sort_by_list,
-                            output_to_console=False,
+                            console_output=False,
                             save=False,
                             save_path="",
                         ),
                     },
-                    "ip": {
-                        "in_projects": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
-                            by="ip",
+                    "ip_addr": {
+                        "in_projects": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            openstack_resource="ip_addr",
                             properties_list=properties_list,
                             criteria_list=[
-                                ["project_id"]
-                                + [name for name in kwargs["project_ids"]]
+                                ["project_id"] + list(kwargs["project_ids"])
                             ].extend(criteria_list)
                             if criteria_list
-                            else [
-                                ["project_id"]
-                                + [name for name in kwargs["project_ids"]]
-                            ],
+                            else [["project_id"] + list(kwargs["project_ids"])],
                             sort_by_list=sort_by_list,
-                            output_to_console=False,
+                            console_output=False,
                             save=False,
                             save_path="",
                         )
                     },
                     "host": {
-                        "host_enabled": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
-                            by="host",
+                        "host_enabled": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            openstack_resource="host",
                             properties_list=properties_list,
                             criteria_list=[["status", "enabled"]].extend(criteria_list)
                             if criteria_list
                             else [["status", "enabled"]],
                             sort_by_list=sort_by_list,
-                            output_to_console=False,
+                            console_output=False,
                             save=False,
                             save_path="",
                         ),
-                        "host_disabled": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
-                            by="host",
+                        "host_disabled": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            openstack_resource="host",
                             properties_list=properties_list,
                             criteria_list=[["status", "disabled"]].extend(criteria_list)
                             if criteria_list
                             else [["status", "disabled"]],
                             sort_by_list=sort_by_list,
-                            output_to_console=False,
+                            console_output=False,
                             save=False,
                             save_path="",
                         ),
                     },
                     "project": {
-                        "description_contains": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
-                            by="project",
+                        "description_contains": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            openstack_resource="project",
                             properties_list=properties_list,
                             criteria_list=[
                                 ["description_contains", description]
@@ -295,7 +290,7 @@ class SearchOpenstack(OpenstackAction):
                                 for description in kwargs["description_snippets"]
                             ],
                             sort_by_list=sort_by_list,
-                            output_to_console=False,
+                            console_output=False,
                             save=False,
                             save_path="",
                         )
@@ -326,24 +321,29 @@ class SearchOpenstack(OpenstackAction):
         rows = [row.values() for row in query_result]
         return True, tabulate(rows, headers, tablefmt="html" if get_html else "grid")
 
+    # pylint: disable=missing-function-docstring, no-method-argument
+    def get_output(*args):
+        raise NotImplementedError("Get Output Not Implemented")
+
+    # pylint: disable=missing-function-docstring
     def search_servers_per_user(self, query_result, get_html=False):
         if not query_result:
             return False, "No data found"
         user_server_dict = {}
         for server in query_result:
             user_email = server["user_email"]
-            if user_email in user_server_dict.keys():
+            if user_email in user_server_dict:
                 user_server_dict[user_email].append(server)
             else:
                 user_server_dict[user_email] = [server]
 
-        if "not found" in user_server_dict.keys():
+        if "not found" in user_server_dict:
             print("Following Servers found with no associated Email")
             print(self.get_output(user_server_dict["not found"], False))
             del user_server_dict["not found"]
 
-        for email in user_server_dict.keys():
-            servers = user_server_dict[email]
-            _, user_server_dict[email] = self.get_output(servers, get_html)
+        for email, servers in user_server_dict.items():
+            _, output = self.get_output(servers, get_html)
+            user_server_dict[email] = output
 
         return True, user_server_dict
