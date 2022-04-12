@@ -1,5 +1,7 @@
-from st2common.runners.base_action import Action
 import openstack
+
+from st2common.runners.base_action import Action
+
 
 class OpenstackAction(Action):
     def run(self, **kwargs):

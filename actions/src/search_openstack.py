@@ -1,6 +1,7 @@
+from tabulate import tabulate
+
 from openstack_action import OpenstackAction
 from queryopenstack.query import Query
-from tabulate import tabulate
 
 
 class SearchOpenstack(OpenstackAction):

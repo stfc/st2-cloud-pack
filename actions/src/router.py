@@ -1,6 +1,3 @@
-from st2common.runners.base_action import Action
-import openstack
-import random
 from openstack_action import OpenstackAction
 
 class Router(OpenstackAction):

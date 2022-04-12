@@ -1,8 +1,7 @@
-from st2common.runners.base_action import Action
 from openstack_action import OpenstackAction
 from queryopenstack.query import Query
 from tabulate import tabulate
-import csv
+
 """
 TODO: DEPRECATED - REMOVE AND ADD:
     

@@ -1,5 +1,3 @@
-from st2common.runners.base_action import Action
-import openstack
 from openstack_action import OpenstackAction
 
 class FloatingIP(OpenstackAction):

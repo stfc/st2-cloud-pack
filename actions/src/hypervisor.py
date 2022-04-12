@@ -7,9 +7,12 @@ hypervisor service enable
 hypervisor service disable
 """
 import datetime
-import requests
 import json
+
+import requests
+
 from openstack_action import OpenstackAction
+
 
 class Hypervisor(OpenstackAction):
     def __init__(self, *args, **kwargs):

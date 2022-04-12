@@ -1,8 +1,10 @@
-from st2common.runners.base_action import Action
-import openstack
-from subprocess import Popen, PIPE
-from openstack_action import OpenstackAction
 import os
+from subprocess import Popen, PIPE
+
+import openstack
+
+from openstack_action import OpenstackAction
+
 SOURCECMD = "source /etc/openstack/openrc/admin-openrc.sh;"
 
 
