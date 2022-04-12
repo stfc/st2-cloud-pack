@@ -48,4 +48,14 @@ parameters:
         required: true
         type: array
         description: List of Users (stfc domain) (IDs or Names) to give local user access
+    default_network_external_rules:
+        required: true
+        type: object
+        description: Network external security rules
+        default: "{{ st2kv.system.default_network_rules | decrypt_kv | from_json_string }}"
+    egress_external_ips:
+        required: true
+        type: object
+        description: Network security rule TCP/UDP egress IPs
+        default: "{{ st2kv.system.tcp_udp_egress_external_ips | decrypt_kv | from_json_string }}"
 runner_type: orquesta

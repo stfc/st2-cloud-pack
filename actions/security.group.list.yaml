@@ -11,4 +11,4 @@ parameters:
     project:
         description: Owner's project (Name or ID)
         type: string
-runner_type: "python-script"
+runner_type: python-script

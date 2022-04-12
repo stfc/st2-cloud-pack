@@ -8,16 +8,16 @@ parameters:
         default: network_create
         immutable: True
         type: string
+    project:
+        description: Project for New Network (Name or ID)
+        required: True
+        type: string
     name:
         description: New Network Name
         required: True
         type: string
     description:
         description: New Network Description
-        required: True
-        type: string
-    project:
-        description: Project for New Network (Name or ID)
         required: True
         type: string
     is_port_security_enabled:

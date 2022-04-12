@@ -15,31 +15,12 @@ input:
   - ip_number
   - admin_user_list
   - stfc_user_list
+  - default_network_external_rules
+  - tcp_udp_egress_external_ips
 
 vars:
   - stdout: null
   - stderr: null
-
-  - security_info: <% list(
-      dict("direction"=>"ingress", "ether_type"=>"IPv4", "protocol"=>"icmp", "remote_ip_prefix"=>"0.0.0.0/0", "dst_port"=>null),
-      dict("direction"=>"ingress", "ether_type"=>"IPv4", "protocol"=>"tcp", "remote_ip_prefix"=>"0.0.0.0/0", "dst_port"=>"22:22"),
-      dict("direction"=>"egress", "ether_type"=>"IPv4", "protocol"=>"tcp", "remote_ip_prefix"=>"130.246.0.0/16", "dst_port"=>"53:53"),
-      dict("direction"=>"ingress", "ether_type"=> "IPV4", "protocol"=>"tcp", "remote_ip_prefix"=>"130.246.0.0/16", "dst_port"=>"53:53"),
-      dict("direction"=>"egress", "ether_type"=> "IPV4", "protocol"=>"tcp", "remote_ip_prefix"=>"130.246.180.101/32", "dst_port"=>"80:80"),
-      dict("direction"=>"egress", "ether_type"=> "IPV4", "protocol"=>"tcp", "remote_ip_prefix"=>"130.246.180.163/32", "dst_port"=>"80:80"),
-      dict("direction"=>"ingress", "ether_type"=> "IPV4", "protocol"=>"tcp", "remote_ip_prefix"=>"130.246.180.13/32", "dst_port"=>"80:80"),
-      dict("direction"=>"egress", "ether_type"=> "IPV4", "protocol"=>"tcp", "remote_ip_prefix"=>"130.246.180.13/32", "dst_port"=>"80:80"),
-      dict("direction"=>"ingress", "ether_type"=> "IPV4", "protocol"=>"tcp", "remote_ip_prefix"=>"130.246.223.126/32", "dst_port"=>"80:9999"),
-      dict("direction"=>"ingress", "ether_type"=> "IPV4", "protocol"=>"tcp", "remote_ip_prefix"=>"130.246.180.101/32", "dst_port"=>"80:80"),
-      dict("direction"=>"ingress", "ether_type"=> "IPV4", "protocol"=>"tcp", "remote_ip_prefix"=>"130.246.186.163/32", "dst_port"=>"80:80"),
-      dict("direction"=>"egress", "ether_type"=> "IPV4", "protocol"=>"tcp", "remote_ip_prefix"=>"130.246.180.101/32", "dst_port"=>"443:443"),
-      dict("direction"=>"egress", "ether_type"=> "IPV4", "protocol"=>"tcp", "remote_ip_prefix"=>"130.246.223.126/32", "dst_port"=>"9999:9999"),
-      dict("direction"=>"egress", "ether_type"=> "IPV4", "protocol"=>"udp", "remote_ip_prefix"=>"130.246.0.0/16", "dst_port"=>"53:53"),
-      dict("direction"=>"ingress", "ether_type"=> "IPV4", "protocol"=>"udp", "remote_ip_prefix"=>"130.246.0.0/16", "dst_port"=>"53:53"),
-      dict("direction"=>"egress", "ether_type"=> "IPV4", "protocol"=>"tcp", "remote_ip_prefix"=>"130.246.176.0/22", "dst_port"=>"443:443")
-      ) %>
-
-  - security_egress_ip_info: <% list( "8.0.0.0/7", "192.170.0.0/15", "172.64.0.0/10", "192.160.0.0/13", "192.169.0.0/16", "192.176.0.0/12", "192.128.0.0/11", "173.0.0.0/8", "172.0.0.0/12", "130.248.0.0/12", "193.0.0.0/8", "130.247.0.0/16", "32.0.0.0/3", "131.0.0.0/8", "196.0.0.0/6", "176.0.0.0/4", "128.0.0.0/7", "174.0.0.0/7", "144.0.0.0/4", "172.128.0.0/9", "192.172.0.0/14", "192.192.0.0/10", "208.0.0.0/4",  "194.0.0.0/7", "168.0.0.0/6", "132.0.0.0/6", "192.0.0.0/9", "160.0.0.0/5", "172.32.0.0/11", "12.0.0.0/6", "16.0.0.0/4", "130.128.0.0/10", "130.224.0.0/12", "130.0.0.0/9", "64.0.0.0/2", "130.244.0.0/15", "200.0.0.0/5", "130.240.0.0/14", "11.0.0.0/8", "130.192.0.0/11", "136.0.0.0/5", "0.0.0.0/5") %>
 
 output:
   - stdout: <% ctx().stdout %>
@@ -145,7 +126,7 @@ tasks:
         do: fail
 
   create_security_group_rules:
-    with: security_info in <% ctx(security_info) %>
+    with: security_info in <% ctx(default_network_external_rules) %>
     action: stackstorm_openstack.security.group.rule.create
       project=<% ctx().project_name %>
       security_group="default"
@@ -161,7 +142,7 @@ tasks:
         do: fail
 
   create_tcp_rules:
-    with: <% ctx(security_egress_ip_info) %>
+    with: <% ctx(egress_external_ips) %>
     action: stackstorm_openstack.security.group.rule.create
       project=<% ctx().project_name %>
       security_group="default"
@@ -176,7 +157,7 @@ tasks:
         do: fail
 
   create_udp_rules:
-    with: <% ctx(security_egress_ip_info) %>
+    with: <% ctx(egress_external_ips) %>
     action: stackstorm_openstack.security.group.rule.create
       project=<% ctx().project_name %>
       security_group="default"

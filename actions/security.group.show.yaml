@@ -1,5 +1,5 @@
 ---
-description: Create a new security group show
+description: Show security group properties
 enabled: true
 entry_point: src/security_group.py
 name: security.group.show

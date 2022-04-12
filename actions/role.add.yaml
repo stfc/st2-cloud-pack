@@ -1,5 +1,5 @@
 ---
-description: Add role to project
+description: Add User Role to Project
 enabled: true
 entry_point: src/role.py
 name: role.add

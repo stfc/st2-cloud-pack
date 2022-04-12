@@ -8,6 +8,10 @@ parameters:
         default: project_create
         immutable: true
         type: string
+    domain:
+        default: default
+        description: Domain owning the project (name or ID)
+        type: string
     name:
         description: New project Name
         required: true
@@ -19,8 +23,4 @@ parameters:
         default: true
         description: Project is enabled or not
         type: boolean
-    domain:
-        default: default
-        description:  Domain owning the project (name or ID)
-        type: string
 runner_type: python-script

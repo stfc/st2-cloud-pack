@@ -1,5 +1,5 @@
 ---
-description: Show Openstack Project
+description: Show Project properties
 enabled: true
 entry_point: src/project.py
 name: project.show

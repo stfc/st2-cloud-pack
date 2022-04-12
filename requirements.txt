@@ -1,5 +1,4 @@
 openstacksdk==0.57.0
 python-openstackclient==5.5.0
 tabulate==0.8.9
-https://github.com/anish-mudaraddi/stackstorm-notification-pack.git
-https://github.com/anish-mudaraddi/Openstack-Search.git
+https://github.com/anish-mudaraddi/query-openstack

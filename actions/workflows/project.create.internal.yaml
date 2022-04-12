@@ -8,27 +8,13 @@ input:
   - project_description
   - admin_user_list
   - stfc_user_list
+  - default_network_internal_rules
+  - http_network_internal_rules
+  - https_network_internal_rules
 
 vars:
   - stdout: null
   - stderr: null
-
-  - default_security_info: <% list(
-      dict("direction"=>"ingress", "ether_type"=>"IPv4", "protocol"=>"icmp", "remote_ip_prefix"=>"0.0.0.0/0", "dst_port"=>null),
-      dict("direction"=>"egress", "ether_type"=>"IPv4", "protocol"=>"icmp", "remote_ip_prefix"=>"0.0.0.0/0", "dst_port"=>null),
-      dict("direction"=>"egress", "ether_type"=>"IPv4", "protocol"=>"udp", "remote_ip_prefix"=>"0.0.0.0/0", "dst_port"=>null),
-      dict("direction"=>"egress", "ether_type"=>"IPv4", "protocol"=>"tcp", "remote_ip_prefix"=>"0.0.0.0/0", "dst_port"=>null),
-      dict("direction"=>"ingress", "ether_type"=>"IPv4", "protocol"=>"tcp", "remote_ip_prefix"=>"0.0.0.0/0", "dst_port"=>"22:22"),
-      dict("direction"=>"ingress", "ether_type"=>"IPv4", "protocol"=>"udp", "remote_ip_prefix"=>"0.0.0.0/0", "dst_port"=>"7777:7777")
-      ) %>
-
-  - http_security_info: <% list(
-      dict("direction"=>"ingress", "ether_type"=>"IPv4", "protocol"=>"tcp", "remote_ip_prefix"=>"0.0.0.0/0", "dst_port"=>"80:80")
-      ) %>
-
-  - https_security_info: <% list(
-      dict("direction"=>"ingress", "ether_type"=>"IPv4", "protocol"=>"tcp", "remote_ip_prefix"=>"0.0.0.0/0", "dst_port"=>"443:443")
-      ) %>
 
 output:
   - stdout: <% ctx().stdout %>
@@ -75,7 +61,7 @@ tasks:
         do: fail
 
   create_security_group_rules_default:
-    with: security_info in <% ctx(default_security_info) %>
+    with: security_info in <% ctx(default_network_internal_rules) %>
     action: stackstorm_openstack.security.group.rule.create
       project=<% ctx().project_name %>
       security_group="default"
@@ -101,7 +87,7 @@ tasks:
         do: fail
 
   create_security_group_rules_http:
-    with: security_info in <% ctx(http_security_info) %>
+    with: security_info in <% ctx(http_network_internal_rules) %>
     action: stackstorm_openstack.security.group.rule.create
       project=<% ctx().project_name %>
       security_group="HTTP"
@@ -127,7 +113,7 @@ tasks:
         do: fail
 
   create_security_group_rules_https:
-    with: security_info in <% ctx(https_security_info) %>
+    with: security_info in <% ctx(https_network_internal_rules) %>
     action: stackstorm_openstack.security.group.rule.create
       project=<% ctx().project_name %>
       security_group="HTTPS"

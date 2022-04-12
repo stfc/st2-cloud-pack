@@ -10,7 +10,7 @@ class OpenstackAction(Action):
         """
         self.conn = self.connect_to_openstack()
         fn = self.func.get(kwargs["submodule"])
-        return fn(**{k:v for k, v in kwargs.items() if (v is not None) and k not in ["submodule"]})
+        return fn(**{k:v for k, v in kwargs.items() if v not in [None, ["NULL"]] and k not in ["submodule"]})
 
 
     def find_resource_id(self, identifier, openstack_func, **kwargs):
