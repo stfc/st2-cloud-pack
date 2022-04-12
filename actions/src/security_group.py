@@ -10,7 +10,7 @@ SOURCECMD = "source /etc/openstack/openrc/admin-openrc.sh;"
 
 class SecurityGroup(OpenstackAction):
     def __init__(self, *args, **kwargs):
-        """ constructor class """
+        """constructor class"""
         super().__init__(*args, **kwargs)
 
         # lists possible functions that could be run as an action
@@ -36,7 +36,9 @@ class SecurityGroup(OpenstackAction):
             return False, "Project not found with Name or ID {}".format(project)
 
         try:
-            security_group = self.conn.network.create_security_group(project_id=project_id, **security_group_kwargs)
+            security_group = self.conn.network.create_security_group(
+                project_id=project_id, **security_group_kwargs
+            )
         except Exception as e:
             return False, "Security Group Creation Failed {}".format(e)
         return True, security_group
@@ -56,7 +58,9 @@ class SecurityGroup(OpenstackAction):
                 return False, "Project not found with Name or ID {}".format(project)
 
             try:
-                security_group = self.conn.network.find_security_group(security_group, project_id=project_id)
+                security_group = self.conn.network.find_security_group(
+                    security_group, project_id=project_id
+                )
             except Exception as e:
                 return False, "Finding Project Failed {}".format(e)
         else:
@@ -77,8 +81,13 @@ class SecurityGroup(OpenstackAction):
             return False, "Project not found with Name or ID {}".format(project)
 
         # needs to be called when creating new project, openstacksdk fails to find security groups unless this is called
-        p = Popen(SOURCECMD + "openstack security group list --project {} -f json".format(project_id),
-                  shell=True, stdout=PIPE, env=os.environ.copy())
+        p = Popen(
+            SOURCECMD
+            + "openstack security group list --project {} -f json".format(project_id),
+            shell=True,
+            stdout=PIPE,
+            env=os.environ.copy(),
+        )
         _ = p.communicate()[0]
 
         try:
@@ -90,7 +99,9 @@ class SecurityGroup(OpenstackAction):
             return False, "Listing Security Groups Failed {}".format(e)
         return True, all_groups
 
-    def security_group_rule_create(self, security_group, project, dst_port, **security_group_kwargs):
+    def security_group_rule_create(
+        self, security_group, project, dst_port, **security_group_kwargs
+    ):
         """
         Creature security group rule
         :param security_group: (String) Name or ID
@@ -106,10 +117,16 @@ class SecurityGroup(OpenstackAction):
             return False, "Project not found with Name or ID {}".format(project)
 
         # get security group id
-        security_group_id = self.find_resource_id(security_group, self.conn.network.find_security_group,
-                                                  project_id=project_id)
+        security_group_id = self.find_resource_id(
+            security_group, self.conn.network.find_security_group, project_id=project_id
+        )
         if not security_group_id:
-            return False, "Security group not found with Name or ID {0} for Project {1}".format(security_group, project)
+            return (
+                False,
+                "Security group not found with Name or ID {0} for Project {1}".format(
+                    security_group, project
+                ),
+            )
 
         # get min and max port ranges
         if dst_port:
@@ -126,14 +143,17 @@ class SecurityGroup(OpenstackAction):
                 **security_group_kwargs
             )
         except openstack.exceptions.ConflictException:
-            return True, "Security Group Rule direction={0}, ether_type={1}, protocol={2}, " \
-                         "remote_ip_prefix={3}, dst_port={4} exist for project {5}".format(
-                security_group_kwargs["direction"],
-                security_group_kwargs["ether_type"],
-                security_group_kwargs["protocol"],
-                security_group_kwargs["remote_ip_prefix"],
-                str(port_range_max) + ":" + str(port_range_min),
-                project_id
+            return (
+                True,
+                "Security Group Rule direction={0}, ether_type={1}, protocol={2}, "
+                "remote_ip_prefix={3}, dst_port={4} exist for project {5}".format(
+                    security_group_kwargs["direction"],
+                    security_group_kwargs["ether_type"],
+                    security_group_kwargs["protocol"],
+                    security_group_kwargs["remote_ip_prefix"],
+                    str(port_range_max) + ":" + str(port_range_min),
+                    project_id,
+                ),
             )
         except Exception as e:
             return False, "Security group rule creation failed {}".format(e)

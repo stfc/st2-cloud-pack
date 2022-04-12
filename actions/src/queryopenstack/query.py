@@ -3,12 +3,25 @@ from .classes.list_ips import ListIps
 from .classes.list_projects import ListProjects
 from .classes.list_servers import ListServers
 from .classes.list_users import ListUsers
-from .utils import CreateOpenstackConnection, OutputToConsole, OutputToFile, ValidateInputList
+from .utils import (
+    CreateOpenstackConnection,
+    OutputToConsole,
+    OutputToFile,
+    ValidateInputList,
+)
 
 
-def Query(by, properties_list, criteria_list, sort_by_list, output_to_console=False, save=False,
-          save_path="~/Openstack_Logs/output.csv", openstack_conn=None):
-    '''
+def Query(
+    by,
+    properties_list,
+    criteria_list,
+    sort_by_list,
+    output_to_console=False,
+    save=False,
+    save_path="~/Openstack_Logs/output.csv",
+    openstack_conn=None,
+):
+    """
     Function to handle an openstack query
 
         Parameters:
@@ -27,7 +40,7 @@ def Query(by, properties_list, criteria_list, sort_by_list, output_to_console=Fa
             res ([{dict}]): list of dictionaries - query results
             (each dict in list representing a single compute resource)
             None: if query fails
-    '''
+    """
 
     # if no user defined openstack connection given - create default one
     if not openstack_conn:
@@ -39,7 +52,7 @@ def Query(by, properties_list, criteria_list, sort_by_list, output_to_console=Fa
         "server": ListServers,
         "project": ListProjects,
         "ip": ListIps,
-        "host": ListHosts
+        "host": ListHosts,
     }.get(by, None)
 
     if not list_class:
@@ -49,7 +62,9 @@ def Query(by, properties_list, criteria_list, sort_by_list, output_to_console=Fa
     list_obj = list_class(openstack_conn)
 
     # validate properties_list
-    properties_to_use, invalid = ValidateInputList(properties_list, list_obj.property_func_dict.keys())
+    properties_to_use, invalid = ValidateInputList(
+        properties_list, list_obj.property_func_dict.keys()
+    )
     if invalid:
         print("Following properties are not valid: {}".format(invalid))
     if not properties_to_use:
@@ -58,22 +73,31 @@ def Query(by, properties_list, criteria_list, sort_by_list, output_to_console=Fa
 
     # validate criteria_list
     if criteria_list:
-        criteria_names, invalid = ValidateInputList([criteria[0] for criteria in criteria_list],
-                                                    list_obj.criteria_func_dict.keys())
+        criteria_names, invalid = ValidateInputList(
+            [criteria[0] for criteria in criteria_list],
+            list_obj.criteria_func_dict.keys(),
+        )
         if invalid:
             print("Following properties are not valid: \n {}".format(invalid))
-        criteria_to_use = [(criteria[0], criteria[1:]) for criteria in criteria_list if criteria[0] in criteria_names]
+        criteria_to_use = [
+            (criteria[0], criteria[1:])
+            for criteria in criteria_list
+            if criteria[0] in criteria_names
+        ]
     else:
         criteria_to_use = []
     # validate sort_by_list
-    sort_by_to_use, invalid = ValidateInputList(sort_by_list, list_obj.property_func_dict.keys())
+    sort_by_to_use, invalid = ValidateInputList(
+        sort_by_list, list_obj.property_func_dict.keys()
+    )
     if invalid:
         print("Following sort_by are not valid: \n {}".format(invalid))
 
     print(
         """Searching by resouce: {0} \nCriteria Selected: {1} \nProperties Selected: {2} \nSort By Selected: {3}""".format(
-            by,
-            criteria_to_use, properties_to_use, sort_by_to_use))
+            by, criteria_to_use, properties_to_use, sort_by_to_use
+        )
+    )
 
     # get results
     items = list_obj.listItems(criteria_to_use)

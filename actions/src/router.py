@@ -2,9 +2,8 @@ from openstack_action import OpenstackAction
 
 
 class Router(OpenstackAction):
-
     def __init__(self, *args, **kwargs):
-        """ constructor class """
+        """constructor class"""
         super().__init__(*args, **kwargs)
 
         # lists possible functions that could be run as an action
@@ -14,7 +13,7 @@ class Router(OpenstackAction):
             "router_remove_interface": self.router_remove_interface,
             "router_delete": self.router_delete,
             "router_show": self.router_show,
-            "router_update": self.router_update
+            "router_update": self.router_update,
         }
 
     def router_create(self, project, external_gateway, **router_kwargs):
@@ -30,13 +29,22 @@ class Router(OpenstackAction):
         if not project_id:
             return False, "Project not found with Name or ID {}".format(project)
 
-        external_gateway_id = self.find_resource_id(external_gateway, self.conn.network.find_network)
+        external_gateway_id = self.find_resource_id(
+            external_gateway, self.conn.network.find_network
+        )
         if not external_gateway_id:
-            return False, "Network (External Gateway) not found with Name or ID {}".format(external_gateway)
+            return (
+                False,
+                "Network (External Gateway) not found with Name or ID {}".format(
+                    external_gateway
+                ),
+            )
         try:
-            router = self.conn.network.create_router(project_id=project_id,
-                                                     external_gateway_info={"network_id": external_gateway_id},
-                                                     **router_kwargs)
+            router = self.conn.network.create_router(
+                project_id=project_id,
+                external_gateway_info={"network_id": external_gateway_id},
+                **router_kwargs
+            )
         except Exception as e:
             return False, "Router Creation Failed {}".format(e)
         return True, router
@@ -71,7 +79,9 @@ class Router(OpenstackAction):
                 return False, "Port not found with Name or ID {}".format(port)
 
         try:
-            router = self.conn.network.add_interface_to_router(router=router_id, subnet_id=subnet_id, port_id=port_id)
+            router = self.conn.network.add_interface_to_router(
+                router=router_id, subnet_id=subnet_id, port_id=port_id
+            )
         except Exception as e:
             return False, "Adding Router Interface Failed {}".format(e)
         return True, router
@@ -106,8 +116,9 @@ class Router(OpenstackAction):
                 return False, "Port not found with Name or ID {}".format(port)
 
         try:
-            router = self.conn.network.remove_interface_from_router(router=router_id, subnet_id=subnet_id,
-                                                                    port_id=port_id)
+            router = self.conn.network.remove_interface_from_router(
+                router=router_id, subnet_id=subnet_id, port_id=port_id
+            )
         except Exception as e:
             return False, "Removing Router Interface Failed {}".format(e)
         return True, router

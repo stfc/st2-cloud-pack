@@ -53,4 +53,3 @@ parameters:
     type: number
     default: 0
 runner_type: python-script
-

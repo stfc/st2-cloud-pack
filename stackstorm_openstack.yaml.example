@@ -23,6 +23,3 @@ internal_network:
     protocol:
     remote_ip_prefix:
     dst_port:
-
-
-

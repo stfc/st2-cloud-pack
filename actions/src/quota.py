@@ -3,14 +3,11 @@ from openstack_action import OpenstackAction
 
 class Quote(OpenstackAction):
     def __init__(self, *args, **kwargs):
-        """ constructor class """
+        """constructor class"""
         super().__init__(*args, **kwargs)
 
         # lists possible functions that could be run as an action
-        self.func = {
-            "quota_set": self.quota_set,
-            "quota_show": self.quota_show
-        }
+        self.func = {"quota_set": self.quota_set, "quota_show": self.quota_show}
 
     def quota_set(self, project, **quota_kwargs):
         """

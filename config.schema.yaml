@@ -133,6 +133,3 @@ internal_network:
         type: "string"
         required: false
         secret: true
-
-
-

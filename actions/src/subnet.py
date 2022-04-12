@@ -5,9 +5,8 @@ from openstack_action import OpenstackAction
 
 
 class Subnet(OpenstackAction):
-
     def __init__(self, *args, **kwargs):
-        """ constructor class """
+        """constructor class"""
         super().__init__(*args, **kwargs)
 
         # lists possible functions that could be run as an action
@@ -15,7 +14,7 @@ class Subnet(OpenstackAction):
             "subnet_create": self.subnet_create,
             "subnet_update": self.subnet_update,
             "subnet_delete": self.subnet_delete,
-            "subnet_show": self.subnet_show
+            "subnet_show": self.subnet_show,
         }
 
     def subnet_delete(self, subnet):
@@ -56,9 +55,14 @@ class Subnet(OpenstackAction):
         """
 
         # calculate and choose random available gateway ip
-        currently_used = [subnet["gateway_ip"].split(".")[2] for subnet in self.conn.network.subnets() if
-                          re.search("^192.168.", str(subnet["gateway_ip"]))]
-        available_byte3 = list(set([str(x) for x in range(1, 255)]) - set(currently_used))
+        currently_used = [
+            subnet["gateway_ip"].split(".")[2]
+            for subnet in self.conn.network.subnets()
+            if re.search("^192.168.", str(subnet["gateway_ip"]))
+        ]
+        available_byte3 = list(
+            set([str(x) for x in range(1, 255)]) - set(currently_used)
+        )
 
         byte3 = random.choice(available_byte3)
         cidr = "192.168.{}.0/24".format(byte3)
@@ -72,12 +76,14 @@ class Subnet(OpenstackAction):
             return False, "No Network Found with Name or ID {}".format(network)
 
         try:
-            subnet = self.conn.network.create_subnet(ip_version=4,
-                                                     network_id=network_id,
-                                                     allocation_pools=[{"start": subnet_start, "end": subnet_end}],
-                                                     cidr=cidr,
-                                                     gateway_ip=gateway_ip,
-                                                     **subnet_kwargs)
+            subnet = self.conn.network.create_subnet(
+                ip_version=4,
+                network_id=network_id,
+                allocation_pools=[{"start": subnet_start, "end": subnet_end}],
+                cidr=cidr,
+                gateway_ip=gateway_ip,
+                **subnet_kwargs
+            )
         except Exception as e:
             return False, "Subnet Creation Failed {}".format(e)
         return True, subnet

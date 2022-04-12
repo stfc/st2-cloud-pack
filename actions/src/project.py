@@ -3,7 +3,7 @@ from openstack_action import OpenstackAction
 
 class Project(OpenstackAction):
     def __init__(self, *args, **kwargs):
-        """ constructor class """
+        """constructor class"""
         super().__init__(*args, **kwargs)
 
         # lists possible functions that could be run as an action
@@ -53,10 +53,12 @@ class Project(OpenstackAction):
         if not domain_id:
             return False, "No domain found with Name or ID {}".format(domain)
         try:
-            project = self.conn.identity.create_project(domain_id=domain_id,
-                                                        name=name,
-                                                        description=description,
-                                                        is_enabled=is_enabled)
+            project = self.conn.identity.create_project(
+                domain_id=domain_id,
+                name=name,
+                description=description,
+                is_enabled=is_enabled,
+            )
         except Exception as e:
             return False, "Project Creation Failed {}".format(e)
         return True, project

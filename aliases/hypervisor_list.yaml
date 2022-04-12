@@ -20,4 +20,3 @@ result:
           value: "```{{ execution.result.stdout | json_escape  }}```"
         - title: Result
           value: "```{{ execution.result.result | json_escape }}```"
-

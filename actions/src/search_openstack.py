@@ -6,14 +6,12 @@ from queryopenstack.query import Query
 
 class SearchOpenstack(OpenstackAction):
     def __init__(self, *args, **kwargs):
-        """ constructor class """
+        """constructor class"""
         super().__init__(*args, **kwargs)
 
         # different methods of searching openstack
         self.func = {
-            "search_openstack": lambda search_by, query_preset, get_html, search_criteria=None,
-                                       properties_to_select=None, sort_by_criteria=None, **kwargs:
-            self.output_results(
+            "search_openstack": lambda search_by, query_preset, get_html, search_criteria=None, properties_to_select=None, sort_by_criteria=None, **kwargs: self.output_results(
                 query_result=self.get_preset(
                     search_by=search_by,
                     query_preset=query_preset,
@@ -24,10 +22,7 @@ class SearchOpenstack(OpenstackAction):
                 ),
                 get_html=get_html,
             ),
-
-            "search_servers_per_user": lambda query_preset, get_html, search_criteria=None, properties_to_select=None,
-                                              sort_by_criteria=None, **kwargs:
-            self.search_servers_per_user(
+            "search_servers_per_user": lambda query_preset, get_html, search_criteria=None, properties_to_select=None, sort_by_criteria=None, **kwargs: self.search_servers_per_user(
                 query_result=self.get_preset(
                     search_by="server",
                     query_preset=query_preset,
@@ -41,7 +36,9 @@ class SearchOpenstack(OpenstackAction):
         }
 
     @staticmethod
-    def get_preset(search_by, query_preset, criteria_list, properties_list, sort_by_list, **kwargs):
+    def get_preset(
+        search_by, query_preset, criteria_list, properties_list, sort_by_list, **kwargs
+    ):
         """
         A number of predefined presets for searching openstack
         :param search_by: openstack objects to search for
@@ -55,191 +52,265 @@ class SearchOpenstack(OpenstackAction):
 
         # if no preset selected - use generic query method
         if query_preset == "no_preset":
-            return Query(by=search_by,
-                         properties_list=properties_list,
-                         criteria_list=criteria_list,
-                         sort_by_list=sort_by_list,
-                         output_to_console=False,
-                         save=False,
-                         save_path="")
+            return Query(
+                by=search_by,
+                properties_list=properties_list,
+                criteria_list=criteria_list,
+                sort_by_list=sort_by_list,
+                output_to_console=False,
+                save=False,
+                save_path="",
+            )
 
         # search by ID presets (works for all openstack objects)
         func = {
-            "id_in": lambda properties_list, criteria_list, sort_by_list, **kwargs:
-            Query(by=search_by,
-                  properties_list=properties_list,
-                  criteria_list=[["id", [name for name in kwargs["ids"]]]].extend(criteria_list)
-                  if criteria_list else [["id", [name for name in kwargs["ids"]]]],
-                  sort_by_list=sort_by_list,
-                  output_to_console=False,
-                  save=False,
-                  save_path=""),
-
-            "id_not_in": lambda properties_list, criteria_list, sort_by_list, **kwargs:
-            Query(by=search_by,
-                  properties_list=properties_list,
-                  criteria_list=[["not_id", [name for name in kwargs["ids"]]]].extend(criteria_list)
-                  if criteria_list else [["not_id", [name for name in kwargs["ids"]]]],
-                  sort_by_list=sort_by_list,
-                  output_to_console=False,
-                  save=False,
-                  save_path="")
+            "id_in": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
+                by=search_by,
+                properties_list=properties_list,
+                criteria_list=[["id", [name for name in kwargs["ids"]]]].extend(
+                    criteria_list
+                )
+                if criteria_list
+                else [["id", [name for name in kwargs["ids"]]]],
+                sort_by_list=sort_by_list,
+                output_to_console=False,
+                save=False,
+                save_path="",
+            ),
+            "id_not_in": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
+                by=search_by,
+                properties_list=properties_list,
+                criteria_list=[["not_id", [name for name in kwargs["ids"]]]].extend(
+                    criteria_list
+                )
+                if criteria_list
+                else [["not_id", [name for name in kwargs["ids"]]]],
+                sort_by_list=sort_by_list,
+                output_to_console=False,
+                save=False,
+                save_path="",
+            ),
         }.get(query_preset, None)
 
         # search by Name presets (works for all openstack objects with associated names)
         if not func and search_by != "ip":
             func = {
-                "name_in": lambda properties_list, criteria_list, sort_by_list, **kwargs:
-                Query(by=search_by,
-                      properties_list=properties_list,
-                      criteria_list=[
-                          ["name"] + [name if name[:7] != "http://" else name[7:] for name in kwargs["names"]]].extend(
-                          criteria_list)
-                      if criteria_list else [
-                          ["name"] + [name if name[:7] != "http://" else name[7:] for name in kwargs["names"]]],
-                      sort_by_list=sort_by_list,
-                      output_to_console=False,
-                      save=False,
-                      save_path=""),
-
-                "name_not_in": lambda properties_list, criteria_list, sort_by_list, **kwargs:
-                Query(by=search_by,
-                      properties_list=properties_list,
-                      criteria_list=[["not_name"] + [name if name[:7] != "http://" else name[7:] for name in
-                                                     kwargs["names"]]].extend(criteria_list)
-                      if criteria_list else [
-                          ["not_name"] + [name if name[:7] != "http://" else name[7:] for name in kwargs["names"]]],
-                      sort_by_list=sort_by_list,
-                      output_to_console=False,
-                      save=False,
-                      save_path=""),
-
-                "name_contains": lambda properties_list, criteria_list, sort_by_list, **kwargs:
-                Query(by=search_by,
-                      properties_list=properties_list,
-                      criteria_list=[["name_contains", name] for name in kwargs["name_snippets"]].extend(criteria_list)
-                      if criteria_list else [["name_contains", name] for name in kwargs["name_snippets"]],
-                      sort_by_list=sort_by_list,
-                      output_to_console=False,
-                      save=False,
-                      save_path=""),
-
-                "name_not_contains": lambda properties_list, criteria_list, sort_by_list, **kwargs:
-                Query(by=search_by,
-                      properties_list=properties_list,
-                      criteria_list=[["name_not_contains", name] for name in kwargs["name_snippets"]].extend(
-                          criteria_list)
-                      if criteria_list else [["name_not_contains", name] for name in kwargs["name_snippets"]],
-                      sort_by_list=sort_by_list,
-                      output_to_console=False,
-                      save=False,
-                      save_path="")
+                "name_in": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
+                    by=search_by,
+                    properties_list=properties_list,
+                    criteria_list=[
+                        ["name"]
+                        + [
+                            name if name[:7] != "http://" else name[7:]
+                            for name in kwargs["names"]
+                        ]
+                    ].extend(criteria_list)
+                    if criteria_list
+                    else [
+                        ["name"]
+                        + [
+                            name if name[:7] != "http://" else name[7:]
+                            for name in kwargs["names"]
+                        ]
+                    ],
+                    sort_by_list=sort_by_list,
+                    output_to_console=False,
+                    save=False,
+                    save_path="",
+                ),
+                "name_not_in": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
+                    by=search_by,
+                    properties_list=properties_list,
+                    criteria_list=[
+                        ["not_name"]
+                        + [
+                            name if name[:7] != "http://" else name[7:]
+                            for name in kwargs["names"]
+                        ]
+                    ].extend(criteria_list)
+                    if criteria_list
+                    else [
+                        ["not_name"]
+                        + [
+                            name if name[:7] != "http://" else name[7:]
+                            for name in kwargs["names"]
+                        ]
+                    ],
+                    sort_by_list=sort_by_list,
+                    output_to_console=False,
+                    save=False,
+                    save_path="",
+                ),
+                "name_contains": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
+                    by=search_by,
+                    properties_list=properties_list,
+                    criteria_list=[
+                        ["name_contains", name] for name in kwargs["name_snippets"]
+                    ].extend(criteria_list)
+                    if criteria_list
+                    else [["name_contains", name] for name in kwargs["name_snippets"]],
+                    sort_by_list=sort_by_list,
+                    output_to_console=False,
+                    save=False,
+                    save_path="",
+                ),
+                "name_not_contains": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
+                    by=search_by,
+                    properties_list=properties_list,
+                    criteria_list=[
+                        ["name_not_contains", name] for name in kwargs["name_snippets"]
+                    ].extend(criteria_list)
+                    if criteria_list
+                    else [
+                        ["name_not_contains", name] for name in kwargs["name_snippets"]
+                    ],
+                    sort_by_list=sort_by_list,
+                    output_to_console=False,
+                    save=False,
+                    save_path="",
+                ),
             }.get(query_preset, None)
 
         # more specific presets which are unique to specific openstack object
         if not func:
-            func = {
-                "server": {
-                    "server_error_and_shutoff": lambda properties_list, criteria_list, sort_by_list, **kwargs:
-                    Query(by="server",
-                          properties_list=properties_list,
-                          criteria_list=[["status", "SHUTOFF", "ERROR"]].extend(criteria_list)
-                          if criteria_list else [["status", "SHUTOFF", "ERROR"]],
-                          sort_by_list=sort_by_list,
-                          output_to_console=False,
-                          save=False,
-                          save_path=""),
-
-                    "server_shutoff": lambda properties_list, criteria_list, sort_by_list, **kwargs:
-                    Query(by="server",
-                          properties_list=properties_list,
-                          criteria_list=[["status", "SHUTOFF"]].extend(criteria_list)
-                          if criteria_list else [["status", "SHUTOFF"]],
-                          sort_by_list=sort_by_list,
-                          output_to_console=False,
-                          save=False,
-                          save_path=""),
-
-                    "server_error": lambda properties_list, criteria_list, sort_by_list, **kwargs:
-                    Query(by="server",
-                          properties_list=properties_list,
-                          criteria_list=[["status", "ERROR"]].extend(criteria_list)
-                          if criteria_list else [["status", "ERROR"]],
-                          sort_by_list=sort_by_list,
-                          output_to_console=False,
-                          save=False,
-                          save_path=""),
-
-                    "server_older_than": lambda properties_list, criteria_list, sort_by_list, **kwargs:
-                    Query(by="server",
-                          properties_list=properties_list,
-                          criteria_list=[["older_than", kwargs["days"]]].extend(criteria_list)
-                          if criteria_list else [["older_than", kwargs["days"]]],
-                          sort_by_list=sort_by_list,
-                          output_to_console=False,
-                          save=False,
-                          save_path=""),
-
-                    "server_younger_than": lambda properties_list, criteria_list, sort_by_list, **kwargs:
-                    Query(by="server",
-                          properties_list=properties_list,
-                          criteria_list=[["not_older_than", kwargs["days"]]].extend(criteria_list)
-                          if criteria_list else [["not_older_than", kwargs["days"]]],
-                          sort_by_list=sort_by_list,
-                          output_to_console=False,
-                          save=False,
-                          save_path="")
-                },
-                "ip": {
-                    "in_projects": lambda properties_list, criteria_list, sort_by_list, **kwargs:
-                    Query(by="ip",
-                          properties_list=properties_list,
-                          criteria_list=[["project_id"] + [name for name in kwargs["project_ids"]]].extend(
-                              criteria_list)
-                          if criteria_list else [["project_id"] + [name for name in kwargs["project_ids"]]],
-                          sort_by_list=sort_by_list,
-                          output_to_console=False,
-                          save=False,
-                          save_path="")
-                },
-                "host": {
-                    "host_enabled": lambda properties_list, criteria_list, sort_by_list, **kwargs:
-                    Query(by="host",
-                          properties_list=properties_list,
-                          criteria_list=[["status", "enabled"]].extend(criteria_list)
-                          if criteria_list else [["status", "enabled"]],
-                          sort_by_list=sort_by_list,
-                          output_to_console=False,
-                          save=False,
-                          save_path=""),
-
-                    "host_disabled": lambda properties_list, criteria_list, sort_by_list, **kwargs:
-                    Query(by="host",
-                          properties_list=properties_list,
-                          criteria_list=[["status", "disabled"]].extend(criteria_list)
-                          if criteria_list else [["status", "disabled"]],
-                          sort_by_list=sort_by_list,
-                          output_to_console=False,
-                          save=False,
-                          save_path="")
-                },
-                "project": {
-                    "description_contains": lambda properties_list, criteria_list, sort_by_list, **kwargs:
-                    Query(by="project",
-                          properties_list=properties_list,
-                          criteria_list=[["description_contains", description] for description in
-                                         kwargs["description_snippets"]].extend(criteria_list)
-                          if criteria_list else [["description_contains", description] for description in
-                                                 kwargs["description_snippets"]],
-                          sort_by_list=sort_by_list,
-                          output_to_console=False,
-                          save=False,
-                          save_path="")
+            func = (
+                {
+                    "server": {
+                        "server_error_and_shutoff": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
+                            by="server",
+                            properties_list=properties_list,
+                            criteria_list=[["status", "SHUTOFF", "ERROR"]].extend(
+                                criteria_list
+                            )
+                            if criteria_list
+                            else [["status", "SHUTOFF", "ERROR"]],
+                            sort_by_list=sort_by_list,
+                            output_to_console=False,
+                            save=False,
+                            save_path="",
+                        ),
+                        "server_shutoff": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
+                            by="server",
+                            properties_list=properties_list,
+                            criteria_list=[["status", "SHUTOFF"]].extend(criteria_list)
+                            if criteria_list
+                            else [["status", "SHUTOFF"]],
+                            sort_by_list=sort_by_list,
+                            output_to_console=False,
+                            save=False,
+                            save_path="",
+                        ),
+                        "server_error": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
+                            by="server",
+                            properties_list=properties_list,
+                            criteria_list=[["status", "ERROR"]].extend(criteria_list)
+                            if criteria_list
+                            else [["status", "ERROR"]],
+                            sort_by_list=sort_by_list,
+                            output_to_console=False,
+                            save=False,
+                            save_path="",
+                        ),
+                        "server_older_than": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
+                            by="server",
+                            properties_list=properties_list,
+                            criteria_list=[["older_than", kwargs["days"]]].extend(
+                                criteria_list
+                            )
+                            if criteria_list
+                            else [["older_than", kwargs["days"]]],
+                            sort_by_list=sort_by_list,
+                            output_to_console=False,
+                            save=False,
+                            save_path="",
+                        ),
+                        "server_younger_than": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
+                            by="server",
+                            properties_list=properties_list,
+                            criteria_list=[["not_older_than", kwargs["days"]]].extend(
+                                criteria_list
+                            )
+                            if criteria_list
+                            else [["not_older_than", kwargs["days"]]],
+                            sort_by_list=sort_by_list,
+                            output_to_console=False,
+                            save=False,
+                            save_path="",
+                        ),
+                    },
+                    "ip": {
+                        "in_projects": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
+                            by="ip",
+                            properties_list=properties_list,
+                            criteria_list=[
+                                ["project_id"]
+                                + [name for name in kwargs["project_ids"]]
+                            ].extend(criteria_list)
+                            if criteria_list
+                            else [
+                                ["project_id"]
+                                + [name for name in kwargs["project_ids"]]
+                            ],
+                            sort_by_list=sort_by_list,
+                            output_to_console=False,
+                            save=False,
+                            save_path="",
+                        )
+                    },
+                    "host": {
+                        "host_enabled": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
+                            by="host",
+                            properties_list=properties_list,
+                            criteria_list=[["status", "enabled"]].extend(criteria_list)
+                            if criteria_list
+                            else [["status", "enabled"]],
+                            sort_by_list=sort_by_list,
+                            output_to_console=False,
+                            save=False,
+                            save_path="",
+                        ),
+                        "host_disabled": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
+                            by="host",
+                            properties_list=properties_list,
+                            criteria_list=[["status", "disabled"]].extend(criteria_list)
+                            if criteria_list
+                            else [["status", "disabled"]],
+                            sort_by_list=sort_by_list,
+                            output_to_console=False,
+                            save=False,
+                            save_path="",
+                        ),
+                    },
+                    "project": {
+                        "description_contains": lambda properties_list, criteria_list, sort_by_list, **kwargs: Query(
+                            by="project",
+                            properties_list=properties_list,
+                            criteria_list=[
+                                ["description_contains", description]
+                                for description in kwargs["description_snippets"]
+                            ].extend(criteria_list)
+                            if criteria_list
+                            else [
+                                ["description_contains", description]
+                                for description in kwargs["description_snippets"]
+                            ],
+                            sort_by_list=sort_by_list,
+                            output_to_console=False,
+                            save=False,
+                            save_path="",
+                        )
+                    },
                 }
-            }.get(search_by, {}).get(query_preset, None)
+                .get(search_by, {})
+                .get(query_preset, None)
+            )
 
         # run the query and return the results
-        return func(properties_list, criteria_list, sort_by_list, **kwargs) if func else None
+        return (
+            func(properties_list, criteria_list, sort_by_list, **kwargs)
+            if func
+            else None
+        )
 
     @staticmethod
     def output_results(query_result, get_html=False):

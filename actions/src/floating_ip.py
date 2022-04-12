@@ -3,7 +3,7 @@ from openstack_action import OpenstackAction
 
 class FloatingIP(OpenstackAction):
     def __init__(self, *args, **kwargs):
-        """constructor class """
+        """constructor class"""
         super().__init__(*args, **kwargs)
 
         # lists possible functions that could be run as an action
@@ -55,7 +55,9 @@ class FloatingIP(OpenstackAction):
         ip_output = []
         for i in range(number_to_create):
             try:
-                ip = self.conn.network.create_ip(project_id=project_id, floating_network_id=network_id)
+                ip = self.conn.network.create_ip(
+                    project_id=project_id, floating_network_id=network_id
+                )
                 ip_output.append(ip)
             except Exception as e:
                 return False, "Float IP creation Failed: {0}".format(repr(e))

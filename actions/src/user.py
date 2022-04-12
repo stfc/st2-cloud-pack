@@ -3,14 +3,11 @@ from openstack_action import OpenstackAction
 
 class User(OpenstackAction):
     def __init__(self, *args, **kwargs):
-        """ constructor class """
+        """constructor class"""
         super().__init__(*args, **kwargs)
 
         # lists possible functions that could be run as an action
-        self.func = {
-            "user_show": self.user_show,
-            "user_get_email": self.user_get_email
-        }
+        self.func = {"user_show": self.user_show, "user_get_email": self.user_get_email}
 
     def user_show(self, user, user_domain):
         """

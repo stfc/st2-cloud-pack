@@ -23,4 +23,3 @@ parameters:
     type: string
     default: Disabled by StackStorm - hypervisor reboot
 runner_type: python-script
-
