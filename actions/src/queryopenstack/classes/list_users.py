@@ -1,5 +1,6 @@
 from .list_items import ListItems
 
+
 class ListUsers(ListItems):
     """
     A class to list users: Inherits from ListItems
@@ -27,6 +28,7 @@ class ListUsers(ListItems):
         Helper function to check illegal ip connections, given a list of ips
         returns bool
     """
+
     def __init__(self, conn):
         '''constructor class'''
         super().__init__(conn, lambda: conn.list_users())
@@ -37,7 +39,7 @@ class ListUsers(ListItems):
         })
 
         self.property_func_dict = {
-            "user_id": lambda a :    a["id"],
-            "user_name": lambda a:   a["name"],
-            "user_email": lambda a:  a["email"]
+            "user_id": lambda a: a["id"],
+            "user_name": lambda a: a["name"],
+            "user_email": lambda a: a["email"]
         }

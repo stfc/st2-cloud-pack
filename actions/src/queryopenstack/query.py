@@ -6,7 +6,8 @@ from .classes.list_users import ListUsers
 from .utils import CreateOpenstackConnection, OutputToConsole, OutputToFile, ValidateInputList
 
 
-def Query(by, properties_list, criteria_list, sort_by_list, output_to_console=False, save=False, save_path="~/Openstack_Logs/output.csv", openstack_conn=None):
+def Query(by, properties_list, criteria_list, sort_by_list, output_to_console=False, save=False,
+          save_path="~/Openstack_Logs/output.csv", openstack_conn=None):
     '''
     Function to handle an openstack query
 
@@ -57,7 +58,8 @@ def Query(by, properties_list, criteria_list, sort_by_list, output_to_console=Fa
 
     # validate criteria_list
     if criteria_list:
-        criteria_names, invalid = ValidateInputList([criteria[0] for criteria in criteria_list], list_obj.criteria_func_dict.keys())
+        criteria_names, invalid = ValidateInputList([criteria[0] for criteria in criteria_list],
+                                                    list_obj.criteria_func_dict.keys())
         if invalid:
             print("Following properties are not valid: \n {}".format(invalid))
         criteria_to_use = [(criteria[0], criteria[1:]) for criteria in criteria_list if criteria[0] in criteria_names]
@@ -68,8 +70,10 @@ def Query(by, properties_list, criteria_list, sort_by_list, output_to_console=Fa
     if invalid:
         print("Following sort_by are not valid: \n {}".format(invalid))
 
-    print("""Searching by resouce: {0} \nCriteria Selected: {1} \nProperties Selected: {2} \nSort By Selected: {3}""".format(by,
-    criteria_to_use, properties_to_use, sort_by_to_use))
+    print(
+        """Searching by resouce: {0} \nCriteria Selected: {1} \nProperties Selected: {2} \nSort By Selected: {3}""".format(
+            by,
+            criteria_to_use, properties_to_use, sort_by_to_use))
 
     # get results
     items = list_obj.listItems(criteria_to_use)
@@ -77,7 +81,7 @@ def Query(by, properties_list, criteria_list, sort_by_list, output_to_console=Fa
         res = list_obj.getProperties(items, properties_to_use)
 
         if sort_by_to_use:
-            res = sorted(res, key = lambda a: tuple(a[arg] for arg in sort_by_to_use))
+            res = sorted(res, key=lambda a: tuple(a[arg] for arg in sort_by_to_use))
         if output_to_console:
             OutputToConsole(res)
         if save:

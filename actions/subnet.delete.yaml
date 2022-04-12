@@ -4,12 +4,12 @@ enabled: true
 entry_point: src/subnet.py
 name: subnet.delete
 parameters:
-    submodule:
-        default: subnet_delete
-        immutable: True
-        type: string
-    subnet:
-        required: True
-        description: Subnet Name or ID
-        type: string
+  submodule:
+    default: subnet_delete
+    immutable: True
+    type: string
+  subnet:
+    required: True
+    description: Subnet Name or ID
+    type: string
 runner_type: python-script

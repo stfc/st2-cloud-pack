@@ -1,6 +1,7 @@
-from openstack_action import OpenstackAction
-from queryopenstack.query import Query
 from tabulate import tabulate
+
+from ..openstack_action import OpenstackAction
+from ..queryopenstack.query import Query
 
 """
 TODO: DEPRECATED - REMOVE AND ADD:
@@ -22,6 +23,8 @@ TODO: DEPRECATED - REMOVE AND ADD:
     server group show - show server group
     
 """
+
+
 class Server(OpenstackAction):
     def __init__(self, *args, **kwargs):
         """ constructor class """
@@ -32,7 +35,7 @@ class Server(OpenstackAction):
             "server_list_shutoff": lambda **kwargs: self.get_output(
                 result_list=self.get_servers(
                     base_criteria=[["status", "SHUTOFF"]],
-                    criteria_list = kwargs["search_criteria"] if "search_criteria" in kwargs.keys() else None,
+                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys() else None,
                     properties_to_select=kwargs["properties_to_select"],
                     sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys() else None,
                 ),
@@ -42,7 +45,7 @@ class Server(OpenstackAction):
             "server_shutoff_per_user": lambda **kwargs: self.get_output_per_user(
                 result_list=self.get_servers(
                     base_criteria=[["status", "SHUTOFF"]],
-                    criteria_list = kwargs["search_criteria"] if "search_criteria" in kwargs.keys() else None,
+                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys() else None,
                     properties_to_select=kwargs["properties_to_select"],
                     sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys() else None,
                 ),
@@ -52,7 +55,7 @@ class Server(OpenstackAction):
             "server_list_error": lambda **kwargs: self.get_output(
                 result_list=self.get_servers(
                     base_criteria=[["status", "ERROR"]],
-                    criteria_list = kwargs["search_criteria"] if "search_criteria" in kwargs.keys() else None,
+                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys() else None,
                     properties_to_select=kwargs["properties_to_select"],
                     sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys() else None,
                 ),
@@ -62,7 +65,7 @@ class Server(OpenstackAction):
             "server_error_per_user": lambda **kwargs: self.get_output_per_user(
                 result_list=self.get_servers(
                     base_criteria=[["status", "ERROR"]],
-                    criteria_list = kwargs["search_criteria"] if "search_criteria" in kwargs.keys() else None,
+                    criteria_list=kwargs["search_criteria"] if "search_criteria" in kwargs.keys() else None,
                     properties_to_select=kwargs["properties_to_select"],
                     sort_by_criteria=kwargs["sort_by_criteria"] if "sort_by_criteria" in kwargs.keys() else None,
                 ),
@@ -171,6 +174,3 @@ class Server(OpenstackAction):
                 user_server_dict[email] = self.get_output(servers, get_html)
 
         return True, user_server_dict
-
-
-

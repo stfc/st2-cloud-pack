@@ -4,15 +4,15 @@ pack: "stackstorm_openstack"
 description: "Handles incoming trigger \"rabbit_message\" with message_type SHUTDOWN_VM"
 enabled: true
 trigger:
-    type: stackstorm_send_notifications.rabbit_message
+  type: stackstorm_send_notifications.rabbit_message
 
 criteria:
-    trigger.message_type:
-        type: "iequals"
-        pattern: "SHUTDOWN_VM"
+  trigger.message_type:
+    type: "iequals"
+    pattern: "SHUTDOWN_VM"
 
 action:
-    ref: stackstorm_send_notifications.rabbit.execute
-    parameters:
-        action_inputs: "{{ trigger.args }}"
-        dynamic_action: "stackstorm_openstack.server.shutdown"
+  ref: stackstorm_send_notifications.rabbit.execute
+  parameters:
+    action_inputs: "{{ trigger.args }}"
+    dynamic_action: "stackstorm_openstack.server.shutdown"

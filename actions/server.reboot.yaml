@@ -4,12 +4,12 @@ enabled: true
 entry_point: src/server.py
 name: server.reboot
 parameters:
-    submodule:
-        default: server_reboot
-        immutable: true
-        type: string
-    server:
-        description: Server Name or ID
-        required: true
-        type: string
+  submodule:
+    default: server_reboot
+    immutable: true
+    type: string
+  server:
+    description: Server Name or ID
+    required: true
+    type: string
 runner_type: python-script

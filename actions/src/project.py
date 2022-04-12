@@ -1,5 +1,6 @@
 from openstack_action import OpenstackAction
 
+
 class Project(OpenstackAction):
     def __init__(self, *args, **kwargs):
         """ constructor class """

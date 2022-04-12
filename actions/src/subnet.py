@@ -56,7 +56,8 @@ class Subnet(OpenstackAction):
         """
 
         # calculate and choose random available gateway ip
-        currently_used = [subnet["gateway_ip"].split(".")[2] for subnet in self.conn.network.subnets() if re.search("^192.168.", str(subnet["gateway_ip"]))]
+        currently_used = [subnet["gateway_ip"].split(".")[2] for subnet in self.conn.network.subnets() if
+                          re.search("^192.168.", str(subnet["gateway_ip"]))]
         available_byte3 = list(set([str(x) for x in range(1, 255)]) - set(currently_used))
 
         byte3 = random.choice(available_byte3)

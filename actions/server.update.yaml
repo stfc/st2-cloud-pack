@@ -5,16 +5,16 @@ enabled: true
 entry_point: src/server.py
 name: server.update
 parameters:
-    submodule:
-        default: server_update
-        immutable: True
-        type: string
-    server:
-        description: Sever to update (name or ID)
-        required: true
-        type: string
-    update_kwargs:
-        description: Server args to update
-        required: true
-        type: object
+  submodule:
+    default: server_update
+    immutable: True
+    type: string
+  server:
+    description: Sever to update (name or ID)
+    required: true
+    type: string
+  update_kwargs:
+    description: Server args to update
+    required: true
+    type: object
 runner_type: python-script

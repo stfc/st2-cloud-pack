@@ -4,18 +4,18 @@ enabled: true
 entry_point: src/router.py
 name: router.add.interface
 parameters:
-    submodule:
-        default: router_add_interface
-        immutable: true
-        type: string
-    router:
-        description: Router (Name or ID)
-        required: true
-        type: string
-    subnet:
-        description: Subnet (Name or ID)
-        type: string
-    port:
-        description: Port (Name or ID)
-        type: string
+  submodule:
+    default: router_add_interface
+    immutable: true
+    type: string
+  router:
+    description: Router (Name or ID)
+    required: true
+    type: string
+  subnet:
+    description: Subnet (Name or ID)
+    type: string
+  port:
+    description: Port (Name or ID)
+    type: string
 runner_type: python-script

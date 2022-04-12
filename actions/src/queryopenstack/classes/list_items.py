@@ -36,6 +36,7 @@ class ListItems:
         openstack resource and its values for selected properties
 
     """
+
     def __init__(self, conn, search_func):
         '''constructor class'''
         self.conn = conn

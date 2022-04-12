@@ -1,5 +1,6 @@
 from openstack_action import OpenstackAction
 
+
 class FloatingIP(OpenstackAction):
     def __init__(self, *args, **kwargs):
         """constructor class """
@@ -33,7 +34,6 @@ class FloatingIP(OpenstackAction):
         """
         raise NotImplementedError
 
-
     def floating_ip_create(self, network, project, number_to_create):
         """
         Create floating IPs for a project
@@ -42,12 +42,12 @@ class FloatingIP(OpenstackAction):
         :param number_to_create (Int): Number of floating ips to create
         :return: (status (Bool), reason (String))
         """
-        #get network id
+        # get network id
         network_id = self.find_resource_id(network, self.conn.network.find_network)
         if not network_id:
             return False, "Network not found with Name or ID {}".format(network)
 
-        #get project id
+        # get project id
         project_id = self.find_resource_id(project, self.conn.identity.find_project)
         if not project_id:
             return False, "Project not found with Name or ID {}".format(project)

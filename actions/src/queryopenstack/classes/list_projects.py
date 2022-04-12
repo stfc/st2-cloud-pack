@@ -1,5 +1,6 @@
 from .list_items import ListItems
 
+
 class ListProjects(ListItems):
     """
     A class to list projects: Inherits from ListItems
@@ -17,6 +18,7 @@ class ListProjects(ListItems):
         property name (key) : function to retrieve property (value)
                 function (string/int) - returns property value from a 'projects' dictionary
     """
+
     def __init__(self, conn):
         '''constructor class'''
         super().__init__(conn, lambda: conn.list_projects())
@@ -29,7 +31,7 @@ class ListProjects(ListItems):
         })
 
         self.property_func_dict = {
-            "project_id": lambda a :  a["id"],
+            "project_id": lambda a: a["id"],
             "project_name": lambda a: a["name"],
             "project_description": lambda a: a["description"]
         }

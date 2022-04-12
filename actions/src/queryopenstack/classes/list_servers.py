@@ -30,18 +30,19 @@ class ListServers(ListItems):
         Helper function to check illegal ip connections, given a list of ips
         returns bool
     """
+
     def __init__(self, conn):
         '''constructor class'''
-        #Currently not working
-        #super().__init__(conn, lambda: conn.list_servers(all_projects=True, filters={"limit":10000}))
+        # Currently not working
+        # super().__init__(conn, lambda: conn.list_servers(all_projects=True, filters={"limit":10000}))
         super().__init__(conn, self.getAllServers)
 
         self.criteria_func_dict.update({
             "status": lambda dict, args: dict["status"] in args,
             "not_status": lambda dict, args: dict["status"] not in args,
 
-            "older_than": lambda dict, args: self.isOlderThanXDays(dict["created_at"], days = args[0]),
-            "not_older_than": lambda dict, args: not self.isOlderThanXDays(dict["created_at"], days = args[0]),
+            "older_than": lambda dict, args: self.isOlderThanXDays(dict["created_at"], days=args[0]),
+            "not_older_than": lambda dict, args: not self.isOlderThanXDays(dict["created_at"], days=args[0]),
 
             "has_illegal_connections": lambda dict, args: self.hasIllegalConnections(dict["addresses"]),
 
@@ -49,8 +50,10 @@ class ListServers(ListItems):
             "not_user_id": lambda dict, args: dict["user_id"] not in args,
             "user_name": lambda dict, args: self.conn.identity.find_user(dict["user_id"])["name"] in args,
             "not_user_name": lambda dict, args: self.conn.identity.find_user(dict["user_id"])["name"] not in args,
-            "user_name_contains": lambda dict, args: any(arg in self.conn.identity.find_user(dict["user_id"])["name"] for arg in args),
-            "user_name_not_contains": lambda dict, args: any(arg not in self.conn.identity.find_user(dict["user_id"])["name"] for arg in args),
+            "user_name_contains": lambda dict, args: any(
+                arg in self.conn.identity.find_user(dict["user_id"])["name"] for arg in args),
+            "user_name_not_contains": lambda dict, args: any(
+                arg not in self.conn.identity.find_user(dict["user_id"])["name"] for arg in args),
 
             "host_id": lambda dict, args: dict["host_id"] in args,
             "not_host_id": lambda dict, args: dict["host_id"] not in args,
@@ -82,7 +85,8 @@ class ListServers(ListItems):
         all_servers = []
         for proj in all_projects:
             try:
-                servers = self.conn.list_servers(filters={"all_tenants":True, "project_id":proj["id"], "limit":10000})
+                servers = self.conn.list_servers(
+                    filters={"all_tenants": True, "project_id": proj["id"], "limit": 10000})
                 all_servers.extend(servers)
             except Exception as e:
                 print(repr(e))
@@ -101,8 +105,8 @@ class ListServers(ListItems):
         '''
         address_ips = []
         for key in address_dict.keys():
-             for address in address_dict[key]:
-                #address_ips.append(address)
+            for address in address_dict[key]:
+                # address_ips.append(address)
                 address_ips.append(address["addr"])
         return not self.areConnectionsLegal(address_ips)
 

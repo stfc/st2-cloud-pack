@@ -1,5 +1,6 @@
 from openstack_action import OpenstackAction
 
+
 class Network(OpenstackAction):
     def __init__(self, *args, **kwargs):
         """ constructor class """
@@ -23,6 +24,7 @@ class Network(OpenstackAction):
         network delete
         network rbac delete 
     """
+
     def network_show(self, network):
         """
         Show Network Properties
@@ -54,7 +56,7 @@ class Network(OpenstackAction):
         :param network_kwargs: Network properties to pass in - see action definintion yaml file for details)
         :return: (status (Bool), reason (String))
         """
-        #get project id
+        # get project id
         project_id = self.find_resource_id(project, self.conn.identity.find_project)
         if not project_id:
             return False, "Project not found"
@@ -89,7 +91,8 @@ class Network(OpenstackAction):
             return False, "No project found with name or ID {}".format(target_project)
 
         try:
-            rbac = self.conn.network.create_rbac_policy(object_id=object_id, target_project_id=target_project_id, **network_kwargs)
+            rbac = self.conn.network.create_rbac_policy(object_id=object_id, target_project_id=target_project_id,
+                                                        **network_kwargs)
         except Exception as e:
             return False, "RBAC policy creation failed {}".format(e)
         return True, rbac

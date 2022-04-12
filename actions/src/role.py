@@ -1,5 +1,6 @@
 from openstack_action import OpenstackAction
 
+
 class Role(OpenstackAction):
     def __init__(self, *args, **kwargs):
         """ constructor class """
@@ -13,7 +14,7 @@ class Role(OpenstackAction):
             # role update
         }
 
-    #TODO Show all roles on a project
+    # TODO Show all roles on a project
 
     def get_ids(self, role, project, user_domain, user):
         role_id = self.find_resource_id(role, self.conn.identity.find_role)

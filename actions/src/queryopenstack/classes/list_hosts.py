@@ -1,5 +1,6 @@
 from .list_items import ListItems
 
+
 class ListHosts(ListItems):
     """
     A class to list hosts (hypervisors): Inherits from ListItems
@@ -17,6 +18,7 @@ class ListHosts(ListItems):
         property name (key) : function to retrieve property (value)
                 function (string/int) - returns property value from a 'host' dictionary
     """
+
     def __init__(self, conn):
         ''' constructor class '''
         super().__init__(conn, lambda: conn.list_hypervisors())
@@ -28,9 +30,9 @@ class ListHosts(ListItems):
         })
 
         self.property_func_dict = {
-            "host_id": lambda a : a["id"],
-            "host_name":lambda a : a["name"],
-            "host_status": lambda a : a["status"],
+            "host_id": lambda a: a["id"],
+            "host_name": lambda a: a["name"],
+            "host_status": lambda a: a["status"],
             "host_state": lambda a: a["host_state"],
             "host_ip": lambda a: a["host_ip"],
 

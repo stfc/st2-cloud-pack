@@ -13,6 +13,7 @@ Functions:
     OutputToFile([{key:value}])
 '''
 
+
 def CreateOpenstackConnection(cloud_name="openstack", region_name="RegionOne"):
     '''
         Get Openstack connection
@@ -25,6 +26,7 @@ def CreateOpenstackConnection(cloud_name="openstack", region_name="RegionOne"):
     '''
     return openstack.connect(cloud=cloud_name, region_name=region_name)
 
+
 def ValidateInputList(list_to_check, valid_list):
     '''
         Separate a list_to_check into valid and invalid lists - based on contents of valid_list
@@ -35,12 +37,13 @@ def ValidateInputList(list_to_check, valid_list):
             Returns: ([list], [list]): tuple of two distinct sublists containing valid
             or invalid entries respectively
     '''
-    valid, invalid = [],[]
+    valid, invalid = [], []
     if list_to_check:
         for property in list_to_check:
             invalid.append(property) if property not in valid_list \
-            else valid.append(property)
+                else valid.append(property)
     return valid, invalid
+
 
 def OutputToConsole(results_dict_list):
     '''
@@ -57,6 +60,7 @@ def OutputToConsole(results_dict_list):
         print(tabulate(rows, header))
     else:
         print("none found")
+
 
 def OutputToFile(save_path, results_dict_list):
     '''

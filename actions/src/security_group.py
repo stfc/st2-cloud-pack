@@ -77,7 +77,7 @@ class SecurityGroup(OpenstackAction):
             return False, "Project not found with Name or ID {}".format(project)
 
         # needs to be called when creating new project, openstacksdk fails to find security groups unless this is called
-        p = Popen(SOURCECMD+"openstack security group list --project {} -f json".format(project_id),
+        p = Popen(SOURCECMD + "openstack security group list --project {} -f json".format(project_id),
                   shell=True, stdout=PIPE, env=os.environ.copy())
         _ = p.communicate()[0]
 
@@ -132,7 +132,7 @@ class SecurityGroup(OpenstackAction):
                 security_group_kwargs["ether_type"],
                 security_group_kwargs["protocol"],
                 security_group_kwargs["remote_ip_prefix"],
-                str(port_range_max)+":"+str(port_range_min),
+                str(port_range_max) + ":" + str(port_range_min),
                 project_id
             )
         except Exception as e:

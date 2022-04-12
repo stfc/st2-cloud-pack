@@ -4,12 +4,12 @@ enabled: true
 entry_point: src/server.py
 name: server.show
 parameters:
-    submodule:
-        default: server_show
-        immutable: true
-        type: string
-    server:
-        description: Name or ID of server to show
-        required: true
-        type: string
+  submodule:
+    default: server_show
+    immutable: true
+    type: string
+  server:
+    description: Name or ID of server to show
+    required: true
+    type: string
 runner_type: python-script

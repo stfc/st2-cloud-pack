@@ -1,5 +1,6 @@
 from openstack_action import OpenstackAction
 
+
 class Quote(OpenstackAction):
     def __init__(self, *args, **kwargs):
         """ constructor class """
@@ -18,7 +19,7 @@ class Quote(OpenstackAction):
         :param quota_kwargs - see action definition yaml file for details)
         :return: (status (Bool), reason (String))
         """
-        #get project id
+        # get project id
         project_id = self.find_resource_id(project, self.conn.identity.find_project)
         if not project_id:
             return False, "Project not found with Name or ID {}".format(project)
@@ -46,6 +47,3 @@ class Quote(OpenstackAction):
         except Exception as e:
             return False, "Quota not found {}".format(e)
         return True, quota
-
-
-

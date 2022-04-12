@@ -79,7 +79,6 @@ class Hypervisor(OpenstackAction):
         if not self.schedule_icinga_downtime(host_name, start_time_unix=start_time, end_time_unix=end_time,
                                              start_time_str=None, end_time_str=None, author=author, comment=comment,
                                              is_flexible=False, flexible_duration=0):
-
             return False, "Icinga downtime request failed - aborting"
         return True, "Reboot Request Successful"
 
@@ -159,13 +158,14 @@ class Hypervisor(OpenstackAction):
         hypervisor_id = self.find_resource_id(hypervisor, self.conn.compute.find_hypervisor)
         if not hypervisor_id:
             return False, "No Hypervisor found with Name or ID {}".format(hypervisor)
-        hypervisor_hostname = self.conn.compute.find_hypervisor(hypervisor_id, ignore_missing=False)["hypervisor_hostname"]
+        hypervisor_hostname = self.conn.compute.find_hypervisor(hypervisor_id, ignore_missing=False)[
+            "hypervisor_hostname"]
 
         if not self.get_host_from_icinga(hypervisor_hostname):
             return False, "Host called {0} not found in Icinga".format(hypervisor_hostname)
 
         r = requests.post(self.config.get("icinga_remove_downtimes_endpoint", None),
-                          headers={"Accept":"application/json"},
+                          headers={"Accept": "application/json"},
                           auth=(self.config.get("icinga_username"), self.config.get("icinga_password")),
                           verify=False,
                           data=json.dumps({

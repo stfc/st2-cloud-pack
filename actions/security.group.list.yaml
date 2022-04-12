@@ -4,11 +4,11 @@ enabled: true
 entry_point: src/security_group.py
 name: security.group.list
 parameters:
-    submodule:
-        default: security_group_list
-        immutable: true
-        type: string
-    project:
-        description: Owner's project (Name or ID)
-        type: string
+  submodule:
+    default: security_group_list
+    immutable: true
+    type: string
+  project:
+    description: Owner's project (Name or ID)
+    type: string
 runner_type: python-script

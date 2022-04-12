@@ -1,5 +1,6 @@
 from openstack_action import OpenstackAction
 
+
 class Router(OpenstackAction):
 
     def __init__(self, *args, **kwargs):
@@ -33,7 +34,9 @@ class Router(OpenstackAction):
         if not external_gateway_id:
             return False, "Network (External Gateway) not found with Name or ID {}".format(external_gateway)
         try:
-            router = self.conn.network.create_router(project_id=project_id, external_gateway_info={"network_id":external_gateway_id}, **router_kwargs)
+            router = self.conn.network.create_router(project_id=project_id,
+                                                     external_gateway_info={"network_id": external_gateway_id},
+                                                     **router_kwargs)
         except Exception as e:
             return False, "Router Creation Failed {}".format(e)
         return True, router
@@ -103,7 +106,8 @@ class Router(OpenstackAction):
                 return False, "Port not found with Name or ID {}".format(port)
 
         try:
-            router = self.conn.network.remove_interface_from_router(router=router_id, subnet_id=subnet_id, port_id=port_id)
+            router = self.conn.network.remove_interface_from_router(router=router_id, subnet_id=subnet_id,
+                                                                    port_id=port_id)
         except Exception as e:
             return False, "Removing Router Interface Failed {}".format(e)
         return True, router
