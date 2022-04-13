@@ -21,7 +21,7 @@ jobs:
           pip install -r requirements.txt
           # Ensure the modules we rely on are in the Python path
           git clone --depth=1 https://github.com/StackStorm/st2.git /tmp/st2
-          echo "PYTHONPATH=/tmp/st2/st2common" >> $GITHUB_ENV
+          echo "PYTHONPATH=/tmp/st2/st2common;/tmp/st2/st2tests" >> $GITHUB_ENV
 
       - name: Analysing the code with pylint
         run: |
