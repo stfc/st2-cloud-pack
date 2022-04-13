@@ -20,26 +20,28 @@ class ListUsers(ListItems):
 
     Methods
     --------
-    hasIllegalConnections(server):
+    had_illegal_connections(server):
         Checks if the server has illegal IP connections
         returns bool
 
-    areConnectionsLegal(address_ips):
-        Helper function to check illegal ip connections, given a list of ips
+    are_connections_legal(address_ips):
+        Helper function to check illegal ip_addr connections, given a list of ips
         returns bool
     """
 
     def __init__(self, conn):
-        '''constructor class'''
-        super().__init__(conn, lambda: conn.list_users())
+        """constructor class"""
+        super().__init__(conn, conn.list_users)
 
-        self.criteria_func_dict.update({
-            "enabled": lambda dict, args: dict["enabled"] == True,
-            "not_enabled": lambda dict, args: dict["enabled"] == False,
-        })
+        self.criteria_func_dict.update(
+            {
+                "enabled": lambda func_dict, args: func_dict["enabled"] is True,
+                "not_enabled": lambda func_dict, args: func_dict["enabled"] is False,
+            }
+        )
 
         self.property_func_dict = {
             "user_id": lambda a: a["id"],
             "user_name": lambda a: a["name"],
-            "user_email": lambda a: a["email"]
+            "user_email": lambda a: a["email"],
         }

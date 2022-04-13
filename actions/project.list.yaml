@@ -33,7 +33,7 @@ parameters:
     required: false
   sort_by_criteria:
     type: array
-    description: properties to sort list by
+    description: properties to sort list openstack_resource
     required: false
   get_html:
     default: false
@@ -41,25 +41,25 @@ parameters:
     required: true
     type: boolean
   names:
-    description: names to search by (ignored unless query_preset=name_in, or name_contains etc)
+    description: names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)
     type: array
     default:
       - ""
     required: true
   ids:
-    description: id to search by (ignored unless query_preset=id_in etc)
+    description: id to search openstack_resource (ignored unless query_preset=id_in etc)
     type: array
     default:
       - ""
     required: true
   name_snippets:
-    description: name snippets to search by (ignored unless query_preset=name_contains etc)
+    description: name snippets to search openstack_resource (ignored unless query_preset=name_contains etc)
     type: array
     default:
       - ""
     required: true
   description_snippets:
-    description: description snippets to search by (ignored unless query_preset=description_contains
+    description: description snippets to search openstack_resource (ignored unless query_preset=description_contains
     type: array
     default:
       - ""

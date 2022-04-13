@@ -17,4 +17,3 @@ parameters:
     required: true
     type: string
 runner_type: python-script
-

@@ -20,18 +20,21 @@ class ListProjects(ListItems):
     """
 
     def __init__(self, conn):
-        '''constructor class'''
-        super().__init__(conn, lambda: conn.list_projects())
+        """constructor class"""
+        super().__init__(conn, conn.list_projects)
 
-        self.criteria_func_dict.update({
-            "enabled": lambda dict, args: dict["enabled"] == True,
-            "not_enabled": lambda dict, args: dict["enabled"] == False,
-
-            "description_contains": lambda dict, args: any(arg in dict["description"] for arg in args)
-        })
+        self.criteria_func_dict.update(
+            {
+                "enabled": lambda func_dict, args: func_dict["enabled"] is True,
+                "not_enabled": lambda func_dict, args: func_dict["enabled"] is False,
+                "description_contains": lambda func_dict, args: any(
+                    arg in func_dict["description"] for arg in args
+                ),
+            }
+        )
 
         self.property_func_dict = {
             "project_id": lambda a: a["id"],
             "project_name": lambda a: a["name"],
-            "project_description": lambda a: a["description"]
+            "project_description": lambda a: a["description"],
         }

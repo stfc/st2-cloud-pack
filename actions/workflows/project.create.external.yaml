@@ -196,7 +196,7 @@ tasks:
         do: fail
 
   floating_ip_create:
-    action: stackstorm_openstack.floating.ip.create
+    action: stackstorm_openstack.floating.ip_addr.create
       network="External"
       project=<% ctx().project_name %>
       number_to_create=<% ctx().ip_number %>

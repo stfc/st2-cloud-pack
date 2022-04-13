@@ -2,7 +2,7 @@
 description: Create floating IP
 enabled: true
 entry_point: src/floating_ip.py
-name: floating.ip.create
+name: floating.ip_addr.create
 parameters:
   submodule:
     default: floating_ip_create

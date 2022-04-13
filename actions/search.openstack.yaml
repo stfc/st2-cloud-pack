@@ -18,7 +18,7 @@ parameters:
     enum:
       - project
       - host
-      - ip
+      - ip_addr
       - user
       - server
   properties_list:
@@ -36,7 +36,7 @@ parameters:
     type: array
     required: false
   sort_by_list:
-    description: properties to sort result by
+    description: properties to sort result openstack_resource
     required: false
   as_html:
     description: display as html instead of plaintext
@@ -44,4 +44,3 @@ parameters:
     default: false
     required: true
 runner_type: python-script
-
