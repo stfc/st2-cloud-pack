@@ -1,6 +1,6 @@
 from openstack.exceptions import ResourceNotFound
 
-from openstack_action import OpenstackAction
+from actions.src.openstack_action import OpenstackAction
 
 
 class Project(OpenstackAction):
