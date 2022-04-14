@@ -7,9 +7,7 @@ class OpenstackConnection:
         self._connection = None
 
     def __enter__(self) -> openstack.connection.Connection:
-        if not self._connection:
-            # TODO params
-            self._connection = connect()
+        self._connection = connect()
         return self._connection
 
     def __exit__(self, exc_type, exc_val, exc_tb):
