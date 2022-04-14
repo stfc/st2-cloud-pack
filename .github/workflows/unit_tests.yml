@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        # 3.9+ is not currently supported due to https://github.com/freach/udatetime/issues/32
         python-version: ["3.7", "3.8"]
     steps:
       - uses: actions/checkout@v3
@@ -22,8 +23,9 @@ jobs:
         run: |
           python3 -m pip install virtualenv
           git clone --depth=1 https://github.com/StackStorm/st2.git /tmp/st2
-          # Required to get all wheels building
-          sudo apt-get update && sudo apt-get install -y --no-install-recommends libsasl2-dev python3-dev libldap2-dev libssl-dev
+          sudo apt-get update
+          # Required to get python-ldap wheel building
+          sudo apt-get install -y --no-install-recommends libsasl2-dev python3-dev libldap2-dev libssl-dev
 
       - name: Run Tests
         run: ST2_REPO_PATH=/tmp/st2 /tmp/st2/st2common/bin/st2-run-pack-tests -p . -c

@@ -2,3 +2,6 @@ openstacksdk
 python-openstackclient
 tabulate
 requests
+
+# Workaround OS packaging problems with Python-ldap on unit tests
+setuptools~=62.0
