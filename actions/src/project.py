@@ -1,6 +1,7 @@
 from openstack.exceptions import ResourceNotFound
 
 from actions.src.openstack_action import OpenstackAction
+from openstack_wrappers.openstack_identity import OpenstackIdentity
 
 
 class Project(OpenstackAction):
@@ -8,8 +9,14 @@ class Project(OpenstackAction):
         """constructor class"""
         super().__init__(*args, **kwargs)
 
+        # DI handled in OpenstackActionTestCase
+        self._api: OpenstackIdentity = kwargs["config"].get(
+            "openstack_api", OpenstackIdentity()
+        )
+
         # lists possible functions that could be run as an action
         self.func = {
+            "domain_find": self.find_domain,
             "project_show": self.project_show,
             "project_create": self.project_create,
             "project_delete": self.project_delete
@@ -24,6 +31,15 @@ class Project(OpenstackAction):
         """
         raise NotImplementedError
 
+    def find_domain(self, domain):
+        """
+        find and return a given project's properties
+        :param domain:(String) Domain Name or ID
+        :return: (status (Bool), reason (String))
+        """
+        found_domain = self._api.find_domain(domain)
+        return bool(found_domain), found_domain
+
     def project_show(self, project, domain):
         """
         find and return a given project's properties
@@ -32,9 +48,10 @@ class Project(OpenstackAction):
         :return: (status (Bool), reason (String))
         """
 
-        domain_id = self.find_resource_id(domain, self.conn.identity.find_domain)
+        domain_id = self.find_domain(domain)
         if not domain_id:
             return False, f"No domain found with Name or ID {domain}"
+        # TODO:
         try:
             project = self.conn.identity.find_project(project, domain_id=domain_id)
         except ResourceNotFound as err:

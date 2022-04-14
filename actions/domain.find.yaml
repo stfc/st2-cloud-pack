@@ -1,0 +1,15 @@
+---
+description: Finds a given domain
+enabled: true
+entry_point: src/project.py
+name: domain.find
+parameters:
+  submodule:
+    default: domain_find
+    immutable: true
+    type: string
+  domain:
+    description: Project domain (name or ID) default - default
+    default: default
+    type: string
+runner_type: python-script
