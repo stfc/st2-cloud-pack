@@ -10,6 +10,7 @@ class MissingMandatoryParamError(ValueError):
     pass
 
 
+# pylint: disable=too-few-public-methods
 class OpenstackIdentity:
     @staticmethod
     def find_domain(domain: str) -> Optional[Domain]:

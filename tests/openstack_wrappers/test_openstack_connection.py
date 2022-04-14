@@ -4,6 +4,10 @@ from openstack_wrappers.openstack_connection import OpenstackConnection
 
 
 def test_openstack_connection_connects_first_time():
+    """
+    Tests that connect it correctly called on entry.
+    Does not check the args passed to connect
+    """
     with mock.patch(
         "openstack_wrappers.openstack_connection.connect"
     ) as patched_connect:
@@ -13,6 +17,10 @@ def test_openstack_connection_connects_first_time():
 
 
 def test_openstack_connection_disconnects():
+    """
+    Checks the session is correctly closed (to not leak handles)
+    when the context manager exits
+    """
     with mock.patch(
         "openstack_wrappers.openstack_connection.connect"
     ) as patched_connect:
@@ -23,6 +31,10 @@ def test_openstack_connection_disconnects():
 
 
 def test_openstack_connection_connects_second_time():
+    """
+    Tests that creating two connections calls connect twice.
+    Why, because Singletons are evil and cause nothing but problems
+    """
     with mock.patch(
         "openstack_wrappers.openstack_connection.connect"
     ) as patched_connect:

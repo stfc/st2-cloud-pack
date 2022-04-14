@@ -11,10 +11,17 @@ from openstack_wrappers.openstack_identity import (
 
 @raises(MissingMandatoryParamError)
 def test_project_and_domain_missing_throws():
+    """
+    Tests calling the API wrapper without a domain will throw
+    """
     OpenstackIdentity().find_domain("")
 
 
 def test_forwards_find_domain_result():
+    """
+    Tests that the params and result are forwarded as-is to/from the
+    find_domain API
+    """
     instance = OpenstackIdentity()
     with mock.patch(
         "openstack_wrappers.openstack_identity.OpenstackConnection"
