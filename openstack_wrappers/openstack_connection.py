@@ -3,6 +3,13 @@ from openstack import connect
 
 
 class OpenstackConnection:
+    """
+    Wraps an openstack connection as a context manager.
+    This class is used as follows:
+        with(OpenstackConnection()) as <name>:
+            name.<openstack_API>.method()
+    """
+
     def __init__(self):
         self._connection = None
 
