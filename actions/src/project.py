@@ -46,15 +46,18 @@ class Project(OpenstackAction):
         found_domain = self._api.find_domain(cloud_account=cloud_account, domain=domain)
         return bool(found_domain), found_domain
 
-    def project_show(self, project, domain):
+    def project_show(self, cloud_account: str, domain: str, project: str):
         """
         find and return a given project's properties
+        :param cloud_account: The account from the clouds configuration to use
         :param project:(String) Name or ID,
         :param domain:(String) Domain Name or ID
         :return: (status (Bool), reason (String))
         """
 
-        domain_id = self.find_domain(domain)
+        domain_id = self.find_domain(cloud_account, domain)
+        raise NotImplementedError("Not implemented yet")
+        # pylint: disable=unreachable
         if not domain_id:
             return False, f"No domain found with Name or ID {domain}"
         # TODO:

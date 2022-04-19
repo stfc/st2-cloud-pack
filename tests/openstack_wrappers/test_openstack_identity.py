@@ -5,8 +5,8 @@ from nose.tools import raises
 
 from openstack_wrappers.openstack_identity import (
     OpenstackIdentity,
-    MissingMandatoryParamError,
 )
+from openstack_wrappers.missing_mandatory_param_error import MissingMandatoryParamError
 
 
 @raises(MissingMandatoryParamError)

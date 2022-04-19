@@ -1,6 +1,8 @@
 import openstack.connection
 from openstack import connect
 
+from openstack_wrappers.missing_mandatory_param_error import MissingMandatoryParamError
+
 
 class OpenstackConnection:
     """
@@ -15,10 +17,16 @@ class OpenstackConnection:
         Starts a connection with the Openstack API when used in a context manager
         :param cloud_name: The name of the cloud found in clouds.yaml
         """
-        self._cloud_name = cloud_name
+        self._cloud_name = cloud_name.strip() if cloud_name else None
         self._connection = None
 
     def __enter__(self) -> openstack.connection.Connection:
+        if not self._cloud_name:
+            # If we don't provide a cloud name (or an empty one), Openstack will
+            # default to env vars, which may be a security problem if they are incorrectly set
+            raise MissingMandatoryParamError(
+                "A cloud name is required but was not provided."
+            )
         self._connection = connect(cloud=self._cloud_name)
         return self._connection
 
