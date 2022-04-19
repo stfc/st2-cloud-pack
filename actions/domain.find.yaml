@@ -8,6 +8,10 @@ parameters:
     default: domain_find
     immutable: true
     type: string
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    default: ''
+    type: string
   domain:
     description: Project domain (name or ID) default - default
     default: default

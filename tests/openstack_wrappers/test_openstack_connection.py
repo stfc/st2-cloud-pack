@@ -11,9 +11,18 @@ def test_openstack_connection_connects_first_time():
     with mock.patch(
         "openstack_wrappers.openstack_connection.connect"
     ) as patched_connect:
-        with OpenstackConnection() as instance:
+        with OpenstackConnection("") as instance:
             patched_connect.assert_called_once()
             assert instance == patched_connect.return_value
+
+
+def test_openstack_connection_uses_cloud_name():
+    expected_cloud = "foo"
+    with mock.patch(
+        "openstack_wrappers.openstack_connection.connect"
+    ) as patched_connect:
+        with OpenstackConnection(expected_cloud):
+            patched_connect.assert_called_once_with(cloud=expected_cloud)
 
 
 def test_openstack_connection_disconnects():
@@ -24,7 +33,7 @@ def test_openstack_connection_disconnects():
     with mock.patch(
         "openstack_wrappers.openstack_connection.connect"
     ) as patched_connect:
-        with OpenstackConnection() as instance:
+        with OpenstackConnection("") as instance:
             connection_handle = patched_connect.return_value
             assert instance == connection_handle
         connection_handle.close.assert_called_once()
@@ -38,7 +47,7 @@ def test_openstack_connection_connects_second_time():
     with mock.patch(
         "openstack_wrappers.openstack_connection.connect"
     ) as patched_connect:
-        with OpenstackConnection():
+        with OpenstackConnection(""):
             pass
-        with OpenstackConnection():
+        with OpenstackConnection(""):
             assert patched_connect.call_count == 2
