@@ -24,7 +24,7 @@ class TestActionProject(OpenstackActionTestCase):
         mock.find_domain.return_value = expected
 
         action: Project = self.get_action_instance(api_mock=mock)
-        returned_values = action.find_domain("foo")
+        returned_values = action.find_domain("account", "foo")
         assert returned_values[0] is True
         assert returned_values[1] == expected
 
@@ -37,6 +37,6 @@ class TestActionProject(OpenstackActionTestCase):
         mock.find_domain.return_value = None
 
         action: Project = self.get_action_instance(api_mock=mock)
-        returned_values = action.find_domain("foo")
+        returned_values = action.find_domain("account", "foo")
         assert returned_values[0] is False
         assert returned_values[1] is None

@@ -5,16 +5,16 @@ from nose.tools import raises
 
 from openstack_wrappers.openstack_identity import (
     OpenstackIdentity,
-    MissingMandatoryParamError,
 )
+from openstack_wrappers.missing_mandatory_param_error import MissingMandatoryParamError
 
 
 @raises(MissingMandatoryParamError)
-def test_project_and_domain_missing_throws():
+def test_domain_missing_throws():
     """
     Tests calling the API wrapper without a domain will throw
     """
-    OpenstackIdentity().find_domain("")
+    OpenstackIdentity().find_domain("account", domain="")
 
 
 def test_forwards_find_domain_result():
@@ -29,7 +29,9 @@ def test_forwards_find_domain_result():
         identity_api = patched_connection.return_value.__enter__.return_value.identity
         expected = NonCallableMock()
 
-        found = instance.find_domain(expected)
+        found = instance.find_domain(cloud_account="test", domain=expected)
+
+        patched_connection.assert_called_once_with("test")
 
         assert found == identity_api.find_domain.return_value
         identity_api.find_domain.assert_called_once_with(
