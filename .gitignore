@@ -1,4 +1,9 @@
 *.idea/
 
-*.coverage
+# Coverage Files
+.coverage
+coverage.xml
+coverage.coverage
+
+# Compiled Python Files
 *.pyc
