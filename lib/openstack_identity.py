@@ -2,8 +2,10 @@ from typing import Optional
 
 from openstack.identity.v3.domain import Domain
 
-from openstack_wrappers.missing_mandatory_param_error import MissingMandatoryParamError
-from openstack_wrappers.openstack_connection import OpenstackConnection
+from missing_mandatory_param_error import (
+    MissingMandatoryParamError,
+)
+from openstack_connection import OpenstackConnection
 
 
 # pylint: disable=too-few-public-methods

@@ -2,7 +2,7 @@
 # This file will be removed long-term as it is deprecated
 from tabulate import tabulate
 
-from ..openstack_action import OpenstackAction
+from openstack_action import OpenstackAction
 from ..queryopenstack.query import query
 
 """

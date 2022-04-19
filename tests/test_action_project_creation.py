@@ -1,7 +1,7 @@
 from unittest.mock import create_autospec, NonCallableMock
 
+from openstack_identity import OpenstackIdentity
 from actions.src.project import Project
-from openstack_wrappers.openstack_identity import OpenstackIdentity
 from tests.openstack_action_test_case import OpenstackActionTestCase
 
 

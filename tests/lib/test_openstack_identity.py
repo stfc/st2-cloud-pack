@@ -3,10 +3,8 @@ from unittest.mock import NonCallableMock
 
 from nose.tools import raises
 
-from openstack_wrappers.openstack_identity import (
-    OpenstackIdentity,
-)
-from openstack_wrappers.missing_mandatory_param_error import MissingMandatoryParamError
+from openstack_identity import OpenstackIdentity
+from missing_mandatory_param_error import MissingMandatoryParamError
 
 
 @raises(MissingMandatoryParamError)
@@ -23,9 +21,7 @@ def test_forwards_find_domain_result():
     find_domain API
     """
     instance = OpenstackIdentity()
-    with mock.patch(
-        "openstack_wrappers.openstack_identity.OpenstackConnection"
-    ) as patched_connection:
+    with mock.patch("openstack_identity.OpenstackConnection") as patched_connection:
         identity_api = patched_connection.return_value.__enter__.return_value.identity
         expected = NonCallableMock()
 
