@@ -3,8 +3,8 @@ from typing import Tuple, Optional
 from openstack.exceptions import ResourceNotFound
 from openstack.identity.v3.domain import Domain
 
-from actions.src.openstack_action import OpenstackAction
-from openstack_wrappers.openstack_identity import OpenstackIdentity
+from openstack_action import OpenstackAction
+from openstack_identity import OpenstackIdentity
 
 
 class Project(OpenstackAction):
