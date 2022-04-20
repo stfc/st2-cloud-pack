@@ -1,14 +1,14 @@
 ---
 ref: stackstorm_openstack
 
-name: StackStorm Openstack Scripts
+name: StackStorm - STFC Openstack Scripts
 
 description: Pack containing openstack scripts
 
 keywords:
   - openstack
 
-version: 1.0.0
+version: 0.1
 
 python_versions:
   - "3"
@@ -16,6 +16,8 @@ python_versions:
 dependencies:
   - core
 
-author: Anish Mudaraddi
-
-email: anish.mudaraddi@stfc.ac.uk
+# Authors :
+# Anish Mudaraddi
+# David Fairbrother
+author: STFC Cloud Team
+email: cloud-support@stfc.ac.uk
