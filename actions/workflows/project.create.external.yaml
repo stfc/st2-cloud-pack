@@ -19,8 +19,7 @@ input:
 
   - router_name
   - router_description
-  - ip_number
-  - tcp_udp_egress_external_ips
+  - number_of_floating_ips
 
 vars:
   - project_uuid: null
@@ -188,7 +187,7 @@ tasks:
     action: stackstorm_openstack.floating.ip_addr.create
       network="External"
       project=<% ctx().project_name %>
-      number_to_create=<% ctx().ip_number %>
+      number_to_create=<% ctx().number_of_floating_ips %>
     next:
       - when: <% failed() %>
         publish: stderr="Failed assigning floating ips for project <% ctx().project_name %>, Error <% result() %>"

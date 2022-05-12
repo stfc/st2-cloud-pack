@@ -180,6 +180,7 @@ class OpenstackNetwork(OpenstackWrapperBase):
         :param rbac_identifier: The name or Openstack ID to use
         :return: True if deleted, else False
         """
+        raise NotImplementedError("Pending better RBAC search")
         rbac_id = self.find_network_rbac(cloud_account, rbac_identifier)
         if not rbac_id:
             return False
