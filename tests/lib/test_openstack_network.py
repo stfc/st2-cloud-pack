@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import NonCallableMock, Mock, ANY, MagicMock, patch
 
 from nose.tools import raises
+from openstack.exceptions import ResourceNotFound
 
 from enums.network_providers import NetworkProviders
 from enums.rbac_network_actions import RbacNetworkActions
@@ -26,6 +27,98 @@ class OpenstackNetworkTests(unittest.TestCase):
         self.network_api = (
             self.mocked_connection.return_value.__enter__.return_value.network
         )
+
+    @raises(ItemNotFoundError)
+    def test_allocate_floating_ip_raises_network_not_found(self):
+        """
+        Tests that allocating a floating IP will raise if the network was not found
+        """
+        self.instance.find_network = Mock(return_value=None)
+        self.instance.allocate_floating_ips(
+            NonCallableMock(), NonCallableMock(), NonCallableMock(), NonCallableMock()
+        )
+
+    def test_allocate_floating_ip_zero_ips(self):
+        """
+        Tests allocate floating IP does not make any calls when 0 is passed
+        """
+        returned = self.instance.allocate_floating_ips(
+            NonCallableMock(), NonCallableMock(), NonCallableMock(), number_to_create=0
+        )
+        self.network_api.create_ip.assert_not_called()
+        assert returned == []
+
+    def test_allocate_floating_ip_single_ip(self):
+        """
+        Tests allocate floating IP makes a single call to create IP
+        """
+        returned = self._assert_allocate_queries(num_to_allocate=1)
+        self.network_api.create_ip.assert_called_once_with(
+            project_id=self.identity_module.find_mandatory_project.return_value.id,
+            floating_network_id=self.instance.find_network.return_value.id,
+        )
+
+        assert len(returned) == 1
+        assert returned[0] == self.network_api.create_ip.return_value
+
+    def _assert_allocate_queries(self, num_to_allocate: int):
+        self.instance.find_network = Mock()
+        cloud, network, project = (
+            NonCallableMock(),
+            NonCallableMock(),
+            NonCallableMock(),
+        )
+        returned = self.instance.allocate_floating_ips(
+            cloud, network, project, number_to_create=num_to_allocate
+        )
+        self.identity_module.find_mandatory_project.assert_called_once_with(
+            cloud, project
+        )
+        self.instance.find_network.assert_called_once_with(cloud, network)
+        return returned
+
+    def test_allocate_floating_ip_multiple_ips(self):
+        """
+        Tests allocating multiple IPs makes the correct number of queries
+        """
+        returned = self._assert_allocate_queries(num_to_allocate=2)
+        assert self.network_api.create_ip.call_count == 2
+        self.network_api.create_ip.assert_called_with(
+            project_id=self.identity_module.find_mandatory_project.return_value.id,
+            floating_network_id=self.instance.find_network.return_value.id,
+        )
+
+        expected = self.network_api.create_ip.return_value
+        # Mock will return the same obj twice, but the real API generates
+        # a new object each time
+        assert returned == [expected, expected]
+
+    @raises(MissingMandatoryParamError)
+    def test_get_floating_ip_throws_missing_address(self):
+        """
+        Tests that get floating IP will throw for a missing address
+        """
+        self.instance.get_floating_ip(NonCallableMock(), " \t")
+
+    def test_get_floating_ip_call_success(self):
+        """
+        Tests get floating IP returns correctly
+        """
+        cloud, ip = NonCallableMock(), NonCallableMock()
+        returned = self.instance.get_floating_ip(cloud, ip)
+
+        self.mocked_connection.assert_called_with(cloud)
+        self.network_api.get_ip.assert_called_once_with(ip.strip())
+        assert returned == self.network_api.get_ip.return_value
+
+    def test_get_floating_ip_call_failure(self):
+        """
+        Tests get floating IP returns None if a result isn't found
+        """
+        cloud, ip = NonCallableMock(), NonCallableMock()
+        self.network_api.get_ip.side_effect = ResourceNotFound
+        returned = self.instance.get_floating_ip(cloud, ip)
+        assert returned is None
 
     @raises(MissingMandatoryParamError)
     def test_find_network_raises_for_missing_param(self):

@@ -1,5 +1,7 @@
 from typing import Optional, List
 
+from openstack.exceptions import ResourceNotFound
+from openstack.network.v2.floating_ip import FloatingIP
 from openstack.network.v2.network import Network
 from openstack.network.v2.rbac_policy import RBACPolicy
 
@@ -17,6 +19,45 @@ class OpenstackNetwork(OpenstackWrapperBase):
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)
         self._identity_api = OpenstackIdentity(connection_cls)
+
+    def allocate_floating_ips(
+        self, cloud_account, network_identifier, project_identifier, number_to_create
+    ) -> List[FloatingIP]:
+        """
+        Allocates floating IPs to a given project
+        :param cloud_account: The account from the clouds configuration to use
+        :param network_identifier: ID or Name of network to allocate from,
+        :param project_identifier: ID or Name of project to allocate to,
+        :param number_to_create: Number of floating ips to create
+        :return: List of all allocated floating IPs
+        """
+        project = self._identity_api.find_mandatory_project(
+            cloud_account, project_identifier
+        )
+        network = self.find_network(cloud_account, network_identifier)
+        if not network:
+            raise ItemNotFoundError("The requested network was not found")
+
+        created: List[FloatingIP] = []
+        with self._connection_cls(cloud_account) as conn:
+            for _ in range(number_to_create):
+                created.append(
+                    conn.network.create_ip(
+                        project_id=project.id, floating_network_id=network.id
+                    )
+                )
+        return created
+
+    def get_floating_ip(self, cloud_account: str, ip_addr: str) -> Optional[FloatingIP]:
+        ip_addr = ip_addr.strip()
+        if not ip_addr:
+            raise MissingMandatoryParamError("An IP address is required")
+
+        with self._connection_cls(cloud_account) as conn:
+            try:
+                return conn.network.get_ip(ip_addr)
+            except ResourceNotFound:
+                return None
 
     def find_network(
         self, cloud_account: str, network_identifier: str
