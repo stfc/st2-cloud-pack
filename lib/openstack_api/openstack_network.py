@@ -4,6 +4,7 @@ from openstack.exceptions import ResourceNotFound
 from openstack.network.v2.floating_ip import FloatingIP
 from openstack.network.v2.network import Network
 from openstack.network.v2.rbac_policy import RBACPolicy
+from openstack.network.v2.router import Router
 
 from enums.rbac_network_actions import RbacNetworkActions
 from exceptions.item_not_found_error import ItemNotFoundError
@@ -13,6 +14,7 @@ from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.openstack_identity import OpenstackIdentity
 from structs.network_details import NetworkDetails
 from structs.network_rbac import NetworkRbac
+from structs.router_details import RouterDetails
 
 
 class OpenstackNetwork(OpenstackWrapperBase):
@@ -188,3 +190,44 @@ class OpenstackNetwork(OpenstackWrapperBase):
         with self._connection_cls(cloud_account) as conn:
             result = conn.network.delete_rbac_policy(rbac_id, ignore_missing=False)
             return result is None
+
+    def create_router(self, cloud_account: str, details: RouterDetails) -> Router:
+        """
+        Creates a router for the given project without any internal interfaces
+        :param cloud_account: The associated credentials to use
+        :param details: The details of the router to create
+        """
+        project = self._identity_api.find_mandatory_project(
+            cloud_account, details.project_identifier
+        )
+        external_network = self.find_network(cloud_account, details.external_gateway)
+        if not external_network:
+            raise ItemNotFoundError("The external network specified was not found")
+
+        with self._connection_cls(cloud_account) as conn:
+            return conn.network.create_router(
+                project_id=project.id,
+                name=details.router_name,
+                description=details.router_description,
+                external_gateway_info={"network_id": external_network.id},
+                is_distributed=details.is_distributed,
+                is_ha=details.is_ha,
+            )
+
+    def get_router(
+        self, cloud_account: str, project_identifier: str, router_identifier: str
+    ) -> Optional[Router]:
+        """
+        Returns a given router found from the given attributes
+        :param cloud_account: The associated credentials to use
+        :param project_identifier: The project name or ID to search in
+        :param router_identifier: The router name or ID to get
+        """
+        project = self._identity_api.find_mandatory_project(
+            cloud_account, project_identifier
+        )
+
+        with self._connection_cls(cloud_account) as conn:
+            return conn.network.find_router(
+                name_or_id=router_identifier, project_id=project.id, ignore_missing=True
+            )

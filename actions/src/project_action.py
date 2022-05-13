@@ -29,8 +29,7 @@ class ProjectAction(Action):
         """
         Deletes a project
         :param cloud_account: The account from the clouds configuration to use
-        :param: project_name: (Either) The project name to delete
-        :param: project_id: (Either) The project ID to delete
+        :param project_identifier: (Either) The project name to delete
         :return: The result of the operation
         """
         delete_ok = self._api.delete_project(

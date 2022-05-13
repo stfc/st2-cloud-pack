@@ -321,3 +321,58 @@ class OpenstackNetworkTests(unittest.TestCase):
             cloud, network_identifier
         )
         self.network_api.delete_rbac_policy.assert_not_called()
+
+    @raises(ItemNotFoundError)
+    def test_create_router_missing_ext_network(self):
+        """
+        Tests that create router will throw if the specified ext network
+        was not found
+        """
+        self.instance.find_network = Mock(return_value=None)
+        self.instance.create_router(NonCallableMock(), NonCallableMock())
+
+    def test_create_router_successful_call(self):
+        """
+        Tests that create router forwards the correct args to Openstack
+        """
+        cloud, details = NonCallableMock(), NonCallableMock()
+        self.instance.find_network = Mock()
+        returned = self.instance.create_router(cloud, details)
+
+        self.identity_module.find_mandatory_project.assert_called_once_with(
+            cloud, details.project_identifier
+        )
+        self.instance.find_network.assert_called_once_with(
+            cloud, details.external_gateway
+        )
+        self.mocked_connection.assert_called_once_with(cloud)
+
+        self.network_api.create_router.assert_called_once_with(
+            project_id=self.identity_module.find_mandatory_project.return_value.id,
+            name=details.router_name,
+            description=details.router_description,
+            external_gateway_info={
+                "network_id": self.instance.find_network.return_value.id
+            },
+            is_distributed=details.is_distributed,
+            is_ha=details.is_ha,
+        )
+        assert returned == self.network_api.create_router.return_value
+
+    def test_get_router(self):
+        """
+        Tests the get router call is correct
+        """
+        cloud, project, router = NonCallableMock(), NonCallableMock(), NonCallableMock()
+        returned = self.instance.get_router(cloud, project, router)
+
+        self.identity_module.find_mandatory_project.assert_called_once_with(
+            cloud, project
+        )
+        self.mocked_connection.assert_called_once_with(cloud)
+        self.network_api.find_router.assert_called_once_with(
+            name_or_id=router,
+            project_id=self.identity_module.find_mandatory_project.return_value.id,
+            ignore_missing=True,
+        )
+        assert returned == self.network_api.find_router.return_value

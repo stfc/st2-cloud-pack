@@ -1,12 +1,18 @@
+from typing import Tuple, Dict, Union
+
 from openstack.exceptions import ResourceNotFound
+from openstack.network.v2.router import Router
 
 from openstack_action import OpenstackAction
+from openstack_api.openstack_network import OpenstackNetwork
+from structs.router_details import RouterDetails
 
 
-class Router(OpenstackAction):
-    def __init__(self, *args, **kwargs):
+class RouterActions(OpenstackAction):
+    def __init__(self, *args, config: Dict = None, **kwargs):
         """constructor class"""
         super().__init__(*args, **kwargs)
+        self._api: OpenstackNetwork = config.get("openstack_api", OpenstackNetwork())
 
         # lists possible functions that could be run as an action
         self.func = {
@@ -14,40 +20,44 @@ class Router(OpenstackAction):
             "router_add_interface": self.router_add_interface,
             "router_remove_interface": self.router_remove_interface,
             "router_delete": self.router_delete,
-            "router_show": self.router_show,
+            "router_get": self.router_get,
             "router_update": self.router_update,
         }
 
-    def router_create(self, project, external_gateway, **router_kwargs):
+    # pylint disable=too-many-arguments
+    def router_create(
+        self,
+        cloud_account: str,
+        project_identifier: str,
+        router_name: str,
+        router_description: str,
+        external_gateway: str,
+        is_distributed: bool,
+        is_ha: bool,
+    ) -> Tuple[bool, Router]:
         """
         Create openstack router for project
-        :param project: (String) Name or ID
-        :param external_gateway: (String) Name or ID,
-        :param router_kwargs - see action definintion yaml file for details)
-        :return: (status (Bool), reason (String))
+        :param cloud_account: The account from the clouds configuration to use
+        :param project_identifier: Name or ID of the Openstack Project
+        :param router_name: The new router name
+        :param router_description: The new router's description
+        :param is_distributed: Is the new router distributed
+        :param is_ha: Is the new router high availability
+        :param external_gateway: Name or ID of the external gateway the router should use
+        :return: Status, new router object
         """
-
-        project_id = self.find_resource_id(project, self.conn.identity.find_project)
-        if not project_id:
-            return False, f"Project not found with Name or ID {project}"
-
-        external_gateway_id = self.find_resource_id(
-            external_gateway, self.conn.network.find_network
+        router = self._api.create_router(
+            cloud_account,
+            RouterDetails(
+                project_identifier=project_identifier,
+                router_name=router_name,
+                router_description=router_description,
+                external_gateway=external_gateway,
+                is_distributed=is_distributed,
+                is_ha=is_ha,
+            ),
         )
-        if not external_gateway_id:
-            return (
-                False,
-                f"Network (External Gateway) not found with Name or ID {external_gateway}",
-            )
-        try:
-            router = self.conn.network.create_router(
-                project_id=project_id,
-                external_gateway_info={"network_id": external_gateway_id},
-                **router_kwargs,
-            )
-        except ResourceNotFound as err:
-            return False, f"Router Creation Failed {err}"
-        return True, router
+        return bool(router), router
 
     def router_add_interface(self, router, subnet, port):
         """
@@ -85,6 +95,22 @@ class Router(OpenstackAction):
         except ResourceNotFound as err:
             return False, f"Adding Router Interface Failed {err}"
         return True, router
+
+    def router_get(
+        self, cloud_account: str, project_identifier: str, router_identifier: str
+    ) -> Tuple[bool, Union[Router, str]]:
+        """
+        Gets a router in the specified project with the given name or ID
+        :param cloud_account: The account from the clouds configuration to use
+        :param project_identifier: The project name or ID to search in
+        :param router_identifier: The name or ID of the router
+        :return: status, Router or error message
+        """
+        found = self._api.get_router(
+            cloud_account, project_identifier, router_identifier
+        )
+        to_return = found if found else "The specified router could not be found"
+        return bool(found), to_return
 
     def router_remove_interface(self, router, subnet, port):
         """

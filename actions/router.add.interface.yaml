@@ -1,7 +1,7 @@
 ---
 description: Add Interface to Router
 enabled: true
-entry_point: src/router.py
+entry_point: src/router_actions.py
 name: router.add.interface
 parameters:
   submodule:
