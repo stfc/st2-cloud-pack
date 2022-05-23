@@ -1,0 +1,35 @@
+version: 1.0
+
+description: Executes the loadbalancer check and then generates tickets in atlassian for the issues.
+
+input:
+  - cloud_account
+  - email
+  - api_key
+  - serviceDeskId
+  - requestTypeId
+
+vars:
+  - stdout: null
+  - stderr: null
+
+output:
+  - stdout: <% ctx().stdout %>
+  - stderr: <% ctx().stderr %>
+
+tasks:
+  checks_loadbalancers:
+    action: stackstorm_openstack.checks.loadbalancers
+      cloud_account=<% ctx().cloud_account %>
+    next:
+      - when: <% succeeded() %>
+        publish:
+          - tickets_info: <% result().stdout %>
+        do: create_tickets
+  create_tickets:
+    action: stackstorm_openstack.checks.create.tickets
+      email=<% ctx().email %>
+      api_key=<% ctx().api_key %>
+      serviceDeskId=<% ctx().serviceDeskId %>
+      requestTypeId=<% ctx().requestTypeId %>
+      tickets_info=<% ctx().tickets_info %>

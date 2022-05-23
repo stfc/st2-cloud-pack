@@ -1,0 +1,41 @@
+description: Check for stuck deleted machines orquesta workflow
+enabled: true
+entry_point: workflows/checks.deleted.machines.workflow.yaml
+name: workflow.check.deleted.machines
+parameters:
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    default: ""
+    required: true
+    type: string
+  project_id:
+    description: ID of the project to be scanned for the above security group details (*Requires one of)
+    default: ""
+    required: false
+    type: string
+  all_projects:
+    description: Toggle to scan all projects in cloud (*Requires one of)
+    default: false
+    required: false
+    type: boolean
+  email:
+    description: Email of account used to log in to atlassian by script.
+    default: ""
+    type: string
+    required: true
+  api_key:
+    description: API key to access atlassian
+    default: ""
+    type: string
+    required: true
+  serviceDeskId:
+    description: Service desk to send tickets to
+    default: ""
+    type: number
+    required: true
+  requestTypeId:
+    description: Request type for ticket
+    default: ""
+    type: number
+    required: true
+runner_type: orquesta

@@ -1,0 +1,40 @@
+description: Check Security groups in projects for specific parameters
+enabled: true
+entry_point: src/openstack_check_actions.py
+name: checks.security.groups
+parameters:
+  submodule:
+    default: security_groups_check
+    immutable: true
+    type: string
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    default: ""
+    required: true
+    type: string
+  ip_prefix:
+    description: The IPs that are allowed to access the port range specified below
+    default: ""
+    required: true
+    type: string
+  max_port:
+    description: Maximum port range that rule is applied to
+    default: 65535
+    required: true
+    type: number
+  min_port:
+    description: Minimum port range that rule is applied to
+    default: 1
+    required: true
+    type: number
+  project_id:
+    description: ID of the project to be scanned for the above security group details (*Requires one of)
+    default: ""
+    required: false
+    type: string
+  all_projects:
+    description: Toggle to scan all projects in cloud (*Requires one of)
+    default: false
+    required: false
+    type: boolean
+runner_type: python-script

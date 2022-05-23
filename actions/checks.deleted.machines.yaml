@@ -1,0 +1,25 @@
+description: Check For machines stuck in the deleting state
+enabled: true
+entry_point: src/openstack_check_actions.py
+name: checks.deleted.machines
+parameters:
+  submodule:
+    default: deleting_machines_check
+    immutable: true
+    type: string
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    default: ""
+    required: true
+    type: string
+  project_id:
+    description: ID of the project to be scanned for the above security group details (*Requires one of)
+    default: ""
+    required: false
+    type: string
+  all_projects:
+    description: Toggle to scan all projects in cloud (*Requires one of)
+    default: false
+    required: false
+    type: boolean
+runner_type: python-script
