@@ -6,8 +6,8 @@ input:
   - cloud_account
   - email
   - api_key
-  - serviceDeskId
-  - requestTypeId
+  - servicedesk_id
+  - requesttype_id
 
 vars:
   - stdout: null
@@ -30,6 +30,6 @@ tasks:
     action: stackstorm_openstack.checks.create.tickets
       email=<% ctx().email %>
       api_key=<% ctx().api_key %>
-      serviceDeskId=<% ctx().serviceDeskId %>
-      requestTypeId=<% ctx().requestTypeId %>
+      servicedesk_id=<% ctx().servicedesk_id %>
+      requesttype_id=<% ctx().requesttype_id %>
       tickets_info=<% ctx().tickets_info %>

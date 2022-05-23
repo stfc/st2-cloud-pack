@@ -4,7 +4,7 @@ entry_point: src/openstack_check_actions.py
 name: checks.create.tickets
 parameters:
   submodule:
-    default: createTicket
+    default: create_ticket
     immutable: true
     type: string
   tickets_info:
