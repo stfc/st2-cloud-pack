@@ -58,7 +58,7 @@ class CheckActions(OpenstackAction):
                     rules_with_issues.append(ruledict)
         return rules_with_issues
 
-    def security_groups_check(self, cloud_account: str, max_port: int, min_port: int, ip_prefix: str, project=None, all_projects=False):
+    def security_groups_check(self, cloud_account: str, max_port: int, min_port: int, ip_prefix: str, project_id=None, all_projects=False):
         """
         Starts the script to check projects, can choose to go through all projects or a single project.
 
@@ -82,11 +82,11 @@ class CheckActions(OpenstackAction):
                 output = self.check_project(project=project, cloud=cloud_account, max_port=max_port, min_port=min_port, ip_prefix=ip_prefix)
                 rules_with_issues.append(output)
         else:
-            output = self.check_project(project=project, cloud=cloud_account, max_port=max_port, min_port=min_port, ip_prefix=ip_prefix)
+            output = self.check_project(project=project_id, cloud=cloud_account, max_port=max_port, min_port=min_port, ip_prefix=ip_prefix)
             rules_with_issues.append(output)
         return rules_with_issues
 
-    def deleting_machines_check(self, cloud_account: str, project=None, all_projects=False):
+    def deleting_machines_check(self, cloud_account: str, project_id=None, all_projects=False):
         output = {
             "title": "Server {p[id]} has not been updated in more than 10 minutes during {p[action]}",
             "body": "The following information may be useful\nHost id: {p[id]} \n{p[data]}",
@@ -100,7 +100,7 @@ class CheckActions(OpenstackAction):
                 deleted = self.check_deleted(project=project, cloud=cloud_account)
             output["server_list"] = deleted
         else:
-            deleted = self.check_deleted(project=project, cloud=cloud_account)
+            deleted = self.check_deleted(project=project_id, cloud=cloud_account)
             output["server_list"] = deleted
 
         return output
@@ -222,7 +222,7 @@ class CheckActions(OpenstackAction):
         logging.info(msg=ip + " is down")
         return 'error'
 
-    def check_notify_snapshots(self, cloud_account: str, project=None, all_projects=False):
+    def check_notify_snapshots(self, cloud_account: str, project_id=None, all_projects=False):
         output = {
             "title": "Project {p[name]} has an old volume snapshot",
             "body": "The volume snapshot was last updated on: {p[updated]}\nSnapshot name: {p[name]}\nSnapshot id: {p[id]}\nProject id: {p[project_id]}",
@@ -234,7 +234,7 @@ class CheckActions(OpenstackAction):
             for project in projects:
                 snapshots = self.check_snapshots(project=project, cloud_account=cloud_account)
         else:
-            snapshots = self.check_snapshots(project=project, cloud_account=cloud_account)
+            snapshots = self.check_snapshots(project=project_id, cloud_account=cloud_account)
 
         for snapshot in snapshots:
             with OpenstackConnection(cloud_name=cloud_account) as conn:

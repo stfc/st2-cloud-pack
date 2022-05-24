@@ -28,7 +28,7 @@ tasks:
     next:
       - when: <% succeeded() %>
         publish:
-          - tickets_info: <% result().stdout %>
+          - tickets_info: <% result() %>
         do: create_tickets
   create_tickets:
     action: stackstorm_openstack.checks.create.tickets
@@ -36,4 +36,4 @@ tasks:
       api_key=<% ctx().api_key %>
       servicedesk_id=<% ctx().servicedesk_id %>
       requesttype_id=<% ctx().requesttype_id %>
-      tickets_info=<% ctx().tickets_info %>
+      tickets_info=<% ctx('tickets_info') %>
