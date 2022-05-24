@@ -136,7 +136,7 @@ class CheckActions(OpenstackAction):
     def loadbalancer_check(self, cloud_account: str):
 
         with OpenstackConnection(cloud_name=cloud_account) as conn:
-            amphorae = requests.get("https://openstack.nubes.rl.ac.uk:9876/v2/octavia/amphorae", auth=TokenAuth(token=conn.auth_token)) 
+            amphorae = requests.get("https://openstack.nubes.rl.ac.uk:9876/v2/octavia/amphorae", headers={'X-Auth-Token': conn.auth_token}) 
         try:
             amph_json = amphorae.json()
         except requests.exceptions.JSONDecodeError:
@@ -285,7 +285,7 @@ class CheckActions(OpenstackAction):
             ] This list can be arbitrarily long, it will be iterated and each element will create a ticket based off the title and body keys and modified with the info from dataTitle and dataBody. For an example on how to do this please see deleting_machines_check
         }
         """
-        print(tickets_info)
+        print("The ticets info is"+tickets_info)
         if len(tickets_info["server_list"]) == 0:
             logging.info("No issues found")
             sys.exit()
