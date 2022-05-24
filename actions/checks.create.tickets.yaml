@@ -11,7 +11,7 @@ parameters:
     description: Dictionary from which the script will generate tickets. Should be provided by an upstream action.
     default: ""
   email:
-    default: Email of account used to log in to atlassian by script.
+    description: Email of account used to log in to atlassian by script.
     default: ""
     type: string
     required: true
@@ -19,11 +19,11 @@ parameters:
     default: ""
     type: string
     required: true
-  serviceDeskId:
+  servicedesk_id:
     default: ""
     type: number
     required: true
-  requestTypeId:
+  requesttype_id:
     default: ""
     type: number
     required: true

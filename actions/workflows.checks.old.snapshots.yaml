@@ -28,12 +28,12 @@ parameters:
     default: ""
     type: string
     required: true
-  serviceDeskId:
+  servicedesk_id:
     description: Service desk to send tickets to
     default: ""
     type: number
     required: true
-  requestTypeId:
+  requesttype_id:
     description: Request type for ticket
     default: ""
     type: number

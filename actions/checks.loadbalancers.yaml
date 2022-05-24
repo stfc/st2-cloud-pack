@@ -1,7 +1,7 @@
 description: Check for amphorae with an error status and find out if it is an issue with the amphora or loadbalancer
 enabled: true
 entry_point: src/openstack_check_actions.py
-name: checks.deleted.machines
+name: checks.loadbalancers
 parameters:
   submodule:
     default: loadbalancer_check
