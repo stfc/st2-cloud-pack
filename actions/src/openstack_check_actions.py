@@ -50,20 +50,19 @@ class CheckActions(OpenstackAction):
 
                         for serv_groups in applied:
 
-                            if serv_groups.id == rules["security_group_id"]:
+                            if serv_groups["id"] == rules["security_group_id"]:
                                 print("Rule is applied")
-                                ruledict["server_list"].append({
+                                rules_with_issues.append({
                                     "dataTitle":{
-                                        "id": server.id
+                                        "id": server["id"]
                                     },
                                     "dataBody":{
                                         "proj_id": project,
-                                        "sec_id": serv_groups.id
+                                        "sec_id": serv_groups["id"]
                                     }
                                 })
                             else:
-                                print("Rule not applied to "+server.id)
-                    rules_with_issues.append(ruledict)
+                                print("Rule not applied to "+server["id"])
         return rules_with_issues
 
     def security_groups_check(self, cloud_account: str, max_port: int, min_port: int, ip_prefix: str, project_id=None, all_projects=False):
@@ -92,12 +91,12 @@ class CheckActions(OpenstackAction):
                 projects = conn.list_projects()
             for project in projects:
                 output = self.check_project(project=project, cloud=cloud_account, max_port=max_port, min_port=min_port, ip_prefix=ip_prefix)
-                rules_with_issues["server_list"].append(output)
+                rules_with_issues["server_list"] = output
         else:
             output = self.check_project(project=project_id, cloud=cloud_account, max_port=max_port, min_port=min_port, ip_prefix=ip_prefix)
-            rules_with_issues["server_list"].append(output)
-        print("The rules with issues are:",rules_with_issues)
-        return 
+            rules_with_issues["server_list"] = output
+
+        return rules_with_issues
 
     def deleting_machines_check(self, cloud_account: str, project_id=None, all_projects=False):
         output = {
@@ -288,11 +287,13 @@ class CheckActions(OpenstackAction):
             ] This list can be arbitrarily long, it will be iterated and each element will create a ticket based off the title and body keys and modified with the info from dataTitle and dataBody. For an example on how to do this please see deleting_machines_check
         }
         """
-        print("The tickets info is", tickets_info)
-        if len(tickets_info["server_list"]) == 0:
+        actual_tickets_info = tickets_info["result"]["server_list"]
+
+        print("The tickets info is", actual_tickets_info)
+        if len(actual_tickets_info["server_list"]) == 0:
             logging.info("No issues found")
             sys.exit()
-        for i in tickets_info["server_list"]:
+        for i in actual_tickets_info["server_list"]:
 
             issue = requests.post("https://stfc.atlassian.net/rest/servicedeskapi/request",
             auth=HTTPBasicAuth(email,api_key),
@@ -301,8 +302,8 @@ class CheckActions(OpenstackAction):
             "Content-Type": "application/json",
             },
             json={'requestFieldValues': {
-                'summary': tickets_info['title'].format(p = i['dataTitle']),
-                'description': tickets_info['body'].format(p = i["dataBody"]),
+                'summary': os.access['title'].format(p = i['dataTitle']),
+                'description': actual_tickets_info['body'].format(p = i["dataBody"]),
             },
             'serviceDeskId': servicedesk_id, #Point this at relevant service desk
             'requestTypeId': requesttype_id
