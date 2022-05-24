@@ -7,17 +7,7 @@ from typing import Dict, Callable
 from datetime import datetime
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_action import OpenstackAction
-from requests.auth import HTTPBasicAuth, AuthBase
-
-class TokenAuth(AuthBase):
-    """Attaches token authentication to Request object"""
-    def __init__(self, token) -> None:
-        self.token = token
-
-    def __call__(self, r):
-        #Adds token to header
-        r.headers['X-Auth-Token'] = self.token
-        return r
+from requests.auth import HTTPBasicAuth
 
 class CheckActions(OpenstackAction):
 
@@ -285,7 +275,7 @@ class CheckActions(OpenstackAction):
             ] This list can be arbitrarily long, it will be iterated and each element will create a ticket based off the title and body keys and modified with the info from dataTitle and dataBody. For an example on how to do this please see deleting_machines_check
         }
         """
-        print("The ticets info is"+tickets_info)
+        print("The tickets info is", tickets_info)
         if len(tickets_info["server_list"]) == 0:
             logging.info("No issues found")
             sys.exit()
