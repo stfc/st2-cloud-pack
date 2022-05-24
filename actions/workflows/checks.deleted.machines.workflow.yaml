@@ -14,7 +14,7 @@ input:
 vars:
   - stdout: null
   - stderr: null
-
+  - tickets_info: null
 output:
   - stdout: <% ctx().stdout %>
   - stderr: <% ctx().stderr %>
