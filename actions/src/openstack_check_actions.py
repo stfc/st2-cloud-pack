@@ -84,7 +84,8 @@ class CheckActions(OpenstackAction):
         else:
             output = self.check_project(project=project_id, cloud=cloud_account, max_port=max_port, min_port=min_port, ip_prefix=ip_prefix)
             rules_with_issues.append(output)
-        return rules_with_issues
+        print("The rules with issues are:",rules_with_issues)
+        return {"result":rules_with_issues}
 
     def deleting_machines_check(self, cloud_account: str, project_id=None, all_projects=False):
         output = {
