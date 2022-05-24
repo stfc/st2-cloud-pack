@@ -282,7 +282,9 @@ class CheckActions(OpenstackAction):
             ] This list can be arbitrarily long, it will be iterated and each element will create a ticket based off the title and body keys and modified with the info from dataTitle and dataBody. For an example on how to do this please see deleting_machines_check
         }
         """
-
+        if len(tickets_info["server_list"]) == 0:
+            logging.info("No issues found")
+            sys.exit()
         for i in tickets_info["server_list"]:
 
             issue = requests.post("https://stfc.atlassian.net/rest/servicedeskapi/request",
