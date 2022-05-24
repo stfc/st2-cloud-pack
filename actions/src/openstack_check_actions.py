@@ -52,7 +52,15 @@ class CheckActions(OpenstackAction):
 
                             if serv_groups.id == rules["security_group_id"]:
                                 print("Rule is applied")
-                                ruledict["server_list"].append(serv_groups.id)
+                                ruledict["server_list"].append({
+                                    "dataTitle":{
+                                        "id": server.id
+                                    },
+                                    "dataBody":{
+                                        "proj_id": project,
+                                        "sec_id": serv_groups.id
+                                    }
+                                })
                             else:
                                 print("Rule not applied to "+server.id)
                     rules_with_issues.append(ruledict)
@@ -73,19 +81,23 @@ class CheckActions(OpenstackAction):
         #all_servers.filter(location.project.id=project)
 
         #print(servers.get_all_servers())
-        rules_with_issues = []
+        rules_with_issues = {
+            "title": "Server {p[id]} has an incorrectly configured server group",
+            "body": "Project id: {p[proj_id]}\nSecurity Group ID: {p[sec_id]}",
+            "server_list":[]
+        }
 
         if all_projects:
             with OpenstackConnection(cloud_name=cloud_account) as conn:
                 projects = conn.list_projects()
             for project in projects:
                 output = self.check_project(project=project, cloud=cloud_account, max_port=max_port, min_port=min_port, ip_prefix=ip_prefix)
-                rules_with_issues.append(output)
+                rules_with_issues["server_list"].append(output)
         else:
             output = self.check_project(project=project_id, cloud=cloud_account, max_port=max_port, min_port=min_port, ip_prefix=ip_prefix)
-            rules_with_issues.append(output)
+            rules_with_issues["server_list"].append(output)
         print("The rules with issues are:",rules_with_issues)
-        return {"result":rules_with_issues}
+        return 
 
     def deleting_machines_check(self, cloud_account: str, project_id=None, all_projects=False):
         output = {
