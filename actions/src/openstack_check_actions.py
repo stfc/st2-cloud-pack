@@ -287,7 +287,7 @@ class CheckActions(OpenstackAction):
             ] This list can be arbitrarily long, it will be iterated and each element will create a ticket based off the title and body keys and modified with the info from dataTitle and dataBody. For an example on how to do this please see deleting_machines_check
         }
         """
-        actual_tickets_info = tickets_info["result"]["server_list"]
+        actual_tickets_info = tickets_info["result"]
 
         print("The tickets info is", actual_tickets_info)
         if len(actual_tickets_info["server_list"]) == 0:
@@ -302,7 +302,7 @@ class CheckActions(OpenstackAction):
             "Content-Type": "application/json",
             },
             json={'requestFieldValues': {
-                'summary': os.access['title'].format(p = i['dataTitle']),
+                'summary': actual_tickets_info['title'].format(p = i['dataTitle']),
                 'description': actual_tickets_info['body'].format(p = i["dataBody"]),
             },
             'serviceDeskId': servicedesk_id, #Point this at relevant service desk
