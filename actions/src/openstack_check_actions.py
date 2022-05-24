@@ -171,7 +171,8 @@ class CheckActions(OpenstackAction):
                                 "lb_id": str(i['loadbalancer_id'] or "null"),
                                 "amp_id": str(i["id"] or "null")
                             }
-                        })
+                        }
+                        )
                     elif status[0].lower() == 'error':
                         output["server_list"].append({
                             "dataTitle":{
@@ -184,7 +185,8 @@ class CheckActions(OpenstackAction):
                                 "lb_id": str(i['loadbalancer_id'] or "null"),
                                 "amp_id": str(i["id"] or "null")
                             }
-                        })
+                        }
+                        )
                     elif ping_result.lower() == 'error':
                         output["server_list"].append({
                             "dataTitle":{
@@ -197,7 +199,8 @@ class CheckActions(OpenstackAction):
                                 "lb_id": str(i['loadbalancer_id'] or "null"),
                                 "amp_id": str(i["id"] or "null")
                             }
-                        })
+                        }
+                        )
                 else:
                     logging.info(i['id']+" is fine.")
 
@@ -207,7 +210,7 @@ class CheckActions(OpenstackAction):
             logging.critical("The status code was: "+str(amphorae.status_code))
             logging.critical("The JSON response was: \n"+str(amph_json))
             sys.exit()
-        return output
+        return json.dumps(output)
 
     def check_status(self, amphora):
         #Extracts the status of the amphora and returns relevant info
@@ -268,7 +271,7 @@ class CheckActions(OpenstackAction):
         return snap_list
 
 
-    def create_ticket(self, tickets_info: Dict, email: str, api_key: str, servicedesk_id, requesttype_id):
+    def create_ticket(self, tickets_info, email: str, api_key: str, servicedesk_id, requesttype_id):
         """
         Function to create tickets in anatlassian project. The tickets_info value should be formatted as such:
         {
@@ -282,10 +285,12 @@ class CheckActions(OpenstackAction):
             ] This list can be arbitrarily long, it will be iterated and each element will create a ticket based off the title and body keys and modified with the info from dataTitle and dataBody. For an example on how to do this please see deleting_machines_check
         }
         """
-        if len(tickets_info["server_list"]) == 0:
+        json_tickets = json.loads(tickets_info)
+
+        if len(json_tickets["server_list"]) == 0:
             logging.info("No issues found")
             sys.exit()
-        for i in tickets_info["server_list"]:
+        for i in json_tickets["server_list"]:
 
             issue = requests.post("https://stfc.atlassian.net/rest/servicedeskapi/request",
             auth=HTTPBasicAuth(email,api_key),
@@ -297,11 +302,11 @@ class CheckActions(OpenstackAction):
                 'summary': tickets_info['title'].format(p = i['dataTitle']),
                 'description': tickets_info['body'].format(p = i["dataBody"]),
             },
-            'servicedesk_id': servicedesk_id, #Point this at relevant service desk
-            'requesttype_id': requesttype_id
+            'serviceDeskId': servicedesk_id, #Point this at relevant service desk
+            'requestTypeId': requesttype_id
             })
 
             if issue.status_code != 201:
-                logging.error("Error creating issue issue")
+                logging.error("Error creating issue issue", issue.status_code)
             else:
                 logging.info("Created issue")
