@@ -289,7 +289,7 @@ class CheckActions(OpenstackAction):
         """
         actual_tickets_info = tickets_info["result"]
 
-        print("The tickets info is", actual_tickets_info)
+
         if len(actual_tickets_info["server_list"]) == 0:
             logging.info("No issues found")
             sys.exit()
@@ -310,6 +310,9 @@ class CheckActions(OpenstackAction):
             })
 
             if issue.status_code != 201:
-                logging.error("Error creating issue issue", issue.status_code)
+                logging.error("Error creating issue\n", str(issue.content))
             else:
                 logging.info("Created issue")
+
+
+
