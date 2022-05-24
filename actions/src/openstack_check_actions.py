@@ -210,7 +210,7 @@ class CheckActions(OpenstackAction):
             logging.critical("The status code was: "+str(amphorae.status_code))
             logging.critical("The JSON response was: \n"+str(amph_json))
             sys.exit()
-        return json.dumps(output)
+        return output
 
     def check_status(self, amphora):
         #Extracts the status of the amphora and returns relevant info
@@ -285,12 +285,11 @@ class CheckActions(OpenstackAction):
             ] This list can be arbitrarily long, it will be iterated and each element will create a ticket based off the title and body keys and modified with the info from dataTitle and dataBody. For an example on how to do this please see deleting_machines_check
         }
         """
-        json_tickets = json.loads(tickets_info)
-
-        if len(json_tickets["server_list"]) == 0:
+        print(tickets_info)
+        if len(tickets_info["server_list"]) == 0:
             logging.info("No issues found")
             sys.exit()
-        for i in json_tickets["server_list"]:
+        for i in tickets_info["server_list"]:
 
             issue = requests.post("https://stfc.atlassian.net/rest/servicedeskapi/request",
             auth=HTTPBasicAuth(email,api_key),
