@@ -20,7 +20,7 @@ output:
   - stderr: <% ctx().stderr %>
 
 tasks:
-  checks_deleted_machines:
+  checks_old_snapshots:
     action: stackstorm_openstack.checks.old.snapshots
       cloud_account=<% ctx().cloud_account %>
       all_projects=<% ctx().all_projects %>
