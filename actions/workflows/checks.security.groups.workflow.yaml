@@ -31,6 +31,7 @@ tasks:
       ip_prefix=<% ctx().ip_prefix %>
       all_projects=<% ctx().all_projects %>
       project_id=<% ctx().project_id %>
+      timeout=<% ctx().timeout %>
     next:
       - when: <% succeeded() %>
         publish:

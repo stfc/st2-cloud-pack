@@ -25,6 +25,7 @@ tasks:
       cloud_account=<% ctx().cloud_account %>
       all_projects=<% ctx().all_projects %>
       project_id=<% ctx().project_id %>
+      timeout=<% ctx().timeout %>
     next:
       - when: <% succeeded() %>
         publish:
