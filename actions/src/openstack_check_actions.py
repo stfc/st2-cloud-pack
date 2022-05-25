@@ -282,7 +282,7 @@ class CheckActions(OpenstackAction):
                 try:
                     snap_list.append({"name": snapshot["name"], "id": snapshot["id"], "updated": snapshot["updated_at"], "project_id": snapshot['os-extended-snapshot-attributes:project_id']})
                 except KeyError:
-                    snap_list.append({"name": snapshot["name"], "id": snapshot["id"], "created": snapshot["created_at"], "project_id": snapshot['location']["project"]["id"]})
+                    snap_list.append({"name": snapshot["name"], "id": snapshot["id"], "updated": snapshot["created_at"], "project_id": snapshot['location']["project"]["id"]})
         return snap_list
 
 
