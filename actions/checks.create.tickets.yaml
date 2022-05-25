@@ -21,10 +21,10 @@ parameters:
     required: true
   servicedesk_id:
     default: ""
-    type: number
+    type: string
     required: true
   requesttype_id:
     default: ""
-    type: number
+    type: string
     required: true
 runner_type: python-script

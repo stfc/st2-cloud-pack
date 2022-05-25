@@ -31,11 +31,11 @@ parameters:
   servicedesk_id:
     description: Service desk to send tickets to
     default: ""
-    type: number
+    type: string
     required: true
   requesttype_id:
     description: Request type for ticket
     default: ""
-    type: number
+    type: string
     required: true
 runner_type: orquesta
