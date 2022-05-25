@@ -119,6 +119,8 @@ class CheckActions(OpenstackAction):
 
     def check_deleted(self, cloud: str, project: str):
         output = []
+
+        print("Checking project", project)
         with OpenstackConnection(cloud_name=cloud) as conn:
             server_list = conn.list_servers(filters={"all_tenants":True, "project_id": project})
         #Loop through each server in the project/list
@@ -138,7 +140,11 @@ class CheckActions(OpenstackAction):
     def loadbalancer_check(self, cloud_account: str):
 
         with OpenstackConnection(cloud_name=cloud_account) as conn:
-            amphorae = requests.get("https://openstack.nubes.rl.ac.uk:9876/v2/octavia/amphorae", headers={'X-Auth-Token': conn.auth_token}) 
+            if cloud_account == "dev":
+                amphorae = requests.get("https://dev-openstack.nubes.rl.ac.uk:9876/v2/octavia/amphorae", headers={'X-Auth-Token': conn.auth_token})
+            else:
+                amphorae = requests.get("https://openstack.nubes.rl.ac.uk:9876/v2/octavia/amphorae", headers={'X-Auth-Token': conn.auth_token()}) 
+
         try:
             amph_json = amphorae.json()
         except requests.exceptions.JSONDecodeError:
@@ -211,7 +217,7 @@ class CheckActions(OpenstackAction):
             logging.critical("We encountered a problem accessing the API")
             logging.critical("The status code was: "+str(amphorae.status_code))
             logging.critical("The JSON response was: \n"+str(amph_json))
-            sys.exit()
+            sys.exit(1)
         return output
 
     def check_status(self, amphora):
@@ -275,7 +281,7 @@ class CheckActions(OpenstackAction):
 
     def create_ticket(self, tickets_info, email: str, api_key: str, servicedesk_id, requesttype_id):
         """
-        Function to create tickets in anatlassian project. The tickets_info value should be formatted as such:
+        Function to create tickets in an atlassian project. The tickets_info value should be formatted as such:
         {
             "title": "This is the {p[title]}",
             "body": "This is the {p[body]}", #The {p[value]} is used by python formatting to insert the correct value in this spot, based off data passed in with server_list
@@ -311,8 +317,5 @@ class CheckActions(OpenstackAction):
 
             if issue.status_code != 201:
                 logging.error("Error creating issue\n", str(issue.content))
-            else:
+            elif issue.status_code == 201:
                 logging.info("Created issue")
-
-
-
