@@ -126,13 +126,13 @@ class CheckActions(OpenstackAction):
         #Loop through each server in the project/list
         for i in server_list:
             #Take current time and check difference between updated time
-            sinceUpdate = datetime.utcnow() - datetime.strptime(i.updated, '%Y-%m-%dT%H:%M:%Sz')
+            sinceUpdate = datetime.utcnow() - datetime.strptime(i["updated"], '%Y-%m-%dT%H:%M:%Sz')
             #Check if server has been stuck in deleting for too long. (uses the last updated time so if changes have been made to the server while deleting the check may not work.)
-            if i.status == "deleting" and sinceUpdate.total_seconds() >= 600:
+            if i["status"] == "deleting" and sinceUpdate.total_seconds() >= 600:
                 #Append data to output array
                 output.append({
-                "dataTitle":{"id": str(i.id), "action": str(i.status)},
-                "dataBody":{"id": i.id, "data": json.dumps(i)}
+                "dataTitle":{"id": str(i.id), "action": str(i["status"])},
+                "dataBody":{"id": i["id"], "data": json.dumps(i)}
                 })
 
         return output
