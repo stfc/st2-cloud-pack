@@ -274,10 +274,15 @@ class CheckActions(OpenstackAction):
         with OpenstackConnection(cloud_name=cloud_account) as conn:
             volume_snapshots = conn.list_volume_snapshots(search_opts={"all_tenants":True, "project_id": project})
         for snapshot in volume_snapshots:
-            print(snapshot)
-            since_updated = datetime.strptime(snapshot["updated_at"], '%Y-%m-%dT%H:%M:%S.%f')
+            try:
+                since_updated = datetime.strptime(snapshot["updated_at"], '%Y-%m-%dT%H:%M:%S.%f')
+            except KeyError:
+                since_updated = datetime.strptime(snapshot["created_at"], '%Y-%m-%dT%H:%M:%S.%f')
             if since_updated.month != datetime.now().month:
-                snap_list.append({"name": snapshot["name"], "id": snapshot["id"], "updated": snapshot["updated_at"], "project_id": snapshot['os-extended-snapshot-attributes:project_id']})
+                try:
+                    snap_list.append({"name": snapshot["name"], "id": snapshot["id"], "updated": snapshot["updated_at"], "project_id": snapshot['os-extended-snapshot-attributes:project_id']})
+                except KeyError:
+                    snap_list.append({"name": snapshot["name"], "id": snapshot["id"], "created": snapshot["created_at"], "project_id": snapshot['location']["project"]["id"]})
         return snap_list
 
 
