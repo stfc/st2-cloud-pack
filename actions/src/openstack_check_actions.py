@@ -91,7 +91,7 @@ class CheckActions(OpenstackAction):
                 projects = conn.list_projects()
             for project in projects:
                 output = self.check_project(project=project["id"], cloud=cloud_account, max_port=max_port, min_port=min_port, ip_prefix=ip_prefix)
-                rules_with_issues["server_list"] = output
+                rules_with_issues["server_list"].extend(output)
         else:
             output = self.check_project(project=project_id, cloud=cloud_account, max_port=max_port, min_port=min_port, ip_prefix=ip_prefix)
             rules_with_issues["server_list"] = output
@@ -110,7 +110,7 @@ class CheckActions(OpenstackAction):
                 projects = conn.list_projects()
             for project in projects:
                 deleted = self.check_deleted(project=project["id"], cloud=cloud_account)
-            output["server_list"] = deleted
+            output["server_list"].extend(deleted)
         else:
             deleted = self.check_deleted(project=project_id, cloud=cloud_account)
             output["server_list"] = deleted
@@ -246,11 +246,12 @@ class CheckActions(OpenstackAction):
             "body": "The volume snapshot was last updated on: {p[updated]}\nSnapshot name: {p[name]}\nSnapshot id: {p[id]}\nProject id: {p[project_id]}",
             "server_list": []
         }
+        snapshots= []
         if all_projects:
             with OpenstackConnection(cloud_name=cloud_account) as conn:
                 projects = conn.list_projects()
             for project in projects:
-                snapshots = self.check_snapshots(project=project["id"], cloud_account=cloud_account)
+                snapshots.extend(self.check_snapshots(project=project["id"], cloud_account=cloud_account))
         else:
             snapshots = self.check_snapshots(project=project_id, cloud_account=cloud_account)
 
@@ -273,6 +274,7 @@ class CheckActions(OpenstackAction):
         with OpenstackConnection(cloud_name=cloud_account) as conn:
             volume_snapshots = conn.list_volume_snapshots(search_opts={"all_tenants":True, "project_id": project})
         for snapshot in volume_snapshots:
+            print(snapshot)
             since_updated = datetime.strptime(snapshot["updated_at"], '%Y-%m-%dT%H:%M:%S.%f')
             if since_updated.month != datetime.now().month:
                 snap_list.append({"name": snapshot["name"], "id": snapshot["id"], "updated": snapshot["updated_at"], "project_id": snapshot['os-extended-snapshot-attributes:project_id']})
