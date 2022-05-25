@@ -90,7 +90,7 @@ class CheckActions(OpenstackAction):
             with OpenstackConnection(cloud_name=cloud_account) as conn:
                 projects = conn.list_projects()
             for project in projects:
-                output = self.check_project(project=project, cloud=cloud_account, max_port=max_port, min_port=min_port, ip_prefix=ip_prefix)
+                output = self.check_project(project=project["id"], cloud=cloud_account, max_port=max_port, min_port=min_port, ip_prefix=ip_prefix)
                 rules_with_issues["server_list"] = output
         else:
             output = self.check_project(project=project_id, cloud=cloud_account, max_port=max_port, min_port=min_port, ip_prefix=ip_prefix)
@@ -109,7 +109,7 @@ class CheckActions(OpenstackAction):
             with OpenstackConnection(cloud_name=cloud_account) as conn:
                 projects = conn.list_projects()
             for project in projects:
-                deleted = self.check_deleted(project=project, cloud=cloud_account)
+                deleted = self.check_deleted(project=project["id"], cloud=cloud_account)
             output["server_list"] = deleted
         else:
             deleted = self.check_deleted(project=project_id, cloud=cloud_account)
@@ -250,7 +250,7 @@ class CheckActions(OpenstackAction):
             with OpenstackConnection(cloud_name=cloud_account) as conn:
                 projects = conn.list_projects()
             for project in projects:
-                snapshots = self.check_snapshots(project=project, cloud_account=cloud_account)
+                snapshots = self.check_snapshots(project=project["id"], cloud_account=cloud_account)
         else:
             snapshots = self.check_snapshots(project=project_id, cloud_account=cloud_account)
 
