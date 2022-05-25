@@ -21,7 +21,7 @@ tasks:
   checks_loadbalancers:
     action: stackstorm_openstack.checks.loadbalancers
       cloud_account=<% ctx().cloud_account %>
-      timeout=<% ctx().timeout %>
+      timeout=1200
     next:
       - when: <% succeeded() %>
         publish:
