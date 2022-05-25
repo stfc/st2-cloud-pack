@@ -23,7 +23,7 @@ output:
   - stderr: <% ctx().stderr %>
 
 tasks:
-  checks_deleted_machines:
+  checks_security_groups:
     action: stackstorm_openstack.checks.security.groups
       cloud_account=<% ctx().cloud_account %>
       max_port=<% ctx().max_port %>
