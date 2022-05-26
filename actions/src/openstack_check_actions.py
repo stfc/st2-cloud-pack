@@ -8,6 +8,7 @@ import requests
 from openstack_api.openstack_connection import OpenstackConnection
 from st2common.runners.base_action import Action
 from requests.auth import HTTPBasicAuth
+from amphorae import get_amphorae
 
 
 class CheckActions(Action):
@@ -37,8 +38,8 @@ class CheckActions(Action):
 
         return rules_with_issues
 
-    # pylint: disable=no-self-use
-    def _bad_rules(self, max_port, min_port, ip_prefix, sec_group):
+    @staticmethod
+    def _bad_rules(max_port, min_port, ip_prefix, sec_group):
         for group in sec_group:
             for rules in group["security_group_rules"]:
                 # pylint: disable=line-too-long
@@ -49,7 +50,8 @@ class CheckActions(Action):
                 ):
                     return rules
 
-    def _check_if_applied(self, rules: Dict, cloud, project):
+    @staticmethod
+    def _check_if_applied(rules: Dict, cloud, project):
         rules_with_issues = []
         with OpenstackConnection(cloud_name=cloud) as conn:
             servers = conn.list_servers(
@@ -168,7 +170,8 @@ class CheckActions(Action):
 
         return output
 
-    def _check_deleted(self, cloud: str, project: str):
+    @staticmethod
+    def _check_deleted(cloud: str, project: str):
         """
         Runs the check for deleting machines on a per-project basis
         """
@@ -205,17 +208,8 @@ class CheckActions(Action):
         output suitable to be passed to create_tickets
         """
 
-        with OpenstackConnection(cloud_name=cloud_account) as conn:
-            if cloud_account == "dev":
-                amphorae = requests.get(
-                    "https://dev-openstack.nubes.rl.ac.uk:9876/v2/octavia/amphorae",
-                    headers={"X-Auth-Token": conn.auth_token},
-                )
-            else:
-                amphorae = requests.get(
-                    "https://openstack.nubes.rl.ac.uk:9876/v2/octavia/amphorae",
-                    headers={"X-Auth-Token": conn.auth_token},
-                )
+        amphorae = get_amphorae(cloud_account)
+
         amph_json = self._check_amphora_status(amphorae)
         # pylint: disable=line-too-long
         output = {
@@ -296,8 +290,8 @@ class CheckActions(Action):
             sys.exit(1)
         return output
 
-    # pylint: disable=no-self-use
-    def _check_amphora_status(self, amphorae):
+    @staticmethod
+    def _check_amphora_status(amphorae):
         try:
             amph_json = amphorae.json()
             return amph_json
@@ -326,7 +320,8 @@ class CheckActions(Action):
         return ["error", status]
 
     # pylint: disable=invalid-name
-    def _ping_lb(self, ip):
+    @staticmethod
+    def _ping_lb(ip):
         # Runs the ping command to check that loadbalancer is up
         response = os.system(
             "ping -c 1 " + ip
@@ -375,7 +370,8 @@ class CheckActions(Action):
 
             return output
 
-    def check_snapshots(self, cloud_account, project: str):
+    @staticmethod
+    def check_snapshots(cloud_account, project: str):
         snap_list = []
         with OpenstackConnection(cloud_name=cloud_account) as conn:
             volume_snapshots = conn.list_volume_snapshots(
@@ -413,8 +409,9 @@ class CheckActions(Action):
                     )
         return snap_list
 
+    @staticmethod
     def create_ticket(
-        self, tickets_info, email: str, api_key: str, servicedesk_id, requesttype_id
+        tickets_info, email: str, api_key: str, servicedesk_id, requesttype_id
     ):
         # pylint: disable=line-too-long
         """
