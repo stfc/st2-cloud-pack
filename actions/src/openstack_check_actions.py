@@ -49,6 +49,7 @@ class CheckActions(Action):
                     and rules["port_range_min"] == min_port
                 ):
                     return rules
+        return {}
 
     @staticmethod
     def _check_if_applied(rules: Dict, cloud, project):
@@ -311,7 +312,8 @@ class CheckActions(Action):
             )
 
     # pylint: disable=missing-function-docstring
-    def _check_status(self, amphora):
+    @staticmethod
+    def _check_status(amphora):
         # Extracts the status of the amphora and returns relevant info
         status = amphora["status"]
         if status in ("ALLOCATED", "BOOTING", "READY"):
