@@ -1,21 +1,16 @@
 import json
 import os
-from typing import Callable
+from typing import Callable, Dict
 import logging
 import sys
 from datetime import datetime
 import requests
 from openstack_api.openstack_connection import OpenstackConnection
-from openstack_action import OpenstackAction
+from st2common.runners.base_action import Action
 from requests.auth import HTTPBasicAuth
 
 
-class CheckActions(OpenstackAction):
-
-    # pylint: disable=useless-super-delegation
-    def __init__(self, *args, **kwargs):
-        """Constructor Class"""
-        super().__init__(*args, **kwargs)
+class CheckActions(Action):
 
     # pylint: disable=arguments-differ
     def run(self, submodule: str, **kwargs):
@@ -25,18 +20,25 @@ class CheckActions(OpenstackAction):
         func: Callable = getattr(self, submodule)
         return func(**kwargs)
 
-    # pylint: disable=too-many-arguments, too-many-locals, no-self-use
-    def check_project(
+    # pylint: disable=too-many-arguments, too-many-locals
+    def _check_project_loadbalancers(
         self, project: str, cloud: str, max_port: int, min_port: int, ip_prefix: str
     ):
         """
         Does the logic for security_groups_check, should not be invoked seperately.
         """
-        rules_with_issues = []
 
         with OpenstackConnection(cloud_name=cloud) as conn:
             sec_group = conn.list_security_groups(filters={"project_id": project})
-        # pylint: disable=too-many-nested-blocks
+        # pylint: disable=too-many-function-args
+
+        bad_rules = self._bad_rules(max_port, min_port, ip_prefix, sec_group)
+        rules_with_issues = self._check_if_applied(bad_rules, cloud, project)
+
+        return rules_with_issues
+
+    # pylint: disable=no-self-use
+    def _bad_rules(self, max_port, min_port, ip_prefix, sec_group):
         for group in sec_group:
             for rules in group["security_group_rules"]:
                 # pylint: disable=line-too-long
@@ -45,36 +47,45 @@ class CheckActions(OpenstackAction):
                     and rules["port_range_max"] == max_port
                     and rules["port_range_min"] == min_port
                 ):
-                    ruledict = {}
-                    print("Issue with rule " + rules["security_group_id"])
-                    ruledict["id"] = rules["security_group_id"]
-                    ruledict["server_list"] = []
+                    return rules
 
-                    with OpenstackConnection(cloud_name=cloud) as conn:
-                        servers = conn.list_servers(
-                            filters={"all_tenants": True, "project_id": project}
-                        )  # Using the inbuilt all_projects variable throws a connection issue, may have to change to projects in a future cloud upgrade
+    def _check_if_applied(self, rules: Dict, cloud, project):
+        rules_with_issues = []
+        with OpenstackConnection(cloud_name=cloud) as conn:
+            servers = conn.list_servers(
+                filters={"all_tenants": True, "project_id": project}
+            )
 
-                    for server in servers:
+        for server in servers:
 
-                        with OpenstackConnection(cloud_name=cloud) as conn:
-                            applied = conn.list_server_security_groups(server.id)
+            with OpenstackConnection(cloud_name=cloud) as conn:
+                applied = conn.list_server_security_groups(server.id)
 
-                        for serv_groups in applied:
-
-                            if serv_groups["id"] == rules["security_group_id"]:
-                                print("Rule is applied")
-                                rules_with_issues.append(
-                                    {
-                                        "dataTitle": {"id": server["id"]},
-                                        "dataBody": {
-                                            "proj_id": project,
-                                            "sec_id": serv_groups["id"],
-                                        },
-                                    }
-                                )
-                            else:
-                                print("Rule not applied to " + server["id"])
+            for serv_groups in applied:
+                if serv_groups["id"] == rules["security_group_id"]:
+                    print("Rule is applied")
+                    rules_with_issues.append(
+                        {
+                            "dataTitle": {"id": server["id"]},
+                            "dataBody": {
+                                "proj_id": project,
+                                "sec_id": serv_groups["id"],
+                                "applied": "Yes",
+                            },
+                        }
+                    )
+                else:
+                    rules_with_issues.append(
+                        {
+                            "dataTitle": {"id": server["id"]},
+                            "dataBody": {
+                                "proj_id": project,
+                                "sec_id": serv_groups["id"],
+                                "applied": "no",
+                            },
+                        }
+                    )
+                    print("Rule not applied to " + server["id"])
         return rules_with_issues
 
     def security_groups_check(
@@ -102,7 +113,7 @@ class CheckActions(OpenstackAction):
         # print(servers.get_all_servers())
         rules_with_issues = {
             "title": "Server {p[id]} has an incorrectly configured server group",
-            "body": "Project id: {p[proj_id]}\nSecurity Group ID: {p[sec_id]}",
+            "body": "Project id: {p[proj_id]}\nSecurity Group ID: {p[sec_id]}\n Is applied: {p[applied]}",
             "server_list": [],
         }
 
@@ -110,7 +121,7 @@ class CheckActions(OpenstackAction):
             with OpenstackConnection(cloud_name=cloud_account) as conn:
                 projects = conn.list_projects()
             for project in projects:
-                output = self.check_project(
+                output = self._check_project_loadbalancers(
                     project=project["id"],
                     cloud=cloud_account,
                     max_port=max_port,
@@ -119,7 +130,7 @@ class CheckActions(OpenstackAction):
                 )
                 rules_with_issues["server_list"].extend(output)
         else:
-            output = self.check_project(
+            output = self._check_project_loadbalancers(
                 project=project_id,
                 cloud=cloud_account,
                 max_port=max_port,
@@ -147,15 +158,17 @@ class CheckActions(OpenstackAction):
             with OpenstackConnection(cloud_name=cloud_account) as conn:
                 projects = conn.list_projects()
             for project in projects:
-                deleted = self.check_deleted(project=project["id"], cloud=cloud_account)
+                deleted = self._check_deleted(
+                    project=project["id"], cloud=cloud_account
+                )
             output["server_list"].extend(deleted)
         else:
-            deleted = self.check_deleted(project=project_id, cloud=cloud_account)
+            deleted = self._check_deleted(project=project_id, cloud=cloud_account)
             output["server_list"] = deleted
 
         return output
 
-    def check_deleted(self, cloud: str, project: str):
+    def _check_deleted(self, cloud: str, project: str):
         """
         Runs the check for deleting machines on a per-project basis
         """
@@ -201,25 +214,9 @@ class CheckActions(OpenstackAction):
             else:
                 amphorae = requests.get(
                     "https://openstack.nubes.rl.ac.uk:9876/v2/octavia/amphorae",
-                    headers={"X-Auth-Token": conn.auth_token()},
+                    headers={"X-Auth-Token": conn.auth_token},
                 )
-
-        try:
-            amph_json = amphorae.json()
-        except requests.exceptions.JSONDecodeError:
-            logging.critical(
-                msg="There was no JSON response \nThe status code was: "
-                + str(amphorae.status_code)
-                + "\nThe body was: \n"
-                + str(amphorae.content)
-            )
-            # pylint: disable=line-too-long
-            return (
-                "There was no JSON response \nThe status code was: "
-                + str(amphorae.status_code)
-                + "\nThe body was: \n"
-                + str(amphorae.content)
-            )
+        amph_json = self._check_amphora_status(amphorae)
         # pylint: disable=line-too-long
         output = {
             "title": "{p[title_text]}",
@@ -233,9 +230,9 @@ class CheckActions(OpenstackAction):
         if amphorae.status_code == 200:
             # Gets list of amphorae and iterates through it to check the loadbalancer and amphora status.
             for i in amph_json["amphorae"]:
-                status = self.check_status(i)
-                ping_result = self.ping_lb(i["lb_network_ip"])
-
+                status = self._check_status(i)
+                ping_result = self._ping_lb(i["lb_network_ip"])
+                # This section builds out the ticket for each one with an error
                 if status[0] == "error" or ping_result == "error":
                     if status[0].lower() == "error" and ping_result.lower() == "error":
                         output["server_list"].append(
@@ -299,8 +296,28 @@ class CheckActions(OpenstackAction):
             sys.exit(1)
         return output
 
+    # pylint: disable=no-self-use
+    def _check_amphora_status(self, amphorae):
+        try:
+            amph_json = amphorae.json()
+            return amph_json
+        except requests.exceptions.JSONDecodeError:
+            logging.critical(
+                msg="There was no JSON response \nThe status code was: "
+                + str(amphorae.status_code)
+                + "\nThe body was: \n"
+                + str(amphorae.content)
+            )
+            # pylint: disable=line-too-long
+            return (
+                "There was no JSON response \nThe status code was: "
+                + str(amphorae.status_code)
+                + "\nThe body was: \n"
+                + str(amphorae.content)
+            )
+
     # pylint: disable=missing-function-docstring
-    def check_status(self, amphora):
+    def _check_status(self, amphora):
         # Extracts the status of the amphora and returns relevant info
         status = amphora["status"]
         if status in ("ALLOCATED", "BOOTING", "READY"):
@@ -309,7 +326,7 @@ class CheckActions(OpenstackAction):
         return ["error", status]
 
     # pylint: disable=invalid-name
-    def ping_lb(self, ip):
+    def _ping_lb(self, ip):
         # Runs the ping command to check that loadbalancer is up
         response = os.system(
             "ping -c 1 " + ip

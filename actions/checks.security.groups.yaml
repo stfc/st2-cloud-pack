@@ -13,7 +13,7 @@ parameters:
     required: true
     type: string
   ip_prefix:
-    description: The IPs that are allowed to access the port range specified below
+    description: The IPs that are allowed to access the port range specified in max and min port. This should be given in a CIDR format e.g. 0.0.0.0/0 for all internet
     default: ""
     required: true
     type: string

@@ -1,7 +1,7 @@
 description: Creates tickets on atlassian
 enabled: true
 entry_point: src/openstack_check_actions.py
-name: checks.create.tickets
+name: atlassian.create.tickets
 parameters:
   submodule:
     default: create_ticket

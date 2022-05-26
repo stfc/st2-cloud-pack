@@ -38,7 +38,7 @@ tasks:
           - tickets_info: <% result() %>
         do: create_tickets
   create_tickets:
-    action: stackstorm_openstack.checks.create.tickets
+    action: stackstorm_openstack.atlassian.create.tickets
       email=<% ctx().email %>
       api_key=<% ctx().api_key %>
       servicedesk_id=<% ctx().servicedesk_id %>
