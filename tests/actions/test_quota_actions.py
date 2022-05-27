@@ -23,6 +23,9 @@ class TestQuotaActions(OpenstackActionTestBase):
         self.action: QuotaActions = self.get_action_instance(api_mock=self.network_mock)
 
     def test_quota_set(self):
+        """
+        Tests setting a quota calls the correct API with the specified arguments
+        """
         cloud, project = NonCallableMock(), NonCallableMock()
         floating_ips, security_group_rules = NonCallableMock(), NonCallableMock()
 

@@ -4,6 +4,7 @@ from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from structs.quota_details import QuotaDetails
 
 
+# pylint: disable=too-few-public-methods
 class OpenstackQuota(OpenstackWrapperBase):
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)

@@ -54,6 +54,12 @@ class OpenstackNetwork(OpenstackWrapperBase):
         return created
 
     def get_floating_ip(self, cloud_account: str, ip_addr: str) -> Optional[FloatingIP]:
+        """
+        Gets the details of a given floating IP address
+        :param cloud_account: The account from the clouds configuration to use
+        :param ip_addr: The IP address to return details of
+        :return: The associated IP Address record if available, else None
+        """
         ip_addr = ip_addr.strip()
         if not ip_addr:
             raise MissingMandatoryParamError("An IP address is required")
@@ -185,6 +191,7 @@ class OpenstackNetwork(OpenstackWrapperBase):
         :param rbac_identifier: The name or Openstack ID to use
         :return: True if deleted, else False
         """
+        # pylint: disable=unreachable
         raise NotImplementedError("Pending better RBAC search")
         rbac_id = self.find_network_rbac(cloud_account, rbac_identifier)
         if not rbac_id:
@@ -274,6 +281,7 @@ class OpenstackNetwork(OpenstackWrapperBase):
             raise ItemNotFoundError("No available subnets")
         return random.choice(avail)
 
+    # pylint: disable=too-many-arguments
     def create_subnet(
         self,
         cloud_account: str,

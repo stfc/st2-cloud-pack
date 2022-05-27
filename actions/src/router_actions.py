@@ -24,7 +24,7 @@ class RouterActions(OpenstackAction):
             "router_update": self.router_update,
         }
 
-    # pylint disable=too-many-arguments
+    # pylint: disable=too-many-arguments
     def router_create(
         self,
         cloud_account: str,

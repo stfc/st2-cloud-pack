@@ -1,7 +1,5 @@
 from unittest.mock import create_autospec, NonCallableMock
 
-from enums.network_providers import NetworkProviders
-from enums.rbac_network_actions import RbacNetworkActions
 from openstack_api.openstack_network import OpenstackNetwork
 from src.floating_ip_actions import FloatingIPActions
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase

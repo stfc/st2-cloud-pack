@@ -12,6 +12,7 @@ from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from openstack_api.openstack_network import OpenstackNetwork
 
 
+# pylint: disable=too-many-public-methods
 class OpenstackNetworkTests(unittest.TestCase):
     def setUp(self) -> None:
         """
@@ -105,20 +106,20 @@ class OpenstackNetworkTests(unittest.TestCase):
         """
         Tests get floating IP returns correctly
         """
-        cloud, ip = NonCallableMock(), NonCallableMock()
-        returned = self.instance.get_floating_ip(cloud, ip)
+        cloud, ip_address = NonCallableMock(), NonCallableMock()
+        returned = self.instance.get_floating_ip(cloud, ip_address)
 
         self.mocked_connection.assert_called_with(cloud)
-        self.network_api.get_ip.assert_called_once_with(ip.strip())
+        self.network_api.get_ip.assert_called_once_with(ip_address.strip())
         assert returned == self.network_api.get_ip.return_value
 
     def test_get_floating_ip_call_failure(self):
         """
         Tests get floating IP returns None if a result isn't found
         """
-        cloud, ip = NonCallableMock(), NonCallableMock()
+        cloud, ip_address = NonCallableMock(), NonCallableMock()
         self.network_api.get_ip.side_effect = ResourceNotFound
-        returned = self.instance.get_floating_ip(cloud, ip)
+        returned = self.instance.get_floating_ip(cloud, ip_address)
         assert returned is None
 
     @raises(MissingMandatoryParamError)
@@ -436,9 +437,7 @@ class OpenstackNetworkTests(unittest.TestCase):
 
         # Force our random selection to always give us 32
         used_networks = [
-            ipaddress.ip_network(f"192.168.{i}.0/24")
-            for i in range(1, 255)
-            if i is not 32
+            ipaddress.ip_network(f"192.168.{i}.0/24") for i in range(1, 255) if i != 32
         ]
         self.instance.get_used_subnet_nets = Mock(return_value=used_networks)
 
