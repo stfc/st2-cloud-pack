@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Callable
 
 from openstack.exceptions import ResourceNotFound
 
@@ -15,6 +15,13 @@ class QuotaActions(OpenstackAction):
 
         # lists possible functions that could be run as an action
         self.func = {"quota_set": self.quota_set, "quota_show": self.quota_show}
+
+    def run(self, submodule: str, **kwargs):
+        """
+        Dynamically dispatches to the method wanted
+        """
+        func: Callable = getattr(self, submodule)
+        return func(**kwargs)
 
     def quota_set(
         self,

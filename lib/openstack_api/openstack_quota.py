@@ -20,7 +20,7 @@ class OpenstackQuota(OpenstackWrapperBase):
             return
 
         with self._connection_cls(cloud_account) as conn:
-            kwargs = {"project_id": project_id, quota_id: new_val}
+            kwargs = {"quota": project_id, quota_id: new_val}
             conn.network.update_quota(**kwargs)
 
     def set_quota(self, cloud_account: str, details: QuotaDetails):

@@ -406,7 +406,7 @@ class OpenstackNetworkTests(unittest.TestCase):
 
         self.network_api.add_interface_to_router.assert_called_once_with(
             router=self.instance.get_router.return_value,
-            subnet=self.instance.find_subnet.return_value,
+            subnet_id=self.instance.find_subnet.return_value.id,
         )
         assert returned == self.instance.get_router.return_value
 

@@ -32,7 +32,7 @@ class OpenstackQuotaTests(unittest.TestCase):
             cloud, details.project_identifier
         )
         self.network_api.update_quota.assert_called_once_with(
-            project_id=self.identity_module.find_mandatory_project.return_value.id,
+            quota=self.identity_module.find_mandatory_project.return_value.id,
             floating_ips=details.num_floating_ips,
         )
 
@@ -49,7 +49,7 @@ class OpenstackQuotaTests(unittest.TestCase):
             cloud, details.project_identifier
         )
         self.network_api.update_quota.assert_called_once_with(
-            project_id=self.identity_module.find_mandatory_project.return_value.id,
+            quota=self.identity_module.find_mandatory_project.return_value.id,
             security_group_rules=details.num_security_group_rules,
         )
 
@@ -63,11 +63,11 @@ class OpenstackQuotaTests(unittest.TestCase):
 
         expected_calls = [
             call(
-                project_id=self.identity_module.find_mandatory_project.return_value.id,
+                quota=self.identity_module.find_mandatory_project.return_value.id,
                 floating_ips=details.num_floating_ips,
             ),
             call(
-                project_id=self.identity_module.find_mandatory_project.return_value.id,
+                quota=self.identity_module.find_mandatory_project.return_value.id,
                 security_group_rules=details.num_security_group_rules,
             ),
         ]

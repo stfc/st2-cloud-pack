@@ -1,4 +1,4 @@
-from typing import Tuple, Union, Dict, List
+from typing import Tuple, Union, Dict, List, Callable
 
 from openstack.network.v2.floating_ip import FloatingIP
 
@@ -12,13 +12,12 @@ class FloatingIPActions(OpenstackAction):
         super().__init__(*args, **kwargs)
         self._api: OpenstackNetwork = config.get("openstack_api", OpenstackNetwork())
 
-        # lists possible functions that could be run as an action
-        self.func = {
-            "floating_ip_create": self.floating_ip_create,
-            "floating_ip_delete": self.floating_ip_delete,
-            "floating_ip_get": self.floating_ip_get
-            # floating_ip_update
-        }
+    def run(self, submodule: str, **kwargs):
+        """
+        Dynamically dispatches to the method wanted
+        """
+        func: Callable = getattr(self, submodule)
+        return func(**kwargs)
 
     def floating_ip_get(
         self, cloud_account: str, ip_addr: str

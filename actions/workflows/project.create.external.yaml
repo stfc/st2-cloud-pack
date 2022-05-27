@@ -2,7 +2,6 @@ version: 1.0
 
 description: Create External Project Workflow
 
-
 input:
   - cloud_account
 
@@ -23,6 +22,8 @@ input:
 
 vars:
   - project_uuid: null
+  - router_uuid: null
+  - subnet_uuid: null
   - stdout: null
   - stderr: null
 
@@ -32,22 +33,30 @@ output:
 
 tasks:
   create_internal_project:
-    action: stackstorm_openstack.project.create
+    action: stackstorm_openstack.workflow.project.create.internal
       cloud_account=<% ctx().cloud_account %>
-      name=<% ctx().project_name %>
-      description=<% ctx().project_description %>
+      project_name=<% ctx().project_name %>
+      project_description=<% ctx().project_description %>
+      admin_user_list=<% ctx().admin_user_list %>
+      stfc_user_list=<% ctx().stfc_user_list %>
+      network_name="External"
     next:
       - when: <% succeeded() %>
         publish:
-          - project_uuid: <% result().result.id %>
-          - stdout: "<% result().result %>"
+          - project_uuid: <% task(create_internal_project).result.output.project_id %>
+          - stdout: <% task(create_internal_project).result.output.project %>
         do:
-          - wait_for_default_security_group
-          - create_security_group_http
-          - create_security_group_https
-          - create_rbac_policy
-          - create_admin_roles
-          - create_stfc_roles
+          - allocate_floating_ips
+          - create_network
+          - create_router
+          - set_default_quota
+
+  allocate_floating_ips:
+    action: stackstorm_openstack.floating.ip_addr.create
+      cloud_account=<% ctx().cloud_account %>
+      network_identifier="External"
+      project_identifier=<% ctx().project_uuid %>
+      number_to_create=<% ctx().number_of_floating_ips %>
 
   create_network:
     action: stackstorm_openstack.network.create
@@ -62,7 +71,6 @@ tasks:
       - when: <% succeeded() %>
         do:
           - create_rbac_policy
-          - floating_ip_create
           - create_subnet
 
   create_rbac_policy:
@@ -74,121 +82,42 @@ tasks:
 
   create_subnet:
     action: stackstorm_openstack.subnet.create
-      name=<% ctx().subnet_name %>
-      description=<% ctx().subnet_description %>
+      cloud_account=<% ctx().cloud_account %>
+      subnet_name=<% ctx().subnet_name %>
+      subnet_description=<% ctx().subnet_description %>
       network=<% ctx().network_name %>
-      is_dhcp_enabled=True
+      dhcp_enabled=True
     next:
       - when: <% succeeded() %>
-        do: create_router
-      - when: <% failed() %>
-        publish: stderr="Failed creating subnet <% result() %>"
-        do: fail
+        publish:
+            - subnet_uuid: <% result().result.id %>
+        do: router_add_subnet
 
   create_router:
     action: stackstorm_openstack.router.create
-      name=<% ctx().router_name %>
-      description=<% ctx().router_description %>
-      project=<% ctx().project_name %>
+      cloud_account=<% ctx().cloud_account %>
+      router_name=<% ctx().router_name %>
+      router_description=<% ctx().router_description %>
+      project_identifier=<% ctx().project_name %>
       is_distributed=False
       external_gateway="External"
     next:
       - when: <% succeeded() %>
+        publish:
+          - router_uuid: <% result().result.id %>
         do: router_add_subnet
-      - when: <% failed() %>
-        publish: stderr="Failed creating router <% ctx().router_name %>, Error <% result() %>"
-        do: fail
 
   router_add_subnet:
-    action: stackstorm_openstack.router.add.interface router=<% ctx().router_name %> subnet=<% ctx().subnet_name %>
-    next:
-      - when: <% failed() %>
-        publish: stderr="Failed adding subnet <% ctx().subnet_name %> to router <% ctx().router_name %>, Error <% result() %> "
-        do: fail
+    action: stackstorm_openstack.router.add.interface
+      cloud_account=<% ctx().cloud_account %>
+      project_identifier=<% ctx().project_uuid %>
+      router_identifier=<% ctx().router_uuid %>
+      subnet_identifier=<% ctx().subnet_uuid %>
+    join: all
 
   set_default_quota:
-    action: stackstorm_openstack.quota.set project=<% ctx().project_name %> security_group_rules=200
-    next:
-      - when: <% succeeded() %>
-        do:
-          - create_security_group_rules
-          - create_tcp_rules
-          - create_udp_rules
-      - when: <% failed() %>
-        publish: stderr="Failed setting quota for project <% ctx().project_name %>, Error <% result() %>"
-        do: fail
-
-  wait_for_default_security_group:
-    # We need to force Openstack to resync between the
-    # DB and Neutron by querying. This avoids the default
-    # SC not appearing until someone goes onto the web UI
-    action: stackstorm_openstack.security.group.list
+    action: stackstorm_openstack.quota.set
       cloud_account=<% ctx().cloud_account %>
       project_identifier=<% ctx().project_name %>
-    next:
-      - when: <% succeeded() %>
-        do:
-          - allow_all_icmp_by_default
-          - allow_ssh_by_default
-          - allow_aquilon_notify_by_default
-
-  allow_all_icmp_by_default:
-    action: stackstorm_openstack.security.group.rule.create
-      cloud_account=<% ctx().cloud_account %>
-      project_identifier=<% ctx().project_uuid %>
-      security_group_identifier="default"
-      direction="ingress"
-      ether_type="IPV4"
-      protocol="ICMP"
-      start_port="*"
-      end_port="*"
-
-  allow_ssh_by_default:
-    action: stackstorm_openstack.security.group.rule.create
-      cloud_account=<% ctx().cloud_account %>
-      project_identifier=<% ctx().project_uuid %>
-      security_group_identifier="default"
-      direction="ingress"
-      ether_type="IPV4"
-      protocol="TCP"
-      start_port="22"
-      end_port="22"
-
-  allow_aquilon_notify_by_default:
-    action: stackstorm_openstack.security.group.rule.create
-      cloud_account=<% ctx().cloud_account %>
-      project_identifier=<% ctx().project_uuid %>
-      security_group_identifier="default"
-      direction="ingress"
-      ether_type="IPV4"
-      protocol="UDP"
-      start_port="7777"
-      end_port="7777"
-
-  create_admin_roles:
-    with: <% ctx(admin_user_list) %>
-    action: stackstorm_openstack.role.add
-      cloud_account=<% ctx().cloud_account %>
-      project_identifier=<% ctx().project_uuid %>
-      role="admin"
-      user_identifier=<% item() %>
-      user_domain="default"
-
-  create_stfc_roles:
-    with: <% ctx(stfc_user_list) %>
-    action: stackstorm_openstack.role.add
-      cloud_account=<% ctx().cloud_account %>
-      project_identifier=<% ctx().project_uuid %>
-      role="user"
-      user_identifier=<% item() %>
-      user_domain="stfc"
-
-  floating_ip_create:
-    action: stackstorm_openstack.floating.ip_addr.create
-      network="External"
-      project=<% ctx().project_name %>
-      number_to_create=<% ctx().number_of_floating_ips %>
-    next:
-      - when: <% failed() %>
-        publish: stderr="Failed assigning floating ips for project <% ctx().project_name %>, Error <% result() %>"
-        do: fail
+      num_security_group_rules=200
+      num_floating_ips=<% ctx().number_of_floating_ips %>

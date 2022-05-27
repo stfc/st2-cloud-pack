@@ -8,16 +8,12 @@ input:
   - project_description
   - admin_user_list
   - stfc_user_list
+  - network_name: "Internal"
 
 vars:
-  - network_name: "Internal"
   - project_uuid: null
   - stdout: null
   - stderr: null
-
-output:
-  - stdout: <% ctx().stdout %>
-  - stderr: <% ctx().stderr %>
 
 tasks:
   create_internal_project:
@@ -29,7 +25,7 @@ tasks:
       - when: <% succeeded() %>
         publish:
           - project_uuid: <% result().result.id %>
-          - stdout: "<% result().result %>"
+          - project: <% result().result %>
         do:
           - wait_for_default_security_group
           - create_security_group_http
@@ -165,3 +161,9 @@ tasks:
       role="user"
       user_identifier=<% item() %>
       user_domain="stfc"
+
+output:
+  - stdout: <% ctx().stdout %>
+  - stderr: <% ctx().stderr %>
+  - project_id: <% ctx().project_uuid %>
+  - project: <% ctx().project %>

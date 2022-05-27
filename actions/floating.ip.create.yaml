@@ -18,9 +18,11 @@ parameters:
     type: string
   project_identifier:
     description: "Owner's project (Name or ID)"
+    required: true
     type: string
   number_to_create:
     description: "Number of floating IPs to allocate"
     default: 1
+    required: true
     type: integer
 runner_type: python-script

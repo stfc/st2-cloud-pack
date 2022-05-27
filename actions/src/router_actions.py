@@ -1,4 +1,4 @@
-from typing import Tuple, Dict, Union
+from typing import Tuple, Dict, Union, Callable
 
 from openstack.exceptions import ResourceNotFound
 from openstack.network.v2.router import Router
@@ -14,15 +14,12 @@ class RouterActions(OpenstackAction):
         super().__init__(*args, **kwargs)
         self._api: OpenstackNetwork = config.get("openstack_api", OpenstackNetwork())
 
-        # lists possible functions that could be run as an action
-        self.func = {
-            "router_create": self.router_create,
-            "router_add_interface": self.router_add_interface,
-            "router_remove_interface": self.router_remove_interface,
-            "router_delete": self.router_delete,
-            "router_get": self.router_get,
-            "router_update": self.router_update,
-        }
+    def run(self, submodule: str, **kwargs):
+        """
+        Dynamically dispatches to the method wanted
+        """
+        func: Callable = getattr(self, submodule)
+        return func(**kwargs)
 
     # pylint: disable=too-many-arguments
     def router_create(
