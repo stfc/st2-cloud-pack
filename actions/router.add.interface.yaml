@@ -8,14 +8,20 @@ parameters:
     default: router_add_interface
     immutable: true
     type: string
-  router:
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    required: true
+    type: string
+  project_identifier:
+    description: Project (Name or ID) to search in
+    required: true
+    type: string
+  router_identifier:
     description: Router (Name or ID)
     required: true
     type: string
-  subnet:
+  subnet_identifier:
     description: Subnet (Name or ID)
     type: string
-  port:
-    description: Port (Name or ID)
-    type: string
+    required: true
 runner_type: python-script

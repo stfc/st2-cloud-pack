@@ -59,42 +59,24 @@ class RouterActions(OpenstackAction):
         )
         return bool(router), router
 
-    def router_add_interface(self, router, subnet, port):
+    def router_add_interface(
+        self,
+        cloud_account: str,
+        project_identifier: str,
+        router_identifier: str,
+        subnet_identifier: str,
+    ) -> Tuple[bool, Router]:
         """
         Add interface to Openstack router
-        :param router: (String) ID or Name
-        :param subnet: (String) ID or Name,
-        :param port: (String) ID or Name
-        :return: (status (Bool), reason (String))
+        :param cloud_account: The account from the clouds configuration to use
+        :param router_identifier: ID or Name of the router
+        :param subnet_identifier: ID or Name of the subnet
+        :return: status, associated router
         """
-
-        # requires either subnet_id or port_id
-        subnet_id, port_id = None, None
-
-        # get router id
-        router_id = self.find_resource_id(router, self.conn.network.find_router)
-        if not router_id:
-            return False, f"Router not found with Name or ID {router}"
-
-        # if subnet provided - get subnet id
-        if subnet:
-            subnet_id = self.find_resource_id(subnet, self.conn.network.find_subnet)
-            if not router_id:
-                return False, f"Router not found with Name or ID {subnet}"
-
-        # if port provided - get port id
-        if port:
-            port_id = self.find_resource_id(port, self.conn.network.find_port)
-            if not port_id:
-                return False, f"Port not found with Name or ID {port}"
-
-        try:
-            router = self.conn.network.add_interface_to_router(
-                router=router_id, subnet_id=subnet_id, port_id=port_id
-            )
-        except ResourceNotFound as err:
-            return False, f"Adding Router Interface Failed {err}"
-        return True, router
+        router = self._api.add_interface_to_router(
+            cloud_account, project_identifier, router_identifier, subnet_identifier
+        )
+        return bool(router), router
 
     def router_get(
         self, cloud_account: str, project_identifier: str, router_identifier: str

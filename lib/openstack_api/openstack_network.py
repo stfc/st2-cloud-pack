@@ -201,6 +201,33 @@ class OpenstackNetwork(OpenstackWrapperBase):
             result = conn.network.delete_rbac_policy(rbac_id, ignore_missing=False)
             return result is None
 
+    def add_interface_to_router(
+        self,
+        cloud_account: str,
+        project_identifier: str,
+        router_identifier: str,
+        subnet_identifier: str,
+    ) -> Router:
+        """
+        Adds a subnet to a given router
+        :param cloud_account: The associated credentials to use
+        :param project_identifier: The name or ID of the project containing the router and subnet
+        :param router_identifier: The name or ID of the router to add an interface to
+        :param subnet_identifier: The subnet name or ID of the router to add an interface to
+        :return: The router the subnet was added to
+        """
+        router = self.get_router(cloud_account, project_identifier, router_identifier)
+        if not router:
+            raise ItemNotFoundError("The specified router was not found")
+
+        subnet = self.find_subnet(cloud_account, project_identifier, subnet_identifier)
+        if not subnet:
+            raise ItemNotFoundError("The specified subnet was not found")
+
+        with self._connection_cls(cloud_account) as conn:
+            conn.network.add_interface_to_router(router=router, subnet_id=subnet.id)
+        return router
+
     def create_router(self, cloud_account: str, details: RouterDetails) -> Router:
         """
         Creates a router for the given project without any internal interfaces
@@ -319,4 +346,22 @@ class OpenstackNetwork(OpenstackWrapperBase):
                 name=subnet_name,
                 description=subnet_description,
                 is_dhcp_enabled=dhcp_enabled,
+            )
+
+    def find_subnet(
+        self, cloud_account: str, project_identifier: str, subnet_identifier: str
+    ) -> Subnet:
+        """
+        Returns a given subnet found from the given attributes
+        :param cloud_account: The associated credentials to use
+        :param project_identifier: The project name or ID to search in
+        :param subnet_identifier: The subnet name or ID to get
+        """
+        project = self._identity_api.find_mandatory_project(
+            cloud_account, project_identifier
+        )
+
+        with self._connection_cls(cloud_account) as conn:
+            return conn.network.find_subnet(
+                name_or_id=subnet_identifier, project_id=project.id, ignore_missing=True
             )

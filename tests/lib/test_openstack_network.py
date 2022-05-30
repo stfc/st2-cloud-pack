@@ -361,6 +361,55 @@ class OpenstackNetworkTests(unittest.TestCase):
         )
         assert returned == self.network_api.create_router.return_value
 
+    @raises(ItemNotFoundError)
+    def test_add_interface_to_router_router_not_found(self):
+        """
+        Tests that add interface to router will throw if the router
+        was not found
+        """
+        self.instance.get_router = Mock(return_value=None)
+        self.instance.add_interface_to_router(
+            NonCallableMock(), NonCallableMock(), NonCallableMock(), NonCallableMock()
+        )
+
+    @raises(ItemNotFoundError)
+    def test_add_interface_to_router_network_not_found(self):
+        """
+        Tests that add interface to router will throw if the network
+        was not found
+        """
+        self.instance.get_router = Mock()
+        self.instance.find_subnet = Mock(return_value=None)
+        self.instance.add_interface_to_router(
+            NonCallableMock(),
+            NonCallableMock(),
+            NonCallableMock(),
+            NonCallableMock(),
+        )
+
+    def test_add_interface_to_router_successful_call(self):
+        """
+        Tests that the correct call is made when add_interface is called
+        """
+        self.instance.get_router = Mock()
+        self.instance.find_subnet = Mock()
+        cloud, project = NonCallableMock(), NonCallableMock()
+        router_id, subnet_id = NonCallableMock(), NonCallableMock()
+
+        returned = self.instance.add_interface_to_router(
+            cloud, project, router_id, subnet_id
+        )
+
+        self.mocked_connection.assert_called_once_with(cloud)
+        self.instance.get_router.assert_called_once_with(cloud, project, router_id)
+        self.instance.find_subnet.assert_called_once_with(cloud, project, subnet_id)
+
+        self.network_api.add_interface_to_router.assert_called_once_with(
+            router=self.instance.get_router.return_value,
+            subnet=self.instance.find_subnet.return_value,
+        )
+        assert returned == self.instance.get_router.return_value
+
     def test_get_router(self):
         """
         Tests the get router call is correct
@@ -519,3 +568,17 @@ class OpenstackNetworkTests(unittest.TestCase):
             NonCallableMock(),
             NonCallableMock(),
         )
+
+    def test_find_subnet(self):
+        """
+        Tests find subnet forwards the correct result and makes the correct call
+        """
+        cloud, project, subnet = NonCallableMock(), NonCallableMock(), NonCallableMock()
+        returned = self.instance.find_subnet(cloud, project, subnet)
+        self.mocked_connection.assert_called_once_with(cloud)
+        self.network_api.find_subnet.assert_called_once_with(
+            name_or_id=subnet,
+            project_id=self.identity_module.find_mandatory_project.return_value.id,
+            ignore_missing=True,
+        )
+        assert returned == self.network_api.find_subnet.return_value
