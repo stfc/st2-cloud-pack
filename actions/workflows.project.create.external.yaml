@@ -2,7 +2,7 @@
 description: Create external project orquesta workflow
 enabled: true
 entry_point: workflows/project.create.external.yaml
-name: project.create.external
+name: workflows.project.create.external
 parameters:
   cloud_account:
     description: The clouds.yaml account to use whilst performing this action
