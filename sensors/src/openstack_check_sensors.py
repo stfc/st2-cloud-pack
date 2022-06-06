@@ -1,4 +1,3 @@
-from typing import Callable
 import subprocess
 import logging
 import requests
@@ -7,17 +6,10 @@ from amphorae import get_amphorae
 
 
 # pylint: disable=abstract-method
-class CheckSensors(Sensor):
-    # pylint: disable=arguments-differ
-    def run(self, submodule: str, **kwargs):
-        """
-        Dynamically dispatches to the method wanted
-        """
+class LoadbalancerSensor(Sensor):
 
-        func: Callable = getattr(self, submodule)
-        return func(**kwargs)
-
-    def loadbalancer_check(self, trigger, cloud_account: str = "dev"):
+    # pylint: disable=inconsistent-return-statements
+    def run(self, cloud_account: str = "dev"):
         """
         Action to check loadbalancer and amphorae status
         output suitable to be passed to create_tickets
@@ -99,7 +91,9 @@ class CheckSensors(Sensor):
             else:
                 logging.info("%s is fine.", i["id"])
         if len(output["server_list"]) > 0:
-            self.sensor_service.dispatch(trigger=trigger, payload=output)
+            self.sensor_service.dispatch(
+                trigger="openstack.loadbalancer", payload=output
+            )
             return output
 
     @staticmethod
