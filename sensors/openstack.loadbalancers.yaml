@@ -1,8 +1,9 @@
-class_name: CheckSensors
-entry_point: src/openstack_check_sensors.py
-description: Check for amphorae with an error status and find out if it is an issue with the amphora or loadbalancer
+---
+class_name: "CheckSensors"
+entry_point: "src/openstack_check_sensors.py"
+description: "Check for amphorae with an error status and find out if it is an issue with the amphora or loadbalancer"
 trigger_types:
-  name: openstack.loadbalancer
-  description: Trigger for problems with loadbalancers
-  payload_schema:
-    type: object
+  - name: "openstack.loadbalancer"
+    description: "Trigger for problems with loadbalancers."
+    payload_schema:
+      type: "object"
