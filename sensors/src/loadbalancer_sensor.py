@@ -7,13 +7,29 @@ from amphorae import get_amphorae
 
 # pylint: disable=abstract-method
 class LoadbalancerSensor(Sensor):
+    def __init__(self, sensor_service, config):
+        super(LoadbalancerSensor, self).__init__(
+            sensor_service=sensor_service, config=config
+        )
+        self._logger = self.sensor_service.get_logger(name=self.__class__.__name__)
 
     # pylint: disable=inconsistent-return-statements
-    def run(self, cloud_account: str = "prod"):
+    def run(
+        self,
+        cloud_account: str = "prod",
+    ):
         """
         Action to check loadbalancer and amphorae status
         output suitable to be passed to create_tickets
         """
+        self.sensor_service.dispatch(
+            trigger="openstack.loadbalancer",
+            payload={
+                "title": "Didn't find any loadbalancers",
+                "body": "This should never go to a ticket",
+                "server_list": [],
+            },
+        )
 
         amphorae = get_amphorae(cloud_account)
 
@@ -91,10 +107,20 @@ class LoadbalancerSensor(Sensor):
             else:
                 logging.info("%s is fine.", i["id"])
         if len(output["server_list"]) > 0:
+            self.sensor_service
             self.sensor_service.dispatch(
                 trigger="openstack.loadbalancer", payload=output
             )
             return output
+        else:
+            self.sensor_service.dispatch(
+                trigger="openstack.loadbalancer",
+                payload={
+                    "title": "Didn't find any loadbalancers",
+                    "body": "This should never go to a ticket",
+                    "server_list": [],
+                },
+            )
 
     @staticmethod
     def _check_amphora_status(amphorae):
