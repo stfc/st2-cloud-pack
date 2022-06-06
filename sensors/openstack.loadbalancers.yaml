@@ -1,6 +1,6 @@
 ---
 class_name: "LoadbalancerSensor"
-entry_point: "src/openstack_check_sensors.py"
+entry_point: "src/loadbalancer_sensor.py"
 description: "Check for amphorae with an error status and find out if it is an issue with the amphora or loadbalancer"
 trigger_types:
   - name: "openstack.loadbalancer"
@@ -14,3 +14,6 @@ trigger_types:
           type: "string"
         server_list:
           type: "object"
+    parameters:
+      cloud_account:
+        type: "string"
