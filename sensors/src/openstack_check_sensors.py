@@ -9,7 +9,7 @@ from amphorae import get_amphorae
 class LoadbalancerSensor(Sensor):
 
     # pylint: disable=inconsistent-return-statements
-    def run(self, cloud_account: str = "dev"):
+    def run(self, cloud_account: str = "prod"):
         """
         Action to check loadbalancer and amphorae status
         output suitable to be passed to create_tickets
@@ -138,3 +138,18 @@ class LoadbalancerSensor(Sensor):
 
         logging.info(msg=ip + " is down")
         return "error"
+
+    def add_trigger(self, trigger):
+        pass
+
+    def cleanup(self):
+        pass
+
+    def remove_trigger(self, trigger):
+        pass
+
+    def setup(self):
+        pass
+
+    def update_trigger(self, trigger):
+        pass
