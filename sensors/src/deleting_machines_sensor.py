@@ -41,10 +41,6 @@ class DeletingMachinesSensor(PollingSensor):
             "server_list": [],
         }
 
-        self.sensor_service.dispatch_with_context(
-            payload=output, trigger="stackstorm_openstack.openstack.deletingmachines"
-        )
-
         with OpenstackConnection(cloud_name=cloud_account) as conn:
             projects = conn.list_projects()
         for project in projects:
@@ -86,7 +82,7 @@ class DeletingMachinesSensor(PollingSensor):
                 # Append data to output array
                 output.append(
                     {
-                        "dataTitle": {"id": str(i["id"]), "action": str(i["status"])},
+                        "dataTitle": {"id": str(i["id"]), "action": str(i["vm_state"])},
                         "dataBody": {"id": i["id"], "data": json.dumps(i)},
                     }
                 )
