@@ -1,0 +1,10 @@
+---
+class_name: "DeletingMachinesSensor"
+entry_point: "src/deleting_machines_sensor.py"
+description: "Check for machines stuck in deleting state for longer than 10m"
+poll_interval: 300
+trigger_types:
+  - name: "openstack.deletingmachines"
+    description: "Trigger for problems with deleting machines"
+    payload_schema:
+      type: "object"

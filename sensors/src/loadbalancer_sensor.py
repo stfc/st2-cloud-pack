@@ -1,13 +1,13 @@
 import subprocess
 import logging
 import requests
-from st2reactor.sensor.base import PollingSensor
-from amphorae import get_amphorae
+from st2reactor.sensor.base import Sensor
 from st2reactor.container.sensor_wrapper import SensorService
+from amphorae import get_amphorae
 
 
 # pylint: disable=abstract-method
-class LoadbalancerSensor(PollingSensor):
+class LoadbalancerSensor(Sensor):
     def __init__(self, sensor_service: SensorService, config):
         super(LoadbalancerSensor, self).__init__(
             sensor_service=sensor_service, config=config
@@ -16,7 +16,7 @@ class LoadbalancerSensor(PollingSensor):
         self._logger = self.sensor_service.get_logger(name=self.__class__.__name__)
 
     # pylint: disable=inconsistent-return-statements
-    def poll(
+    def run(
         self,
         cloud_account: str = "prod",
     ):
@@ -24,7 +24,7 @@ class LoadbalancerSensor(PollingSensor):
         Action to check loadbalancer and amphorae status
         output suitable to be passed to create_tickets
         """
-        self.sensor_service.dispatch_with_context(
+        self.sensor_service.dispatch(
             trigger="openstack.loadbalancer",
             payload={
                 "title": "Didn't find any loadbalancers",

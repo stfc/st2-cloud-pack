@@ -2,7 +2,6 @@
 class_name: "LoadbalancerSensor"
 entry_point: "src/loadbalancer_sensor.py"
 description: "Check for amphorae with an error status and find out if it is an issue with the amphora or loadbalancer"
-polling_interval: 300
 trigger_types:
   - name: "openstack.loadbalancer"
     description: "Trigger for problems with loadbalancers."
