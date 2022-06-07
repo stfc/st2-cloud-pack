@@ -57,6 +57,10 @@ class DeletingMachinesSensor(PollingSensor):
                 trigger="stackstorm_openstack.openstack.deletingmachines",
             )
             return output
+        else:
+            print("checks complete, no servers found")
+            print(output)
+            return output
 
     @staticmethod
     def _check_deleted(cloud: str, project: str):
