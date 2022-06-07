@@ -107,7 +107,7 @@ class LoadbalancerSensor(Sensor):
             else:
                 logging.info("%s is fine.", i["id"])
         if len(output["server_list"]) > 0:
-            self.sensor_service
+
             self.sensor_service.dispatch(
                 trigger="openstack.loadbalancer", payload=output
             )

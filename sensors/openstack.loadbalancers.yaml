@@ -7,13 +7,3 @@ trigger_types:
     description: "Trigger for problems with loadbalancers."
     payload_schema:
       type: "object"
-      properties:
-        title:
-          type: "string"
-        body:
-          type: "string"
-        server_list:
-          type: "object"
-    parameters_schema:
-      cloud_account:
-        type: "string"
