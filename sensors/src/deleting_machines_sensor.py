@@ -42,7 +42,7 @@ class DeletingMachinesSensor(PollingSensor):
         }
 
         self.sensor_service.dispatch_with_context(
-            payload=output, trigger="openstack.deletingmachines"
+            payload=output, trigger="stackstorm_openstack.openstack.deletingmachines"
         )
 
         with OpenstackConnection(cloud_name=cloud_account) as conn:
@@ -53,7 +53,8 @@ class DeletingMachinesSensor(PollingSensor):
 
         if len(output["server_list"]) > 0:
             self.sensor_service.dispatch_with_context(
-                payload=output, trigger="openstack.deletingmachines"
+                payload=output,
+                trigger="stackstorm_openstack.openstack.deletingmachines",
             )
             return output
 
