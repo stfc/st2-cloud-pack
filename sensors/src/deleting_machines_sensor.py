@@ -86,7 +86,7 @@ class DeletingMachinesSensor(PollingSensor):
                 # Append data to output array
                 output.append(
                     {
-                        "dataTitle": {"id": str(i.id), "action": str(i["status"])},
+                        "dataTitle": {"id": str(i["id"]), "action": str(i["status"])},
                         "dataBody": {"id": i["id"], "data": json.dumps(i)},
                     }
                 )
