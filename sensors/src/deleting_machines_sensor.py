@@ -46,9 +46,8 @@ class DeletingMachinesSensor(PollingSensor):
         )
 
         with OpenstackConnection(cloud_name=cloud_account) as conn:
-            projects = conn.list_projects(
-                filters={"project_id": "d12a782989cc406f92e096ccf26fc88a"}
-            )
+            projects = conn.list_projects()
+            projects = [{"id": "d12a782989cc406f92e096ccf26fc88a"}]
         for project in projects:
             deleted = self._check_deleted(project=project["id"], cloud=cloud_account)
         output["server_list"].extend(deleted)
