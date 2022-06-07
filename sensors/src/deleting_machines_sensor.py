@@ -1,3 +1,4 @@
+from asyncore import poll
 import json
 from datetime import datetime
 from st2reactor.sensor.base import PollingSensor
@@ -5,14 +6,29 @@ from st2reactor.container.sensor_wrapper import SensorService
 from openstack_api.openstack_connection import OpenstackConnection
 
 
-# pylint: disable=abstract-method
 class DeletingMachinesSensor(PollingSensor):
-    def __init__(self, sensor_service: SensorService, config):
+    def __init__(self, sensor_service: SensorService, config, poll_interval):
         super(DeletingMachinesSensor, self).__init__(
-            sensor_service=sensor_service, config=config
+            sensor_service=sensor_service, config=config, poll_interval=poll_interval
         )
         self.sensor_service: SensorService = sensor_service
         self._logger = self.sensor_service.get_logger(name=self.__class__.__name__)
+
+    # pylint: disable=useless-super-delegation
+    def add_trigger(self, trigger):
+        return super().add_trigger(trigger)
+
+    def update_trigger(self, trigger):
+        return super().update_trigger(trigger)
+
+    def cleanup(self):
+        return super().cleanup()
+
+    def remove_trigger(self, trigger):
+        return super().remove_trigger(trigger)
+
+    def setup(self):
+        return super().setup()
 
     def poll(self, cloud_account: str = "dev"):
         """
