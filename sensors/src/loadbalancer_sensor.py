@@ -1,13 +1,13 @@
 import subprocess
 import logging
 import requests
-from st2reactor.sensor.base import Sensor
+from st2reactor.sensor.base import PollingSensor
 from amphorae import get_amphorae
 from st2reactor.container.sensor_wrapper import SensorService
 
 
 # pylint: disable=abstract-method
-class LoadbalancerSensor(Sensor):
+class LoadbalancerSensor(PollingSensor):
     def __init__(self, sensor_service: SensorService, config):
         super(LoadbalancerSensor, self).__init__(
             sensor_service=sensor_service, config=config
@@ -16,7 +16,7 @@ class LoadbalancerSensor(Sensor):
         self._logger = self.sensor_service.get_logger(name=self.__class__.__name__)
 
     # pylint: disable=inconsistent-return-statements
-    def run(
+    def poll(
         self,
         cloud_account: str = "prod",
     ):
