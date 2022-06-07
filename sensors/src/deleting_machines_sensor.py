@@ -60,7 +60,6 @@ class DeletingMachinesSensor(PollingSensor):
         else:
             print("checks complete, no servers found")
             print(output)
-            return output
 
     @staticmethod
     def _check_deleted(cloud: str, project: str):
@@ -83,7 +82,7 @@ class DeletingMachinesSensor(PollingSensor):
             # Check if server has been stuck in deleting for too long.
             # (uses the last updated time so if changes have been made
             # to the server while deleting the check may not work.)
-            if i["status"] == "active" and since_update.total_seconds() >= 600:
+            if i["vm_state"] == "active" and since_update.total_seconds() >= 600:
                 # Append data to output array
                 output.append(
                     {
