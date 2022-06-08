@@ -30,14 +30,14 @@ class DeletingMachinesSensor(PollingSensor):
     def setup(self):
         return super().setup()
 
-    def poll(self, cloud_account: str = "dev-admin"):
+    def poll(self, cloud_account: str = "dev"):
         """
         Action to check for machines that are stuck deleting for more than 10mins
         Outputs a suitable dictionary to pass into create_tickets
         """
         output = {
             "title": "Server {p[id]} has not been updated in more than 10 minutes during {p[action]}",
-            "body": "The following information may be useful\nHost id: {p[id]} \n{p[data]}",
+            "body": "The following information may be useful\nHost id: {p[id]}",
             "server_list": [],
         }
 
@@ -45,8 +45,9 @@ class DeletingMachinesSensor(PollingSensor):
             projects = conn.list_projects()
         for project in projects:
             deleted = self._check_deleted(project=project["id"], cloud=cloud_account)
-        output["server_list"].extend(deleted)
-
+            print(output["server_list"])
+            output["server_list"].extend(deleted)
+        print(output["server_list"])
         if len(output["server_list"]) > 0:
             self.sensor_service.dispatch_with_context(
                 payload=output,
@@ -66,25 +67,28 @@ class DeletingMachinesSensor(PollingSensor):
 
         print("Checking project", project)
         with OpenstackConnection(cloud_name=cloud) as conn:
-            server_list = conn.list_servers(
-                filters={"all_tenants": True, "project_id": project}
-            )
-        # Loop through each server in the project/list
-        for i in server_list:
-            # Take current time and check difference between updated time
-            since_update = datetime.utcnow() - datetime.strptime(
-                i["updated"], "%Y-%m-%dT%H:%M:%Sz"
-            )
-            # Check if server has been stuck in deleting for too long.
-            # (uses the last updated time so if changes have been made
-            # to the server while deleting the check may not work.)
-            if i["vm_state"] == "active" and since_update.total_seconds() >= 600:
-                # Append data to output array
-                output.append(
-                    {
-                        "dataTitle": {"id": str(i["id"]), "action": str(i["vm_state"])},
-                        "dataBody": {"id": i["id"], "data": json.dumps(i)},
-                    }
-                )
+            server_list = conn.compute.servers(all_tenants=True, project_id=project)
 
+            # Loop through each server in the project/list
+            for i in server_list:
+                server = conn.compute.get_server(i["id"])
+                # Take current time and check difference between updated time
+                since_update = datetime.utcnow() - datetime.strptime(
+                    server.updated_at, "%Y-%m-%dT%H:%M:%Sz"
+                )
+                # Check if server has been stuck in deleting for too long.
+                # (uses the last updated time so if changes have been made
+                # to the server while deleting the check may not work.)
+                if server.status == "ACTIVE" and since_update.total_seconds() >= 600:
+                    # Append data to output array
+                    output.append(
+                        {
+                            "dataTitle": {
+                                "id": str(server.id),
+                                "action": str(server.status),
+                            },
+                            "dataBody": {"id": server.id},
+                        }
+                    )
+                    print(output)
         return output
