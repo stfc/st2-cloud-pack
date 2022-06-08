@@ -30,7 +30,7 @@ class DeletingMachinesSensor(PollingSensor):
     def setup(self):
         return super().setup()
 
-    def poll(self, cloud_account: str = "dev"):
+    def poll(self, cloud_account: str = "dev-admin"):
         """
         Action to check for machines that are stuck deleting for more than 10mins
         Outputs a suitable dictionary to pass into create_tickets
