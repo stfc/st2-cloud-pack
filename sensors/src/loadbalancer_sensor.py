@@ -18,14 +18,14 @@ class LoadbalancerSensor(Sensor):
     # pylint: disable=inconsistent-return-statements
     def run(
         self,
-        cloud_account: str = "prod",
+        cloud_account: str = "dev-admin",
     ):
         """
         Action to check loadbalancer and amphorae status
         output suitable to be passed to create_tickets
         """
         self.sensor_service.dispatch(
-            trigger="openstack.loadbalancer",
+            trigger="stackstorm_openstack.openstack.loadbalancer",
             payload={
                 "title": "Didn't find any loadbalancers",
                 "body": "This should never go to a ticket",
@@ -111,12 +111,12 @@ class LoadbalancerSensor(Sensor):
         if len(output["server_list"]) > 0:
 
             self.sensor_service.dispatch(
-                trigger="openstack.loadbalancer", payload=output
+                trigger="stackstorm_openstack.openstack.loadbalancer", payload=output
             )
             return output
         else:
             self.sensor_service.dispatch(
-                trigger="openstack.loadbalancer",
+                trigger="stackstorm_openstack.openstack.loadbalancer",
                 payload={
                     "title": "Didn't find any loadbalancers",
                     "body": "This should never go to a ticket",
