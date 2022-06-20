@@ -4,7 +4,7 @@ description: "Rule to trigger createTickets when sensor picks up issue"
 enabled: true
 
 trigger:
-  type: "openstack.deletedmachines"
+  type: "stackstorm_openstack.openstack.deletingmachines"
 action:
   ref: "atlassian.create.tickets"
   parameters:

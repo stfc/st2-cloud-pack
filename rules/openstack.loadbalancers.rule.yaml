@@ -4,7 +4,7 @@ description: "Rule to trigger createTickets when sensor picks up issue"
 enabled: true
 
 trigger:
-  type: "openstack.loadbalancer"
+  type: "stackstorm_openstack.openstack.loadbalancer"
 action:
   ref: "atlassian.create.tickets"
   parameters:
