@@ -1,5 +1,3 @@
-from asyncore import poll
-import json
 from datetime import datetime
 from st2reactor.sensor.base import PollingSensor
 from st2reactor.container.sensor_wrapper import SensorService
@@ -14,21 +12,20 @@ class DeletingMachinesSensor(PollingSensor):
         self.sensor_service: SensorService = sensor_service
         self._logger = self.sensor_service.get_logger(name=self.__class__.__name__)
 
-    # pylint: disable=useless-super-delegation
     def add_trigger(self, trigger):
-        return super().add_trigger(trigger)
+        pass
 
     def update_trigger(self, trigger):
-        return super().update_trigger(trigger)
+        pass
 
     def cleanup(self):
-        return super().cleanup()
+        pass
 
     def remove_trigger(self, trigger):
-        return super().remove_trigger(trigger)
+        pass
 
     def setup(self):
-        return super().setup()
+        pass
 
     def poll(self, cloud_account: str = "dev-admin"):
         """
@@ -57,6 +54,7 @@ class DeletingMachinesSensor(PollingSensor):
         else:
             print("checks complete, no servers found")
             print(output)
+            return output
 
     @staticmethod
     def _check_deleted(cloud: str, project: str):

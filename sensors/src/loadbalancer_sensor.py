@@ -9,6 +9,7 @@ from amphorae import get_amphorae
 # pylint: disable=abstract-method
 class LoadbalancerSensor(Sensor):
     def __init__(self, sensor_service: SensorService, config):
+        # pylint: disable=super-with-arguments
         super(LoadbalancerSensor, self).__init__(
             sensor_service=sensor_service, config=config
         )
@@ -24,14 +25,6 @@ class LoadbalancerSensor(Sensor):
         Action to check loadbalancer and amphorae status
         output suitable to be passed to create_tickets
         """
-        self.sensor_service.dispatch(
-            trigger="stackstorm_openstack.openstack.loadbalancer",
-            payload={
-                "title": "Didn't find any loadbalancers",
-                "body": "This should never go to a ticket",
-                "server_list": [],
-            },
-        )
 
         amphorae = get_amphorae(cloud_account)
 
@@ -114,15 +107,6 @@ class LoadbalancerSensor(Sensor):
                 trigger="stackstorm_openstack.openstack.loadbalancer", payload=output
             )
             return output
-        else:
-            self.sensor_service.dispatch(
-                trigger="stackstorm_openstack.openstack.loadbalancer",
-                payload={
-                    "title": "Didn't find any loadbalancers",
-                    "body": "This should never go to a ticket",
-                    "server_list": [],
-                },
-            )
 
     @staticmethod
     def _check_amphora_status(amphorae):
