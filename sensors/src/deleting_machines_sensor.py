@@ -6,12 +6,14 @@ from openstack_api.openstack_connection import OpenstackConnection
 
 class DeletingMachinesSensor(PollingSensor):
     def __init__(self, sensor_service: SensorService, config, poll_interval):
+        # pylint: disable=super-with-arguments
         super(DeletingMachinesSensor, self).__init__(
             sensor_service=sensor_service, config=config, poll_interval=poll_interval
         )
         self.sensor_service: SensorService = sensor_service
         self._logger = self.sensor_service.get_logger(name=self.__class__.__name__)
 
+    # pylint: disable=missing-function-docstring
     def add_trigger(self, trigger):
         pass
 
@@ -51,10 +53,10 @@ class DeletingMachinesSensor(PollingSensor):
                 trigger="stackstorm_openstack.openstack.deletingmachines",
             )
             return output
-        else:
-            print("checks complete, no servers found")
-            print(output)
-            return output
+
+        print("checks complete, no servers found")
+        print(output)
+        return output
 
     @staticmethod
     def _check_deleted(cloud: str, project: str):

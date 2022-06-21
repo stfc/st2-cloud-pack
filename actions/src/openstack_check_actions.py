@@ -1,4 +1,4 @@
-import json
+import ast
 from typing import Callable, Dict
 import logging
 import sys
@@ -243,7 +243,7 @@ class CheckActions(Action):
         try:
             actual_tickets_info = tickets_info["result"]
         except TypeError:
-            actual_tickets_info = tickets_info
+            actual_tickets_info = ast.literal_eval(tickets_info)
 
         if len(actual_tickets_info["server_list"]) == 0:
             logging.info("No issues found")
@@ -272,6 +272,6 @@ class CheckActions(Action):
             )
 
             if issue.status_code != 201:
-                logging.error("Error creating issue\n")
+                logging.error("Error creating issue %i", issue.status_code)
             elif issue.status_code == 201:
                 logging.info("Created issue")

@@ -11,5 +11,5 @@ action:
     tickets_info: "{{ trigger }}"
     email: "{{ st2kv.system.jsm_email }}"
     api_key: "{{ st2kv.system.jsm_key }}"
-    servicedesk_id: "7"
+    servicedesk_id: "12"
     requesttype_id: "94"
