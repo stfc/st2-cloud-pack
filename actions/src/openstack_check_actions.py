@@ -239,8 +239,12 @@ class CheckActions(Action):
             ] This list can be arbitrarily long, it will be iterated and each element will create a ticket based off the title and body keys and modified with the info from dataTitle and dataBody. For an example on how to do this please see deleting_machines_check
         }
         """
-        print(tickets_info)
-        actual_tickets_info = tickets_info["result"]
+        logging.info(tickets_info)
+        actual_tickets_info = (
+            tickets_info["result"]
+            if tickets_info["result"]
+            else tickets_info["payload"]
+        )
 
         if len(actual_tickets_info["server_list"]) == 0:
             logging.info("No issues found")
