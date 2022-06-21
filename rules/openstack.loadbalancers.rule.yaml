@@ -8,7 +8,7 @@ trigger:
 action:
   ref: "stackstorm_openstack.atlassian.create.tickets"
   parameters:
-    tickets_info: "{ { trigger.payload } }"
+    tickets_info: "{ { trigger } }"
     email: "{ { st2kv.system.jsm_email } }"
     api_key: "{ { st2kv.system.jsm_key } }"
     servicedesk_id: 7
