@@ -1,4 +1,4 @@
-name: "openstack.loadbalancers"
+name: "openstack.deletedmachines"
 pack: "stackstorm_openstack"
 description: "Rule to trigger createTickets when sensor picks up issue"
 enabled: true
@@ -6,7 +6,7 @@ enabled: true
 trigger:
   type: "stackstorm_openstack.openstack.deletingmachines"
 action:
-  ref: "atlassian.create.tickets"
+  ref: "stackstorm_openstack.atlassian.create.tickets"
   parameters:
     tickets_info: "{ { trigger.payload } }"
     email: "{ { st2kv.system.jsm_email } }"
