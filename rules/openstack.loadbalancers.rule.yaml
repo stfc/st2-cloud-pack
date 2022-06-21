@@ -11,3 +11,5 @@ action:
     tickets_info: "{ { trigger.payload } }"
     email: "{ { st2kv.system.jsm_email } }"
     api_key: "{ { st2kv.system.jsm_key } }"
+    servicedesk_id: 7
+    requesttype_id: 94
