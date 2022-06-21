@@ -240,9 +240,10 @@ class CheckActions(Action):
         }
         """
         print(tickets_info)
-        actual_tickets_info = (
-            tickets_info["result"] if tickets_info["result"] else tickets_info
-        )
+        try:
+            actual_tickets_info = tickets_info["result"]
+        except TypeError:
+            actual_tickets_info = tickets_info
 
         if len(actual_tickets_info["server_list"]) == 0:
             logging.info("No issues found")
