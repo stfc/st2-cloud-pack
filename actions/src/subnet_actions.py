@@ -1,10 +1,9 @@
 from typing import Dict, Callable
 
-from openstack.exceptions import ResourceNotFound
 from openstack.network.v2.subnet import Subnet
-from st2common.runners.base_action import Action
 
 from openstack_api.openstack_network import OpenstackNetwork
+from st2common.runners.base_action import Action
 
 
 class SubnetActions(Action):
@@ -26,11 +25,7 @@ class SubnetActions(Action):
         :param subnet: Name or ID
         :return: (status (Bool), reason/output (String/Dict))
         """
-        try:
-            subnet = self.conn.network.find_subnet(subnet, ignore_missing=False)
-        except ResourceNotFound as err:
-            return False, f"Subnet not found {repr(err)}"
-        return True, subnet
+        raise NotImplementedError("Not ported to new API")
 
     # pylint: disable=too-many-arguments
     def subnet_create(
