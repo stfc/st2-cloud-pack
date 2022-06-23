@@ -1,7 +1,7 @@
 ---
 description: Show quota for project
 enabled: true
-entry_point: src/quota.py
+entry_point: src/quota_actions.py
 name: quota.show
 parameters:
   submodule:

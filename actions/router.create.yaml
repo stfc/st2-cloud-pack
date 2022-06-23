@@ -1,28 +1,33 @@
 ---
 description: Create Router
 enabled: true
-entry_point: src/router.py
+entry_point: src/router_actions.py
 name: router.create
 parameters:
   submodule:
     default: router_create
     immutable: True
     type: string
-  project:
-    description: Project to display (name or ID)
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    required: true
+    type: string
+  project_identifier:
+    description: Project (Name or ID) to search in
+    required: true
+    type: string
+  router_name:
+    description: New Router Name
+    required: True
+    type: string
+  router_description:
+    description: New Router Description
     required: True
     type: string
   external_gateway:
     description: External Gateway Network (Name or ID)
     type: string
-  name:
-    description: New Router Name
-    required: True
-    type: string
-  description:
-    description: New Router Description
-    required: True
-    type: string
+    required: true
   is_distributed:
     description: The distributed state of the router, which is distributed True or not False
     type: boolean

@@ -1,56 +1,29 @@
 ---
 description: Set quota for project
 enabled: true
-entry_point: src/quota.py
+entry_point: src/quota_actions.py
 name: quota.set
 parameters:
   submodule:
     default: quota_set
     immutable: true
     type: string
-  project:
-    description: "Owner's project (Name or ID)"
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    required: true
     type: string
-  floating_ips:
-    description: "The maximum amount of floating IPs you can have. Type: int"
+  project_identifier:
+    description: Project (Name or ID)
+    required: true
+    type: string
+  num_floating_ips:
+    description: "The maximum amount of floating IPs a project can use. 0 means no change."
+    default: 0
     type: integer
-  health_monitors:
-    description: "The maximum amount of health_monitors you can create. Type: int"
+    required: false
+  num_security_group_rules:
+    description: "The maximum amount of security group rules you can create. 0 means no change."
+    default: 0
     type: integer
-  listeners:
-    description: "The maximum amount of listeners you can create. Type: int"
-    type: integer
-  load_balancers:
-    description: "The maximum amount of load balancers you can create. Type: int"
-    type: integer
-  l7_policies:
-    description: "The maximum amount of L7 policies you can create. Type: int"
-    type: integer
-  networks:
-    description: "The maximum amount of networks you can create. Type: int"
-    type: integer
-  pools:
-    description: "The maximum amount of pools you can create. Type: int"
-    type: integer
-  ports:
-    description: "The maximum amount of ports you can create. Type: int"
-    type: integer
-  rbac_policies:
-    description: "The maximum amount of rbac policies you can create. Type: int"
-    type: integer
-  routers:
-    description: "The maximum amount of routers you can create. Type: int"
-    type: integer
-  subnets:
-    description: "The maximum amount of subnets you can create. Type: int"
-    type: integer
-  subnet_pools:
-    description: "The maximum amount of subnet pools you can create. Type: int"
-    type: integer
-  security_groups:
-    description: "The maximum amount of security groups you can create. Type: int"
-    type: integer
-  security_group_rules:
-    description: "The maximum amount of security group rules you can create."
-    type: integer
+    required: false
 runner_type: python-script

@@ -2,8 +2,13 @@
 description: Create external project orquesta workflow
 enabled: true
 entry_point: workflows/project.create.external.yaml
-name: project.create.external
+name: workflows.project.create.external
 parameters:
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    default: ""
+    required: true
+    type: string
   project_name:
     required: true
     type: string
@@ -12,6 +17,14 @@ parameters:
     required: true
     type: string
     description: Project Description
+  admin_user_list:
+    required: true
+    type: array
+    description: List of Users (IDs or Names) to give administrator access
+  stfc_user_list:
+    required: true
+    type: array
+    description: List of Users (stfc domain) (IDs or Names) to give local user access
   network_name:
     required: true
     type: string
@@ -36,26 +49,9 @@ parameters:
     required: true
     type: string
     description: Router Description
-  ip_number:
+  number_of_floating_ips:
     required: true
     type: integer
-    description: Floating Ips to create
-  admin_user_list:
-    required: true
-    type: array
-    description: List of Users (IDs or Names) to give administrator access
-  stfc_user_list:
-    required: true
-    type: array
-    description: List of Users (stfc domain) (IDs or Names) to give local user access
-  default_network_external_rules:
-    required: true
-    type: object
-    description: Network external security rules
-    default: "{{ st2kv.system.default_network_rules | decrypt_kv | from_json_string }}"
-  egress_external_ips:
-    required: true
-    type: object
-    description: Network security rule TCP/UDP egress IPs
-    default: "{{ st2kv.system.tcp_udp_egress_external_ips | decrypt_kv | from_json_string }}"
+    default: 1
+    description: Floating Ips to allocate to the project
 runner_type: orquesta

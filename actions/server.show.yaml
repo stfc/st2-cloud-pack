@@ -1,6 +1,6 @@
 ---
 description: Show Server properties
-enabled: true
+enabled: false
 entry_point: src/server.py
 name: server.show
 parameters:

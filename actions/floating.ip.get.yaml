@@ -1,0 +1,19 @@
+---
+description: Get floating IP Properties
+enabled: true
+entry_point: src/floating_ip_actions.py
+name: floating.ip_addr.get
+parameters:
+  submodule:
+    default: floating_ip_get
+    immutable: true
+    type: string
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    required: true
+    type: string
+  ip:
+    description: "Floating IP address to look-up"
+    required: true
+    type: string
+runner_type: python-script

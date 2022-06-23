@@ -1,7 +1,7 @@
 ---
 description: Delete Router
-enabled: true
-entry_point: src/router.py
+enabled: false
+entry_point: src/router_actions.py
 name: router.delete
 parameters:
   submodule:

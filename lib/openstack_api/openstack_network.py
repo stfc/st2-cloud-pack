@@ -1,7 +1,13 @@
+import ipaddress
+import random
 from typing import Optional, List
 
+from openstack.exceptions import ResourceNotFound
+from openstack.network.v2.floating_ip import FloatingIP
 from openstack.network.v2.network import Network
 from openstack.network.v2.rbac_policy import RBACPolicy
+from openstack.network.v2.router import Router
+from openstack.network.v2.subnet import Subnet
 
 from enums.rbac_network_actions import RbacNetworkActions
 from exceptions.item_not_found_error import ItemNotFoundError
@@ -11,12 +17,58 @@ from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.openstack_identity import OpenstackIdentity
 from structs.network_details import NetworkDetails
 from structs.network_rbac import NetworkRbac
+from structs.router_details import RouterDetails
 
 
 class OpenstackNetwork(OpenstackWrapperBase):
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)
         self._identity_api = OpenstackIdentity(connection_cls)
+
+    def allocate_floating_ips(
+        self, cloud_account, network_identifier, project_identifier, number_to_create
+    ) -> List[FloatingIP]:
+        """
+        Allocates floating IPs to a given project
+        :param cloud_account: The account from the clouds configuration to use
+        :param network_identifier: ID or Name of network to allocate from,
+        :param project_identifier: ID or Name of project to allocate to,
+        :param number_to_create: Number of floating ips to create
+        :return: List of all allocated floating IPs
+        """
+        project = self._identity_api.find_mandatory_project(
+            cloud_account, project_identifier
+        )
+        network = self.find_network(cloud_account, network_identifier)
+        if not network:
+            raise ItemNotFoundError("The requested network was not found")
+
+        created: List[FloatingIP] = []
+        with self._connection_cls(cloud_account) as conn:
+            for _ in range(number_to_create):
+                created.append(
+                    conn.network.create_ip(
+                        project_id=project.id, floating_network_id=network.id
+                    )
+                )
+        return created
+
+    def get_floating_ip(self, cloud_account: str, ip_addr: str) -> Optional[FloatingIP]:
+        """
+        Gets the details of a given floating IP address
+        :param cloud_account: The account from the clouds configuration to use
+        :param ip_addr: The IP address to return details of
+        :return: The associated IP Address record if available, else None
+        """
+        ip_addr = ip_addr.strip()
+        if not ip_addr:
+            raise MissingMandatoryParamError("An IP address is required")
+
+        with self._connection_cls(cloud_account) as conn:
+            try:
+                return conn.network.get_ip(ip_addr)
+            except ResourceNotFound:
+                return None
 
     def find_network(
         self, cloud_account: str, network_identifier: str
@@ -139,6 +191,8 @@ class OpenstackNetwork(OpenstackWrapperBase):
         :param rbac_identifier: The name or Openstack ID to use
         :return: True if deleted, else False
         """
+        # pylint: disable=unreachable
+        raise NotImplementedError("Pending better RBAC search")
         rbac_id = self.find_network_rbac(cloud_account, rbac_identifier)
         if not rbac_id:
             return False
@@ -146,3 +200,168 @@ class OpenstackNetwork(OpenstackWrapperBase):
         with self._connection_cls(cloud_account) as conn:
             result = conn.network.delete_rbac_policy(rbac_id, ignore_missing=False)
             return result is None
+
+    def add_interface_to_router(
+        self,
+        cloud_account: str,
+        project_identifier: str,
+        router_identifier: str,
+        subnet_identifier: str,
+    ) -> Router:
+        """
+        Adds a subnet to a given router
+        :param cloud_account: The associated credentials to use
+        :param project_identifier: The name or ID of the project containing the router and subnet
+        :param router_identifier: The name or ID of the router to add an interface to
+        :param subnet_identifier: The subnet name or ID of the router to add an interface to
+        :return: The router the subnet was added to
+        """
+        router = self.get_router(cloud_account, project_identifier, router_identifier)
+        if not router:
+            raise ItemNotFoundError("The specified router was not found")
+
+        subnet = self.find_subnet(cloud_account, project_identifier, subnet_identifier)
+        if not subnet:
+            raise ItemNotFoundError("The specified subnet was not found")
+
+        with self._connection_cls(cloud_account) as conn:
+            conn.network.add_interface_to_router(router=router, subnet_id=subnet.id)
+        return router
+
+    def create_router(self, cloud_account: str, details: RouterDetails) -> Router:
+        """
+        Creates a router for the given project without any internal interfaces
+        :param cloud_account: The associated credentials to use
+        :param details: The details of the router to create
+        """
+        project = self._identity_api.find_mandatory_project(
+            cloud_account, details.project_identifier
+        )
+        external_network = self.find_network(cloud_account, details.external_gateway)
+        if not external_network:
+            raise ItemNotFoundError("The external network specified was not found")
+
+        with self._connection_cls(cloud_account) as conn:
+            return conn.network.create_router(
+                project_id=project.id,
+                name=details.router_name,
+                description=details.router_description,
+                external_gateway_info={"network_id": external_network.id},
+                is_distributed=details.is_distributed,
+                is_ha=details.is_ha,
+            )
+
+    def get_router(
+        self, cloud_account: str, project_identifier: str, router_identifier: str
+    ) -> Optional[Router]:
+        """
+        Returns a given router found from the given attributes
+        :param cloud_account: The associated credentials to use
+        :param project_identifier: The project name or ID to search in
+        :param router_identifier: The router name or ID to get
+        """
+        project = self._identity_api.find_mandatory_project(
+            cloud_account, project_identifier
+        )
+
+        with self._connection_cls(cloud_account) as conn:
+            return conn.network.find_router(
+                name_or_id=router_identifier, project_id=project.id, ignore_missing=True
+            )
+
+    def get_used_subnet_nets(
+        self, cloud_account: str, network_identifier: str
+    ) -> List[ipaddress.IPv4Network]:
+        """
+        Gets the subnets associated with a given network
+        :param cloud_account: The associated credentials to use
+        :param network_identifier: The network to search
+        :return: A list of found network addresses
+        """
+        network = self.find_network(cloud_account, network_identifier)
+        if not network:
+            raise ItemNotFoundError("The network specified was not found")
+
+        with self._connection_cls(cloud_account) as conn:
+            subnets = [
+                subnet.gateway_ip
+                for subnet in conn.network.subnets(network_id=network.id)
+            ]
+
+        # Force to a /24 network
+        return [ipaddress.ip_network(i + "/24", strict=False) for i in subnets]
+
+    def select_random_subnet(
+        self, cloud_account: str, network_identifier: str
+    ) -> ipaddress.IPv4Network:
+        """
+        Selects a random subnet from the given network that isn't used
+        :param cloud_account: The associated credentials to use
+        :param network_identifier: The network to search
+        :return: A randomly selected subnet
+        """
+        avail = [ipaddress.ip_network(f"192.168.{i}.0/24") for i in range(1, 255)]
+
+        used_subnets = self.get_used_subnet_nets(cloud_account, network_identifier)
+        avail = [i for i in avail if i not in used_subnets]
+        if not avail:
+            raise ItemNotFoundError("No available subnets")
+        return random.choice(avail)
+
+    # pylint: disable=too-many-arguments
+    def create_subnet(
+        self,
+        cloud_account: str,
+        network: str,
+        subnet_name: str,
+        subnet_description: str,
+        dhcp_enabled: bool,
+    ) -> Subnet:
+        """
+        Adds a new subnet with a randomly selected 192.168.x.0/24 to a given network
+        :param cloud_account: The associated credentials to use
+        :param network: The network to add the new subnet to
+        :param subnet_name: The new subnet name
+        :param subnet_description: The new subnet description
+        :param dhcp_enabled: Whether to enable DHCP on the new subnet
+        :return: The newly created subnet object
+        """
+        network = self.find_network(cloud_account, network)
+        if not network:
+            raise ItemNotFoundError("The network specified was not found")
+
+        selected_subnet = self.select_random_subnet(cloud_account, network.id)
+        hosts = [str(i) for i in selected_subnet.hosts()]
+        # Check our first entry is the gateway
+        assert hosts[0].endswith(".1")
+
+        with self._connection_cls(cloud_account) as conn:
+            return conn.network.create_subnet(
+                ip_version=4,
+                network_id=network.id,
+                # Reserve the first 10 addresses from DHCP allocation
+                allocation_pools=[{"start": hosts[10], "end": hosts[-1]}],
+                cidr=str(selected_subnet),
+                gateway_ip=hosts[0],
+                name=subnet_name,
+                description=subnet_description,
+                is_dhcp_enabled=dhcp_enabled,
+            )
+
+    def find_subnet(
+        self, cloud_account: str, project_identifier: str, subnet_identifier: str
+    ) -> Subnet:
+        """
+        Returns a given subnet found from the given attributes
+        :param cloud_account: The associated credentials to use
+        :param project_identifier: The project name or ID to search in
+        :param subnet_identifier: The subnet name or ID to get
+        """
+        project = self._identity_api.find_mandatory_project(
+            cloud_account, project_identifier
+        )
+
+        with self._connection_cls(cloud_account) as conn:
+            return conn.network.find_subnet(
+                name_or_id=subnet_identifier, project_id=project.id, ignore_missing=True
+            )

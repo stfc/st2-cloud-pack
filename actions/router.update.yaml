@@ -1,8 +1,7 @@
-#TODO Router UPDATE
 ---
 description: Router Update
-enabled: true
-entry_point: src/router.py
+enabled: false
+entry_point: src/router_actions.py
 name: router.update
 parameters:
   submodule:

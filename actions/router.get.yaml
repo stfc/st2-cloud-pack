@@ -1,12 +1,12 @@
 ---
-description: Add Interface to Router
+description: Gets a given router from a project
 enabled: true
 entry_point: src/router_actions.py
-name: router.add.interface
+name: router.get
 parameters:
   submodule:
-    default: router_add_interface
-    immutable: true
+    default: router_get
+    immutable: True
     type: string
   cloud_account:
     description: The clouds.yaml account to use whilst performing this action
@@ -17,11 +17,7 @@ parameters:
     required: true
     type: string
   router_identifier:
-    description: Router (Name or ID)
+    description: Router to get (name or ID)
     required: true
     type: string
-  subnet_identifier:
-    description: Subnet (Name or ID)
-    type: string
-    required: true
 runner_type: python-script
