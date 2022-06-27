@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List
 
 
 @dataclass
@@ -14,4 +13,4 @@ class TicketInfo:
     # pylint: disable=invalid-name
     title: str
     body: str
-    serverList: List[TicketDetails]
+    server_list: list

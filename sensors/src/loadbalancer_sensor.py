@@ -33,7 +33,7 @@ class LoadbalancerSensor(Sensor):
         output = TicketInfo(
             title="{p[title_text]}",
             body="The loadbalance ping test result was: {p[lb_status]}\nThe status of the amphora was: {p[amp_status]}\nThe amphora id is: {p[amp_id]}\nThe loadbalancer id is: {p[lb_id]}",
-            serverList=[],
+            server_list=[],
         )
         if amphorae.status_code != 200:
             # Notes problem with accessing api if anything other than 403 or 200 returned
@@ -47,7 +47,7 @@ class LoadbalancerSensor(Sensor):
             ping_result = self._ping_lb(i["lb_network_ip"])
             # This section builds out the ticket for each one with an error
             if status[0].lower() == "error" and ping_result.lower() == "error":
-                output["server_list"].append(
+                output.server_list.append(
                     TicketDetails(
                         dataTitle={
                             "title_text": "Issue with loadbalancer "
@@ -66,7 +66,7 @@ class LoadbalancerSensor(Sensor):
                     )
                 )
             if status[0].lower() == "error" and ping_result.lower() != "error":
-                output["server_list"].append(
+                output.server_list.append(
                     TicketDetails(
                         dataTitle={
                             "title_text": "Issue with loadbalancer "
@@ -82,7 +82,7 @@ class LoadbalancerSensor(Sensor):
                     )
                 )
             if status[0].lower() != "error" and ping_result.lower() == "error":
-                output["server_list"].append(
+                output.server_list.append(
                     TicketDetails(
                         dataTitle={
                             "title_text": "Issue with amphora "
