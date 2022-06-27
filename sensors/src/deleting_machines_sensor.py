@@ -2,6 +2,7 @@ from datetime import datetime
 from st2reactor.sensor.base import PollingSensor
 from st2reactor.container.sensor_wrapper import SensorService
 from openstack_api.openstack_connection import OpenstackConnection
+from structs.ticket_info import TicketDetails, TicketInfo
 
 
 class DeletingMachinesSensor(PollingSensor):
@@ -47,7 +48,7 @@ class DeletingMachinesSensor(PollingSensor):
             print(output["server_list"])
             output["server_list"].extend(deleted)
         print(output["server_list"])
-        if len(output["server_list"]) > 0:
+        if output["server_list"]:
             self.sensor_service.dispatch_with_context(
                 payload=output,
                 trigger="stackstorm_openstack.openstack.deletingmachines",

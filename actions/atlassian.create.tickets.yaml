@@ -8,7 +8,7 @@ parameters:
     immutable: true
     type: string
   tickets_info:
-    description: Dictionary from which the script will generate tickets. Should be provided by an upstream action.
+    description: Dictionary of titles and bodies from which the script will generate tickets. Should be provided by an upstream action.
     default: ""
   email:
     description: Email of account used to log in to atlassian by script.

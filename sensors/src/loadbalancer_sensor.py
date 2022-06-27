@@ -4,6 +4,7 @@ import requests
 from st2reactor.sensor.base import Sensor
 from st2reactor.container.sensor_wrapper import SensorService
 from amphorae import get_amphorae
+from structs.ticket_info import TicketInfo, TicketDetails
 
 
 # pylint: disable=abstract-method
@@ -16,7 +17,6 @@ class LoadbalancerSensor(Sensor):
         self.sensor_service: SensorService = sensor_service
         self._logger = self.sensor_service.get_logger(name=self.__class__.__name__)
 
-    # pylint: disable=inconsistent-return-statements
     def run(
         self,
         cloud_account: str = "dev-admin",
@@ -30,75 +30,73 @@ class LoadbalancerSensor(Sensor):
 
         amph_json = self._check_amphora_status(amphorae)
         # pylint: disable=line-too-long
-        output = {
-            "title": "{p[title_text]}",
-            "body": "The loadbalance ping test result was: {p[lb_status]}\nThe status of the amphora was: {p[amp_status]}\nThe amphora id is: {p[amp_id]}\nThe loadbalancer id is: {p[lb_id]}",
-            "server_list": [],
-        }
+        output = TicketInfo(
+            title="{p[title_text]}",
+            body="The loadbalance ping test result was: {p[lb_status]}\nThe status of the amphora was: {p[amp_status]}\nThe amphora id is: {p[amp_id]}\nThe loadbalancer id is: {p[lb_id]}",
+            serverList=[],
+        )
         if amphorae.status_code != 200:
             # Notes problem with accessing api if anything other than 403 or 200 returned
             logging.critical("We encountered a problem accessing the API")
             logging.critical("The status code was: %s ", str(amphorae.status_code))
             logging.critical("The JSON response was: \n %s", str(amph_json))
-            return False
 
         # Gets list of amphorae and iterates through it to check the loadbalancer and amphora status.
         for i in amph_json["amphorae"]:
             status = self._check_status(i)
             ping_result = self._ping_lb(i["lb_network_ip"])
             # This section builds out the ticket for each one with an error
-            if status[0] == "error" or ping_result == "error":
-                if status[0].lower() == "error" and ping_result.lower() == "error":
-                    output["server_list"].append(
-                        {
-                            "dataTitle": {
-                                "title_text": "Issue with loadbalancer "
-                                + str(i["loadbalancer_id"] or "null")
-                                + " and amphora "
-                                + str(i["id"] or "null"),
-                                "lb_id": str(i["loadbalancer_id"] or "null"),
-                                "amp_id": str(i["id"] or "null"),
-                            },
-                            "dataBody": {
-                                "lb_status": str(ping_result or "null"),
-                                "amp_status": str(status[1] or "null"),
-                                "lb_id": str(i["loadbalancer_id"] or "null"),
-                                "amp_id": str(i["id"] or "null"),
-                            },
-                        }
+            if status[0].lower() == "error" and ping_result.lower() == "error":
+                output["server_list"].append(
+                    TicketDetails(
+                        dataTitle={
+                            "title_text": "Issue with loadbalancer "
+                            + str(i["loadbalancer_id"] or "null")
+                            + " and amphora "
+                            + str(i["id"] or "null"),
+                            "lb_id": str(i["loadbalancer_id"] or "null"),
+                            "amp_id": str(i["id"] or "null"),
+                        },
+                        dataBody={
+                            "lb_status": str(ping_result or "null"),
+                            "amp_status": str(status[1] or "null"),
+                            "lb_id": str(i["loadbalancer_id"] or "null"),
+                            "amp_id": str(i["id"] or "null"),
+                        },
                     )
-                elif status[0].lower() == "error":
-                    output["server_list"].append(
-                        {
-                            "dataTitle": {
-                                "title_text": "Issue with loadbalancer "
-                                + str(i["loadbalancer_id"] or "null"),
-                                "lb_id": str(i["loadbalancer_id"] or "null"),
-                            },
-                            "dataBody": {
-                                "lb_status": str(ping_result or "null"),
-                                "amp_status": str(status[1] or "null"),
-                                "lb_id": str(i["loadbalancer_id"] or "null"),
-                                "amp_id": str(i["id"] or "null"),
-                            },
-                        }
+                )
+            if status[0].lower() == "error" and ping_result.lower() != "error":
+                output["server_list"].append(
+                    TicketDetails(
+                        dataTitle={
+                            "title_text": "Issue with loadbalancer "
+                            + str(i["loadbalancer_id"] or "null"),
+                            "lb_id": str(i["loadbalancer_id"] or "null"),
+                        },
+                        dataBody={
+                            "lb_status": str(ping_result or "null"),
+                            "amp_status": str(status[1] or "null"),
+                            "lb_id": str(i["loadbalancer_id"] or "null"),
+                            "amp_id": str(i["id"] or "null"),
+                        },
                     )
-                elif ping_result.lower() == "error":
-                    output["server_list"].append(
-                        {
-                            "dataTitle": {
-                                "title_text": "Issue with amphora "
-                                + str(i["id"] or "null"),
-                                "amp_id": str(i["id"] or "null"),
-                            },
-                            "dataBody": {
-                                "lb_status": str(ping_result or "null"),
-                                "amp_status": str(status[1] or "null"),
-                                "lb_id": str(i["loadbalancer_id"] or "null"),
-                                "amp_id": str(i["id"] or "null"),
-                            },
-                        }
+                )
+            if status[0].lower() != "error" and ping_result.lower() == "error":
+                output["server_list"].append(
+                    TicketDetails(
+                        dataTitle={
+                            "title_text": "Issue with amphora "
+                            + str(i["id"] or "null"),
+                            "amp_id": str(i["id"] or "null"),
+                        },
+                        dataBody={
+                            "lb_status": str(ping_result or "null"),
+                            "amp_status": str(status[1] or "null"),
+                            "lb_id": str(i["loadbalancer_id"] or "null"),
+                            "amp_id": str(i["id"] or "null"),
+                        },
                     )
+                )
             else:
                 logging.info("%s is fine.", i["id"])
         if len(output["server_list"]) > 0:
@@ -106,7 +104,6 @@ class LoadbalancerSensor(Sensor):
             self.sensor_service.dispatch(
                 trigger="stackstorm_openstack.openstack.loadbalancer", payload=output
             )
-            return output
 
     @staticmethod
     def _check_amphora_status(amphorae):
@@ -133,7 +130,7 @@ class LoadbalancerSensor(Sensor):
     def _check_status(amphora):
         # Extracts the status of the amphora and returns relevant info
         status = amphora["status"]
-        if status in ("ALLOCATED", "BOOTING", "READY"):
+        if status.upper() in ("ALLOCATED", "BOOTING", "READY"):
             return ["ok", status]
 
         return ["error", status]

@@ -1,4 +1,5 @@
 import ast
+import imp
 from typing import Callable, Dict
 import logging
 import sys
@@ -7,6 +8,7 @@ import requests
 from openstack_api.openstack_connection import OpenstackConnection
 from st2common.runners.base_action import Action
 from requests.auth import HTTPBasicAuth
+from lib.post_ticket import post_ticket
 
 
 class CheckActions(Action):
@@ -121,24 +123,18 @@ class CheckActions(Action):
         if all_projects:
             with OpenstackConnection(cloud_name=cloud_account) as conn:
                 projects = conn.list_projects()
-            for project in projects:
-                output = self._check_project_loadbalancers(
-                    project=project["id"],
-                    cloud=cloud_account,
-                    max_port=max_port,
-                    min_port=min_port,
-                    ip_prefix=ip_prefix,
-                )
-                rules_with_issues["server_list"].extend(output)
+
         else:
+            projects = [{"id": project_id}]
+        for project in projects:
             output = self._check_project_loadbalancers(
-                project=project_id,
+                project=project["id"],
                 cloud=cloud_account,
                 max_port=max_port,
                 min_port=min_port,
                 ip_prefix=ip_prefix,
             )
-            rules_with_issues["server_list"] = output
+            rules_with_issues["server_list"].extend(output)
 
         return rules_with_issues
 
@@ -158,15 +154,12 @@ class CheckActions(Action):
         if all_projects:
             with OpenstackConnection(cloud_name=cloud_account) as conn:
                 projects = conn.list_projects()
-            for project in projects:
-                snapshots.extend(
-                    self.check_snapshots(
-                        project=project["id"], cloud_account=cloud_account
-                    )
-                )
         else:
-            snapshots = self.check_snapshots(
-                project=project_id, cloud_account=cloud_account
+            projects = [{"id": project_id}]
+
+        for project in projects:
+            snapshots.extend(
+                self.check_snapshots(project=project["id"], cloud_account=cloud_account)
             )
         with OpenstackConnection(cloud_name=cloud_account) as conn:
             for snapshot in snapshots:
@@ -248,27 +241,16 @@ class CheckActions(Action):
         if len(actual_tickets_info["server_list"]) == 0:
             logging.info("No issues found")
             sys.exit()
-        for i in actual_tickets_info["server_list"]:
+        for ticket in actual_tickets_info["server_list"]:
 
-            issue = requests.post(
-                "https://stfc.atlassian.net/rest/servicedeskapi/request",
-                auth=HTTPBasicAuth(email, api_key),
-                headers={
-                    "Accept": "application/json",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "requestFieldValues": {
-                        "summary": actual_tickets_info["title"].format(
-                            p=i["dataTitle"]
-                        ),
-                        "description": actual_tickets_info["body"].format(
-                            p=i["dataBody"]
-                        ),
-                    },
-                    "serviceDeskId": servicedesk_id,  # Point this at relevant service desk
-                    "requestTypeId": requesttype_id,
-                },
+            # pylint: disable=too-many-function-args
+            issue = post_ticket(
+                actual_tickets_info,
+                ticket,
+                servicedesk_id,
+                requesttype_id,
+                email,
+                api_key,
             )
 
             if issue.status_code != 201:
