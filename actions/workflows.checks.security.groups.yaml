@@ -1,0 +1,56 @@
+description: Check for stuck deleted machines orquesta workflow
+enabled: true
+entry_point: workflows/checks.security.groups.workflow.yaml
+name: workflow.check.security.groups
+parameters:
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    default: ""
+    required: true
+    type: string
+  ip_prefix:
+    description: The IPs that are allowed to access the port range specified below
+    default: ""
+    required: true
+    type: string
+  max_port:
+    description: Maximum port range that rule is applied to
+    default: 65535
+    required: true
+    type: number
+  min_port:
+    description: Minimum port range that rule is applied to
+    default: 1
+    required: true
+    type: number
+  project_id:
+    description: ID of the project to be scanned for the above security group details (*Requires one of)
+    default: ""
+    required: false
+    type: string
+  all_projects:
+    description: Toggle to scan all projects in cloud (*Requires one of)
+    default: false
+    required: false
+    type: boolean
+  email:
+    description: Email of account used to log in to atlassian by script.
+    default: ""
+    type: string
+    required: true
+  api_key:
+    description: API key to access atlassian
+    default: ""
+    type: string
+    required: true
+  servicedesk_id:
+    description: Service desk to send tickets to
+    default: ""
+    type: string
+    required: true
+  requesttype_id:
+    description: Request type for ticket
+    default: ""
+    type: string
+    required: true
+runner_type: orquesta

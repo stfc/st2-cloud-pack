@@ -1,0 +1,15 @@
+name: "openstack.deletedmachines"
+pack: "stackstorm_openstack"
+description: "Rule to trigger createTickets when sensor picks up issue"
+enabled: true
+
+trigger:
+  type: "stackstorm_openstack.openstack.deletingmachines"
+action:
+  ref: "stackstorm_openstack.atlassian.create.tickets"
+  parameters:
+    tickets_info: "{{ trigger }}"
+    email: "{{ st2kv.system.jsm_email }}"
+    api_key: "{{ st2kv.system.jsm_key }}"
+    servicedesk_id: "12" #StackstormTest
+    requesttype_id: "167" #Report a problem

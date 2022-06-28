@@ -1,0 +1,40 @@
+version: 1.0
+
+description: Executes the old volumes check and then generates tickets in atlassian for the issues.
+
+input:
+  - cloud_account
+  - all_projects
+  - project_id
+  - email
+  - api_key
+  - servicedesk_id
+  - requesttype_id
+
+vars:
+  - stdout: null
+  - stderr: null
+
+output:
+  - stdout: <% ctx().stdout %>
+  - stderr: <% ctx().stderr %>
+
+tasks:
+  checks_old_snapshots:
+    action: stackstorm_openstack.checks.old.snapshots
+      cloud_account=<% ctx().cloud_account %>
+      all_projects=<% ctx().all_projects %>
+      project_id=<% ctx().project_id %>
+      timeout=1200
+    next:
+      - when: <% succeeded() %>
+        publish:
+          - tickets_info: <% result() %>
+        do: create_tickets
+  create_tickets:
+    action: stackstorm_openstack.atlassian.create.tickets
+      email=<% ctx().email %>
+      api_key=<% ctx().api_key %>
+      servicedesk_id=<% ctx().servicedesk_id %>
+      requesttype_id=<% ctx().requesttype_id %>
+      tickets_info=<% ctx('tickets_info') %>

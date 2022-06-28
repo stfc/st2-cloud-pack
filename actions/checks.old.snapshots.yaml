@@ -1,0 +1,25 @@
+description: Check For old volume snapshots in projects
+enabled: true
+entry_point: src/openstack_check_actions.py
+name: checks.old.snapshots
+parameters:
+  submodule:
+    default: check_notify_snapshots
+    immutable: true
+    type: string
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    default: ""
+    required: true
+    type: string
+  project_id:
+    description: ID of the project to be scanned for the above security group details (*Requires one of)
+    default: ""
+    required: false
+    type: string
+  all_projects:
+    description: Toggle to scan all projects in cloud (*Requires one of)
+    default: false
+    required: false
+    type: boolean
+runner_type: python-script

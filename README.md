@@ -15,14 +15,15 @@ A Stackstorm pack for running Openstack scripts:
 # Setup Openstack
 
 - Openstack openrc config file is required in order to run Openstack Commands. The openrc file must be stored
-in `etc/openstack/clouds.yaml` or `/home/<user>/.config/openstack/clouds.yaml`.
+  in `etc/openstack/clouds.yaml` or `/home/<user>/.config/openstack/clouds.yaml`.
 - The following datastore entries are required:
 
 | Key Name             | Description                      | Encrypted |
-|----------------------|----------------------------------|-----------|
+| -------------------- | -------------------------------- | --------- |
 | `jupyter.dev_token`  | Jupyter API Admin Token for Dev  | Yes       |
 | `jupyter.prod_token` | Jupyter API Admin Token for Prod | Yes       |
-
+| `jsm_email`          | Email used to login to atlassian | Yes       |
+| `jsm_key`            | Key used to login to atlassian   | Yes       |
 
 # Openstack Workflow
 
@@ -47,13 +48,13 @@ Required Parameters:
 Optional Parameters:
 
 - `network_name`: Network to create project on
-    - default: Internal
+  - default: Internal
 - `default_network_internal_rules`: JSON of default network rules
-    - default: (Taken from Datastore and decrypted)
+  - default: (Taken from Datastore and decrypted)
 - `http_network_internal_rules`: JSON of http network rules
-    - default: (Taken from Datastore and decrypted)
+  - default: (Taken from Datastore and decrypted)
 - `https_network_internal_rules`: JSON of https network rules
-    - default: (Taken from Datastore and decrypted)
+  - default: (Taken from Datastore and decrypted)
 
 `project.create.external` - Action Orquesta workflow to create a pre-configured Openstack project to be made available
 externally
@@ -90,9 +91,9 @@ Required Parameters:
 Optional Parameters:
 
 - `default_network_external_rules`: JSON of default network rules
-    - default: (Taken from Datastore and decrypted)
+  - default: (Taken from Datastore and decrypted)
 - `egress_external_ips`: Array of IPs to be given TCP/UDP egress rules
-    - default: (Taken from Datastore and decrypted)
+  - default: (Taken from Datastore and decrypted)
 
 `send.server.email` - Action Orquesta workflow to email users information about their servers (Shutoff/Error VM
 Reminders)
@@ -123,7 +124,7 @@ Optional Parameters:
   `send_as_html`: Boolean, if true, send email as html, if false, as plaintext
 - default: `true`
   `admin_override`: Boolean, if true override sending email, instead sending to a test email address.
-- default: `true`  # should be changed in production
+- default: `true` # should be changed in production
   `admin_override_email`: Email to send if `admin_override` set to true
 - default: `jacob.ward@stfc.ac.uk`
   `smtp_account`: smtp account name to use - must be configured in email.yaml
@@ -141,9 +142,9 @@ Openstack CMD commands
 
 - generally each openstack resource `server, hypervisor, float.ip, etc` have 4 basic commands `create`, `delete`
   , `update`, `show`
-    - NOTE: CURRENTLY MANY OF THESE METHODS - (ESPECIALLY CREATE AND DELETE) ARE NOT IMPLEMENTED, (AND MAY NOT BE IF
-      THEY ARE NOT FEASIBLE/POSSIBLE UNDER CURRENT CONSTRAINTS IMPOSED BY THE CLOUD OPS TEAM)
-    - they may also have other commands specific to them. `i.e. server.reboot, server.restart etc`
+  - NOTE: CURRENTLY MANY OF THESE METHODS - (ESPECIALLY CREATE AND DELETE) ARE NOT IMPLEMENTED, (AND MAY NOT BE IF
+    THEY ARE NOT FEASIBLE/POSSIBLE UNDER CURRENT CONSTRAINTS IMPOSED BY THE CLOUD OPS TEAM)
+  - they may also have other commands specific to them. `i.e. server.reboot, server.restart etc`
 
 ## Openstack List Actions
 
