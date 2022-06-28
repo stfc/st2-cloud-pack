@@ -8,7 +8,7 @@ import requests
 from openstack_api.openstack_connection import OpenstackConnection
 from st2common.runners.base_action import Action
 from requests.auth import HTTPBasicAuth
-from lib.post_ticket import post_ticket
+from post_ticket import post_ticket
 
 
 class CheckActions(Action):
