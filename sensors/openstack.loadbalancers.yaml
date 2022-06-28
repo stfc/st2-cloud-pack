@@ -6,5 +6,5 @@ poll_interval: 604800
 trigger_types:
   - name: "openstack.loadbalancer"
     description: "Trigger for problems with loadbalancers."
-    payload_schema:
-      type: "object"
+    #payload_schema:
+    #  type: "object"
