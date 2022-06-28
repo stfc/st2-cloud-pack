@@ -2,7 +2,6 @@ from datetime import datetime
 from st2reactor.sensor.base import PollingSensor
 from st2reactor.container.sensor_wrapper import SensorService
 from openstack_api.openstack_connection import OpenstackConnection
-from structs.ticket_info import TicketDetails, TicketInfo
 
 
 class DeletingMachinesSensor(PollingSensor):
