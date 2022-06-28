@@ -79,7 +79,7 @@ class DeletingMachinesSensor(PollingSensor):
                 # Check if server has been stuck in deleting for too long.
                 # (uses the last updated time so if changes have been made
                 # to the server while deleting the check may not work.)
-                if server.status == "ACTIVE" and since_update.total_seconds() >= 600:
+                if server.status == "DELETING" and since_update.total_seconds() >= 600:
                     # Append data to output array
                     output.append(
                         {

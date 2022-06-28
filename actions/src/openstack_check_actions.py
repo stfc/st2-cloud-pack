@@ -31,12 +31,14 @@ class CheckActions(Action):
         # pylint: disable=too-many-function-args
 
         bad_rules = self._bad_rules(max_port, min_port, ip_prefix, sec_group)
-        rules_with_issues = self._check_if_applied(bad_rules, cloud, project)
-
-        return rules_with_issues
+        if bad_rules:
+            rules_with_issues = self._check_if_applied(bad_rules, cloud, project)
+            return rules_with_issues
+        return []
 
     @staticmethod
     def _bad_rules(max_port, min_port, ip_prefix, sec_group):
+        rule_list = []
         for group in sec_group:
             for rules in group["security_group_rules"]:
                 # pylint: disable=line-too-long
@@ -45,8 +47,8 @@ class CheckActions(Action):
                     and rules["port_range_max"] == max_port
                     and rules["port_range_min"] == min_port
                 ):
-                    return rules
-        return {}
+                    rule_list.append(rules)
+        return rule_list
 
     @staticmethod
     def _check_if_applied(rules: Dict, cloud, project):
@@ -60,32 +62,32 @@ class CheckActions(Action):
 
             with OpenstackConnection(cloud_name=cloud) as conn:
                 applied = conn.list_server_security_groups(server.id)
-
-            for serv_groups in applied:
-                if serv_groups["id"] == rules["security_group_id"]:
-                    print("Rule is applied")
-                    rules_with_issues.append(
-                        {
-                            "dataTitle": {"id": server["id"]},
-                            "dataBody": {
-                                "proj_id": project,
-                                "sec_id": serv_groups["id"],
-                                "applied": "Yes",
-                            },
-                        }
-                    )
-                else:
-                    rules_with_issues.append(
-                        {
-                            "dataTitle": {"id": server["id"]},
-                            "dataBody": {
-                                "proj_id": project,
-                                "sec_id": serv_groups["id"],
-                                "applied": "no",
-                            },
-                        }
-                    )
-                    print("Rule not applied to " + server["id"])
+            for rule in rules:
+                for serv_groups in applied:
+                    if serv_groups["id"] == rule["security_group_id"]:
+                        print("Rule is applied")
+                        rules_with_issues.append(
+                            {
+                                "dataTitle": {"id": server["id"]},
+                                "dataBody": {
+                                    "proj_id": project,
+                                    "sec_id": serv_groups["id"],
+                                    "applied": "Yes",
+                                },
+                            }
+                        )
+                    else:
+                        rules_with_issues.append(
+                            {
+                                "dataTitle": {"id": server["id"]},
+                                "dataBody": {
+                                    "proj_id": project,
+                                    "sec_id": serv_groups["id"],
+                                    "applied": "no",
+                                },
+                            }
+                        )
+                        print("Rule not applied to " + server["id"])
         return rules_with_issues
 
     def security_groups_check(
