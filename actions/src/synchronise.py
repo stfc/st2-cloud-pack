@@ -1,5 +1,6 @@
 from openstack_api.openstack_connection import OpenstackConnection
 from st2common.runners.base_action import Action
+import sys
 
 
 class SyncAction(Action):
@@ -8,38 +9,79 @@ class SyncAction(Action):
             projects = conn.list_projects()
             count = 1
         for i in projects:
-            if count == 10:
-                break
 
-            if i["name"] != "admin":
+            if i["name"] != "admin":  # Check if project is the admin project
                 with OpenstackConnection(cloud) as conn:
                     project_users = conn.list_role_assignments(
-                        filters={"project": i["id"]}
+                        filters={
+                            "project": i["id"]
+                        }  # Get list of users with access to project
                     )
+                    stfc_users = []
                     for y in project_users:
                         yuser = conn.identity.get_user(y["user"])
+                        # print(f"{yuser}\n")
                         if yuser["domain_id"] == "5b43841657b74888b449975636082a3f":
-                            print(yuser["name"])
+                            print(f"{yuser['name']} is in stfc")
+                            stfc_users.append(
+                                yuser
+                            )  # Add user to list, so Can add them to project later
                 with OpenstackConnection(dupe_cloud) as conn:
                     dev_proj = conn.list_projects()
-                    if not any(i["name"] in d.values() for d in dev_proj):
-                        print(i["name"])
-                        self._create_project(
-                            dupe_cloud=dupe_cloud,
-                            original=i,
-                            project_users=project_users,
+                    if not any(
+                        i["name"] in d.values() for d in dev_proj
+                    ):  # Loop through all values and check if project is there
+                        # print(i["name"])
+                        self._create_project(  # Start project creation
+                            dupe_cloud=dupe_cloud, original=i
                         )
-                        count += 1
+            self._grant_roles(
+                cloud=cloud, dupe_cloud=dupe_cloud, proj_users=stfc_users, project=i
+            )  # Give correct roles to users
+            print("-------------")
 
-    def _create_project(self, dupe_cloud, original, project_users):
+    def _create_project(self, dupe_cloud, original):
         with OpenstackConnection(dupe_cloud) as conn:
-            # conn.create_project(
-            #    name= str(original["name"]),
-            #    domain_id= "default"
-            # )
-            print(f"(Didn't) Created project {original['name']}")
+            conn.create_project(name=str(original["name"]), domain_id="default")
+            print(f"Created project {original['name']}")
 
-        # for i in users:
+    def _grant_roles(self, cloud, dupe_cloud, proj_users, project):
+        with OpenstackConnection(dupe_cloud) as dev:
+            dev_proj = dev.get_project(name_or_id=project["name"])
+            stfc_domain = dev.identity.find_domain(name_or_id="stfc")
+
+        print(f"Setting up roles on {dev_proj['name']}")  # testing
+        with OpenstackConnection(cloud) as conn:
+            for i in proj_users:
+                roles = conn.identity.role_assignments_filter(
+                    user=i["id"], project=project["id"]
+                )
+                for role in roles:
+                    with OpenstackConnection(dupe_cloud) as dev:
+                        dev_role = dev.get_role(name_or_id=role["name"])
+                        dev_user = dev.get_user(
+                            name_or_id=i["name"],
+                            domain_id="b6be97c034e04e9b9b1d50ccea33a5df",
+                        )
+                        dev_roles = dev.identity.role_assignments_filter(
+                            user=dev_user["id"], project=dev_proj["id"]
+                        )
+                        if not any(
+                            role["name"] in dev_role.values() for dev_role in dev_roles
+                        ):
+                            dev.grant_role(
+                                name_or_id=dev_role["id"],
+                                project=dev_proj,
+                                user=dev_user,
+                                domain=stfc_domain["id"],
+                            )
+                            print(
+                                f"{dev_role['name']} granted to {dev_user['name']} on project {dev_proj['name']}"
+                            )
+                        else:
+                            print(
+                                f"{dev_user['name']} already has role {dev_role['name']} in project {dev_proj['name']}"
+                            )
 
 
 sync = SyncAction()
