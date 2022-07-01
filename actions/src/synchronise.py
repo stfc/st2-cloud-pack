@@ -9,7 +9,8 @@ class SyncAction(Action):
             projects = conn.list_projects()
             count = 1
         for i in projects:
-
+            if count == 10:
+                break
             if i["name"] != "admin":  # Check if project is the admin project
                 with OpenstackConnection(cloud) as conn:
                     project_users = conn.list_role_assignments(
@@ -20,7 +21,6 @@ class SyncAction(Action):
                     stfc_users = []
                     for y in project_users:
                         yuser = conn.identity.get_user(y["user"])
-                        # print(f"{yuser}\n")
                         if yuser["domain_id"] == "5b43841657b74888b449975636082a3f":
                             print(f"{yuser['name']} is in stfc")
                             stfc_users.append(
@@ -31,10 +31,10 @@ class SyncAction(Action):
                     if not any(
                         i["name"] in d.values() for d in dev_proj
                     ):  # Loop through all values and check if project is there
-                        # print(i["name"])
                         self._create_project(  # Start project creation
                             dupe_cloud=dupe_cloud, original=i
                         )
+                    count += 1
             self._grant_roles(
                 cloud=cloud, dupe_cloud=dupe_cloud, proj_users=stfc_users, project=i
             )  # Give correct roles to users
@@ -83,10 +83,6 @@ class SyncAction(Action):
                                 f"{dev_user['name']} already has role {dev_role['name']} in project {dev_proj['name']}"
                             )
 
-
-sync = SyncAction()
-
-sync.run(cloud="openstack", dupe_cloud="dev")
 
 # Do not sync admin project and IRIS IAM accounts, just FedID
 # Just sync projects with names and accounts that have access.
