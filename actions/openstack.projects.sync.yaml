@@ -1,0 +1,14 @@
+---
+description: Duplicate projects and role assignments from prod cloud to dev cloud
+enabled: true
+entry_point: src/synchronise.py
+name: openstack.projects.sync
+parameters:
+  cloud:
+    required: true
+    type: string
+    description: The clouds.yaml account to use for the prod cloud
+  dupe_cloud:
+    required: true
+    type: string
+    description: The clouds.yaml account to use for the dev cloud
