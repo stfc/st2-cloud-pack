@@ -12,3 +12,4 @@ parameters:
     required: true
     type: string
     description: The clouds.yaml account to use for the dev cloud
+runner_type: python-script

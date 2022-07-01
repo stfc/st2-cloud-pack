@@ -1,9 +1,9 @@
 from openstack_api.openstack_connection import OpenstackConnection
 from st2common.runners.base_action import Action
-import sys
 
-
+# pylint: disable=too-few-public-methods
 class SyncAction(Action):
+    # pylint: disable=arguments-differ
     def run(self, cloud, dupe_cloud):
         with OpenstackConnection(cloud) as conn:
             projects = conn.list_projects()
