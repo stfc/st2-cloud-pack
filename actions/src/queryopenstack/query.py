@@ -13,6 +13,7 @@ from .utils import (
 
 # pylint: disable=too-many-arguments,too-many-locals
 def query(
+    cloud_account,
     openstack_resource,
     properties_list,
     criteria_list,
@@ -26,7 +27,8 @@ def query(
     Function to handle an openstack query
 
         Parameters:
-            openstack_resource (string}: openstack resource to search by
+            cloud_account (string): The account from the clouds configuration to use
+            openstack_resource (string): openstack resource to search by
             properties_list ([string]): list of properties to get for each openstack resource found
             criteria_list ([string]): list of criteria/conditional arguments that make up the query
             sort_by_list ([string]): list of properties to sort the results by
@@ -45,7 +47,7 @@ def query(
 
     # if no user defined openstack connection given - create default one
     if not openstack_conn:
-        openstack_conn = create_openstack_connection()
+        openstack_conn = create_openstack_connection(cloud_name=cloud_account)
 
     # validate openstack_resource
     list_class = {

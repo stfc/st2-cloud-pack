@@ -12,8 +12,9 @@ class SearchOpenstack(OpenstackAction):
         # different methods of searching openstack
         self.func = {
             # pylint: disable=line-too-long
-            "search_openstack": lambda search_by, query_preset, get_html, search_criteria=None, properties_to_select=None, sort_by_criteria=None, **kwargs: self.output_results(
+            "search_openstack": lambda cloud_account, search_by, query_preset, get_html, search_criteria=None, properties_to_select=None, sort_by_criteria=None, **kwargs: self.output_results(
                 query_result=self.get_preset(
+                    cloud_account=cloud_account,
                     search_by=search_by,
                     query_preset=query_preset,
                     criteria_list=search_criteria,
@@ -24,8 +25,9 @@ class SearchOpenstack(OpenstackAction):
                 get_html=get_html,
             ),
             # pylint: disable=line-too-long
-            "search_servers_per_user": lambda query_preset, get_html, search_criteria=None, properties_to_select=None, sort_by_criteria=None, **kwargs: self.search_servers_per_user(
+            "search_servers_per_user": lambda cloud_account, query_preset, get_html, search_criteria=None, properties_to_select=None, sort_by_criteria=None, **kwargs: self.search_servers_per_user(
                 query_result=self.get_preset(
+                    cloud_account=cloud_account,
                     search_by="server",
                     query_preset=query_preset,
                     criteria_list=search_criteria,
@@ -39,10 +41,11 @@ class SearchOpenstack(OpenstackAction):
 
     @staticmethod
     def get_preset(
-        search_by, query_preset, criteria_list, properties_list, sort_by_list, **kwargs
+        cloud_account: str, search_by, query_preset, criteria_list, properties_list, sort_by_list, **kwargs
     ):
         """
         A number of predefined presets for searching openstack
+        :param cloud_account: The account from the clouds configuration to use
         :param search_by: openstack objects to search for
         :param query_preset: preset name to use
         :param criteria_list: list of extra criteria
@@ -55,6 +58,7 @@ class SearchOpenstack(OpenstackAction):
         # if no preset selected - use generic query method
         if query_preset == "no_preset":
             return query(
+                cloud_account=cloud_account,
                 openstack_resource=search_by,
                 properties_list=properties_list,
                 criteria_list=criteria_list,
