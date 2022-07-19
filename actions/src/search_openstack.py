@@ -40,6 +40,7 @@ class SearchOpenstack(OpenstackAction):
         }
 
     @staticmethod
+    # pylint: disable=too-many-arguments
     def get_preset(
         cloud_account: str,
         search_by,
@@ -167,6 +168,7 @@ class SearchOpenstack(OpenstackAction):
                     save=False,
                     save_path="",
                 ),
+                # pylint: disable=line-too-long
                 "name_not_contains": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
                     cloud_account=cloud_account,
                     openstack_resource=search_by,
@@ -259,6 +261,7 @@ class SearchOpenstack(OpenstackAction):
                         ),
                     },
                     "ip_addr": {
+                        # pylint: disable=line-too-long
                         "in_projects": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
                             cloud_account=cloud_account,
                             openstack_resource="ip_addr",
@@ -275,6 +278,7 @@ class SearchOpenstack(OpenstackAction):
                         )
                     },
                     "host": {
+                        # pylint: disable=line-too-long
                         "host_enabled": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
                             cloud_account=cloud_account,
                             openstack_resource="host",
@@ -301,6 +305,7 @@ class SearchOpenstack(OpenstackAction):
                         ),
                     },
                     "project": {
+                        # pylint: disable=line-too-long
                         "description_contains": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
                             cloud_account=cloud_account,
                             openstack_resource="project",
@@ -347,8 +352,22 @@ class SearchOpenstack(OpenstackAction):
         return True, tabulate(rows, headers, tablefmt="html" if get_html else "grid")
 
     # pylint: disable=missing-function-docstring, no-method-argument
-    def get_output(*args):
-        raise NotImplementedError("Get Output Not Implemented")
+    @staticmethod
+    def get_output(result_list, get_html):
+        """
+        Get Server query as Html or String Output
+        :param result_list: dictionary with results of a server query
+        :param get_html: boolean to return html format or plaintext
+        :return: (status (Bool), reason/output (String))
+
+        """
+        if result_list:
+            headers = result_list[0].keys()
+            rows = [row.values() for row in result_list]
+            return True, tabulate(
+                rows, headers, tablefmt="html" if get_html else "grid"
+            )
+        return True, "None found"
 
     # pylint: disable=missing-function-docstring
     def search_servers_per_user(self, query_result, get_html=False):

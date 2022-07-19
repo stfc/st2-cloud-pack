@@ -1,4 +1,3 @@
-from openstack_api.openstack_connection import OpenstackConnection
 from .classes.list_hosts import ListHosts
 from .classes.list_ips import ListIps
 from .classes.list_projects import ListProjects
