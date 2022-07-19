@@ -76,7 +76,8 @@ class SearchOpenstack(OpenstackAction):
 
         # search openstack_resource ID presets (works for all openstack objects)
         func = {
-            "id_in": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+            "id_in": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                cloud_account=cloud_account,
                 openstack_resource=search_by,
                 properties_list=properties_list,
                 criteria_list=[["id", list(kwargs["ids"])]].extend(criteria_list)
@@ -87,7 +88,8 @@ class SearchOpenstack(OpenstackAction):
                 save=False,
                 save_path="",
             ),
-            "id_not_in": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+            "id_not_in": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                cloud_account=cloud_account,
                 openstack_resource=search_by,
                 properties_list=properties_list,
                 criteria_list=[["not_id", list(kwargs["ids"])]].extend(criteria_list)
@@ -103,7 +105,8 @@ class SearchOpenstack(OpenstackAction):
         # search openstack_resource Name presets (works for all openstack objects with associated names)
         if not func and search_by != "ip_addr":
             func = {
-                "name_in": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                "name_in": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                    cloud_account=cloud_account,
                     openstack_resource=search_by,
                     properties_list=properties_list,
                     criteria_list=[
@@ -126,7 +129,8 @@ class SearchOpenstack(OpenstackAction):
                     save=False,
                     save_path="",
                 ),
-                "name_not_in": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                "name_not_in": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                    cloud_account=cloud_account,
                     openstack_resource=search_by,
                     properties_list=properties_list,
                     criteria_list=[
@@ -149,7 +153,8 @@ class SearchOpenstack(OpenstackAction):
                     save=False,
                     save_path="",
                 ),
-                "name_contains": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                "name_contains": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                    cloud_account=cloud_account,
                     openstack_resource=search_by,
                     properties_list=properties_list,
                     criteria_list=[
@@ -162,7 +167,8 @@ class SearchOpenstack(OpenstackAction):
                     save=False,
                     save_path="",
                 ),
-                "name_not_contains": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                "name_not_contains": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                    cloud_account=cloud_account,
                     openstack_resource=search_by,
                     properties_list=properties_list,
                     criteria_list=[
@@ -185,7 +191,8 @@ class SearchOpenstack(OpenstackAction):
                 {
                     "server": {
                         # pylint: disable=line-too-long
-                        "server_error_and_shutoff": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                        "server_error_and_shutoff": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
                             openstack_resource="server",
                             properties_list=properties_list,
                             criteria_list=[["status", "SHUTOFF", "ERROR"]].extend(
@@ -198,7 +205,8 @@ class SearchOpenstack(OpenstackAction):
                             save=False,
                             save_path="",
                         ),
-                        "server_shutoff": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                        "server_shutoff": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
                             openstack_resource="server",
                             properties_list=properties_list,
                             criteria_list=[["status", "SHUTOFF"]].extend(criteria_list)
@@ -209,7 +217,8 @@ class SearchOpenstack(OpenstackAction):
                             save=False,
                             save_path="",
                         ),
-                        "server_error": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                        "server_error": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
                             openstack_resource="server",
                             properties_list=properties_list,
                             criteria_list=[["status", "ERROR"]].extend(criteria_list)
@@ -220,7 +229,8 @@ class SearchOpenstack(OpenstackAction):
                             save=False,
                             save_path="",
                         ),
-                        "server_older_than": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                        "server_older_than": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
                             openstack_resource="server",
                             properties_list=properties_list,
                             criteria_list=[["older_than", kwargs["days"]]].extend(
@@ -233,7 +243,8 @@ class SearchOpenstack(OpenstackAction):
                             save=False,
                             save_path="",
                         ),
-                        "server_younger_than": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                        "server_younger_than": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
                             openstack_resource="server",
                             properties_list=properties_list,
                             criteria_list=[["not_older_than", kwargs["days"]]].extend(
@@ -248,7 +259,8 @@ class SearchOpenstack(OpenstackAction):
                         ),
                     },
                     "ip_addr": {
-                        "in_projects": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                        "in_projects": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
                             openstack_resource="ip_addr",
                             properties_list=properties_list,
                             criteria_list=[
@@ -263,7 +275,8 @@ class SearchOpenstack(OpenstackAction):
                         )
                     },
                     "host": {
-                        "host_enabled": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                        "host_enabled": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
                             openstack_resource="host",
                             properties_list=properties_list,
                             criteria_list=[["status", "enabled"]].extend(criteria_list)
@@ -274,7 +287,8 @@ class SearchOpenstack(OpenstackAction):
                             save=False,
                             save_path="",
                         ),
-                        "host_disabled": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                        "host_disabled": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
                             openstack_resource="host",
                             properties_list=properties_list,
                             criteria_list=[["status", "disabled"]].extend(criteria_list)
@@ -287,7 +301,8 @@ class SearchOpenstack(OpenstackAction):
                         ),
                     },
                     "project": {
-                        "description_contains": lambda properties_list, criteria_list, sort_by_list, **kwargs: query(
+                        "description_contains": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
                             openstack_resource="project",
                             properties_list=properties_list,
                             criteria_list=[
@@ -312,7 +327,7 @@ class SearchOpenstack(OpenstackAction):
 
         # run the query and return the results
         return (
-            func(properties_list, criteria_list, sort_by_list, **kwargs)
+            func(cloud_account, properties_list, criteria_list, sort_by_list, **kwargs)
             if func
             else None
         )
