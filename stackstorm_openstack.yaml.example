@@ -23,3 +23,14 @@ internal_network:
     protocol:
     remote_ip_prefix:
     dst_port:
+
+smtp_accounts:
+  - name: "default"
+    password:
+    port: 465
+    secure: false
+    server: "mail.gridpp.rl.ac.uk"
+    smtp_auth: false
+    username:
+max_attachment_size: 1024
+attachment_datastore_ttl: 1800
