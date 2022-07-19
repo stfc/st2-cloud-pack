@@ -2,7 +2,7 @@
 description: Email notifications for error emails
 enabled: true
 entry_point: workflows/send.server.info.email.yaml
-name: send.server.email
+name: send.server.info.email
 parameters:
   timeout:
     default: 99999
