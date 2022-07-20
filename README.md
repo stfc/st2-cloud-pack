@@ -18,6 +18,46 @@ A Stackstorm pack for running Openstack scripts:
   in `etc/openstack/clouds.yaml` or `/home/<user>/.config/openstack/clouds.yaml`.
 - Copy the configuration in [stackstorm_openstack.yaml.example](https://github.com/stfc/st2-cloud-pack/blob/main/stackstorm_openstack.yaml.example) to `/opt/stackstorm/configs/stackstorm_openstack.yaml and populate the values.
 
+# Developer Instructions
+
+This repository uses automated testing using GitHub actions.
+Many steps are available to run locally with the following setup:
+
+### Setup
+- Clone this repository
+- Install [pre-commit](https://pre-commit.com/#install). This will format your code
+on commit and in the future run many automated tests.
+- If you are on Linux a helper script is included to setup and run Stackstorm unit tests.
+  This is done by running `./run_tests.sh`
+- Additionally, tests can be run locally using `nose` through the IDE or CLI.
+
+## General Development Notes
+
+### Coding Standards
+- Work must include appropriate unit tests to exercise the functionality (typically through mocking)
+- All changes must pass through the PR process and associated CI tests
+- The Black formatter enforces the coding style, rather than PEP8
+- `main` should only include production ready, or disabled actions
+
+Where possible we want to separate out the Stackstorm layer from our functionality.
+This makes it trivial to test without having to invoke the ST2 testing mechanism.
+
+For actions the architecture looks something like:
+```
+|actions or sensors| <-> | lib module | <-> | API endpoints |
+```
+
+This makes it trivial to inject mocks and tests into files contained within `lib`,
+and allows us to re-use various API calls and functionality.
+
+A complete example can be found in the following files:
+[actions/jupyter](https://github.com/stfc/st2-cloud-pack/blob/main/actions/src/jupyter.py),
+[lib/jupyter_api](https://github.com/stfc/st2-cloud-pack/blob/main/lib/jupyter_api/user_api.py)
+
+and their associated tests:
+[test_jupyter_actions](https://github.com/stfc/st2-cloud-pack/blob/main/tests/actions/test_jupyter_actions.py),
+[test_user_api](https://github.com/stfc/st2-cloud-pack/blob/main/tests/lib/jupyter/test_user_api.py).
+
 # Openstack Workflow
 
 `project.create.internal` - Action Orquesta workflow to create a pre-configured Openstack Project to be used internally
