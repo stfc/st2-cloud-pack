@@ -18,12 +18,13 @@ A Stackstorm pack for running Openstack scripts:
   in `etc/openstack/clouds.yaml` or `/home/<user>/.config/openstack/clouds.yaml`.
 - The following datastore entries are required:
 
-| Key Name             | Description                      | Encrypted |
-| -------------------- | -------------------------------- | --------- |
-| `jupyter.dev_token`  | Jupyter API Admin Token for Dev  | Yes       |
-| `jupyter.prod_token` | Jupyter API Admin Token for Prod | Yes       |
-| `jsm_email`          | Email used to login to atlassian | Yes       |
-| `jsm_key`            | Key used to login to atlassian   | Yes       |
+| Key Name                 | Description                                   | Encrypted |
+|--------------------------|-----------------------------------------------| --------- |
+| `jupyter.dev_token`      | Jupyter API Admin Token for Dev               | Yes       |
+| `jupyter.prod_token`     | Jupyter API Admin Token for Prod              | Yes       |
+| `jupyter.training_token` | Jupyter API Admin Token for Training instance | Yes       |
+| `jsm_email`              | Email used to login to atlassian              | Yes       |
+| `jsm_key`                | Key used to login to atlassian                | Yes       |
 
 # Openstack Workflow
 
