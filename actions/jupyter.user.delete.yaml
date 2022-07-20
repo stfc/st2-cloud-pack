@@ -17,6 +17,7 @@ parameters:
     enum:
       - dev
       - prod
+      - training
   users:
     description: The list of users to remove
     required: true
