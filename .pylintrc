@@ -8,5 +8,6 @@ max-line-length=120
 # C0115: Missing class doc string - a lot of the actions are self explanatory
 # W0511: TODOs they're well....to do later
 # R0801: Similar lines - Imports and method signatures will flag this, such as forwarding action args
+# C0116: Missing method docstring - Adds too much noise
 
-disable=C0114,C0115,E0401,W0511,R0801
+disable=C0114,C0115,E0401,W0511,R0801,C0116

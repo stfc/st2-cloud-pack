@@ -4,7 +4,7 @@ from jupyter_api.api_endpoints import API_ENDPOINTS
 from jupyter_api.user_api import UserApi
 from st2reactor.sensor.base import PollingSensor
 
-THRESHOLD = relativedelta(days=1)
+THRESHOLD = relativedelta(days=90)
 
 
 class JupyterInactiveUserSensor(PollingSensor):
@@ -19,7 +19,7 @@ class JupyterInactiveUserSensor(PollingSensor):
         super().__init__(sensor_service, config, poll_interval)
         self._log = self._sensor_service.get_logger(__name__)
         self._api: UserApi = UserApi()
-        self._credentials = {"dev": None, "prod": None}
+        self._credentials = {"dev": None, "prod": None, "training": None}
 
     def poll(self):
         """
@@ -45,14 +45,15 @@ class JupyterInactiveUserSensor(PollingSensor):
         """
         Sets up the sensor
         """
-        self._credentials = {
-            "prod": self.sensor_service.get_value(
-                "jupyter.prod_token", local=False, decrypt=True
-            ),
-            "dev": self.sensor_service.get_value(
-                "jupyter.dev_token", local=False, decrypt=True
-            ),
-        }
+        self._credentials["prod"] = self.sensor_service.get_value(
+            "jupyter.prod_token", local=False, decrypt=True
+        )
+        self._credentials["dev"] = self.sensor_service.get_value(
+            "jupyter.dev_token", local=False, decrypt=True
+        )
+        self._credentials["training"] = self.sensor_service.get_value(
+            "jupyter.training_token", local=False, decrypt=True
+        )
 
     def cleanup(self):
         """
