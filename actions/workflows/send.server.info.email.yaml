@@ -11,7 +11,6 @@ input:
   - header
   - subject
   - send_html
-  - attachments_tmp_dir_path
   - smtp_account
   - admin_override
   - admin_override_email

@@ -1,5 +1,5 @@
 ---
-description: Email notifications for error emails
+description: Sends email notifications to VM owners based on a given query.
 enabled: true
 entry_point: workflows/send.server.info.email.yaml
 name: send.server.info.email
@@ -8,95 +8,91 @@ parameters:
     default: 99999
   cloud_account:
     description: The clouds.yaml account to use whilst performing this action
+    required: true
+    type: string
     default: ""
-    required: true
-    type: string
   query_preset:
-    description: "name of a preset query - e.g server_shutoff: list all servers shutoff "
+    description: "Name of a preset query - e.g server_shutoff: list all servers shutoff "
     type: string
     required: true
+    default: "server_older_than"
   properties_to_select:
+    type: array
+    description: Properties to display for servers, must include user_email
+    required: true
     default:
       - "server_id"
       - "server_name"
       - "server_status"
       - "user_name"
       - "user_email"
-    type: array
-    description: properties to display for servers
-    required: true
   search_criteria:
     type: array
-    description: additional properties to select for
+    description: Additional properties to select for
     required: false
   sort_by_criteria:
     type: array
-    description: properties to sort list openstack_resource
     required: false
+    description: Properties to sort by
   email_from:
     description: "Email address to send email from"
     required: true
     type: string
-    default: "stackstorm@example.com"
+    default: "cloud-support@stfc.ac.uk"
   header:
-    description: "Email Standard Header filepath"
+    description: "Email Header filepath"
     required: true
     type: string
-    default: "~/html_templates/header.html"
+    default: "/opt/stackstorm/packs/stackstorm_openstack/email_templates/header.html"
   footer:
-    description: "Email Standard Footer filepath"
+    description: "Email footer filepath"
     required: true
     type: string
-    default: "~/html_templates/footer.html"
+    default: "/opt/stackstorm/packs/stackstorm_openstack/email_templates/footer.html"
   subject:
-    description: "Email subject tag line"
+    description: "Email subject"
     required: true
     type: string
     default: "Test Message"
   smtp_account:
-    description: "SMTP Account to use. Must be configured in email.yaml"
+    description: "SMTP Account to use. Must be configured in in the pack settings."
     required: true
     type: string
     default: "default"
   send_html:
-    default: true
-    description: "Send Email Body as HTML"
+    description: "Send email body as HTML"
     required: true
     type: boolean
+    default: true
   admin_override:
-    default: false
     description: "Overrides email sending to send to a single email for testing purposes"
     required: true
     type: boolean
+    default: false
   admin_override_email:
-    description: "Override email sending to send all to this email"
+    description: "Email to send the output to if admin_override is checked"
     required: true
     type: array
-  attachments_tmp_dir_path:
-    description: "Dir path to store temporary csv attachment files"
-    required: true
-    type: string
-    default: "~/tmp/"
   names:
-    description: names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)
+    description: Names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)
     type: array
     default:
       - ""
     required: true
   ids:
-    description: id to search openstack_resource (ignored unless query_preset=id_in etc)
+    description: ID to search openstack_resource (ignored unless query_preset=id_in etc)
     type: array
     default:
       - ""
     required: true
   name_snippets:
-    description: name snippets to search openstack_resource (ignored unless query_preset=name_contains etc)
+    description: Name snippets to search openstack_resource (ignored unless query_preset=name_contains etc)
     type: array
     default:
       - ""
     required: true
   days:
-    description: number of days threshold for selecting servers (ignored unless submodule=server_older_than(_per_user) or server_younger_than(_per_user)
+    description: Number of days threshold for selecting servers (ignored unless submodule=server_older_than(_per_user) or server_younger_than(_per_user)
     type: integer
     default: 60
     required: true

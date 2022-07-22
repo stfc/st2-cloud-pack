@@ -20,7 +20,7 @@ class SendEmail(Action):
             return self.send_email(**kwargs)
         return None
 
-    # pylint: disable=too-many-locals,too-many-statements,too-many-branches
+    # pylint: disable=too-many-locals,too-many-branches
     def send_email(self, **kwargs):
         """
         Send email
@@ -35,12 +35,6 @@ class SendEmail(Action):
         admin_override_email (String): send to this email if admin_override enabled
         :return:
         """
-        print("TO SEND")
-        print(f"TO: {kwargs['email_to']}")
-        print(f"FROM: {kwargs['email_from']}")
-        print(f"SUBJECT: {kwargs['subject']}")
-        print(f"BODY: {kwargs['header']}\n{kwargs['body']}\n{kwargs['footer']}")
-        print(f"ATTACHMENT FILEPATHS: {kwargs['attachment_filepaths']}")
 
         accounts = self.config.get("smtp_accounts", None)
         if not accounts:
@@ -58,11 +52,11 @@ class SendEmail(Action):
         msg = MIMEMultipart()
         msg["Subject"] = Header(kwargs["subject"], "utf-8")
         msg["From"] = kwargs["email_from"]
+        msg["To"] = ", ".join(kwargs["email_to"])
 
-        if not kwargs["admin_override"]:
-            msg["To"] = ", ".join(kwargs["email_to"])
-        else:
+        if kwargs["admin_override"]:
             msg["To"] = ", ".join(kwargs["admin_override_email"])
+
         msg["Date"] = formatdate(localtime=True)
 
         if "header" in kwargs and os.path.exists(kwargs["header"]):
@@ -111,11 +105,15 @@ class SendEmail(Action):
         if account_data.get("smtp_auth", True):
             smtp.login(account_data["username"], account_data["password"])
 
-        if not kwargs["admin_override"]:
-            return (False, "No admin override set - disabled for testing purposes")
-            # email_to = (kwargs["email_to"] + kwargs["email_cc"]) if kwargs["email_cc"] else kwargs["email_to"]
+        if kwargs["admin_override"]:
+            email_to = kwargs["admin_override_email"]
+        else:
+            email_to = (
+                (kwargs["email_to"] + kwargs["email_cc"])
+                if kwargs["email_cc"]
+                else kwargs["email_to"]
+            )
 
-        email_to = kwargs["admin_override_email"]
         smtp.sendmail(kwargs["email_from"], email_to, msg.as_string())
         smtp.quit()
         return (True, "Email sent")
