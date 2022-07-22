@@ -345,29 +345,14 @@ class SearchOpenstack(OpenstackAction):
         :param get_html: True if output required in html table format else output plain text table
         :return: Status (Bool), String (html or plaintext table of results)
         """
-        if not query_result:
-            return False, "No data found"
-        headers = query_result[0].keys()
-        rows = [row.values() for row in query_result]
-        return True, tabulate(rows, headers, tablefmt="html" if get_html else "grid")
-
-    # pylint: disable=missing-function-docstring, no-method-argument
-    @staticmethod
-    def get_output(result_list, get_html):
-        """
-        Get Server query as Html or String Output
-        :param result_list: dictionary with results of a server query
-        :param get_html: boolean to return html format or plaintext
-        :return: (status (Bool), reason/output (String))
-
-        """
-        if result_list:
-            headers = result_list[0].keys()
-            rows = [row.values() for row in result_list]
+        if query_result:
+            headers = query_result[0].keys()
+            rows = [row.values() for row in query_result]
             return True, tabulate(
                 rows, headers, tablefmt="html" if get_html else "grid"
             )
-        return True, "None found"
+
+        return False, "No data found"
 
     # pylint: disable=missing-function-docstring
     def search_servers_per_user(self, query_result, get_html=False):
@@ -383,11 +368,11 @@ class SearchOpenstack(OpenstackAction):
 
         if "not found" in user_server_dict:
             print("Following Servers found with no associated Email")
-            print(self.get_output(user_server_dict["not found"], False))
+            print(self.output_results(user_server_dict["not found"], False))
             del user_server_dict["not found"]
 
         for email, servers in user_server_dict.items():
-            _, output = self.get_output(servers, get_html)
+            _, output = self.output_results(servers, get_html)
             user_server_dict[email] = output
 
         return True, user_server_dict

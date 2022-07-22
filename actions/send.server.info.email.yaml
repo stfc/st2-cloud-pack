@@ -35,69 +35,70 @@ parameters:
     required: false
     description: Properties to sort by
   email_from:
+    type: string
     description: "Email address to send email from"
     required: true
-    type: string
     default: "cloud-support@stfc.ac.uk"
   header:
+    type: string
     description: "Email Header filepath"
     required: true
-    type: string
     default: "/opt/stackstorm/packs/stackstorm_openstack/email_templates/header.html"
   message:
+    type: string
     description: "Email message to put in the body"
     required: true
-    type: string
   footer:
+    type: string
     description: "Email footer filepath"
     required: true
-    type: string
     default: "/opt/stackstorm/packs/stackstorm_openstack/email_templates/footer.html"
   subject:
+    type: string
     description: "Email subject"
     required: true
-    type: string
     default: "Test Message"
   smtp_account:
+    type: string
     description: "SMTP Account to use. Must be configured in in the pack settings."
     required: true
-    type: string
     default: "default"
   send_html:
+    type: boolean
     description: "Send email body as HTML"
     required: true
-    type: boolean
     default: true
   admin_override:
-    description: "Overrides email sending to send to a single email for testing purposes"
-    required: true
     type: boolean
+    description: "Overrides email sending to send to a single email for testing purposes"
     default: false
   admin_override_email:
+    type: array
     description: "Email to send the output to if admin_override is checked"
     required: true
-    type: array
+    default:
+      - ""
   names:
+    type: array
     description: Names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)
-    type: array
+    required: true
     default:
       - ""
-    required: true
   ids:
+    type: array
     description: ID to search openstack_resource (ignored unless query_preset=id_in etc)
-    type: array
+    required: true
     default:
       - ""
-    required: true
   name_snippets:
-    description: Name snippets to search openstack_resource (ignored unless query_preset=name_contains etc)
     type: array
+    description: Name snippets to search openstack_resource (ignored unless query_preset=name_contains etc)
+    required: true
     default:
       - ""
-    required: true
   days:
-    description: Number of days threshold for selecting servers (ignored unless submodule=server_older_than(_per_user) or server_younger_than(_per_user)
     type: integer
-    default: 60
+    description: Number of days threshold for selecting servers (ignored unless submodule=server_older_than(_per_user) or server_younger_than(_per_user)
     required: true
+    default: 60
 runner_type: orquesta
