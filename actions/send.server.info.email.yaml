@@ -44,6 +44,10 @@ parameters:
     required: true
     type: string
     default: "/opt/stackstorm/packs/stackstorm_openstack/email_templates/header.html"
+  message:
+    description: "Email message to put in the body"
+    required: true
+    type: string
   footer:
     description: "Email footer filepath"
     required: true

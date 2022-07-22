@@ -8,6 +8,7 @@ input:
   - query_preset
   - criteria_list
   - footer
+  - message
   - header
   - subject
   - send_html
@@ -60,7 +61,7 @@ tasks:
       smtp_account=<% ctx().smtp_account %>
       email_from=<% ctx().email_from %>
       email_to=<% list(item(email)) %>
-      body=<% item(body) %>
+      body=<% ctx().message + item(body) %>
       subject=<% ctx().subject %>
       footer=<% ctx().footer %>
       header=<% ctx().header %>
