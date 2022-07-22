@@ -20,6 +20,7 @@ class SendEmail(Action):
             return self.send_email(**kwargs)
         return None
 
+    # pylint: disable=too-many-locals,too-many-statements,too-many-branches
     def send_email(self, **kwargs):
         """
         Send email
@@ -113,8 +114,8 @@ class SendEmail(Action):
         if not kwargs["admin_override"]:
             return (False, "No admin override set - disabled for testing purposes")
             # email_to = (kwargs["email_to"] + kwargs["email_cc"]) if kwargs["email_cc"] else kwargs["email_to"]
-        else:
-            email_to = kwargs["admin_override_email"]
+
+        email_to = kwargs["admin_override_email"]
         smtp.sendmail(kwargs["email_from"], email_to, msg.as_string())
         smtp.quit()
-        return
+        return (True, "Email sent")

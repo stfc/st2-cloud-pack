@@ -3,6 +3,7 @@ version: 1.0
 description: Send Emails to Users with VMs that match query
 
 input:
+  - cloud_account
   - email_from
   - query_preset
   - criteria_list
@@ -32,6 +33,7 @@ output:
 tasks:
   find_servers:
     action: stackstorm_openstack.server.list.per.user
+      cloud_account=<% ctx().cloud_account %>
       query_preset=<% ctx().query_preset %>
       search_criteria=<% ctx().criteria_list %>
       days=<% ctx().days %>
@@ -54,7 +56,7 @@ tasks:
 
   send_email:
     with: email, body in <% zip(ctx(emails), ctx(email_bodies)) %>
-    action: stackstorm_send_notifications.send.email
+    action: stackstorm_openstack.send.email
       send_as_html=<% ctx().send_html %>
       smtp_account=<% ctx().smtp_account %>
       email_from=<% ctx().email_from %>

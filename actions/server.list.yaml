@@ -10,6 +10,11 @@ parameters:
     default: search_openstack
     type: string
     immutable: true
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    default: ""
+    required: true
+    type: string
   query_preset:
     description: "name of a preset query - e.g server_shutoff: list all servers shutoff "
     default: server_shutoff

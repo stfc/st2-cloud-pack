@@ -4,6 +4,11 @@ enabled: true
 entry_point: workflows/send.server.email.yaml
 name: send.server.email
 parameters:
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    default: ""
+    required: true
+    type: string
   server_list_func:
     default: server_shutoff_per_user
     type: string
