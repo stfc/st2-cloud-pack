@@ -45,7 +45,7 @@ tasks:
       - when: <% result().result != null %>
         publish:
           - emails: <% result().result.keys() %>
-          - email_bodies: <% result().result.values() %>
+          - email_bodies: <% result().result %>
         #  - stdout: <% result().result.keys() %>, <% result().result.values() %>
         do:
           - send_email
@@ -55,13 +55,13 @@ tasks:
         do: fail
 
   send_email:
-    with: email, body in <% zip(ctx(emails), ctx(email_bodies)) %>
+    with: email in <% ctx(emails) %>
     action: stackstorm_openstack.send.email
       send_as_html=<% ctx().send_html %>
       smtp_account=<% ctx().smtp_account %>
       email_from=<% ctx().email_from %>
       email_to=<% list(item(email)) %>
-      body=<% ctx().message + item(body) %>
+      body=<% ctx().message + ctx().email_bodies[item(email)] %>
       subject=<% ctx().subject %>
       footer=<% ctx().footer %>
       header=<% ctx().header %>
