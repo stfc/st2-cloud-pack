@@ -20,7 +20,59 @@ class SendEmail(Action):
             return self.send_email(**kwargs)
         return None
 
-    # pylint: disable=too-many-locals,too-many-branches
+    def load_template(self, prop, **kwargs):
+        """
+        Loads and returns a html template from its path
+        :param prop: Name of the property in kwargs containing the path
+                     to the template
+        :param kwargs: Arguments for the action
+        :return: (String) The contents of the file in utf-8 format
+        """
+        if prop in kwargs:
+            path = kwargs[prop]
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8") as header_file:
+                    return header_file.read()
+            else:
+                raise FileNotFoundError(f"Template file located {path} not found")
+        else:
+            raise KeyError(f"The property {prop} does not appear in the configuration")
+
+    def load_smtp_account(self, **kwargs):
+        """
+        Loads and returns the smtp account data from the pack config
+        :param kwargs: Arguments for the action
+        :return: (Dictionary) SMTP account properties
+        """
+        accounts = self.config.get("smtp_accounts", None)
+        if not accounts:
+            raise ValueError(
+                f"'smtp_account' config value is required to send email, config={self.config}"
+            )
+        try:
+            key_value = {a["name"]: a for a in accounts}
+            account_data = key_value[kwargs["smtp_account"]]
+        except KeyError as exc:
+            raise KeyError(
+                f"The account {kwargs['smtp_account']} does not appear in the configuration"
+            ) from exc
+
+        return account_data
+
+    def attach_files(self, msg: MIMEMultipart, files):
+        """
+        Loads and adds attachments to an email message
+        :param msg: The message object for the email
+        :param files: List/Tuple of file paths of files to attach
+        :return:
+        """
+        for filepath in files:
+            filename = os.path.basename(filepath)
+            with open(filepath, "rb") as file:
+                part = MIMEApplication(file.read(), Name=filename)
+            part["Content-Disposition"] = f"attachment; filename={filename}"
+            msg.attach(part)
+
     def send_email(self, **kwargs):
         """
         Send email
@@ -36,18 +88,7 @@ class SendEmail(Action):
         :return:
         """
 
-        accounts = self.config.get("smtp_accounts", None)
-        if not accounts:
-            raise ValueError(
-                f"'smtp_account' config value is required to send email, config={self.config}"
-            )
-        try:
-            key_value = {a["name"]: a for a in accounts}
-            account_data = key_value[kwargs["smtp_account"]]
-        except KeyError as exc:
-            raise KeyError(
-                f"The account {kwargs['smtp_account']} does not appear in the configuration"
-            ) from exc
+        account_data = self.load_smtp_account(**kwargs)
 
         msg = MIMEMultipart()
         msg["Subject"] = Header(kwargs["subject"], "utf-8")
@@ -59,12 +100,8 @@ class SendEmail(Action):
 
         msg["Date"] = formatdate(localtime=True)
 
-        if "header" in kwargs and os.path.exists(kwargs["header"]):
-            with open(kwargs["header"], "r", encoding="utf-8") as header_file:
-                header = header_file.read()
-        if "footer" in kwargs and os.path.exists(kwargs["footer"]):
-            with open(kwargs["footer"], "r", encoding="utf-8") as footer_file:
-                footer = footer_file.read()
+        header = self.load_template("header", **kwargs)
+        footer = self.load_template("footer", **kwargs)
 
         if kwargs["send_as_html"]:
             msg.attach(
@@ -94,13 +131,7 @@ class SendEmail(Action):
 
         if kwargs["email_cc"]:
             msg["Cc"] = ", ".join(kwargs["email_cc"])
-        attachments = kwargs["attachment_filepaths"] or tuple()
-        for filepath in attachments:
-            filename = os.path.basename(filepath)
-            with open(filepath, "rb") as file:
-                part = MIMEApplication(file.read(), Name=filename)
-            part["Content-Disposition"] = f"attachment; filename={filename}"
-            msg.attach(part)
+        self.attach_files(msg, kwargs["attachment_filepaths"] or tuple())
 
         smtp = SMTP_SSL(account_data["server"], str(account_data["port"]), timeout=60)
         smtp.ehlo()
