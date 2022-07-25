@@ -20,11 +20,17 @@ parameters:
     type: string
     default: server_shutoff
     enum:
-      - server_shutoff
-      - server_error_and_shutoff
-      - server_error
-      - server_older_than
-      - server_younger_than
+      - "id_in"
+      - "id_not_in"
+      - "name_in"
+      - "name_not_in"
+      - "name_contains"
+      - "name_not_contains"
+      - "server_shutoff"
+      - "server_error_and_shutoff"
+      - "server_error"
+      - "server_older_than"
+      - "server_younger_than"
     required: true
   properties_to_select:
     default:
