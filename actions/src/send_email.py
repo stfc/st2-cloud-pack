@@ -71,7 +71,12 @@ class SendEmail(Action):
                 MIMEText(
                     f"""\
             <html>
-                <head></head>
+                <head>
+                <style>
+                    table, th, td {{ border: 1px solid black; border-collapse: collapse; }}
+                    th, td {{ padding: 8px; }}
+                </style>
+                </head>
                 <body>
                     {header}
                     {kwargs["body"]}
