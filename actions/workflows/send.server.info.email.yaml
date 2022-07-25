@@ -61,7 +61,7 @@ tasks:
       smtp_account=<% ctx().smtp_account %>
       email_from=<% ctx().email_from %>
       email_to=<% list(item(email)) %>
-      body=<% ctx().message + ctx().email_bodies[item(email)] %>
+      body=<% ctx().message + "<br><br>" + ctx().email_bodies[item(email)] %>
       subject=<% ctx().subject %>
       footer=<% ctx().footer %>
       header=<% ctx().header %>
