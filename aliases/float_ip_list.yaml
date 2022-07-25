@@ -1,6 +1,6 @@
 ---
 name: "float_ip_list"
-action_ref: "stackstorm_openstack.float.ip_addr.list"
+action_ref: "stackstorm_openstack.floating.ip_addr.list"
 description: "Get float IP information that match certain criteria"
 formats:
   - display: "float ip_addr list properties {{properties_to_select}}; (preset {{query_preset}}; | criteria {{search_criteria}};) sort_by {{sort_by_criteria}};"
