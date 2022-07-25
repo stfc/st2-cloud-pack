@@ -34,10 +34,10 @@ class ListIps(ListItems):
             "not_project_id": lambda func_dict, args: func_dict["project_id"]
             not in args,
             "older_than": lambda func_dict, args: self.is_older_than_x_days(
-                func_dict, days=args
+                func_dict["created_at"], days=args[0]
             ),
             "not_older_than": lambda func_dict, args: not self.is_older_than_x_days(
-                func_dict, days=args
+                func_dict["created_at"], days=args[0]
             ),
             "project_name": lambda func_dict, args: self.conn.identity.find_project(
                 func_dict["project_id"]
