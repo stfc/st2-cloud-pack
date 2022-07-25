@@ -11,14 +11,20 @@ parameters:
     type: string
     immutable: true
   cloud_account:
-    description: The clouds.yaml account to use whilst performing this action
+    description: "The clouds.yaml account to use whilst performing this action"
+    type: string
     default: ""
     required: true
-    type: string
   query_preset:
-    description: "name of a preset query - e.g server_shutoff: list all servers shutoff "
-    default: server_shutoff
+    description: "Name of a preset query - e.g server_shutoff: list all servers shutoff"
     type: string
+    default: server_shutoff
+    enum:
+      - server_shutoff
+      - server_error_and_shutoff
+      - server_error
+      - server_older_than
+      - server_younger_than
     required: true
   properties_to_select:
     default:
@@ -28,41 +34,41 @@ parameters:
       - "user_name"
       - "user_email"
     type: array
-    description: properties to display for servers younger than specified number of days
+    description: "Properties to display for servers younger than specified number of days"
     required: true
   search_criteria:
     type: array
-    description: additional properties to select for
+    description: "Additional properties to select for"
     required: false
   sort_by_criteria:
     type: array
-    description: properties to sort list openstack_resource
+    description: "Properties to sort list openstack_resource"
     required: false
   get_html:
-    default: false
+    type: boolean
     description: "If True, get HTML"
     required: true
-    type: boolean
+    default: false
   names:
-    description: names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)
+    description: "Names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)"
     type: array
     default:
       - ""
     required: true
   ids:
-    description: id to search openstack_resource (ignored unless query_preset=id_in etc)
+    description: "ID to search openstack_resource (ignored unless query_preset=id_in etc)"
     type: array
     default:
       - ""
     required: true
   name_snippets:
-    description: name snippets to search openstack_resource (ignored unless query_preset=name_contains etc)
+    description: "Name snippets to search openstack_resource (ignored unless query_preset=name_contains etc)"
     type: array
     default:
       - ""
     required: true
   days:
-    description: number of days threshold for selecting servers (ignored unless submodule=server_older_than(_per_user) or server_younger_than(_per_user)
+    description: "Number of days threshold for selecting servers (ignored unless submodule=server_older_than(_per_user) or server_younger_than(_per_user)"
     type: integer
     default: 60
     required: true

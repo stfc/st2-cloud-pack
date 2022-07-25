@@ -7,18 +7,24 @@ parameters:
   timeout:
     default: 99999
   cloud_account:
-    description: The clouds.yaml account to use whilst performing this action
-    required: true
+    description: "The clouds.yaml account to use whilst performing this action"
     type: string
     default: ""
-  query_preset:
-    description: "Name of a preset query - e.g server_shutoff: list all servers shutoff "
-    type: string
     required: true
+  query_preset:
+    description: "Name of a preset query - e.g server_shutoff: list all servers shutoff"
+    type: string
     default: "server_older_than"
+    enum:
+      - server_shutoff
+      - server_error_and_shutoff
+      - server_error
+      - server_older_than
+      - server_younger_than
+    required: true
   properties_to_select:
     type: array
-    description: Properties to display for servers, must include user_email
+    description: "Properties to display for servers, must include user_email"
     required: true
     default:
       - "server_id"
@@ -28,7 +34,7 @@ parameters:
       - "user_email"
   search_criteria:
     type: array
-    description: Additional properties to select for
+    description: "Additional properties to select for"
     required: false
   sort_by_criteria:
     type: array
