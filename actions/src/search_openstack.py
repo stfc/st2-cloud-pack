@@ -275,7 +275,35 @@ class SearchOpenstack(OpenstackAction):
                             console_output=False,
                             save=False,
                             save_path="",
-                        )
+                        ),
+                        "ip_addr_older_than": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
+                            openstack_resource="ip_addr",
+                            properties_list=properties_list,
+                            criteria_list=[["older_than", kwargs["days"]]].extend(
+                                criteria_list
+                            )
+                            if criteria_list
+                            else [["older_than", kwargs["days"]]],
+                            sort_by_list=sort_by_list,
+                            console_output=False,
+                            save=False,
+                            save_path="",
+                        ),
+                        "ip_addr_younger_than": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
+                            openstack_resource="ip_addr",
+                            properties_list=properties_list,
+                            criteria_list=[["not_older_than", kwargs["days"]]].extend(
+                                criteria_list
+                            )
+                            if criteria_list
+                            else [["not_older_than", kwargs["days"]]],
+                            sort_by_list=sort_by_list,
+                            console_output=False,
+                            save=False,
+                            save_path="",
+                        ),
                     },
                     "host": {
                         # pylint: disable=line-too-long

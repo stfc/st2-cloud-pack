@@ -17,9 +17,14 @@ parameters:
     required: true
   query_preset:
     description: "Name of a preset query"
-    default: "no_preset"
+    default: "ip_addr_older_than"
     type: string
     required: true
+    enum:
+      - "id_in"
+      - "id_not_in"
+      - "ip_addr_older_than"
+      - "ip_addr_younger_than"
   search_by:
     type: string
     default: "ip_addr"
@@ -52,5 +57,10 @@ parameters:
     type: array
     default:
       - ""
+    required: true
+  days:
+    description: "Number of days threshold for selecting servers (ignored unless submodule=ip_addr_older_than or ip_addr_younger_than"
+    type: integer
+    default: 60
     required: true
 runner_type: python-script
