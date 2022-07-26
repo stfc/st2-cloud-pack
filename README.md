@@ -128,7 +128,7 @@ Optional Parameters:
 - default: `true` # should be changed in production
   `admin_override_email`: Email to send if `admin_override` set to true
 - default: `jacob.ward@stfc.ac.uk`
-  `smtp_account`: smtp account name to use - must be configured in email.yaml
+  `smtp_account`: smtp account name to use - must be configured in pack settings
 - default: `default`
   `email_cc`: Array of email addresses to cc in
 - default: `None` - not required
@@ -310,6 +310,7 @@ Other examples of atomic Actions are shown below (not an exhaustive list):
 `security.group.list` - Action to list security groups and their properties for a given project
 `security.group.rule.create` - Action to create a new rule for a given security group
 `server.list` - Action to list server properties given some criteria
+`volume.list` - Action to list volume properties given some criteria
 `subnet.create` - Action to create an Openstack subnet
 `user.get.email` - Action to get a user's email address given their Name/ID
 
