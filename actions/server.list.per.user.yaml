@@ -42,7 +42,7 @@ parameters:
       - "user_name"
       - "user_email"
     type: array
-    description: "Properties to display for servers younger than specified number of days"
+    description: "Properties to display for the servers that match the chosen query"
     required: true
   search_criteria:
     type: array

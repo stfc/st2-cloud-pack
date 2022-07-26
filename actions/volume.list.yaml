@@ -1,8 +1,8 @@
 ---
-description: List servers
+description: List volumes
 enabled: true
 entry_point: src/search_openstack.py
-name: server.list
+name: volume.list
 parameters:
   timeout:
     default: 99999
@@ -17,8 +17,8 @@ parameters:
     type: string
   query_preset:
     type: string
-    description: "Name of a preset query - e.g server_shutoff: list all servers shutoff"
-    default: server_shutoff
+    description: "Name of a preset query - e.g volume_older_than: list all volumes older than a specified number of days"
+    default: volume_older_than
     enum:
       - "id_in"
       - "id_not_in"
@@ -26,27 +26,24 @@ parameters:
       - "name_not_in"
       - "name_contains"
       - "name_not_contains"
-      - "server_shutoff"
-      - "server_error_and_shutoff"
-      - "server_error"
-      - "server_older_than"
-      - "server_younger_than"
-      - "server_last_updated_before"
-      - "server_last_updated_after"
+      - "volume_older_than"
+      - "volume_younger_than"
+      - "volume_last_updated_before"
+      - "volume_last_updated_after"
     required: true
   search_by:
-    default: server
+    default: volume
     type: string
     immutable: true
   properties_to_select:
     default:
-      - "server_id"
-      - "server_name"
-      - "server_status"
+      - "volume_id"
+      - "volume_name"
+      - "volume_status"
       - "user_name"
       - "user_email"
     type: array
-    description: "Properties to display for the servers that match the chosen query"
+    description: "Properties to display for the volumes that match the chosen query"
     required: true
   search_criteria:
     type: array
@@ -80,7 +77,7 @@ parameters:
       - ""
     required: true
   days:
-    description: "Number of days threshold for selecting servers (ignored unless query_preset=server_older_than or server_last_updated_before etc)"
+    description: "Number of days threshold for selecting volumes (ignored unless query_preset=volume_older_than or volume_last_updated_before etc)"
     type: integer
     default: 60
     required: true

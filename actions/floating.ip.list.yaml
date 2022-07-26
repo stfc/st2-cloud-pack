@@ -31,7 +31,7 @@ parameters:
     immutable: true
   properties_to_select:
     type: array
-    description: "Properties to select"
+    description: "Properties to display for the floating ips that match the chosen query"
     default:
       - "ip_id"
       - "ip_fixed_address"
