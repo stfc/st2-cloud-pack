@@ -159,7 +159,9 @@ class ListItems(ABC):
         """
         return self.property_func_dict.get(key, None)
 
-    def is_older_than_x_days(self, created_at, days):
+    def is_older_than_x_days(
+        self, created_at, days, date_time_format="%Y-%m-%dT%H:%M:%SZ"
+    ):
         """
         Function to get if openstack resource is older than a given
         number of days
@@ -167,15 +169,20 @@ class ListItems(ABC):
             created_at (string): timestamp that represents date and time
             a resource was created
             days (int): number of days treshold
+            date_time_format (string): date-time format of 'created_at'
 
         Returns: (bool) True if older than days given else False
         """
         return self.is_created_at_older_than_offset(
-            created_at, datetime.timedelta(days=int(days)).total_seconds()
+            created_at,
+            datetime.timedelta(days=int(days)).total_seconds(),
+            date_time_format,
         )
 
     @staticmethod
-    def is_created_at_older_than_offset(created_at, time_offset_in_seconds):
+    def is_created_at_older_than_offset(
+        created_at, time_offset_in_seconds, date_time_format="%Y-%m-%dT%H:%M:%SZ"
+    ):
         """
         Helper function to get if openstack resource is older than a
         given number of seconds
@@ -183,6 +190,7 @@ class ListItems(ABC):
             created_at (string): timestamp that represents date and time
             a resource was created
             time_offset_in_seconds (int): number of seconds threshold
+            date_time_format (string): date-time format of 'created_at'
 
         Returns: (bool) True if older than days given else False
         """
@@ -190,6 +198,6 @@ class ListItems(ABC):
             datetime.datetime.now()
         ).timestamp() - time_offset_in_seconds
         created_at_datetime = datetime.datetime.strptime(
-            created_at, "%Y-%m-%dT%H:%M:%SZ"
+            created_at, date_time_format
         ).timestamp()
         return offset_timestamp > created_at_datetime

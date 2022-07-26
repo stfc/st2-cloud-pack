@@ -36,16 +36,24 @@ class ListVolumes(ListItems):
             "not_project_id": lambda func_dict, args: func_dict["project_id"]
             not in args,
             "older_than": lambda func_dict, args: self.is_older_than_x_days(
-                func_dict["created_at"], days=args[0]
+                func_dict["created_at"],
+                days=args[0],
+                date_time_format="%Y-%m-%dT%H:%M:%S.%f",
             ),
             "not_older_than": lambda func_dict, args: not self.is_older_than_x_days(
-                func_dict["created_at"], days=args[0]
+                func_dict["created_at"],
+                days=args[0],
+                date_time_format="%Y-%m-%dT%H:%M:%S.%f",
             ),
             "last_updated_before": lambda func_dict, args: self.is_older_than_x_days(
-                func_dict["updated_at"], days=args[0]
+                func_dict["updated_at"],
+                days=args[0],
+                date_time_format="%Y-%m-%dT%H:%M:%S.%f",
             ),
             "last_updated_after": lambda func_dict, args: not self.is_older_than_x_days(
-                func_dict["updated_at"], days=args[0]
+                func_dict["updated_at"],
+                days=args[0],
+                date_time_format="%Y-%m-%dT%H:%M:%S.%f",
             ),
             "project_name": lambda func_dict, args: self.conn.identity.find_project(
                 func_dict["project_id"]
