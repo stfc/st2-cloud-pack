@@ -31,6 +31,8 @@ parameters:
       - "server_error"
       - "server_older_than"
       - "server_younger_than"
+      - "server_last_updated_before"
+      - "server_last_updated_after"
     required: true
   properties_to_select:
     default:
@@ -74,7 +76,7 @@ parameters:
       - ""
     required: true
   days:
-    description: "Number of days threshold for selecting servers (ignored unless submodule=server_older_than(_per_user) or server_younger_than(_per_user)"
+    description: "Number of days threshold for selecting servers (ignored unless query_preset=server_older_than or server_last_updated_before etc)"
     type: integer
     default: 60
     required: true

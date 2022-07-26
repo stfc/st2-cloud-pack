@@ -3,6 +3,7 @@ from .classes.list_ips import ListIps
 from .classes.list_projects import ListProjects
 from .classes.list_servers import ListServers
 from .classes.list_users import ListUsers
+from .classes.list_volumes import ListVolumes
 from .utils import (
     create_openstack_connection,
     output_to_console,
@@ -56,6 +57,7 @@ def query(
         "project": ListProjects,
         "ip_addr": ListIps,
         "host": ListHosts,
+        "volume": ListVolumes,
     }.get(openstack_resource, None)
 
     if not list_class:

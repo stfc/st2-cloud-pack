@@ -259,6 +259,34 @@ class SearchOpenstack(OpenstackAction):
                             save=False,
                             save_path="",
                         ),
+                        "server_last_updated_before": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
+                            openstack_resource="server",
+                            properties_list=properties_list,
+                            criteria_list=[
+                                ["last_updated_before", kwargs["days"]]
+                            ].extend(criteria_list)
+                            if criteria_list
+                            else [["last_updated_before", kwargs["days"]]],
+                            sort_by_list=sort_by_list,
+                            console_output=False,
+                            save=False,
+                            save_path="",
+                        ),
+                        "server_last_updated_after": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
+                            openstack_resource="server",
+                            properties_list=properties_list,
+                            criteria_list=[
+                                ["last_updated_after", kwargs["days"]]
+                            ].extend(criteria_list)
+                            if criteria_list
+                            else [["last_updated_after", kwargs["days"]]],
+                            sort_by_list=sort_by_list,
+                            console_output=False,
+                            save=False,
+                            save_path="",
+                        ),
                     },
                     "ip_addr": {
                         # pylint: disable=line-too-long
@@ -299,6 +327,34 @@ class SearchOpenstack(OpenstackAction):
                             )
                             if criteria_list
                             else [["not_older_than", kwargs["days"]]],
+                            sort_by_list=sort_by_list,
+                            console_output=False,
+                            save=False,
+                            save_path="",
+                        ),
+                        "ip_addr_last_updated_before": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
+                            openstack_resource="ip_addr",
+                            properties_list=properties_list,
+                            criteria_list=[
+                                ["last_updated_before", kwargs["days"]]
+                            ].extend(criteria_list)
+                            if criteria_list
+                            else [["last_updated_before", kwargs["days"]]],
+                            sort_by_list=sort_by_list,
+                            console_output=False,
+                            save=False,
+                            save_path="",
+                        ),
+                        "ip_addr_last_updated_after": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
+                            openstack_resource="ip_addr",
+                            properties_list=properties_list,
+                            criteria_list=[
+                                ["last_updated_after", kwargs["days"]]
+                            ].extend(criteria_list)
+                            if criteria_list
+                            else [["last_updated_after", kwargs["days"]]],
                             sort_by_list=sort_by_list,
                             console_output=False,
                             save=False,
@@ -352,6 +408,65 @@ class SearchOpenstack(OpenstackAction):
                             save=False,
                             save_path="",
                         )
+                    },
+                    "volume": {
+                        # pylint: disable=line-too-long
+                        "volume_older_than": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
+                            openstack_resource="volume",
+                            properties_list=properties_list,
+                            criteria_list=[["older_than", kwargs["days"]]].extend(
+                                criteria_list
+                            )
+                            if criteria_list
+                            else [["older_than", kwargs["days"]]],
+                            sort_by_list=sort_by_list,
+                            console_output=False,
+                            save=False,
+                            save_path="",
+                        ),
+                        "volume_younger_than": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
+                            openstack_resource="volume",
+                            properties_list=properties_list,
+                            criteria_list=[["not_older_than", kwargs["days"]]].extend(
+                                criteria_list
+                            )
+                            if criteria_list
+                            else [["not_older_than", kwargs["days"]]],
+                            sort_by_list=sort_by_list,
+                            console_output=False,
+                            save=False,
+                            save_path="",
+                        ),
+                        "volume_last_updated_before": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
+                            openstack_resource="volume",
+                            properties_list=properties_list,
+                            criteria_list=[
+                                ["last_updated_before", kwargs["days"]]
+                            ].extend(criteria_list)
+                            if criteria_list
+                            else [["last_updated_before", kwargs["days"]]],
+                            sort_by_list=sort_by_list,
+                            console_output=False,
+                            save=False,
+                            save_path="",
+                        ),
+                        "volume_last_updated_after": lambda cloud_account, properties_list, criteria_list, sort_by_list, **kwargs: query(
+                            cloud_account=cloud_account,
+                            openstack_resource="volume",
+                            properties_list=properties_list,
+                            criteria_list=[
+                                ["last_updated_after", kwargs["days"]]
+                            ].extend(criteria_list)
+                            if criteria_list
+                            else [["last_updated_after", kwargs["days"]]],
+                            sort_by_list=sort_by_list,
+                            console_output=False,
+                            save=False,
+                            save_path="",
+                        ),
                     },
                 }
                 .get(search_by, {})

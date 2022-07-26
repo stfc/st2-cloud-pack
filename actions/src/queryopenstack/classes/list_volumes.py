@@ -1,27 +1,29 @@
+from openstack.connection import Connection
+
 from .list_items import ListItems
 
 
-class ListIps(ListItems):
+class ListVolumes(ListItems):
     """
-    A class to list float ips: Inherits from ListItems
+    A class to list volumes: Inherits from ListItems
 
     Attributes
     ----------
     criteria_func_dict: dict
         stores possible query criteria options -
-        criteria name (key) : function to evaluate a criteria on ip_addr (value)
-                function (bool) - evaluate 'ip_addr' properties against criteria
+        criteria name (key) : function to evaluate a criteria on volumes (value)
+                function (bool) - evaluate 'volume' properties against criteria
                 overrides ListItems attribute
 
     property_func_dict: dict
-        stores possible ip_addr property options
+        stores possible volume property options
         property name (key) : function to retrieve property (value)
-                function (string/int) - returns property value from a 'ip_addr' dictionary
+                function (string/int) - returns property value from a 'volume' dictionary
     """
 
-    def __init__(self, conn):
+    def __init__(self, conn: Connection):
         """constructor class"""
-        super().__init__(conn, conn.list_floating_ips)
+        super().__init__(conn, conn.list_volumes)
 
         self.criteria_func_dict = {
             "status": lambda func_dict, args: func_dict["status"] in args,
@@ -65,13 +67,18 @@ class ListIps(ListItems):
         }
 
         self.property_func_dict = {
-            "ip_id": lambda a: a["id"],
-            "ip_fixed_address": lambda a: a["fixed_ip_address"],
-            "ip_floating_address": lambda a: a["floating_ip_address"],
-            "ip_port_id": lambda a: a["port_id"],
-            "ip_created_at": lambda a: a["created_at"],
+            "volume_attachments": lambda a: a["attachments"],
+            "volume_id": lambda a: a["id"],
+            "volume_name": lambda a: a["name"],
+            "volume_status": lambda a: a["status"],
+            "volume_updated_at": lambda a: a["updated_at"],
+            "volume_created_at": lambda a: a["created_at"],
+            "volume_size": lambda a: a["size"],
             "project_id": lambda a: a["project_id"],
             "project_name": lambda a: self.conn.identity.find_project(a["project_id"])[
                 "name"
             ],
+            "user_id": lambda a: a["user_id"],
+            "user_name": lambda a: self.conn.identity.find_user(a["user_id"])["name"],
+            "user_email": lambda a: self.conn.identity.find_user(a["user_id"])["email"],
         }

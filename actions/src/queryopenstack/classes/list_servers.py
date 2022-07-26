@@ -50,6 +50,12 @@ class ListServers(ListItems):
                 "not_older_than": lambda dict, args: not self.is_older_than_x_days(
                     dict["created_at"], days=args[0]
                 ),
+                "last_updated_before": lambda dict, args: self.is_older_than_x_days(
+                    dict["updated_at"], days=args[0]
+                ),
+                "last_updated_after": lambda dict, args: not self.is_older_than_x_days(
+                    dict["updated_at"], days=args[0]
+                ),
                 "has_illegal_connections": lambda dict, args: self.had_illegal_connections(
                     dict["addresses"]
                 ),
