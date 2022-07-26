@@ -74,6 +74,14 @@ class ListVolumes(ListItems):
             ),
         }
 
+        # Performs a check before accessing a user property in case the user
+        # no longer exists (was a problem on dev)
+        def find_user_property(item, prop):
+            user = self.conn.identity.find_user(item["user_id"])
+            if user:
+                return user[prop]
+            return None
+
         self.property_func_dict = {
             "volume_attachments": lambda a: a["attachments"],
             "volume_id": lambda a: a["id"],
@@ -87,6 +95,6 @@ class ListVolumes(ListItems):
                 "name"
             ],
             "user_id": lambda a: a["user_id"],
-            "user_name": lambda a: self.conn.identity.find_user(a["user_id"])["name"],
-            "user_email": lambda a: self.conn.identity.find_user(a["user_id"])["email"],
+            "user_name": lambda a: find_user_property(a, "name"),
+            "user_email": lambda a: find_user_property(a, "email"),
         }
