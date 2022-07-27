@@ -1,5 +1,6 @@
 import datetime
-from typing import Any, Callable, List
+from typing import Any, Callable, Dict, List
+from tabulate import tabulate
 
 
 class OpenstackQuery:
@@ -60,3 +61,70 @@ class OpenstackQuery:
         ).timestamp() - time_offset_in_seconds
         value_datetime = datetime.datetime.strptime(value, date_time_format).timestamp()
         return offset_timestamp > value_datetime
+
+    @staticmethod
+    def parse_properties(
+        items: List,
+        properties_to_list: List[str],
+        property_funcs: Dict[str, Callable[[Any], Any]],
+    ) -> List[Dict]:
+        """
+        Generates a dictionary of queried properties from a list of openstack objects e.g. servers
+        :param items: List of items to obtain properties from
+        :param properties_to_list: List of properties to obtain from the items
+        :param property_funcs: Query functions that return properties requested in 'properties_to_list'
+        :return: List containing dictionaries of the requested properties obtained from the items
+        """
+        output = []
+        for item in items:
+            item_output = {}
+            for prop in properties_to_list:
+                # If the property func is listed then use that, otherwise assume can obtain from the object directly
+                if prop in property_funcs:
+                    property_value = property_funcs[prop](item)
+                else:
+                    try:
+                        property_value = item[prop]
+                    except AttributeError:
+                        property_value = "Not found"
+
+                item_output[prop] = property_value
+            output.append(item_output)
+        return output
+
+    @staticmethod
+    def generate_table(properties_dict: List[Dict[str, Any]], get_html: bool) -> str:
+        """
+        Returns a table from the result of 'parse_properties'
+        :param properties_dict: dict of query results
+        :param get_html: True if output required in html table format else output plain text table
+        :return: String (html or plaintext table of results)
+        """
+        headers = properties_dict[0].keys()
+        rows = [row.values() for row in properties_dict]
+        return tabulate(rows, headers, tablefmt="html" if get_html else "grid")
+
+    @staticmethod
+    def collate_results(
+        properties_dict: List[Dict[str, Any]], key: str, get_html: bool
+    ) -> Dict[str, str]:
+        """
+        Collates results from a dict based on a given property key and returns a dictionary of
+        these keys with tables of the properties
+        :param properties_dict: dict of query results
+        :param key: key to collate by e.g. user_email
+        :param get_html: True if output required in html table format else output plain text table
+        :return: Dict[str, str] (each key containing html or plaintext table of results)
+        """
+        collated_dict = {}
+        for item in properties_dict:
+            key_value = item[key]
+            if key_value in collated_dict:
+                collated_dict[key_value].append(item)
+            else:
+                collated_dict[key_value] = [item]
+
+        for key_value, items in collated_dict.items():
+            collated_dict[key_value] = OpenstackQuery.generate_table(items, get_html)
+
+        return collated_dict

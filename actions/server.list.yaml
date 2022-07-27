@@ -7,7 +7,7 @@ parameters:
   timeout:
     default: 99999
   submodule:
-    default: server_list
+    default: server_query
     type: string
     immutable: true
   cloud_account:
@@ -44,9 +44,9 @@ parameters:
     immutable: true
   properties_to_select:
     default:
-      - "server_id"
-      - "server_name"
-      - "server_status"
+      - "id"
+      - "name"
+      - "status"
       - "user_name"
       - "user_email"
     type: array
