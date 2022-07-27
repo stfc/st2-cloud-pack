@@ -4,6 +4,7 @@ description: Send Emails to Users with VMs that match query
 
 input:
   - cloud_account
+  - project_identifier
   - email_from
   - query_preset
   - criteria_list
@@ -19,6 +20,7 @@ input:
   - names
   - ids
   - name_snippets
+  - properties_to_select
 
 vars:
   - emails: null
@@ -32,15 +34,17 @@ output:
 
 tasks:
   find_servers:
-    action: stackstorm_openstack.server.list.per.user
+    action: stackstorm_openstack.server.list
       cloud_account=<% ctx().cloud_account %>
+      project_identifier=<% ctx().project_identifier %>
       query_preset=<% ctx().query_preset %>
-      search_criteria=<% ctx().criteria_list %>
       days=<% ctx().days %>
       names=<% ctx().names %>
       ids=<% ctx().ids %>
       name_snippets=<% ctx().name_snippets %>
       get_html=<% ctx().send_html %>
+      group_by="user_email"
+      properties_to_select=<% ctx().properties_to_select %>
     next:
       - when: <% result().result != null %>
         publish:

@@ -11,37 +11,32 @@ parameters:
     type: string
     default: ""
     required: true
-  query_preset:
-    description: "Name of a preset query - e.g server_shutoff: list all servers shutoff"
+  project_identifier:
     type: string
-    default: "server_older_than"
+    description: Project (Name or ID) to search in
+    required: false
+    default: ""
+  query_preset:
+    description: "Name of a preset query - e.g servers_older_than: list all servers older than"
+    type: string
+    default: "servers_older_than"
     enum:
-      - "id_in"
-      - "id_not_in"
-      - "name_in"
-      - "name_not_in"
-      - "name_contains"
-      - "name_not_contains"
-      - "server_shutoff"
-      - "server_error_and_shutoff"
-      - "server_error"
-      - "server_older_than"
-      - "server_younger_than"
+      - "servers"
+      - "servers_older_than"
+      - "servers_younger_than"
+      - "servers_last_updated_before"
+      - "servers_last_updated_after"
     required: true
   properties_to_select:
     type: array
     description: "Properties to display for servers, must include user_email"
     required: true
     default:
-      - "server_id"
-      - "server_name"
-      - "server_status"
+      - "id"
+      - "name"
+      - "status"
       - "user_name"
       - "user_email"
-  search_criteria:
-    type: array
-    description: "Additional properties to select for"
-    required: false
   sort_by_criteria:
     type: array
     required: false

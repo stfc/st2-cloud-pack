@@ -22,7 +22,7 @@ parameters:
     default: ""
   query_preset:
     type: string
-    description: "Name of a preset query - e.g server_older_than - list all servers older than"
+    description: "Name of a preset query - e.g server_older_than: list all servers older than"
     default: servers_older_than
     enum:
       - "servers"
