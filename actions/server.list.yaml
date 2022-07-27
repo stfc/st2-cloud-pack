@@ -48,8 +48,7 @@ parameters:
   group_by:
     description: "Property to group the selected resources by e.g. user_email"
     type: string
-    default:
-      - ""
+    default: ""
     required: false
   get_html:
     default: false

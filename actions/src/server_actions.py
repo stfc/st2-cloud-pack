@@ -60,6 +60,6 @@ class ServerActions(Action):
         if group_by != "":
             output = OpenstackQuery.collate_results(output, group_by, get_html)
         else:
-            output = OpenstackQuery.generate_table(output)
+            output = OpenstackQuery.generate_table(output, get_html)
 
         return output
