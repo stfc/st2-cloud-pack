@@ -28,13 +28,13 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = []
         if project_identifier == "":
+            projects = self._identity_api.list_projects(cloud_account)
+        else:
             projects = [
                 self._identity_api.find_mandatory_project(
                     cloud_account, project_identifier=project_identifier
                 )
             ]
-        else:
-            projects = self._identity_api.list_projects(cloud_account)
 
         with self._connection_cls(cloud_account) as conn:
             for project in projects:

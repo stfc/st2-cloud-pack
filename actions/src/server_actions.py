@@ -27,31 +27,24 @@ class ServerActions(Action):
 
     # pylint:disable=unused-argument
     def server_list(
-        self, cloud_account: str, project_identifier: str, **kwargs
-    ) -> List[Server]:
-        """
-        Finds all servers belonging to a project (or all servers if project is empty)
-        :param cloud_account: The account from the clouds configuration to use
-        :param project_identifier: The project this applies to (or empty for all servers)
-        :return: List of found servers
-        """
-        return self._server_api.search_servers(cloud_account, project_identifier)
-
-    # pylint:disable=unused-argument
-    def server_query(
         self,
         cloud_account: str,
         project_identifier: str,
         query_preset: str,
         properties_to_select: List[str],
+        group_by: str,
+        get_html: bool,
         **kwargs,
     ) -> List[Server]:
         """
         Finds all servers belonging to a project (or all servers if project is empty)
         :param cloud_account: The account from the clouds configuration to use
         :param project_identifier: The project this applies to (or empty for all servers)
+        :param query_preset: The query to use when searching for servers
         :param properties_to_select: The list of properties to select and output from the found servers
-        :return: List of servers found to match the query
+        :param group_by: Property to group returned results - can be empty for no grouping
+        :param get_html: When True tables returned are in html format
+        :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
         """
         servers = self._server_api[f"search_{query_preset}"](
             cloud_account, project_identifier, **kwargs
@@ -63,6 +56,10 @@ class ServerActions(Action):
         output = OpenstackQuery.parse_properties(
             servers, properties_to_select, property_funcs
         )
-        output = OpenstackQuery.collate_results(output, "user_email", False)
+
+        if group_by != "":
+            output = OpenstackQuery.collate_results(output, group_by, get_html)
+        else:
+            output = OpenstackQuery.generate_table(output)
 
         return output
