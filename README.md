@@ -310,7 +310,6 @@ Other examples of atomic Actions are shown below (not an exhaustive list):
 `security.group.list` - Action to list security groups and their properties for a given project
 `security.group.rule.create` - Action to create a new rule for a given security group
 `server.list` - Action to list server properties given some criteria
-`volume.list` - Action to list volume properties given some criteria
 `subnet.create` - Action to create an Openstack subnet
 `user.get.email` - Action to get a user's email address given their Name/ID
 
