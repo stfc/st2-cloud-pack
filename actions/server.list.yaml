@@ -1,18 +1,22 @@
 ---
 description: List servers
 enabled: true
-entry_point: src/search_openstack.py
+entry_point: src/server_actions.py
 name: server.list
 parameters:
   timeout:
     default: 99999
   submodule:
-    default: search_openstack
+    default: server_list
     type: string
     immutable: true
   cloud_account:
     description: The clouds.yaml account to use whilst performing this action
     default: ""
+    required: true
+    type: string
+  project_identifier:
+    description: Project (Name or ID) to search in
     required: true
     type: string
   query_preset:

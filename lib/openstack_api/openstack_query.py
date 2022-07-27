@@ -18,7 +18,9 @@ class OpenstackQuery:
                 items.remove(item)
 
     @staticmethod
-    def datetime_before_x_days(value, days, date_time_format="%Y-%m-%dT%H:%M:%SZ"):
+    def datetime_before_x_days(
+        value: str, days, date_time_format: str = "%Y-%m-%dT%H:%M:%SZ"
+    ):
         """
         Function to get if openstack resource is older than a given
         number of days
@@ -38,7 +40,9 @@ class OpenstackQuery:
 
     @staticmethod
     def datetime_older_than_offset(
-        value, time_offset_in_seconds, date_time_format="%Y-%m-%dT%H:%M:%SZ"
+        value: str,
+        time_offset_in_seconds: int,
+        date_time_format: str = "%Y-%m-%dT%H:%M:%SZ",
     ):
         """
         Helper function to get if openstack resource is older than a
