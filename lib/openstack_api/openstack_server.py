@@ -108,7 +108,7 @@ class OpenstackServer(OpenstackWrapperBase):
         self, cloud_account: str, project_identifier: str, days: int, **kwargs
     ) -> List[Server]:
         """
-        Returns a list of servers updated befafterore a specified number of days in the past
+        Returns a list of servers updated after a specified number of days in the past
         :param cloud_account: The associated clouds.yaml account
         :param project_identifier: The project to get all associated servers with, can be empty for all projects
         :param days: The number of days after which the servers should have last been updated
@@ -119,4 +119,165 @@ class OpenstackServer(OpenstackWrapperBase):
         return OpenstackQuery.apply_query(
             selected_servers,
             lambda a: not OpenstackQuery.datetime_before_x_days(a["updated_at"], days),
+        )
+
+    # pylint:disable=unused-argument
+    def search_servers_name_in(
+        self, cloud_account: str, project_identifier: str, names: List[str], **kwargs
+    ) -> List[Server]:
+        """
+        Returns a list of servers with names in the list given
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated servers with, can be empty for all projects
+        :param names: List of names that should pass the query
+        :return: A list of servers matching the query
+        """
+        selected_servers = self.search_servers(cloud_account, project_identifier)
+
+        return OpenstackQuery.apply_query(
+            selected_servers, lambda a: a["name"] in names
+        )
+
+    # pylint:disable=unused-argument
+    def search_servers_name_not_in(
+        self, cloud_account: str, project_identifier: str, names: List[str], **kwargs
+    ) -> List[Server]:
+        """
+        Returns a list of servers with names that aren't in the list given
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated servers with, can be empty for all projects
+        :param names: List of names that should not pass the query
+        :return: A list of servers matching the query
+        """
+        selected_servers = self.search_servers(cloud_account, project_identifier)
+
+        return OpenstackQuery.apply_query(
+            selected_servers, lambda a: not a["name"] in names
+        )
+
+    # pylint:disable=unused-argument
+    def search_servers_name_contains(
+        self,
+        cloud_account: str,
+        project_identifier: str,
+        name_snippets: List[str],
+        **kwargs
+    ) -> List[Server]:
+        """
+        Returns a list of servers with names containing the snippets given
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated servers with, can be empty for all projects
+        :param name_snippets: List of name snippets that should be in the server names returned
+        :return: A list of servers matching the query
+        """
+        selected_servers = self.search_servers(cloud_account, project_identifier)
+
+        return OpenstackQuery.apply_query(
+            selected_servers,
+            lambda a: all(name_snippet in a["name"] for name_snippet in name_snippets),
+        )
+
+    # pylint:disable=unused-argument
+    def search_servers_name_not_contains(
+        self,
+        cloud_account: str,
+        project_identifier: str,
+        name_snippets: List[str],
+        **kwargs
+    ) -> List[Server]:
+        """
+        Returns a list of servers with names that don't contain the snippets given
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated servers with, can be empty for all projects
+        :param name_snippets: List of name snippets that should not be in the server names returned
+        :return: A list of servers matching the query
+        """
+        selected_servers = self.search_servers(cloud_account, project_identifier)
+
+        return OpenstackQuery.apply_query(
+            selected_servers,
+            lambda a: all(
+                name_snippet not in a["name"] for name_snippet in name_snippets
+            ),
+        )
+
+    # pylint:disable=unused-argument
+    def search_servers_id_in(
+        self, cloud_account: str, project_identifier: str, ids: List[str], **kwargs
+    ) -> List[Server]:
+        """
+        Returns a list of servers with ids in the list given
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated servers with, can be empty for all projects
+        :param ids: List of ids that should pass the query
+        :return: A list of servers matching the query
+        """
+        selected_servers = self.search_servers(cloud_account, project_identifier)
+
+        return OpenstackQuery.apply_query(selected_servers, lambda a: a["id"] in ids)
+
+    # pylint:disable=unused-argument
+    def search_servers_id_not_in(
+        self, cloud_account: str, project_identifier: str, ids: List[str], **kwargs
+    ) -> List[Server]:
+        """
+        Returns a list of servers with ids that aren't in the list given
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated servers with, can be empty for all projects
+        :param ids: List of v that should not pass the query
+        :return: A list of servers matching the query
+        """
+        selected_servers = self.search_servers(cloud_account, project_identifier)
+
+        return OpenstackQuery.apply_query(
+            selected_servers, lambda a: not a["id"] in ids
+        )
+
+    def search_servers_errored(
+        self, cloud_account: str, project_identifier: str, **kwargs
+    ) -> List[Server]:
+        """
+        Returns a list of servers with ids that aren't in the list given
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated servers with, can be empty for all projects
+        :param ids: List of v that should not pass the query
+        :return: A list of servers matching the query
+        """
+        selected_servers = self.search_servers(cloud_account, project_identifier)
+
+        return OpenstackQuery.apply_query(
+            selected_servers, lambda a: "ERROR" in a["status"]
+        )
+
+    def search_servers_shutoff(
+        self, cloud_account: str, project_identifier: str, **kwargs
+    ) -> List[Server]:
+        """
+        Returns a list of servers with ids that aren't in the list given
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated servers with, can be empty for all projects
+        :param ids: List of v that should not pass the query
+        :return: A list of servers matching the query
+        """
+        selected_servers = self.search_servers(cloud_account, project_identifier)
+
+        return OpenstackQuery.apply_query(
+            selected_servers, lambda a: "SHUTOFF" in a["status"]
+        )
+
+    def search_servers_errored_and_shutoff(
+        self, cloud_account: str, project_identifier: str, **kwargs
+    ) -> List[Server]:
+        """
+        Returns a list of servers with ids that aren't in the list given
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated servers with, can be empty for all projects
+        :param ids: List of v that should not pass the query
+        :return: A list of servers matching the query
+        """
+        selected_servers = self.search_servers(cloud_account, project_identifier)
+
+        return OpenstackQuery.apply_query(
+            selected_servers,
+            lambda a: all(x in a["status"] for x in ["SHUTOFF", "ERRORED"]),
         )

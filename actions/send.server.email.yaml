@@ -26,6 +26,15 @@ parameters:
       - "servers_younger_than"
       - "servers_last_updated_before"
       - "servers_last_updated_after"
+      - "servers_id_in"
+      - "servers_id_not_in"
+      - "servers_name_in"
+      - "servers_name_not_in"
+      - "servers_name_contains"
+      - "servers_name_not_contains"
+      - "servers_errored"
+      - "servers_shutoff"
+      - "servers_errored_and_shutoff"
     required: true
   properties_to_select:
     type: array

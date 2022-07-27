@@ -25,7 +25,7 @@ class ServerActions(Action):
         func: Callable = getattr(self, submodule)
         return func(**kwargs)
 
-    # pylint:disable=unused-argument
+    # pylint:disable=unused-argument,too-many-arguments
     def server_list(
         self,
         cloud_account: str,
