@@ -21,22 +21,14 @@ parameters:
     type: string
   query_preset:
     type: string
-    description: "Name of a preset query - e.g server_shutoff: list all servers shutoff"
-    default: server_shutoff
+    description: "Name of a preset query - e.g server_older_than - list all servers older than"
+    default: servers_older_than
     enum:
-      - "id_in"
-      - "id_not_in"
-      - "name_in"
-      - "name_not_in"
-      - "name_contains"
-      - "name_not_contains"
-      - "server_shutoff"
-      - "server_error_and_shutoff"
-      - "server_error"
-      - "server_older_than"
-      - "server_younger_than"
-      - "server_last_updated_before"
-      - "server_last_updated_after"
+      - "servers"
+      - "servers_older_than"
+      - "servers_younger_than"
+      - "servers_last_updated_before"
+      - "servers_last_updated_after"
     required: true
   search_by:
     default: server

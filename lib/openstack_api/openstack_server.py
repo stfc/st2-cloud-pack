@@ -13,8 +13,12 @@ class OpenstackServer(OpenstackWrapperBase):
         super().__init__(connection_cls)
         self._identity_api = OpenstackIdentity(self._connection_cls)
 
+    def __getitem__(self, item):
+        return getattr(self, item)
+
+    # pylint:disable=unused-argument
     def search_servers(
-        self, cloud_account: str, project_identifier: str
+        self, cloud_account: str, project_identifier: str, **kwargs
     ) -> List[Server]:
         """
         Returns a list of Servers matching a given query
@@ -45,8 +49,9 @@ class OpenstackServer(OpenstackWrapperBase):
                 )
         return selected_servers
 
+    # pylint:disable=unused-argument
     def search_servers_older_than(
-        self, cloud_account: str, project_identifier: str, days: int
+        self, cloud_account: str, project_identifier: str, days: int, **kwargs
     ) -> List[Server]:
         """
         Returns a list of servers older than a given number of days
@@ -62,8 +67,9 @@ class OpenstackServer(OpenstackWrapperBase):
             lambda a: OpenstackQuery.datetime_before_x_days(a["created_at"], days),
         )
 
+    # pylint:disable=unused-argument
     def search_servers_younger_than(
-        self, cloud_account: str, project_identifier: str, days: int
+        self, cloud_account: str, project_identifier: str, days: int, **kwargs
     ) -> List[Server]:
         """
         Returns a list of servers older than a given number of days
@@ -79,8 +85,9 @@ class OpenstackServer(OpenstackWrapperBase):
             lambda a: not OpenstackQuery.datetime_before_x_days(a["created_at"], days),
         )
 
-    def search_servers_updated_before(
-        self, cloud_account: str, project_identifier: str, days: int
+    # pylint:disable=unused-argument
+    def search_servers_last_updated_before(
+        self, cloud_account: str, project_identifier: str, days: int, **kwargs
     ) -> List[Server]:
         """
         Returns a list of servers updated before a specified number of days in the past
@@ -96,8 +103,9 @@ class OpenstackServer(OpenstackWrapperBase):
             lambda a: OpenstackQuery.datetime_before_x_days(a["updated_at"], days),
         )
 
-    def search_servers_updated_after(
-        self, cloud_account: str, project_identifier: str, days: int
+    # pylint:disable=unused-argument
+    def search_servers_last_updated_after(
+        self, cloud_account: str, project_identifier: str, days: int, **kwargs
     ) -> List[Server]:
         """
         Returns a list of servers updated befafterore a specified number of days in the past

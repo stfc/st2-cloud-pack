@@ -42,27 +42,24 @@ class ServerActions(Action):
         self,
         cloud_account: str,
         project_identifier: str,
+        query_preset: str,
         properties_to_select: List[str],
-        **kwargs
+        **kwargs,
     ) -> List[Server]:
         """
         Finds all servers belonging to a project (or all servers if project is empty)
         :param cloud_account: The account from the clouds configuration to use
         :param project_identifier: The project this applies to (or empty for all servers)
         :param properties_to_select: The list of properties to select and output from the found servers
-        :return: List of found servers
+        :return: List of servers found to match the query
         """
+        servers = self._server_api[f"search_{query_preset}"](
+            cloud_account, project_identifier, **kwargs
+        )
 
-        property_funcs = {
-            "user_email": lambda a: self._identity_api.find_user_all_domains(
-                cloud_account, a["user_id"]
-            )["email"],
-            "user_name": lambda a: self._identity_api.find_user_all_domains(
-                cloud_account, a["user_id"]
-            )["name"],
-        }
-
-        servers = self._server_api.search_servers(cloud_account, project_identifier)
+        property_funcs = OpenstackQuery.get_default_property_funcs(
+            "server", cloud_account, self._identity_api
+        )
         output = OpenstackQuery.parse_properties(
             servers, properties_to_select, property_funcs
         )

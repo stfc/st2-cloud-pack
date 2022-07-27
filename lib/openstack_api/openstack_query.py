@@ -2,10 +2,12 @@ import datetime
 from typing import Any, Callable, Dict, List
 from tabulate import tabulate
 
+from openstack_api.openstack_identity import OpenstackIdentity
+
 
 class OpenstackQuery:
     @staticmethod
-    def apply_query(items: List, query_func: Callable[[Any], bool]):
+    def apply_query(items: List, query_func: Callable[[Any], bool]) -> List:
         """
         Removes items from a list by running a given query function
         :param items: List of items to query e.g. list of servers
@@ -17,11 +19,12 @@ class OpenstackQuery:
         for item in items:
             if not query_func(item):
                 items.remove(item)
+        return items
 
     @staticmethod
     def datetime_before_x_days(
         value: str, days, date_time_format: str = "%Y-%m-%dT%H:%M:%SZ"
-    ):
+    ) -> bool:
         """
         Function to get if openstack resource is older than a given
         number of days
@@ -44,7 +47,7 @@ class OpenstackQuery:
         value: str,
         time_offset_in_seconds: int,
         date_time_format: str = "%Y-%m-%dT%H:%M:%SZ",
-    ):
+    ) -> bool:
         """
         Helper function to get if openstack resource is older than a
         given number of seconds
@@ -128,3 +131,23 @@ class OpenstackQuery:
             collated_dict[key_value] = OpenstackQuery.generate_table(items, get_html)
 
         return collated_dict
+
+    @staticmethod
+    def get_default_property_funcs(
+        object_type: str, cloud_account: str, identity_api: OpenstackIdentity
+    ) -> Dict[str, Callable[[Any], bool]]:
+        """
+        Returns a list of default property functions for use with 'parse_properties' above
+        :param object_type: type of openstack object the functions will be used for e.g. server
+        :return: Dict[str, str] (each key containing html or plaintext table of results)
+        """
+        if object_type == "server":
+            return {
+                "user_email": lambda a: identity_api.find_user_all_domains(
+                    cloud_account, a["user_id"]
+                )["email"],
+                "user_name": lambda a: identity_api.find_user_all_domains(
+                    cloud_account, a["user_id"]
+                )["name"],
+            }
+        raise ValueError(f"Unsupported object type '{object_type}'")
