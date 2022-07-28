@@ -12,6 +12,7 @@ class OpenstackServer(OpenstackWrapperBase):
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)
         self._identity_api = OpenstackIdentity(self._connection_cls)
+        self._query_api = OpenstackQuery(self._connection_cls)
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -62,9 +63,9 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_servers(cloud_account, project_identifier)
 
-        return OpenstackQuery.apply_query(
+        return self._query_api.apply_query(
             selected_servers,
-            lambda a: OpenstackQuery.datetime_before_x_days(a["created_at"], days),
+            lambda a: self._query_api.datetime_before_x_days(a["created_at"], days),
         )
 
     # pylint:disable=unused-argument
@@ -80,9 +81,9 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_servers(cloud_account, project_identifier)
 
-        return OpenstackQuery.apply_query(
+        return self._query_api.apply_query(
             selected_servers,
-            lambda a: not OpenstackQuery.datetime_before_x_days(a["created_at"], days),
+            lambda a: not self._query_api.datetime_before_x_days(a["created_at"], days),
         )
 
     # pylint:disable=unused-argument
@@ -98,9 +99,9 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_servers(cloud_account, project_identifier)
 
-        return OpenstackQuery.apply_query(
+        return self._query_api.apply_query(
             selected_servers,
-            lambda a: OpenstackQuery.datetime_before_x_days(a["updated_at"], days),
+            lambda a: self._query_api.datetime_before_x_days(a["updated_at"], days),
         )
 
     # pylint:disable=unused-argument
@@ -116,9 +117,9 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_servers(cloud_account, project_identifier)
 
-        return OpenstackQuery.apply_query(
+        return self._query_api.apply_query(
             selected_servers,
-            lambda a: not OpenstackQuery.datetime_before_x_days(a["updated_at"], days),
+            lambda a: not self._query_api.datetime_before_x_days(a["updated_at"], days),
         )
 
     # pylint:disable=unused-argument
@@ -134,7 +135,7 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_servers(cloud_account, project_identifier)
 
-        return OpenstackQuery.apply_query(
+        return self._query_api.apply_query(
             selected_servers, lambda a: a["name"] in names
         )
 
@@ -151,7 +152,7 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_servers(cloud_account, project_identifier)
 
-        return OpenstackQuery.apply_query(
+        return self._query_api.apply_query(
             selected_servers, lambda a: not a["name"] in names
         )
 
@@ -172,7 +173,7 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_servers(cloud_account, project_identifier)
 
-        return OpenstackQuery.apply_query(
+        return self._query_api.apply_query(
             selected_servers,
             lambda a: all(name_snippet in a["name"] for name_snippet in name_snippets),
         )
@@ -194,7 +195,7 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_servers(cloud_account, project_identifier)
 
-        return OpenstackQuery.apply_query(
+        return self._query_api.apply_query(
             selected_servers,
             lambda a: all(
                 name_snippet not in a["name"] for name_snippet in name_snippets
@@ -214,7 +215,7 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_servers(cloud_account, project_identifier)
 
-        return OpenstackQuery.apply_query(selected_servers, lambda a: a["id"] in ids)
+        return self._query_api.apply_query(selected_servers, lambda a: a["id"] in ids)
 
     # pylint:disable=unused-argument
     def search_servers_id_not_in(
@@ -229,7 +230,7 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_servers(cloud_account, project_identifier)
 
-        return OpenstackQuery.apply_query(
+        return self._query_api.apply_query(
             selected_servers, lambda a: not a["id"] in ids
         )
 
@@ -245,7 +246,7 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_servers(cloud_account, project_identifier)
 
-        return OpenstackQuery.apply_query(
+        return self._query_api.apply_query(
             selected_servers, lambda a: "ERROR" in a["status"]
         )
 
@@ -261,7 +262,7 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_servers(cloud_account, project_identifier)
 
-        return OpenstackQuery.apply_query(
+        return self._query_api.apply_query(
             selected_servers, lambda a: "SHUTOFF" in a["status"]
         )
 
@@ -277,7 +278,7 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_servers(cloud_account, project_identifier)
 
-        return OpenstackQuery.apply_query(
+        return self._query_api.apply_query(
             selected_servers,
             lambda a: all(x in a["status"] for x in ["SHUTOFF", "ERRORED"]),
         )

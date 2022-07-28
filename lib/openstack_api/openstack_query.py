@@ -160,6 +160,7 @@ class OpenstackQuery(OpenstackWrapperBase):
             }
         raise ValueError(f"Unsupported object type '{object_type}'")
 
+    # pylint:disable=too-many-arguments
     def parse_and_output_table(
         self,
         cloud_account: str,
@@ -188,3 +189,5 @@ class OpenstackQuery(OpenstackWrapperBase):
             output = self.collate_results(output, group_by, get_html)
         else:
             output = self.generate_table(output, get_html)
+
+        return output

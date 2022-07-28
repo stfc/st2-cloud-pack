@@ -1,7 +1,6 @@
 from typing import Dict, Callable, List
 
 from openstack.compute.v2.server import Server
-from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_server import OpenstackServer
 from openstack_api.openstack_query import OpenstackQuery
 from st2common.runners.base_action import Action

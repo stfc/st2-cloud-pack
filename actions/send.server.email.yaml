@@ -1,11 +1,15 @@
 ---
 description: Sends email notifications to VM owners based on a given query.
 enabled: true
-entry_point: workflows/send.server.email.yaml
+entry_point: src/email_actions.py
 name: send.server.email
 parameters:
   timeout:
     default: 99999
+  submodule:
+    default: send_server_emails
+    immutable: true
+    type: string
   cloud_account:
     description: "The clouds.yaml account to use whilst performing this action"
     type: string
@@ -55,6 +59,10 @@ parameters:
     description: "Email address to send email from"
     required: true
     default: "cloud-support@stfc.ac.uk"
+  email_cc:
+    description: "Email Addresses to Cc in"
+    required: false
+    type: array
   header:
     type: string
     description: "Email Header filepath"
@@ -117,4 +125,4 @@ parameters:
     description: Number of days threshold for selecting servers (ignored unless submodule=server_older_than(_per_user) or server_younger_than(_per_user)
     required: true
     default: 60
-runner_type: orquesta
+runner_type: python-script

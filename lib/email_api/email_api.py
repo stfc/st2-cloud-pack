@@ -65,7 +65,7 @@ class EmailApi:
 
     def send_email(self, pack_config: Dict, **kwargs):
         """
-        Send email
+        Send an email
         :pack_config (Dict): Pack config (containing smtp_account)
         :param kwargs: email_to (String): Recipient Email,
         email_from (String): Sender Email, subject (String): Email Subject,
@@ -122,7 +122,9 @@ class EmailApi:
 
         if kwargs["email_cc"]:
             msg["Cc"] = ", ".join(kwargs["email_cc"])
-        self.attach_files(msg, kwargs["attachment_filepaths"] or tuple())
+
+        if "attachment_filepaths" in kwargs:
+            self.attach_files(msg, kwargs["attachment_filepaths"] or tuple())
 
         smtp = SMTP_SSL(account_data["server"], str(account_data["port"]), timeout=60)
         smtp.ehlo()
@@ -144,3 +146,23 @@ class EmailApi:
         smtp.sendmail(kwargs["email_from"], email_to, msg.as_string())
         smtp.quit()
         return (True, "Email sent")
+
+    def send_emails(self, pack_config: Dict, emails: Dict, **kwargs):
+        """
+        Sends multiple emails
+        :pack_config (Dict): Pack config (containing smtp_account)
+        :emails (Dict): Keys are email addresses, values are messages to send to those emails
+        :param kwargs: email_to (String): Recipient Email,
+        email_from (String): Sender Email, subject (String): Email Subject,
+        header (String): filepath to header file,
+        footer (String): filepath to footer file,
+        attachment (List): list of attachment filepaths,
+        smtp_account (String): email config to use,
+        admin_override (Boolean): send all emails to admin email - testing purposes,
+        admin_override_email (String): send to this email if admin_override enabled
+        :return: Status (Bool)): tuple of action status (succeeded(T)/failed(F)) and the output
+        """
+        return all(
+            [self.send_email(pack_config, email_to=key, body=value, **kwargs)[0]]
+            for key, value in emails.items()
+        )
