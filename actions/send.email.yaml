@@ -4,6 +4,10 @@ enabled: true
 entry_point: src/send_email.py
 name: send.email
 parameters:
+    submodule:
+        default: send_email
+        immutable: true
+        type: string
     send_as_html:
         description: "If True Send Email as HTML, else as plain text"
         required: true
