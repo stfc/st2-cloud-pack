@@ -19,7 +19,7 @@ parameters:
         type: string
         default: "default"
     email_to:
-        description: "Recipient Email Addresses"
+        description: "Recipient Email Addresses (comma separated)"
         required: true
         type: array
     email_from:
@@ -29,7 +29,7 @@ parameters:
         default: "cloud-support@stfc.ac.uk"
         immutable: true
     email_cc:
-        description: "Email Addresses to Cc in"
+        description: "Email Addresses to Cc in (comma separated)"
         required: false
         type: array
     body:
@@ -51,7 +51,7 @@ parameters:
         type: string
         default: "/opt/stackstorm/packs/stackstorm_openstack/email_templates/footer.html"
     attachment_filepaths:
-        description: "Filepaths to email attachments"
+        description: "Filepaths to email attachments (comma separated)"
         required: false
         type: array
 runner_type: python-script

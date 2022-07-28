@@ -18,7 +18,7 @@ class OpenstackServer(OpenstackWrapperBase):
         return getattr(self, item)
 
     # pylint:disable=unused-argument
-    def search_servers(
+    def search_all_servers(
         self, cloud_account: str, project_identifier: str, **kwargs
     ) -> List[Server]:
         """

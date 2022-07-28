@@ -30,7 +30,6 @@ class SendEmail(Action):
         """
         if "body" in kwargs and kwargs["body"]:
             return self._api.send_email(self.config, **kwargs)
-        return None
 
     # pylint:disable=too-many-arguments
     def send_server_emails(

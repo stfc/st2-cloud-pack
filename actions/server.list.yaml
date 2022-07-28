@@ -17,7 +17,7 @@ parameters:
     type: string
   project_identifier:
     type: string
-    description: Project (Name or ID) to search in
+    description: Project (Name or ID) to search in - leave empty for all projects
     required: false
     default: ""
   query_preset:
@@ -25,7 +25,7 @@ parameters:
     description: "Name of a preset query - e.g server_older_than: list all servers older than"
     default: servers_older_than
     enum:
-      - "servers"
+      - "all_servers"
       - "servers_older_than"
       - "servers_younger_than"
       - "servers_last_updated_before"
@@ -55,7 +55,7 @@ parameters:
     description: "Properties to display for the servers that match the chosen query"
     required: true
   group_by:
-    description: "Property to group the selected resources by e.g. user_email"
+    description: "Property to group the selected resources by e.g. user_email. Leave empty for no grouping."
     type: string
     default: ""
     required: false

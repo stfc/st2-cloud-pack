@@ -5,7 +5,7 @@ entry_point: src/email_actions.py
 name: send.server.email
 parameters:
   timeout:
-    default: 99999
+    default: 3600
   submodule:
     default: send_server_emails
     immutable: true
@@ -17,7 +17,7 @@ parameters:
     required: true
   project_identifier:
     type: string
-    description: Project (Name or ID) to search in
+    description: Project (Name or ID) to search in - leave empty for all projects
     required: false
     default: ""
   query_preset:
@@ -25,7 +25,7 @@ parameters:
     type: string
     default: "servers_older_than"
     enum:
-      - "servers"
+      - "all_servers"
       - "servers_older_than"
       - "servers_younger_than"
       - "servers_last_updated_before"
@@ -61,7 +61,7 @@ parameters:
     default: "cloud-support@stfc.ac.uk"
     immutable: true
   email_cc:
-    description: "Email Addresses to Cc in"
+    description: "Email Addresses to Cc in (comma separated)"
     required: false
     type: array
   header:
