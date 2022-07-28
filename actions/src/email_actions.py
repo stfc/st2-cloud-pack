@@ -61,7 +61,7 @@ class SendEmail(Action):
 
         # Ensure only a valid query preset is used when there is no project
         # (try and prevent mistakingly emailing loads of people)
-        if ("project_identifier" not in kwargs) or kwargs["project_identifier"] == "":
+        if project_identifier == "":
             if not query_preset in [
                 "servers_last_updated_before",
                 "servers_older_than",

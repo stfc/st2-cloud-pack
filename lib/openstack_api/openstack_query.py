@@ -132,7 +132,7 @@ class OpenstackQuery(OpenstackWrapperBase):
                 collated_dict[key_value] = [item]
 
         if None in collated_dict:
-            print(f"Following items found with no associated key '{key}'")
+            print(f"The following items were found with no associated key '{key}'")
             print(self.generate_table(collated_dict[None], False))
             del collated_dict[None]
 

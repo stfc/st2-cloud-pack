@@ -154,7 +154,7 @@ class EmailApi:
         smtp_account (String): email config to use,
         test_override (Boolean): send all emails to test emails
         test_override_email (List[String]): send to this email if test_override enabled
-        :return: Status (Bool)): tuple of action status (succeeded(T)/failed(F)) and the output
+        :return: Status (Bool): tuple of action status (succeeded(T)/failed(F)) and the output
         """
         if kwargs["test_override"]:
             # Send a maximum of 10 emails
