@@ -1,13 +1,18 @@
 import datetime
 from typing import Any, Callable, Dict, List
 from tabulate import tabulate
+from openstack_api.openstack_connection import OpenstackConnection
 
 from openstack_api.openstack_identity import OpenstackIdentity
+from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
-class OpenstackQuery:
-    @staticmethod
-    def apply_query(items: List, query_func: Callable[[Any], bool]) -> List:
+class OpenstackQuery(OpenstackWrapperBase):
+    def __init__(self, connection_cls=OpenstackConnection):
+        super().__init__(connection_cls)
+        self._identity_api = OpenstackIdentity(connection_cls)
+
+    def apply_query(self, items: List, query_func: Callable[[Any], bool]) -> List:
         """
         Removes items from a list by running a given query function
         :param items: List of items to query e.g. list of servers
@@ -21,9 +26,8 @@ class OpenstackQuery:
                 items.remove(item)
         return items
 
-    @staticmethod
     def datetime_before_x_days(
-        value: str, days, date_time_format: str = "%Y-%m-%dT%H:%M:%SZ"
+        self, value: str, days, date_time_format: str = "%Y-%m-%dT%H:%M:%SZ"
     ) -> bool:
         """
         Function to get if openstack resource is older than a given
@@ -36,14 +40,14 @@ class OpenstackQuery:
 
         Returns: (bool) True if older than days given else False
         """
-        return OpenstackQuery.datetime_older_than_offset(
+        return self.datetime_older_than_offset(
             value,
             datetime.timedelta(days=int(days)).total_seconds(),
             date_time_format,
         )
 
-    @staticmethod
     def datetime_older_than_offset(
+        self,
         value: str,
         time_offset_in_seconds: int,
         date_time_format: str = "%Y-%m-%dT%H:%M:%SZ",
@@ -65,8 +69,8 @@ class OpenstackQuery:
         value_datetime = datetime.datetime.strptime(value, date_time_format).timestamp()
         return offset_timestamp > value_datetime
 
-    @staticmethod
     def parse_properties(
+        self,
         items: List,
         properties_to_list: List[str],
         property_funcs: Dict[str, Callable[[Any], Any]],
@@ -95,8 +99,9 @@ class OpenstackQuery:
             output.append(item_output)
         return output
 
-    @staticmethod
-    def generate_table(properties_dict: List[Dict[str, Any]], get_html: bool) -> str:
+    def generate_table(
+        self, properties_dict: List[Dict[str, Any]], get_html: bool
+    ) -> str:
         """
         Returns a table from the result of 'parse_properties'
         :param properties_dict: dict of query results
@@ -107,9 +112,8 @@ class OpenstackQuery:
         rows = [row.values() for row in properties_dict]
         return tabulate(rows, headers, tablefmt="html" if get_html else "grid")
 
-    @staticmethod
     def collate_results(
-        properties_dict: List[Dict[str, Any]], key: str, get_html: bool
+        self, properties_dict: List[Dict[str, Any]], key: str, get_html: bool
     ) -> Dict[str, str]:
         """
         Collates results from a dict based on a given property key and returns a dictionary of
@@ -129,17 +133,16 @@ class OpenstackQuery:
 
         if None in collated_dict:
             print(f"Following items found with no associated key '{key}'")
-            print(OpenstackQuery.generate_table(collated_dict[None], False))
+            print(self.generate_table(collated_dict[None], False))
             del collated_dict[None]
 
         for key_value, items in collated_dict.items():
-            collated_dict[key_value] = OpenstackQuery.generate_table(items, get_html)
+            collated_dict[key_value] = self.generate_table(items, get_html)
 
         return collated_dict
 
-    @staticmethod
     def get_default_property_funcs(
-        object_type: str, cloud_account: str, identity_api: OpenstackIdentity
+        self, object_type: str, cloud_account: str, identity_api: OpenstackIdentity
     ) -> Dict[str, Callable[[Any], bool]]:
         """
         Returns a list of default property functions for use with 'parse_properties' above
@@ -156,3 +159,32 @@ class OpenstackQuery:
                 )["name"],
             }
         raise ValueError(f"Unsupported object type '{object_type}'")
+
+    def parse_and_output_table(
+        self,
+        cloud_account: str,
+        items: List,
+        object_type: str,
+        properties_to_select: List[str],
+        group_by: str,
+        get_html: bool,
+    ):
+        """
+        Finds all servers belonging to a project (or all servers if project is empty)
+        :param cloud_account: The account from the clouds configuration to use
+        :param object_type: type of openstack object the functions will be used for e.g. server
+        :param properties_to_select: The list of properties to select and output from the found servers
+        :param group_by: Property to group returned results - can be empty for no grouping
+        :param get_html: When True tables returned are in html format
+        :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
+        """
+
+        property_funcs = self.get_default_property_funcs(
+            object_type, cloud_account, self._identity_api
+        )
+        output = self.parse_properties(items, properties_to_select, property_funcs)
+
+        if group_by != "":
+            output = self.collate_results(output, group_by, get_html)
+        else:
+            output = self.generate_table(output, get_html)

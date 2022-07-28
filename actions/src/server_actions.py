@@ -14,9 +14,7 @@ class ServerActions(Action):
         self._server_api: OpenstackServer = config.get(
             "openstack_api", OpenstackServer()
         )
-        self._identity_api: OpenstackIdentity = config.get(
-            "openstack_api", OpenstackIdentity()
-        )
+        self._query_api: OpenstackQuery = config.get("openstack_api", OpenstackQuery())
 
     def run(self, submodule: str, **kwargs):
         """
@@ -50,16 +48,8 @@ class ServerActions(Action):
             cloud_account, project_identifier, **kwargs
         )
 
-        property_funcs = OpenstackQuery.get_default_property_funcs(
-            "server", cloud_account, self._identity_api
+        output = self._query_api.parse_and_output_table(
+            cloud_account, servers, "server", properties_to_select, group_by, get_html
         )
-        output = OpenstackQuery.parse_properties(
-            servers, properties_to_select, property_funcs
-        )
-
-        if group_by != "":
-            output = OpenstackQuery.collate_results(output, group_by, get_html)
-        else:
-            output = OpenstackQuery.generate_table(output, get_html)
 
         return output

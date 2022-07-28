@@ -1,7 +1,7 @@
 ---
 description: Send Email
 enabled: true
-entry_point: src/send_email.py
+entry_point: src/email_actions.py
 name: send.email
 parameters:
     submodule:
@@ -26,6 +26,7 @@ parameters:
         description: "SMTP Account to use. Must be configured in email.yaml"
         required: true
         type: string
+        default: "default"
     email_to:
         description: "Recipient Email Addresses"
         required: true
@@ -50,10 +51,12 @@ parameters:
         description: "Email Standard Header filepath"
         required: true
         type: string
+        default: "/opt/stackstorm/packs/stackstorm_openstack/email_templates/header.html"
     footer:
         description: "Email Standard Footer filepath"
         required: true
         type: string
+        default: "/opt/stackstorm/packs/stackstorm_openstack/email_templates/footer.html"
     attachment_filepaths:
         description: "Filepaths to email attachments"
         required: false
