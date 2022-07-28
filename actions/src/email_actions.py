@@ -80,6 +80,6 @@ class SendEmail(Action):
         )
 
         for key, value in emails.items():
-            emails[key].value = message + value
+            emails[key] = message + "<br><br>" + value
 
         self._api.send_emails(self.config, emails, send_as_html=True, **kwargs)

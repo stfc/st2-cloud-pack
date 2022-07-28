@@ -68,6 +68,7 @@ class EmailApi:
         Send an email
         :pack_config (Dict): Pack config (containing smtp_account)
         :param kwargs: email_to (String): Recipient Email,
+        email_to (List[String]): Emaiil addresses to send the email to
         email_from (String): Sender Email, subject (String): Email Subject,
         header (String): filepath to header file,
         footer (String): filepath to footer file,
@@ -147,7 +148,7 @@ class EmailApi:
         smtp.quit()
         return (True, "Email sent")
 
-    def send_emails(self, pack_config: Dict, emails: Dict, **kwargs):
+    def send_emails(self, pack_config: Dict, emails: Dict[str, str], **kwargs):
         """
         Sends multiple emails
         :pack_config (Dict): Pack config (containing smtp_account)
@@ -163,6 +164,6 @@ class EmailApi:
         :return: Status (Bool)): tuple of action status (succeeded(T)/failed(F)) and the output
         """
         return all(
-            [self.send_email(pack_config, email_to=key, body=value, **kwargs)[0]]
+            [self.send_email(pack_config, email_to=[key], body=value, **kwargs)[0]]
             for key, value in emails.items()
         )
