@@ -26,6 +26,8 @@ parameters:
         description: "Sender Email Address"
         required: true
         type: string
+        default: "cloud-support@stfc.ac.uk"
+        immutable: true
     email_cc:
         description: "Email Addresses to Cc in"
         required: false
