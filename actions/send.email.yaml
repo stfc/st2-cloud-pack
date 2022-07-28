@@ -13,15 +13,6 @@ parameters:
         required: true
         type: boolean
         default: true
-    admin_override:
-        description: "Override sending emails to instead send to one test email address"
-        required: true
-        type: boolean
-        default: false
-    admin_override_email:
-        description: "If admin_override enabled, will send all emails to this instead of to specified sender"
-        required: true
-        type: array
     smtp_account:
         description: "SMTP Account to use. Must be configured in email.yaml"
         required: true

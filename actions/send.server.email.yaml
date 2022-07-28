@@ -92,13 +92,13 @@ parameters:
     description: "Send email body as HTML"
     required: true
     default: true
-  admin_override:
+  test_override:
     type: boolean
-    description: "Overrides email sending to send to a single email for testing purposes"
+    description: "Overrides email sending to a single address for testing purposes (Will only send a subset of emails if there are lots of them)"
     default: false
-  admin_override_email:
+  test_override_email:
     type: array
-    description: "Email to send the output to if admin_override is checked"
+    description: "Email to send the output to if test_override is checked"
     required: true
     default:
       - ""

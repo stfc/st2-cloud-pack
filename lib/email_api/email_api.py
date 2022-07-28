@@ -1,4 +1,5 @@
 import os
+import random
 from smtplib import SMTP_SSL
 from email.header import Header
 from email.mime.application import MIMEApplication
@@ -75,8 +76,6 @@ class EmailApi:
         body (String): body of email,
         attachment (List): list of attachment filepaths,
         smtp_account (String): email config to use,
-        admin_override (Boolean): send all emails to admin email - testing purposes,
-        admin_override_email (String): send to this email if admin_override enabled
         :return: (Status (Bool), Output <*>): tuple of action status (succeeded(T)/failed(F)) and the output
         """
 
@@ -86,9 +85,6 @@ class EmailApi:
         msg["Subject"] = Header(kwargs["subject"], "utf-8")
         msg["From"] = kwargs["email_from"]
         msg["To"] = ", ".join(kwargs["email_to"])
-
-        if kwargs["admin_override"]:
-            msg["To"] = ", ".join(kwargs["admin_override_email"])
 
         msg["Date"] = formatdate(localtime=True)
 
@@ -135,14 +131,11 @@ class EmailApi:
         if account_data.get("smtp_auth", True):
             smtp.login(account_data["username"], account_data["password"])
 
-        if kwargs["admin_override"]:
-            email_to = kwargs["admin_override_email"]
-        else:
-            email_to = (
-                (kwargs["email_to"] + kwargs["email_cc"])
-                if kwargs["email_cc"]
-                else kwargs["email_to"]
-            )
+        email_to = (
+            (kwargs["email_to"] + kwargs["email_cc"])
+            if kwargs["email_cc"]
+            else kwargs["email_to"]
+        )
 
         smtp.sendmail(kwargs["email_from"], email_to, msg.as_string())
         smtp.quit()
@@ -159,10 +152,26 @@ class EmailApi:
         footer (String): filepath to footer file,
         attachment (List): list of attachment filepaths,
         smtp_account (String): email config to use,
-        admin_override (Boolean): send all emails to admin email - testing purposes,
-        admin_override_email (String): send to this email if admin_override enabled
+        test_override (Boolean): send all emails to test emails
+        test_override_email (List[String]): send to this email if test_override enabled
         :return: Status (Bool)): tuple of action status (succeeded(T)/failed(F)) and the output
         """
+        if kwargs["test_override"]:
+            # Send a maximum of 10 emails
+            emails = dict(random.sample(emails.items(), min(len(emails), 10)))
+
+            return all(
+                [
+                    self.send_email(
+                        pack_config,
+                        email_to=kwargs["test_override_email"],
+                        body=value,
+                        **kwargs,
+                    )[0]
+                ]
+                for key, value in emails.items()
+            )
+
         return all(
             [self.send_email(pack_config, email_to=[key], body=value, **kwargs)[0]]
             for key, value in emails.items()
