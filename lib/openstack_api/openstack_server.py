@@ -61,7 +61,7 @@ class OpenstackServer(OpenstackWrapperBase):
         :param days: The number of days the servers should be older than
         :return: A list of servers matching the query
         """
-        selected_servers = self.search_servers(cloud_account, project_identifier)
+        selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
             selected_servers,
@@ -79,7 +79,7 @@ class OpenstackServer(OpenstackWrapperBase):
         :param days: The number of days the servers should be older than
         :return: A list of servers matching the query
         """
-        selected_servers = self.search_servers(cloud_account, project_identifier)
+        selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
             selected_servers,
@@ -97,7 +97,7 @@ class OpenstackServer(OpenstackWrapperBase):
         :param days: The number of days before which the servers should have last been updated
         :return: A list of servers matching the query
         """
-        selected_servers = self.search_servers(cloud_account, project_identifier)
+        selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
             selected_servers,
@@ -115,7 +115,7 @@ class OpenstackServer(OpenstackWrapperBase):
         :param days: The number of days after which the servers should have last been updated
         :return: A list of servers matching the query
         """
-        selected_servers = self.search_servers(cloud_account, project_identifier)
+        selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
             selected_servers,
@@ -133,7 +133,7 @@ class OpenstackServer(OpenstackWrapperBase):
         :param names: List of names that should pass the query
         :return: A list of servers matching the query
         """
-        selected_servers = self.search_servers(cloud_account, project_identifier)
+        selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
             selected_servers, lambda a: a["name"] in names
@@ -150,7 +150,7 @@ class OpenstackServer(OpenstackWrapperBase):
         :param names: List of names that should not pass the query
         :return: A list of servers matching the query
         """
-        selected_servers = self.search_servers(cloud_account, project_identifier)
+        selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
             selected_servers, lambda a: not a["name"] in names
@@ -171,7 +171,7 @@ class OpenstackServer(OpenstackWrapperBase):
         :param name_snippets: List of name snippets that should be in the server names returned
         :return: A list of servers matching the query
         """
-        selected_servers = self.search_servers(cloud_account, project_identifier)
+        selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
             selected_servers,
@@ -193,7 +193,7 @@ class OpenstackServer(OpenstackWrapperBase):
         :param name_snippets: List of name snippets that should not be in the server names returned
         :return: A list of servers matching the query
         """
-        selected_servers = self.search_servers(cloud_account, project_identifier)
+        selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
             selected_servers,
@@ -213,7 +213,7 @@ class OpenstackServer(OpenstackWrapperBase):
         :param ids: List of ids that should pass the query
         :return: A list of servers matching the query
         """
-        selected_servers = self.search_servers(cloud_account, project_identifier)
+        selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(selected_servers, lambda a: a["id"] in ids)
 
@@ -228,7 +228,7 @@ class OpenstackServer(OpenstackWrapperBase):
         :param ids: List of v that should not pass the query
         :return: A list of servers matching the query
         """
-        selected_servers = self.search_servers(cloud_account, project_identifier)
+        selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
             selected_servers, lambda a: not a["id"] in ids
@@ -244,7 +244,7 @@ class OpenstackServer(OpenstackWrapperBase):
         :param ids: List of v that should not pass the query
         :return: A list of servers matching the query
         """
-        selected_servers = self.search_servers(cloud_account, project_identifier)
+        selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
             selected_servers, lambda a: "ERROR" in a["status"]
@@ -260,7 +260,7 @@ class OpenstackServer(OpenstackWrapperBase):
         :param ids: List of v that should not pass the query
         :return: A list of servers matching the query
         """
-        selected_servers = self.search_servers(cloud_account, project_identifier)
+        selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
             selected_servers, lambda a: "SHUTOFF" in a["status"]
@@ -276,7 +276,7 @@ class OpenstackServer(OpenstackWrapperBase):
         :param ids: List of v that should not pass the query
         :return: A list of servers matching the query
         """
-        selected_servers = self.search_servers(cloud_account, project_identifier)
+        selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
             selected_servers,

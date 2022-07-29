@@ -22,14 +22,48 @@ class SendEmail(Action):
         func: Callable = getattr(self, submodule)
         return func(**kwargs)
 
-    def send_email(self, **kwargs):
+    def send_email(
+        self,
+        subject: str,
+        email_from: str,
+        email_cc: List[str],
+        header: str,
+        footer: str,
+        body: str,
+        attachment_filepaths: List[str],
+        smtp_account: Dict[str],
+        test_override: bool,
+        test_override_email: List[str],
+        send_as_html: bool,
+        **kwargs,
+    ):
         """
         Sends an email
-        :param kwargs: arguments for openstack actions
+        :param: email_from (String): Sender Email, subject (String): Email Subject,
+        :param: email_cc (List[String]): Email addresses to Cc
+        :param: header (String): filepath to header file,
+        :param: footer (String): filepath to footer file,
+        :param: attachment (List): list of attachment filepaths,
+        :param: smtp_account (String): email config to use,
+        :param: test_override (Boolean): send all emails to test emails
+        :param: test_override_email (List[String]): send to this email if test_override enabled
+        :param: send_as_html (Bool): If true will send in HTML format
         :return: (Status (Bool), Output <*>): tuple of action status (succeeded(T)/failed(F)) and the output
         """
-        if "body" in kwargs and kwargs["body"]:
-            return self._api.send_email(self.config, **kwargs)
+        return self._api.send_email(
+            self.config,
+            subject=subject,
+            email_from=email_from,
+            email_cc=email_cc,
+            header=header,
+            footer=footer,
+            body=body,
+            attachment_filepaths=attachment_filepaths,
+            smtp_account=smtp_account,
+            test_override=test_override,
+            test_override_email=test_override_email,
+            send_as_html=send_as_html,
+        )
 
     # pylint:disable=too-many-arguments
     def send_server_emails(
@@ -39,6 +73,16 @@ class SendEmail(Action):
         query_preset: str,
         message: str,
         properties_to_select: List[str],
+        subject: str,
+        email_from: str,
+        email_cc: List[str],
+        header: str,
+        footer: str,
+        attachment_filepaths: List[str],
+        smtp_account: Dict[str],
+        test_override: bool,
+        test_override_email: List[str],
+        send_as_html: bool,
         **kwargs,
     ):
         """
@@ -48,7 +92,15 @@ class SendEmail(Action):
         :param query_preset: The query to use when searching for servers
         :param message: Message to add to the body of emails sent
         :param properties_to_select: The list of properties to select and output from the found servers
-        :param get_html: When True tables returned are in html format
+        :param: email_from (String): Sender Email, subject (String): Email Subject,
+        :param: email_cc (List[String]): Email addresses to Cc
+        :param: header (String): filepath to header file,
+        :param: footer (String): filepath to footer file,
+        :param: attachment (List): list of attachment filepaths,
+        :param: smtp_account (String): email config to use,
+        :param: test_override (Boolean): send all emails to test emails
+        :param: test_override_email (List[String]): send to this email if test_override enabled
+        :param: send_as_html (Bool): If true will send in HTML format
         :return:
         """
         servers = self._server_api[f"search_{query_preset}"](
@@ -75,10 +127,24 @@ class SendEmail(Action):
             "server",
             properties_to_select,
             "user_email",
-            True,
+            send_as_html,
         )
 
         for key, value in emails.items():
-            emails[key] = message + "<br><br>" + value
+            separator = "<br><br>" if send_as_html else "\n\n"
+            emails[key] = f"{message}{separator}{value}"
 
-        self._api.send_emails(self.config, emails, send_as_html=True, **kwargs)
+        return self._api.send_emails(
+            self.config,
+            emails,
+            subject=subject,
+            email_from=email_from,
+            email_cc=email_cc,
+            header=header,
+            footer=footer,
+            attachment_filepaths=attachment_filepaths,
+            smtp_account=smtp_account,
+            test_override=test_override,
+            test_override_email=test_override_email,
+            send_as_html=send_as_html,
+        )
