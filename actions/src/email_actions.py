@@ -26,6 +26,7 @@ class SendEmail(Action):
     def send_email(
         self,
         subject: str,
+        email_to: str,
         email_from: str,
         email_cc: List[str],
         header: str,
@@ -39,6 +40,7 @@ class SendEmail(Action):
     ):
         """
         Sends an email
+        :param: email_to (List[String]): Email addresses to send the email to
         :param: email_from (String): Sender Email, subject (String): Email Subject,
         :param: email_cc (List[String]): Email addresses to Cc
         :param: header (String): filepath to header file,
@@ -53,6 +55,7 @@ class SendEmail(Action):
         return self._api.send_email(
             self.config,
             subject=subject,
+            email_to=email_to,
             email_from=email_from,
             email_cc=email_cc,
             header=header,
