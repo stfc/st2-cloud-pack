@@ -22,19 +22,16 @@ class EmailApi:
         else:
             raise FileNotFoundError(f"Template file located {path} not found")
 
-    def load_smtp_account(self, pack_config: Dict, smtp_account: str):
+    def load_smtp_account(self, smtp_accounts: Dict, smtp_account: str):
         """
         Loads and returns the smtp account data from the pack config
-        :param pack_config: The config for the pack
+        :param smtp_config: The SMTP config from the pack
         :return: (Dictionary) SMTP account properties
         """
-        accounts = pack_config.get("smtp_accounts", None)
-        if not accounts:
-            raise ValueError(
-                f"'smtp_account' config value is required to send email, config={pack_config}"
-            )
+        if not smtp_accounts:
+            raise ValueError("'smtp_accounts' is required to send email")
         try:
-            key_value = {a["name"]: a for a in accounts}
+            key_value = {a["name"]: a for a in smtp_accounts}
             account_data = key_value[smtp_account]
         except KeyError as exc:
             raise KeyError(
@@ -60,7 +57,7 @@ class EmailApi:
     # pylint:disable=too-many-arguments
     def send_email(
         self,
-        pack_config: Dict,
+        smtp_accounts: Dict,
         subject: str,
         email_to: List[str],
         email_from: str,
@@ -74,7 +71,7 @@ class EmailApi:
     ):
         """
         Send an email
-        :param: pack_config (Dict): Pack config (containing smtp_account)
+        :param: smtp_accounts (Dict): SMTP config (smtp_accounts in the pack config)
         :param: subject: (String): Subject of the email
         :param: email_to (List[String]): Email addresses to send the email to
         :param: email_from (String): Sender Email, subject (String): Email Subject,
@@ -88,7 +85,7 @@ class EmailApi:
         :return: (Status (Bool), Output <*>): tuple of action status (succeeded(T)/failed(F)) and the output
         """
 
-        account_data = self.load_smtp_account(pack_config, smtp_account)
+        account_data = self.load_smtp_account(smtp_accounts, smtp_account)
 
         msg = MIMEMultipart()
         msg["Subject"] = Header(subject, "utf-8")
@@ -147,7 +144,7 @@ class EmailApi:
     # pylint:disable=too-many-arguments
     def send_emails(
         self,
-        pack_config: Dict,
+        smtp_accounts: Dict,
         emails: Dict[str, str],
         subject: str,
         email_from: str,
@@ -162,7 +159,7 @@ class EmailApi:
     ):
         """
         Sends multiple emails
-        :param: pack_config (Dict): Pack config (containing smtp_account)
+        :param: smtp_accounts (Dict): SMTP config (smtp_accounts in the pack config)
         :emails (Dict): Keys are email addresses, values are messages to send to those emails
         :param: subject: (String): Subject of the email
         :param: email_from (String): Sender Email, subject (String): Email Subject,
@@ -183,7 +180,7 @@ class EmailApi:
             return all(
                 [
                     self.send_email(
-                        pack_config,
+                        smtp_accounts=smtp_accounts,
                         subject=subject,
                         email_to=test_override_email,
                         email_from=email_from,
@@ -202,7 +199,7 @@ class EmailApi:
         return all(
             [
                 self.send_email(
-                    pack_config,
+                    smtp_accounts=smtp_accounts,
                     subject=subject,
                     email_to=[key],
                     email_from=email_from,

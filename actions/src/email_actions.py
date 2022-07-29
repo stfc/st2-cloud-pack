@@ -53,7 +53,7 @@ class SendEmail(Action):
         :return: (Status (Bool), Output <*>): tuple of action status (succeeded(T)/failed(F)) and the output
         """
         return self._api.send_email(
-            self.config,
+            smtp_accounts=self.config.get("smtp_accounts", None),
             subject=subject,
             email_to=email_to,
             email_from=email_from,
@@ -138,8 +138,8 @@ class SendEmail(Action):
             emails[key] = f"{message}{separator}{value}"
 
         return self._api.send_emails(
-            self.config,
-            emails,
+            smtp_accounts=self.config.get("smtp_accounts", None),
+            emails=emails,
             subject=subject,
             email_from=email_from,
             email_cc=email_cc,
