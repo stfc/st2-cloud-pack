@@ -26,7 +26,7 @@ class SendEmail(Action):
     def send_email(
         self,
         subject: str,
-        email_to: str,
+        email_to: List[str],
         email_from: str,
         email_cc: List[str],
         header: str,
