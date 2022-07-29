@@ -66,7 +66,7 @@ class SendEmail(Action):
         )
 
     # pylint:disable=too-many-arguments
-    def send_server_emails(
+    def email_server_users(
         self,
         cloud_account: str,
         project_identifier: str,

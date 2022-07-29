@@ -2,12 +2,12 @@
 description: Sends email notifications to VM owners based on a given query.
 enabled: true
 entry_point: src/email_actions.py
-name: send.server.email
+name: email.server.users
 parameters:
   timeout:
     default: 3600
   submodule:
-    default: send_server_emails
+    default: email_server_users
     immutable: true
     type: string
   cloud_account:
