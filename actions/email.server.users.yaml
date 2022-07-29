@@ -50,10 +50,6 @@ parameters:
       - "status"
       - "user_name"
       - "user_email"
-  sort_by_criteria:
-    type: array
-    required: false
-    description: Properties to sort by
   email_from:
     type: string
     description: "Email address to send email from"
@@ -78,6 +74,10 @@ parameters:
     description: "Email footer filepath"
     required: true
     default: "/opt/stackstorm/packs/stackstorm_openstack/email_templates/footer.html"
+  attachment_filepaths:
+    description: "Filepaths to email attachments (comma separated)"
+    required: false
+    type: array
   subject:
     type: string
     description: "Email subject"
@@ -88,7 +88,7 @@ parameters:
     description: "SMTP Account to use. Must be configured in in the pack settings."
     required: true
     default: "default"
-  send_html:
+  send_as_html:
     type: boolean
     description: "Send email body as HTML"
     required: true
@@ -96,6 +96,7 @@ parameters:
   test_override:
     type: boolean
     description: "Overrides email sending to a single address for testing purposes (Will only send a subset of emails if there are lots of them)"
+    required: true
     default: false
   test_override_email:
     type: array

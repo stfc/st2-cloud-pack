@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List
+from typing import Any, Callable, Dict, List
 from email_api.email_api import EmailApi
 from openstack_api.openstack_query import OpenstackQuery
 from openstack_api.openstack_server import OpenstackServer
@@ -22,6 +22,7 @@ class SendEmail(Action):
         func: Callable = getattr(self, submodule)
         return func(**kwargs)
 
+    # pylint:disable=too-many-arguments
     def send_email(
         self,
         subject: str,
@@ -31,7 +32,7 @@ class SendEmail(Action):
         footer: str,
         body: str,
         attachment_filepaths: List[str],
-        smtp_account: Dict[str],
+        smtp_account: str,
         test_override: bool,
         test_override_email: List[str],
         send_as_html: bool,
@@ -65,7 +66,7 @@ class SendEmail(Action):
             send_as_html=send_as_html,
         )
 
-    # pylint:disable=too-many-arguments
+    # pylint:disable=too-many-arguments,too-many-locals
     def email_server_users(
         self,
         cloud_account: str,
@@ -79,7 +80,7 @@ class SendEmail(Action):
         header: str,
         footer: str,
         attachment_filepaths: List[str],
-        smtp_account: Dict[str],
+        smtp_account: str,
         test_override: bool,
         test_override_email: List[str],
         send_as_html: bool,

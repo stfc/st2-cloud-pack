@@ -69,7 +69,7 @@ class EmailApi:
         footer: str,
         body: str,
         attachment_filepaths: List[str],
-        smtp_account: Dict[str],
+        smtp_account: str,
         send_as_html: bool,
     ):
         """
@@ -127,7 +127,7 @@ class EmailApi:
         if email_cc:
             msg["Cc"] = ", ".join(email_cc)
 
-        if len(attachment_filepaths) > 0:
+        if attachment_filepaths and len(attachment_filepaths) > 0:
             self.attach_files(msg, attachment_filepaths)
 
         smtp = SMTP_SSL(account_data["server"], str(account_data["port"]), timeout=60)
@@ -155,7 +155,7 @@ class EmailApi:
         header: str,
         footer: str,
         attachment_filepaths: List[str],
-        smtp_account: Dict[str],
+        smtp_account: str,
         test_override: bool,
         test_override_email: List[str],
         send_as_html: bool,
