@@ -17,9 +17,8 @@ class OpenstackServer(OpenstackWrapperBase):
     def __getitem__(self, item):
         return getattr(self, item)
 
-    # pylint:disable=unused-argument
     def search_all_servers(
-        self, cloud_account: str, project_identifier: str, **kwargs
+        self, cloud_account: str, project_identifier: str, **_
     ) -> List[Server]:
         """
         Returns a list of Servers matching a given query
@@ -50,9 +49,8 @@ class OpenstackServer(OpenstackWrapperBase):
                 )
         return selected_servers
 
-    # pylint:disable=unused-argument
     def search_servers_older_than(
-        self, cloud_account: str, project_identifier: str, days: int, **kwargs
+        self, cloud_account: str, project_identifier: str, days: int, **_
     ) -> List[Server]:
         """
         Returns a list of servers older than a given number of days
@@ -68,9 +66,8 @@ class OpenstackServer(OpenstackWrapperBase):
             lambda a: self._query_api.datetime_before_x_days(a["created_at"], days),
         )
 
-    # pylint:disable=unused-argument
     def search_servers_younger_than(
-        self, cloud_account: str, project_identifier: str, days: int, **kwargs
+        self, cloud_account: str, project_identifier: str, days: int, **_
     ) -> List[Server]:
         """
         Returns a list of servers older than a given number of days
@@ -86,9 +83,8 @@ class OpenstackServer(OpenstackWrapperBase):
             lambda a: not self._query_api.datetime_before_x_days(a["created_at"], days),
         )
 
-    # pylint:disable=unused-argument
     def search_servers_last_updated_before(
-        self, cloud_account: str, project_identifier: str, days: int, **kwargs
+        self, cloud_account: str, project_identifier: str, days: int, **_
     ) -> List[Server]:
         """
         Returns a list of servers updated before a specified number of days in the past
@@ -104,9 +100,8 @@ class OpenstackServer(OpenstackWrapperBase):
             lambda a: self._query_api.datetime_before_x_days(a["updated_at"], days),
         )
 
-    # pylint:disable=unused-argument
     def search_servers_last_updated_after(
-        self, cloud_account: str, project_identifier: str, days: int, **kwargs
+        self, cloud_account: str, project_identifier: str, days: int, **_
     ) -> List[Server]:
         """
         Returns a list of servers updated after a specified number of days in the past
@@ -122,9 +117,8 @@ class OpenstackServer(OpenstackWrapperBase):
             lambda a: not self._query_api.datetime_before_x_days(a["updated_at"], days),
         )
 
-    # pylint:disable=unused-argument
     def search_servers_name_in(
-        self, cloud_account: str, project_identifier: str, names: List[str], **kwargs
+        self, cloud_account: str, project_identifier: str, names: List[str], **_
     ) -> List[Server]:
         """
         Returns a list of servers with names in the list given
@@ -139,9 +133,8 @@ class OpenstackServer(OpenstackWrapperBase):
             selected_servers, lambda a: a["name"] in names
         )
 
-    # pylint:disable=unused-argument
     def search_servers_name_not_in(
-        self, cloud_account: str, project_identifier: str, names: List[str], **kwargs
+        self, cloud_account: str, project_identifier: str, names: List[str], **_
     ) -> List[Server]:
         """
         Returns a list of servers with names that aren't in the list given
@@ -156,13 +149,8 @@ class OpenstackServer(OpenstackWrapperBase):
             selected_servers, lambda a: not a["name"] in names
         )
 
-    # pylint:disable=unused-argument
     def search_servers_name_contains(
-        self,
-        cloud_account: str,
-        project_identifier: str,
-        name_snippets: List[str],
-        **kwargs
+        self, cloud_account: str, project_identifier: str, name_snippets: List[str], **_
     ) -> List[Server]:
         """
         Returns a list of servers with names containing the snippets given
@@ -178,13 +166,8 @@ class OpenstackServer(OpenstackWrapperBase):
             lambda a: all(name_snippet in a["name"] for name_snippet in name_snippets),
         )
 
-    # pylint:disable=unused-argument
     def search_servers_name_not_contains(
-        self,
-        cloud_account: str,
-        project_identifier: str,
-        name_snippets: List[str],
-        **kwargs
+        self, cloud_account: str, project_identifier: str, name_snippets: List[str], **_
     ) -> List[Server]:
         """
         Returns a list of servers with names that don't contain the snippets given
@@ -202,9 +185,8 @@ class OpenstackServer(OpenstackWrapperBase):
             ),
         )
 
-    # pylint:disable=unused-argument
     def search_servers_id_in(
-        self, cloud_account: str, project_identifier: str, ids: List[str], **kwargs
+        self, cloud_account: str, project_identifier: str, ids: List[str], **_
     ) -> List[Server]:
         """
         Returns a list of servers with ids in the list given
@@ -217,9 +199,8 @@ class OpenstackServer(OpenstackWrapperBase):
 
         return self._query_api.apply_query(selected_servers, lambda a: a["id"] in ids)
 
-    # pylint:disable=unused-argument
     def search_servers_id_not_in(
-        self, cloud_account: str, project_identifier: str, ids: List[str], **kwargs
+        self, cloud_account: str, project_identifier: str, ids: List[str], **_
     ) -> List[Server]:
         """
         Returns a list of servers with ids that aren't in the list given
@@ -235,7 +216,7 @@ class OpenstackServer(OpenstackWrapperBase):
         )
 
     def search_servers_errored(
-        self, cloud_account: str, project_identifier: str, **kwargs
+        self, cloud_account: str, project_identifier: str, **_
     ) -> List[Server]:
         """
         Returns a list of servers with ids that aren't in the list given
@@ -251,7 +232,7 @@ class OpenstackServer(OpenstackWrapperBase):
         )
 
     def search_servers_shutoff(
-        self, cloud_account: str, project_identifier: str, **kwargs
+        self, cloud_account: str, project_identifier: str, **_
     ) -> List[Server]:
         """
         Returns a list of servers with ids that aren't in the list given
@@ -267,7 +248,7 @@ class OpenstackServer(OpenstackWrapperBase):
         )
 
     def search_servers_errored_and_shutoff(
-        self, cloud_account: str, project_identifier: str, **kwargs
+        self, cloud_account: str, project_identifier: str, **_
     ) -> List[Server]:
         """
         Returns a list of servers with ids that aren't in the list given
