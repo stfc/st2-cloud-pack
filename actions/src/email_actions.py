@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List
+from typing import Callable, Dict, List
 from email_api.email_api import EmailApi
 from openstack_api.openstack_query import OpenstackQuery
 from openstack_api.openstack_server import OpenstackServer
@@ -36,7 +36,6 @@ class SendEmail(Action):
         test_override: bool,
         test_override_email: List[str],
         send_as_html: bool,
-        **kwargs,
     ):
         """
         Sends an email
