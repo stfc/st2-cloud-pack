@@ -39,7 +39,7 @@ class OpenstackServer(OpenstackWrapperBase):
         with self._connection_cls(cloud_account) as conn:
             for project in projects:
                 selected_servers.extend(
-                    conn.list_servers(
+                    conn.server.list_servers(
                         filters={
                             "all_tenants": True,
                             "project_id": project.id,
@@ -206,7 +206,7 @@ class OpenstackServer(OpenstackWrapperBase):
         Returns a list of servers with ids that aren't in the list given
         :param cloud_account: The associated clouds.yaml account
         :param project_identifier: The project to get all associated servers with, can be empty for all projects
-        :param ids: List of v that should not pass the query
+        :param ids: List of ids that should not pass the query
         :return: A list of servers matching the query
         """
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
@@ -222,7 +222,6 @@ class OpenstackServer(OpenstackWrapperBase):
         Returns a list of servers with ids that aren't in the list given
         :param cloud_account: The associated clouds.yaml account
         :param project_identifier: The project to get all associated servers with, can be empty for all projects
-        :param ids: List of v that should not pass the query
         :return: A list of servers matching the query
         """
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
@@ -238,7 +237,6 @@ class OpenstackServer(OpenstackWrapperBase):
         Returns a list of servers with ids that aren't in the list given
         :param cloud_account: The associated clouds.yaml account
         :param project_identifier: The project to get all associated servers with, can be empty for all projects
-        :param ids: List of v that should not pass the query
         :return: A list of servers matching the query
         """
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
@@ -254,12 +252,11 @@ class OpenstackServer(OpenstackWrapperBase):
         Returns a list of servers with ids that aren't in the list given
         :param cloud_account: The associated clouds.yaml account
         :param project_identifier: The project to get all associated servers with, can be empty for all projects
-        :param ids: List of v that should not pass the query
         :return: A list of servers matching the query
         """
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
             selected_servers,
-            lambda a: all(x in a["status"] for x in ["SHUTOFF", "ERRORED"]),
+            lambda a: all(x in a["status"] for x in ["SHUTOFF", "ERROR"]),
         )
