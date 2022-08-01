@@ -1,10 +1,8 @@
-from datetime import date
 import datetime
 import unittest
 from unittest import mock
-from unittest.mock import NonCallableMock, ANY, Mock, MagicMock
+from unittest.mock import MagicMock
 
-from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_query import OpenstackQuery
 
 
@@ -27,7 +25,9 @@ class OpenstackQueryTests(unittest.TestCase):
         super().setUp()
         self.mocked_connection = MagicMock()
         self.instance = OpenstackQuery(self.mocked_connection)
-        self.identity_api = OpenstackIdentity(self.mocked_connection)
+        self.identity_api = (
+            self.mocked_connection.return_value.__enter__.return_value.identity
+        )
 
     @mock.patch("openstack_api.openstack_query.datetime", wraps=datetime)
     def test_datetime_before_x_days(self, mock_datetime):
@@ -118,26 +118,60 @@ class OpenstackQueryTests(unittest.TestCase):
         assert "Item1" in result["Hello World"] and "Item2" in result["Hello World"]
         assert len(result["Test World"]) > 0
 
-    # def test_parse_and_output_table(self):
-    #     """
-    #     Tests collate_results works as expected
-    #     """
-    #     items = [
-    #         self.ItemTest("Item1", "Hello"),
-    #         self.ItemTest("Item2", "Hello"),
-    #         self.ItemTest("Item3", "Test"),
-    #     ]
+    def test_parse_and_output_table_with_grouping(self):
+        """
+        Tests parse_and_output_table works as expected when collating results
+        """
+        items = [
+            self.ItemTest("Item1", "Hello"),
+            self.ItemTest("Item2", "Hello"),
+            self.ItemTest("Item3", "Test"),
+        ]
 
-    #     result = self.instance.parse_and_output_table(
-    #         "test_account",
-    #         items,
-    #         "server",
-    #         ["test2", "user_email"],
-    #         "user_email",
-    #         False,
-    #     )
+        self.instance.collate_results = MagicMock()
 
-    #     self.mocked_connection.assert_called_with("test_account")
-    #     self.identity_api.find_user_all_domains.assert_called_with(
-    #         "test_account", "Item1"
-    #     )
+        self.instance.parse_and_output_table(
+            "test_account",
+            items,
+            "server",
+            ["test2", "user_email"],
+            "user_email",
+            False,
+        )
+
+        self.mocked_connection.assert_called_with("test_account")
+        self.identity_api.find_user.assert_has_calls(
+            [
+                mock.call("Item1", ignore_missing=True),
+                mock.call("Item2", ignore_missing=True),
+                mock.call("Item3", ignore_missing=True),
+            ],
+            any_order=True,
+        )
+
+        self.instance.collate_results.assert_called_once()
+
+    def test_parse_and_output_table_no_grouping(self):
+        """
+        Tests parse_and_output_table works as expected when no collatating is required
+        """
+        items = [
+            self.ItemTest("Item1", "Hello"),
+            self.ItemTest("Item2", "Hello"),
+            self.ItemTest("Item3", "Test"),
+        ]
+
+        self.instance.collate_results = MagicMock()
+        self.instance.generate_table = MagicMock()
+
+        self.instance.parse_and_output_table(
+            "test_account",
+            items,
+            "server",
+            ["test2", "user_email"],
+            "",
+            False,
+        )
+
+        self.instance.collate_results.assert_not_called()
+        self.instance.generate_table.assert_called_once()

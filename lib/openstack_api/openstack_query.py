@@ -138,6 +138,7 @@ class OpenstackQuery(OpenstackWrapperBase):
             del collated_dict[None]
 
         for key_value, items in collated_dict.items():
+            print("HELLO")
             collated_dict[key_value] = self.generate_table(items, get_html)
 
         return collated_dict
