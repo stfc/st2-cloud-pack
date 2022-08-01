@@ -1,5 +1,5 @@
 import shutil
-from typing import Optional
+from typing import Optional, List
 
 from shell_api.disk_space import DiskSpace
 
@@ -12,3 +12,7 @@ class VolumeThreshold:
         # TODO: GET RID OF HARD CODED ROOT
         returned = self.shutil.disk_usage("/")
         return DiskSpace(total=returned[0], used=returned[1], free=returned[2])
+
+    def get_disk_list(self) -> List[str]:
+        # TODO: Check disks are real
+        return ["NotADisk"]
