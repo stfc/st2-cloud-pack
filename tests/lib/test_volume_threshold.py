@@ -14,3 +14,11 @@ def test_get_disk_space_root():
     assert returned.total == 0
     assert returned.used == 1
     assert returned.free == 2
+
+
+def test_get_list_of_disks():
+    instance = VolumeThreshold()
+    returned = instance.get_disk_list()
+
+    assert isinstance(returned, list)
+    assert all(isinstance(i, str) for i in returned)
