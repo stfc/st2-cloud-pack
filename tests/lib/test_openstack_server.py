@@ -171,6 +171,34 @@ class OpenstackServerTests(unittest.TestCase):
 
         self.assertEqual(result, [self.mock_server_list[1], self.mock_server_list[2]])
 
+    def test_search_servers_name_in(self):
+        """
+        Tests calling search_servers_name_in
+        """
+
+        self.instance.search_all_servers = MagicMock()
+        self.instance.search_all_servers.return_value = self.mock_server_list
+
+        result = self.instance.search_servers_name_in(
+            cloud_account="test", project_identifier="", names=["server1", "server2"]
+        )
+
+        self.assertEqual(result, [self.mock_server_list[0], self.mock_server_list[1]])
+
+    def test_search_servers_name_not_in(self):
+        """
+        Tests calling search_servers_name_not_in
+        """
+
+        self.instance.search_all_servers = MagicMock()
+        self.instance.search_all_servers.return_value = self.mock_server_list
+
+        result = self.instance.search_servers_name_not_in(
+            cloud_account="test", project_identifier="", names=["server1", "server2"]
+        )
+
+        self.assertEqual(result, [self.mock_server_list[2]])
+
     def test_search_servers_name_contains(self):
         """
         Tests calling search_servers_name_contains

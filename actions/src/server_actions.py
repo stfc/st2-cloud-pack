@@ -13,7 +13,9 @@ class ServerActions(Action):
         self._server_api: OpenstackServer = config.get(
             "openstack_api", OpenstackServer()
         )
-        self._query_api: OpenstackQuery = config.get("openstack_api", OpenstackQuery())
+        self._query_api: OpenstackQuery = config.get(
+            "openstack_query_api", OpenstackQuery()
+        )
 
     def run(self, submodule: str, **kwargs):
         """
@@ -22,7 +24,7 @@ class ServerActions(Action):
         func: Callable = getattr(self, submodule)
         return func(**kwargs)
 
-    # pylint:disable=unused-argument,too-many-arguments
+    # pylint:disable=too-many-arguments
     def server_list(
         self,
         cloud_account: str,
@@ -43,6 +45,7 @@ class ServerActions(Action):
         :param get_html: When True tables returned are in html format
         :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
         """
+
         servers = self._server_api[f"search_{query_preset}"](
             cloud_account, project_identifier, **kwargs
         )

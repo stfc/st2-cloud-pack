@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import List
+from typing import Dict, List
 from unittest.mock import Mock, NonCallableMock
 
 from st2tests.actions import BaseActionTestCase
@@ -7,12 +7,18 @@ from st2tests.actions import BaseActionTestCase
 
 # pylint: disable=too-few-public-methods
 class OpenstackActionTestBase(BaseActionTestCase, ABC):
-    def get_action_instance(self, config=None, api_mock: Mock = None):
+    def get_action_instance(
+        self,
+        config=None,
+        api_mock: Mock = None,
+        additional_mocks: Dict[str, Mock] = None,
+    ):
         """
         Wraps get action instance allowing a developer to additionally
         inject OpenStack Mock APIs too
         @param config: Optional Additional config to pass in
         @param api_mock: The prepared mock to inject
+        @param additional_mocks: Additional prepared mocks to inject
         @return: The action with a mock (or a default mock) injected
         """
         if config is None:
@@ -25,6 +31,12 @@ class OpenstackActionTestBase(BaseActionTestCase, ABC):
         # through api_mock, instead of relying on implicit mocks.
         api_mock = api_mock if api_mock else NonCallableMock()
         config["openstack_api"] = api_mock
+
+        if additional_mocks:
+            for key, mock in additional_mocks.items():
+                mock = mock if mock else NonCallableMock()
+                config[key] = mock
+
         return super().get_action_instance(config=config)
 
     def _test_run_dynamic_dispatch(self, expected_methods: List[str]):
