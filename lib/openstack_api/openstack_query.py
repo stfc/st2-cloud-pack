@@ -21,10 +21,11 @@ class OpenstackQuery(OpenstackWrapperBase):
                            the query
         :return: List of items that match the given query
         """
+        result = []
         for item in items:
-            if not query_func(item):
-                items.remove(item)
-        return items
+            if query_func(item):
+                result.append(item)
+        return result
 
     def datetime_before_x_days(
         self, value: str, days, date_time_format: str = "%Y-%m-%dT%H:%M:%SZ"
@@ -142,7 +143,7 @@ class OpenstackQuery(OpenstackWrapperBase):
         return collated_dict
 
     def get_default_property_funcs(
-        self, object_type: str, cloud_account: str, identity_api: OpenstackIdentity
+        self, object_type: str, cloud_account: str
     ) -> Dict[str, Callable[[Any], bool]]:
         """
         Returns a list of default property functions for use with 'parse_properties' above
@@ -151,10 +152,10 @@ class OpenstackQuery(OpenstackWrapperBase):
         """
         if object_type == "server":
             return {
-                "user_email": lambda a: identity_api.find_user_all_domains(
+                "user_email": lambda a: self._identity_api.find_user_all_domains(
                     cloud_account, a["user_id"]
                 )["email"],
-                "user_name": lambda a: identity_api.find_user_all_domains(
+                "user_name": lambda a: self._identity_api.find_user_all_domains(
                     cloud_account, a["user_id"]
                 )["name"],
             }
@@ -180,9 +181,7 @@ class OpenstackQuery(OpenstackWrapperBase):
         :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
         """
 
-        property_funcs = self.get_default_property_funcs(
-            object_type, cloud_account, self._identity_api
-        )
+        property_funcs = self.get_default_property_funcs(object_type, cloud_account)
         output = self.parse_properties(items, properties_to_select, property_funcs)
 
         if group_by != "":

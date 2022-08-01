@@ -197,3 +197,25 @@ class OpenstackIdentityTests(unittest.TestCase):
         )
         expected = self.identity_api.find_user.return_value
         assert returned == expected
+
+    @raises(MissingMandatoryParamError)
+    def test_find_user_all_domains_missing_identifier(self):
+        """
+        Checks a missing user identifier will raise correctly
+        """
+        self.instance.find_user_all_domains(NonCallableMock(), " \t")
+
+    def test_find_user_all_domains_returns_result(self):
+        """
+        Checks that find_user_all_domains returns the correct result
+        """
+        cloud, user = NonCallableMock(), NonCallableMock()
+        returned = self.instance.find_user_all_domains(cloud, user)
+
+        self.mocked_connection.assert_called_once_with(cloud)
+        self.identity_api.find_user.assert_called_once_with(
+            user.strip(),
+            ignore_missing=True,
+        )
+        expected = self.identity_api.find_user.return_value
+        assert returned == expected
