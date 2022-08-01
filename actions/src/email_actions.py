@@ -6,14 +6,16 @@ from openstack_api.openstack_server import OpenstackServer
 from st2common.runners.base_action import Action
 
 
-class SendEmail(Action):
+class EmailActions(Action):
     def __init__(self, *args, config: Dict = None, **kwargs):
         super().__init__(*args, config=config, **kwargs)
         self._api: EmailApi = config.get("email_api", EmailApi())
         self._server_api: OpenstackServer = config.get(
             "openstack_api", OpenstackServer()
         )
-        self._query_api: OpenstackQuery = config.get("openstack_api", OpenstackQuery())
+        self._query_api: OpenstackQuery = config.get(
+            "openstack_query_api", OpenstackQuery()
+        )
 
     def run(self, submodule: str, **kwargs):
         """
@@ -34,12 +36,11 @@ class SendEmail(Action):
         body: str,
         attachment_filepaths: List[str],
         smtp_account: str,
-        test_override: bool,
-        test_override_email: List[str],
         send_as_html: bool,
     ):
         """
         Sends an email
+        :param: subject (String): Subject of the email
         :param: email_to (List[String]): Email addresses to send the email to
         :param: email_from (String): Sender Email, subject (String): Email Subject,
         :param: email_cc (List[String]): Email addresses to Cc
@@ -47,8 +48,6 @@ class SendEmail(Action):
         :param: footer (String): filepath to footer file,
         :param: attachment (List): list of attachment filepaths,
         :param: smtp_account (String): email config to use,
-        :param: test_override (Boolean): send all emails to test emails
-        :param: test_override_email (List[String]): send to this email if test_override enabled
         :param: send_as_html (Bool): If true will send in HTML format
         :return: (Status (Bool), Output <*>): tuple of action status (succeeded(T)/failed(F)) and the output
         """
@@ -63,8 +62,6 @@ class SendEmail(Action):
             body=body,
             attachment_filepaths=attachment_filepaths,
             smtp_account=smtp_account,
-            test_override=test_override,
-            test_override_email=test_override_email,
             send_as_html=send_as_html,
         )
 
@@ -90,11 +87,12 @@ class SendEmail(Action):
     ):
         """
         Finds all servers belonging to a project (or all servers if project is empty)
-        :param cloud_account: The account from the clouds configuration to use
-        :param project_identifier: The project this applies to (or empty for all servers)
-        :param query_preset: The query to use when searching for servers
-        :param message: Message to add to the body of emails sent
-        :param properties_to_select: The list of properties to select and output from the found servers
+        :param: cloud_account: The account from the clouds configuration to use
+        :param: project_identifier: The project this applies to (or empty for all servers)
+        :param: query_preset: The query to use when searching for servers
+        :param: message: Message to add to the body of emails sent
+        :param: properties_to_select: The list of properties to select and output from the found servers
+        :param: subject (String): Subject of the emails
         :param: email_from (String): Sender Email, subject (String): Email Subject,
         :param: email_cc (List[String]): Email addresses to Cc
         :param: header (String): filepath to header file,

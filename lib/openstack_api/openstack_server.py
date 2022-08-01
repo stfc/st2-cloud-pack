@@ -9,6 +9,23 @@ from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
 class OpenstackServer(OpenstackWrapperBase):
+    QUERY_PRESETS: List[str] = [
+        "all_servers",
+        "servers_older_than",
+        "servers_younger_than",
+        "servers_last_updated_before",
+        "servers_last_updated_after",
+        "servers_id_in",
+        "servers_id_not_in",
+        "servers_name_in",
+        "servers_name_not_in",
+        "servers_name_contains",
+        "servers_name_not_contains",
+        "servers_errored",
+        "servers_shutoff",
+        "servers_errored_and_shutoff",
+    ]
+
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)
         self._identity_api = OpenstackIdentity(self._connection_cls)
