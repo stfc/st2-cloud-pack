@@ -1,4 +1,9 @@
 ---
+jupyter:
+    prod_token:
+    training_token:
+    dev_token:
+
 smtp_accounts:
   - name: "default"
     password:

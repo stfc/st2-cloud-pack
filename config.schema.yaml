@@ -1,4 +1,22 @@
 ---
+jupyter:
+  description: Jupyter Settings and tokens
+  type: "object"
+  required: true
+  properties:
+    dev_token:
+      type: "string"
+      description: "Token for test.jupyter.stfc.ac.uk"
+      required: false
+    training_token:
+      type: "string"
+      description: "Token for training.jupyter.stfc.ac.uk"
+      required: false
+    prod_token:
+      type: "string"
+      description: "Token for jupyter.stfc.ac.uk"
+      required: false
+
 smtp_accounts:
   description: "SMTP accounts"
   type: "array"

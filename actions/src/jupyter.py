@@ -21,17 +21,18 @@ class Jupyter(Action):
         """
         Delete users from the given environment
         """
-        env = jupyter_env.casefold()
-        key_name = None
-        if env == "prod".casefold():
-            key_name = "jupyter.prod_token"
-        if env == "training".casefold():
-            key_name = "jupyter.training_token"
-        if env == "dev".casefold():
-            key_name = "jupyter.dev_token"
+        jupyter_keys = self.config["jupyter"]
 
+        key_name = None
+        env = jupyter_env.casefold()
+        if env == "prod".casefold():
+            key_name = "prod_token"
+        if env == "training".casefold():
+            key_name = "training_token"
+        if env == "dev".casefold():
+            key_name = "dev_token"
         if not key_name:
             raise KeyError("Unknown Jupyter environment")
 
-        token = self.action_service.get_value(key_name, local=False, decrypt=True)
+        token = jupyter_keys[key_name]
         self._api.delete_users(jupyter_env, token, users)
