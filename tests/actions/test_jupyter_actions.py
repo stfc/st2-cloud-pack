@@ -1,4 +1,4 @@
-from unittest.mock import create_autospec, Mock, NonCallableMock
+from unittest.mock import create_autospec, Mock, NonCallableMock, NonCallableMagicMock
 
 from nose.tools import raises
 from parameterized import parameterized
@@ -22,21 +22,18 @@ class TestJupyterActions(OpenstackActionTestBase):
         """
         super().setUp()
         self.user_mock: UserApi = create_autospec(UserApi)
-        config = {"user_api": self.user_mock}
+        self.jupyter_keys = NonCallableMagicMock()
+        config = {"user_api": self.user_mock, "jupyter": self.jupyter_keys}
         self.action: Jupyter = self.get_action_instance(config=config)
 
     @parameterized.expand(["prod", "dev", "training"])
     def test_user_delete_gets_correct_key(self, endpoint):
-        expected = f"jupyter.{endpoint}_token"
+        token = self.jupyter_keys[endpoint]
 
         users = [NonCallableMock(), NonCallableMock()]
         self.action.action_service.get_value = Mock()
         self.action.user_delete(endpoint, users)
 
-        self.action.action_service.get_value.assert_called_once_with(
-            expected, local=False, decrypt=True
-        )
-        token = self.action.action_service.get_value.return_value
         self.user_mock.delete_users.assert_called_once_with(
             endpoint=endpoint, auth_token=token, users=users
         )

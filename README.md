@@ -16,15 +16,7 @@ A Stackstorm pack for running Openstack scripts:
 
 - Openstack openrc config file is required in order to run Openstack Commands. The openrc file must be stored
   in `etc/openstack/clouds.yaml` or `/home/<user>/.config/openstack/clouds.yaml`.
-- The following datastore entries are required:
-
-| Key Name                 | Description                                   | Encrypted |
-|--------------------------|-----------------------------------------------| --------- |
-| `jupyter.dev_token`      | Jupyter API Admin Token for Dev               | Yes       |
-| `jupyter.prod_token`     | Jupyter API Admin Token for Prod              | Yes       |
-| `jupyter.training_token` | Jupyter API Admin Token for Training instance | Yes       |
-| `jsm_email`              | Email used to login to atlassian              | Yes       |
-| `jsm_key`                | Key used to login to atlassian                | Yes       |
+- Copy the configuration in [stackstorm_openstack.yaml.example](https://github.com/stfc/st2-cloud-pack/blob/main/stackstorm_openstack.yaml.example) to `/opt/stackstorm/configs/stackstorm_openstack.yaml and populate the values.
 
 # Openstack Workflow
 
