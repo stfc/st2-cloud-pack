@@ -22,7 +22,7 @@ class EmailApi:
         else:
             raise FileNotFoundError(f"Template file located {path} not found")
 
-    def load_smtp_account(self, smtp_accounts: Dict, smtp_account: str):
+    def load_smtp_account(self, smtp_accounts: List[Dict], smtp_account: str):
         """
         Loads and returns the smtp account data from the pack config
         :param smtp_config: The SMTP config from the pack
@@ -40,7 +40,7 @@ class EmailApi:
 
         return account_data
 
-    def attach_files(self, msg: MIMEMultipart, files):
+    def attach_files(self, msg: MIMEMultipart, files) -> MIMEMultipart:
         """
         Loads and adds attachments to an email message
         :param msg: The message object for the email
@@ -53,11 +53,12 @@ class EmailApi:
                 part = MIMEApplication(file.read(), Name=filename)
             part["Content-Disposition"] = f"attachment; filename={filename}"
             msg.attach(part)
+        return msg
 
     # pylint:disable=too-many-arguments
     def send_email(
         self,
-        smtp_accounts: Dict,
+        smtp_accounts: List[Dict],
         subject: str,
         email_to: List[str],
         email_from: str,
@@ -71,7 +72,7 @@ class EmailApi:
     ):
         """
         Send an email
-        :param: smtp_accounts (Dict): SMTP config (smtp_accounts in the pack config)
+        :param: smtp_accounts (List[Dict]): SMTP config (smtp_accounts in the pack config)
         :param: subject: (String): Subject of the email
         :param: email_to (List[String]): Email addresses to send the email to
         :param: email_from (String): Sender Email, subject (String): Email Subject,
@@ -125,7 +126,7 @@ class EmailApi:
             msg["Cc"] = ", ".join(email_cc)
 
         if attachment_filepaths and len(attachment_filepaths) > 0:
-            self.attach_files(msg, attachment_filepaths)
+            msg = self.attach_files(msg, attachment_filepaths)
 
         smtp = SMTP_SSL(account_data["server"], str(account_data["port"]), timeout=60)
         smtp.ehlo()
@@ -144,7 +145,7 @@ class EmailApi:
     # pylint:disable=too-many-arguments
     def send_emails(
         self,
-        smtp_accounts: Dict,
+        smtp_accounts: List[Dict],
         emails: Dict[str, str],
         subject: str,
         email_from: str,
