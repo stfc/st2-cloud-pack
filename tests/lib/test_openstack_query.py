@@ -2,6 +2,7 @@ import datetime
 import unittest
 from unittest import mock
 from unittest.mock import MagicMock
+from nose.tools import raises
 
 from openstack_api.openstack_query import OpenstackQuery
 
@@ -90,21 +91,27 @@ class OpenstackQueryTests(unittest.TestCase):
             items, ["test1", "test2"], property_funcs
         )
 
-        assert result == [
-            {"test1": "Item1", "test2": "Hello World"},
-            {"test1": "Item2", "test2": "Hello World"},
-        ]
+        self.assertEqual(
+            result,
+            [
+                {"test1": "Item1", "test2": "Hello World"},
+                {"test1": "Item2", "test2": "Hello World"},
+            ],
+        )
 
     def test_collate_results(self):
         """
         Tests collate_results works as expected
         """
-        property_funcs = {"test2": lambda item: item.test2 + " World"}
+        property_funcs = {
+            "test2": lambda item: item.test2 + " World" if item.test2 else None
+        }
 
         items = [
             self.ItemTest("Item1", "Hello"),
             self.ItemTest("Item2", "Hello"),
             self.ItemTest("Item3", "Test"),
+            self.ItemTest("Item4", None),
         ]
 
         properties_dict = self.instance.parse_properties(
@@ -117,6 +124,15 @@ class OpenstackQueryTests(unittest.TestCase):
         assert len(result["Hello World"]) > 0
         assert "Item1" in result["Hello World"] and "Item2" in result["Hello World"]
         assert len(result["Test World"]) > 0
+
+    @raises(ValueError)
+    def test_get_default_property_funcs_error(self):
+        """
+        Tests get_default_property_funcs errors as expected
+        """
+        self.assertRaises(
+            ValueError, self.instance.get_default_property_funcs("cake", "test")
+        )
 
     def test_parse_and_output_table_with_grouping(self):
         """

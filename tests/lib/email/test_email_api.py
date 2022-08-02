@@ -38,16 +38,22 @@ class EmailApiTests(unittest.TestCase):
         """
         self.assertRaises(FileNotFoundError, self.api.load_template("test"))
 
-    @raises(ValueError, KeyError)
-    def test_load_smtp_account_errors(self):
+    @raises(ValueError)
+    def test_load_smtp_account_value_error(self):
         """
-        Tests that load_smtp_account raises the appropriate errors
+        Tests that load_smtp_account raises a value error when no accounts are supplied
         """
         self.assertRaises(ValueError, self.api.load_smtp_account({}, "default"))
+
+    @raises(KeyError)
+    def test_load_smtp_account_key_error(self):
+        """
+        Tests that load_smtp_account raises a key error when the smtp_account doesn't exist
+        """
         self.assertRaises(
             KeyError,
             self.api.load_smtp_account(
-                {{"name": "default"}, {"name": "test"}}, "invalid"
+                [{"name": "default"}, {"name": "test"}], "invalid"
             ),
         )
 
