@@ -56,7 +56,7 @@ class OpenstackServer(OpenstackWrapperBase):
         with self._connection_cls(cloud_account) as conn:
             for project in projects:
                 selected_servers.extend(
-                    conn.server.list_servers(
+                    conn.list_servers(
                         filters={
                             "all_tenants": True,
                             "project_id": project.id,

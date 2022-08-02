@@ -19,9 +19,7 @@ class OpenstackServerTests(unittest.TestCase):
             self.instance = OpenstackServer(self.mocked_connection)
             self.identity_module = identity_mock.return_value
 
-        self.server_api = (
-            self.mocked_connection.return_value.__enter__.return_value.server
-        )
+        self.api = self.mocked_connection.return_value.__enter__.return_value
 
         self.mock_server_list = [
             {
@@ -66,7 +64,7 @@ class OpenstackServerTests(unittest.TestCase):
         self.identity_module.list_projects.assert_called_once_with("test")
         self.mocked_connection.assert_called_once_with("test")
 
-        self.server_api.list_servers.assert_has_calls(
+        self.api.list_servers.assert_has_calls(
             [
                 mock.call(
                     filters={
@@ -99,7 +97,7 @@ class OpenstackServerTests(unittest.TestCase):
         )
         self.mocked_connection.assert_called_once_with("test")
 
-        self.server_api.list_servers.assert_called_once_with(
+        self.api.list_servers.assert_called_once_with(
             filters={
                 "all_tenants": True,
                 "project_id": self.identity_module.find_mandatory_project.return_value.id,
