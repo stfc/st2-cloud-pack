@@ -62,7 +62,7 @@ class EmailApi:
         subject: str,
         email_to: List[str],
         email_from: str,
-        email_cc: str,
+        email_cc: List[str],
         header: str,
         footer: str,
         body: str,
@@ -172,7 +172,7 @@ class EmailApi:
         :param: test_override (Boolean): send all emails to test emails
         :param: test_override_email (List[String]): send to this email if test_override enabled
         :param: send_as_html (Bool): If true will send in HTML format
-        :return: Status (Bool): tuple of action status (succeeded(T)/failed(F)) and the output
+        :return: Status (Bool): tuple of action status (succeeded(T)/failed(F))
         """
         if test_override:
             # Send a maximum of 10 emails
