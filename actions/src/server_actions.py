@@ -11,7 +11,7 @@ class ServerActions(Action):
         """constructor class"""
         super().__init__(*args, config=config, **kwargs)
         self._server_api: OpenstackServer = config.get(
-            "openstack_api", OpenstackServer()
+            "openstack_server_api", OpenstackServer()
         )
         self._query_api: OpenstackQuery = config.get(
             "openstack_query_api", OpenstackQuery()

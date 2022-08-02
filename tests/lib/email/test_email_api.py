@@ -1,7 +1,6 @@
-import smtplib
 import unittest
 from unittest import mock
-from unittest.mock import ANY, MagicMock, create_autospec
+from unittest.mock import ANY, MagicMock
 
 from email_api.email_api import EmailApi
 from nose.tools import raises

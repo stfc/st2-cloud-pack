@@ -21,7 +21,7 @@ class TestProjectAction(OpenstackActionTestBase):
         super().setUp()
         self.identity_mock = create_autospec(OpenstackIdentity)
         self.action: ProjectAction = self.get_action_instance(
-            api_mock=self.identity_mock
+            api_mocks=self.identity_mock
         )
 
     def test_project_action_can_be_instantiated(self):

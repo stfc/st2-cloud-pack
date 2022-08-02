@@ -27,8 +27,10 @@ class TestServerActions(OpenstackActionTestBase):
 
         self.query_mock = create_autospec(OpenstackQuery)
         self.action: ServerActions = self.get_action_instance(
-            api_mock=self.server_mock,
-            additional_mocks={"openstack_query_api": self.query_mock},
+            api_mocks={
+                "openstack_server_api": self.server_mock,
+                "openstack_query_api": self.query_mock,
+            },
         )
 
     def test_list(self):

@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Dict, List
+from typing import Dict, List, Union
 from unittest.mock import Mock, NonCallableMock
 
 from st2tests.actions import BaseActionTestCase
@@ -10,8 +10,7 @@ class OpenstackActionTestBase(BaseActionTestCase, ABC):
     def get_action_instance(
         self,
         config=None,
-        api_mock: Mock = None,
-        additional_mocks: Dict[str, Mock] = None,
+        api_mocks: Union[Mock, Dict[str, Mock]] = None,
     ):
         """
         Wraps get action instance allowing a developer to additionally
@@ -28,14 +27,16 @@ class OpenstackActionTestBase(BaseActionTestCase, ABC):
         # to ensure we never attempt to hit the real API in any test case
 
         # If you are here because of an error, you need to inject your mock
-        # through api_mock, instead of relying on implicit mocks.
-        api_mock = api_mock if api_mock else NonCallableMock()
-        config["openstack_api"] = api_mock
-
-        if additional_mocks:
-            for key, mock in additional_mocks.items():
+        # through api_mocks, instead of relying on implicit mocks.
+        if isinstance(api_mocks, Mock):
+            api_mocks = api_mocks if api_mocks else NonCallableMock()
+            config["openstack_api"] = api_mocks
+        elif isinstance(api_mocks, Dict):
+            for key, mock in api_mocks.items():
                 mock = mock if mock else NonCallableMock()
                 config[key] = mock
+        elif api_mocks:
+            raise TypeError(f"Invalid type of '{type(api_mocks)}' for 'api_mocks'")
 
         return super().get_action_instance(config=config)
 

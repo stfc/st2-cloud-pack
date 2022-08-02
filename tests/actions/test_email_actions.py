@@ -32,8 +32,8 @@ class TestServerActions(OpenstackActionTestBase):
         self.query_mock = create_autospec(OpenstackQuery)
 
         self.action: EmailActions = self.get_action_instance(
-            api_mock=self.server_mock,
-            additional_mocks={
+            api_mocks={
+                "openstack_server_api": self.server_mock,
                 "email_api": self.email_mock,
                 "openstack_query_api": self.query_mock,
             },
