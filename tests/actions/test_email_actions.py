@@ -85,7 +85,50 @@ class TestServerActions(OpenstackActionTestBase):
             name_snippets=None,
         )
 
+    def _email_server_users(self, query_preset: str):
+        """
+        Helper for checking email_server_users works correctly
+        """
+        return self.action.email_server_users(
+            cloud_account="test_account",
+            project_identifier="",
+            query_preset=query_preset,
+            message="Message",
+            properties_to_select=["user_email"],
+            subject="Subject",
+            email_from="testemail",
+            email_cc=[],
+            header="",
+            footer="",
+            attachment_filepaths=[],
+            smtp_account="",
+            test_override=False,
+            test_override_email="",
+            send_as_html=False,
+            days=60,
+            ids=None,
+            names=None,
+            name_snippets=None,
+        )
+
+    def test_email_server_users_no_project(self):
+        """
+        Tests the action that sends emails to server does not give a value error when project is
+        required for the query type
+        """
+
+        for query_preset in OpenstackServer.SEARCH_QUERY_PRESETS_NO_PROJECT:
+            self._email_server_users(query_preset)
+
     @raises(ValueError)
+    def _check_email_server_users_raises(self, query_preset):
+        """
+        Helper for checking email_server_users raises a ValueError when needed
+        (needed to allow multiple to be checked in the same test otherwise it stops
+         after the first error)
+        """
+        self.assertRaises(ValueError, self._email_server_users(query_preset))
+
     def test_email_server_users_no_project_error(self):
         """
         Tests the action that sends emails to server users gives a value error when project is
@@ -93,38 +136,13 @@ class TestServerActions(OpenstackActionTestBase):
         """
 
         # Should raise an error for all but servers_older_than and servers_last_updated_before
-        should_pass = ["servers_older_than", "servers_last_updated_before"]
-        should_not_pass = OpenstackServer.QUERY_PRESETS
+        should_pass = OpenstackServer.SEARCH_QUERY_PRESETS_NO_PROJECT
+        should_not_pass = OpenstackServer.SEARCH_QUERY_PRESETS
         for x in should_pass:
             should_not_pass.remove(x)
 
-        def test(query_preset: str):
-            self.action.email_server_users(
-                cloud_account="test_account",
-                project_identifier="",
-                query_preset=query_preset,
-                message="Message",
-                properties_to_select=["user_email"],
-                subject="Subject",
-                email_from="testemail",
-                email_cc=[],
-                header="",
-                footer="",
-                attachment_filepaths=[],
-                smtp_account="",
-                test_override=False,
-                test_override_email="",
-                send_as_html=False,
-                days=60,
-                ids=None,
-                names=None,
-                name_snippets=None,
-            )
-
-        for query_preset in should_pass:
-            test(query_preset)
         for query_preset in should_not_pass:
-            self.assertRaises(ValueError, test(query_preset))
+            self._check_email_server_users_raises(query_preset)
 
     def test_run_method(self):
         """

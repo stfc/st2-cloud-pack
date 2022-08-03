@@ -9,7 +9,8 @@ from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
 class OpenstackServer(OpenstackWrapperBase):
-    QUERY_PRESETS: List[str] = [
+    # Lists all possible query presets for server.list
+    SEARCH_QUERY_PRESETS: List[str] = [
         "all_servers",
         "servers_older_than",
         "servers_younger_than",
@@ -24,6 +25,12 @@ class OpenstackServer(OpenstackWrapperBase):
         "servers_errored",
         "servers_shutoff",
         "servers_errored_and_shutoff",
+    ]
+
+    # Lists possible queries presets that don't require a project to function
+    SEARCH_QUERY_PRESETS_NO_PROJECT: List[str] = [
+        "servers_older_than",
+        "servers_last_updated_before",
     ]
 
     def __init__(self, connection_cls=OpenstackConnection):

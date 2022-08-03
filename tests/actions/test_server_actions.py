@@ -37,7 +37,7 @@ class TestServerActions(OpenstackActionTestBase):
         """
         Tests the action returns the found Servers
         """
-        for query_preset in OpenstackServer.QUERY_PRESETS:
+        for query_preset in OpenstackServer.SEARCH_QUERY_PRESETS:
             self.action.server_list(
                 NonCallableMock(),
                 NonCallableMock(),
