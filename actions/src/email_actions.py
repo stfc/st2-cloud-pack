@@ -104,10 +104,6 @@ class EmailActions(Action):
         :param: send_as_html (Bool): If true will send in HTML format
         :return:
         """
-        servers = self._server_api[f"search_{query_preset}"](
-            cloud_account, project_identifier, **kwargs
-        )
-
         if not "user_email" in properties_to_select:
             raise ValueError("properties_to_select must contain 'user_email'")
 
@@ -118,6 +114,10 @@ class EmailActions(Action):
                 raise ValueError(
                     f"project_identifier needed for the query type '{query_preset}'"
                 )
+
+        servers = self._server_api[f"search_{query_preset}"](
+            cloud_account, project_identifier, **kwargs
+        )
 
         emails = self._query_api.parse_and_output_table(
             cloud_account,
