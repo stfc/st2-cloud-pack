@@ -175,7 +175,7 @@ class OpenstackIdentityTests(unittest.TestCase):
 
     def test_list_projects(self):
         """
-        Tests calling the API wrapper without a domain will throw
+        Checks list_projects uses the OpenStack API correctly
         """
         self.instance.list_projects("test")
 
