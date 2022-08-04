@@ -2,7 +2,7 @@
 description: List Float IPs
 enabled: true
 entry_point: src/search_openstack.py
-name: float.ip_addr.list
+name: floating.ip_addr.list
 parameters:
   timeout:
     default: 99999
@@ -10,32 +10,42 @@ parameters:
     default: search_openstack
     type: string
     immutable: true
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    type: string
+    default: ""
+    required: true
   query_preset:
-    description: "name of a preset query"
-    default: "no_preset"
+    description: "Name of a preset query"
+    default: "ip_addr_older_than"
     type: string
     required: true
+    enum:
+      - "id_in"
+      - "id_not_in"
+      - "ip_addr_older_than"
+      - "ip_addr_younger_than"
   search_by:
-    default: ip_addr
     type: string
+    default: "ip_addr"
     immutable: true
   properties_to_select:
+    type: array
+    description: "Properties to display for the floating ips that match the chosen query"
     default:
       - "ip_id"
       - "ip_fixed_address"
       - "ip_floating_address"
       - "ip_port_id"
       - "project_id"
-    type: array
-    description: properties to select
     required: true
   search_criteria:
     type: array
-    description: additional properties to select for
+    description: "Additional properties to select for"
     required: false
   sort_by_criteria:
     type: array
-    description: properties to sort list openstack_resource
+    description: "Properties to sort list openstack_resource"
     required: false
   get_html:
     default: false
@@ -43,9 +53,14 @@ parameters:
     required: true
     type: boolean
   ids:
-    description: id to search openstack_resource (ignored unless query_preset=id_in etc)
+    description: "ID to search openstack_resource (ignored unless query_preset=id_in etc)"
     type: array
     default:
       - ""
+    required: true
+  days:
+    description: "Number of days threshold for selecting servers (ignored unless submodule=ip_addr_older_than or ip_addr_younger_than"
+    type: integer
+    default: 60
     required: true
 runner_type: python-script

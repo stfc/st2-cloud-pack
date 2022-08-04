@@ -88,7 +88,7 @@ Optional Parameters:
 - `egress_external_ips`: Array of IPs to be given TCP/UDP egress rules
   - default: (Taken from Datastore and decrypted)
 
-`send.server.email` - Action Orquesta workflow to email users information about their servers (Shutoff/Error VM
+`send.server.email` - Action to email users information about their servers (Shutoff/Error VM
 Reminders)
 
 1. Perform a search on servers per user
@@ -101,26 +101,20 @@ Required Parameters:
 Optional Parameters:
 `properties_to_select`: Properties to select for servers
 
-- default: `["server_id", "server_name", "server_status", "user_name", "user_email"]`
-  `search_criteria`: Array of additional properties to select for:
-- default: `None` - not required provide in format: `[<criteria_name>, [<ARGS>]]`
-  `sort_by_criteria`: Property selected to sort results by
-- default: `None` - not required
+- default: `["id", "name", "status", "user_name", "user_email"]`
+  `message`: Message to send in the email
+- default: `None`
   `subject`: String of email subject
 - default: `Test Message`
-  `email_from`: String for sender email address
-- default: `cloud-support@gridpp.rl.ac.uk`
   `header`: filepath to standard header file
-- default: `/home/<user>/html_templates/header.html`
+- default: `/opt/stackstorm/packs/stackstorm_openstack/email_templates/header.html`
   `footer`: filepath to standard footer file
-- default: `/home/<user>/html_templates/footer.html`
-  `send_as_html`: Boolean, if true, send email as html, if false, as plaintext
-- default: `true`
-  `admin_override`: Boolean, if true override sending email, instead sending to a test email address.
-- default: `true` # should be changed in production
-  `admin_override_email`: Email to send if `admin_override` set to true
-- default: `jacob.ward@stfc.ac.uk`
-  `smtp_account`: smtp account name to use - must be configured in email.yaml
+- default: `/opt/stackstorm/packs/stackstorm_openstack/email_templates/footer.html`
+  `test_override`: Boolean, if true override sending email, instead sending to a test email address.
+- default: `false`
+  `test_override_email`: Email to send if `test_override` is set to true
+- default: `None`
+  `smtp_account`: smtp account name to use - must be configured in pack settings
 - default: `default`
   `email_cc`: Array of email addresses to cc in
 - default: `None` - not required

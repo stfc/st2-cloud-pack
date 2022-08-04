@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from openstack.exceptions import ConflictException
 from openstack.identity.v3.project import Project
@@ -87,6 +87,15 @@ class OpenstackIdentity(OpenstackWrapperBase):
         with self._connection_cls(cloud_account) as conn:
             return conn.identity.find_project(project_identifier, ignore_missing=True)
 
+    def list_projects(self, cloud_account: str) -> List[Project]:
+        """
+        Lists all projects
+        :param cloud_account: The clouds entry to use
+        :return: A list of all projects
+        """
+        with self._connection_cls(cloud_account) as conn:
+            return conn.list_projects()
+
     def find_user(
         self, cloud_account: str, user_identifier: str, user_domain: UserDomains
     ) -> Optional[User]:
@@ -111,3 +120,19 @@ class OpenstackIdentity(OpenstackWrapperBase):
             return conn.identity.find_user(
                 user_identifier, domain_id=domain_id.id, ignore_missing=True
             )
+
+    def find_user_all_domains(
+        self, cloud_account: str, user_identifier: str
+    ) -> Optional[User]:
+        """
+        Finds a user with the given name or ID
+        :param cloud_account: The clouds entry to use
+        :param user_identifier: The name or Openstack ID for the user
+        :return: The found user, or None
+        """
+        user_identifier = user_identifier.strip()
+        if not user_identifier:
+            raise MissingMandatoryParamError("A user name or ID must be provided")
+
+        with self._connection_cls(cloud_account) as conn:
+            return conn.identity.find_user(user_identifier, ignore_missing=True)

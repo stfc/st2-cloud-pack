@@ -24,7 +24,7 @@ class TestNetworkActions(OpenstackActionTestBase):
         super().setUp()
         self.security_group_mock = create_autospec(OpenstackSecurityGroups)
         self.action: SecurityGroupActions = self.get_action_instance(
-            api_mock=self.security_group_mock
+            api_mocks=self.security_group_mock
         )
 
     def test_find_security_group_successful(self):

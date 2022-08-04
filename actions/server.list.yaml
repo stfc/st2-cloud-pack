@@ -1,19 +1,44 @@
 ---
 description: List servers
 enabled: true
-entry_point: src/search_openstack.py
+entry_point: src/server_actions.py
 name: server.list
 parameters:
   timeout:
     default: 99999
   submodule:
-    default: search_openstack
+    default: server_list
     type: string
     immutable: true
-  query_preset:
-    description: "name of a preset query - e.g server_shutoff: list all servers shutoff "
-    default: server_shutoff
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    default: ""
+    required: true
     type: string
+  project_identifier:
+    type: string
+    description: Project (Name or ID) to search in - leave empty for all projects
+    required: false
+    default: ""
+  query_preset:
+    type: string
+    description: "Name of a preset query - e.g server_older_than: list all servers older than"
+    default: servers_older_than
+    enum:
+      - "all_servers"
+      - "servers_older_than"
+      - "servers_younger_than"
+      - "servers_last_updated_before"
+      - "servers_last_updated_after"
+      - "servers_id_in"
+      - "servers_id_not_in"
+      - "servers_name_in"
+      - "servers_name_not_in"
+      - "servers_name_contains"
+      - "servers_name_not_contains"
+      - "servers_errored"
+      - "servers_shutoff"
+      - "servers_errored_and_shutoff"
     required: true
   search_by:
     default: server
@@ -21,21 +46,18 @@ parameters:
     immutable: true
   properties_to_select:
     default:
-      - "server_id"
-      - "server_name"
-      - "server_status"
+      - "id"
+      - "name"
+      - "status"
       - "user_name"
       - "user_email"
     type: array
-    description: properties to display for servers younger than specified number of days
+    description: "Properties to display for the servers that match the chosen query"
     required: true
-  search_criteria:
-    type: array
-    description: additional properties to select for
-    required: false
-  sort_by_criteria:
-    type: array
-    description: properties to sort list openstack_resource
+  group_by:
+    description: "Property to group the selected resources by e.g. user_email. Leave empty for no grouping."
+    type: string
+    default: ""
     required: false
   get_html:
     default: false
@@ -43,25 +65,25 @@ parameters:
     required: true
     type: boolean
   names:
-    description: names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)
+    description: "Names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)"
     type: array
     default:
       - ""
     required: true
   ids:
-    description: id to search openstack_resource (ignored unless query_preset=id_in etc)
+    description: "ID to search openstack_resource (ignored unless query_preset=id_in etc)"
     type: array
     default:
       - ""
     required: true
   name_snippets:
-    description: name snippets to search openstack_resource (ignored unless query_preset=name_contains etc)
+    description: "Name snippets to search openstack_resource (ignored unless query_preset=name_contains etc)"
     type: array
     default:
       - ""
     required: true
   days:
-    description: number of days threshold for selecting servers (ignored unless query_preset=server_older_than(_per_user) or server_younger_than(_per_user)
+    description: "Number of days threshold for selecting servers (ignored unless query_preset=server_older_than or server_last_updated_before etc)"
     type: integer
     default: 60
     required: true

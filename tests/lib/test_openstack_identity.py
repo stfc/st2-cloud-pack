@@ -21,6 +21,7 @@ class OpenstackIdentityTests(unittest.TestCase):
         super().setUp()
         self.mocked_connection = MagicMock()
         self.instance = OpenstackIdentity(self.mocked_connection)
+        self.api = self.mocked_connection.return_value.__enter__.return_value
         self.identity_api = (
             self.mocked_connection.return_value.__enter__.return_value.identity
         )
@@ -172,6 +173,15 @@ class OpenstackIdentityTests(unittest.TestCase):
         self.instance.find_project = Mock(return_value=None)
         self.instance.find_mandatory_project(NonCallableMock(), NonCallableMock())
 
+    def test_list_projects(self):
+        """
+        Checks list_projects uses the OpenStack API correctly
+        """
+        self.instance.list_projects("test")
+
+        self.mocked_connection.assert_called_once_with("test")
+        self.api.list_projects.assert_called_once()
+
     @raises(MissingMandatoryParamError)
     def test_find_user_missing_identifier(self):
         """
@@ -193,6 +203,28 @@ class OpenstackIdentityTests(unittest.TestCase):
         self.identity_api.find_user.assert_called_once_with(
             user.strip(),
             domain_id=self.identity_api.find_domain.return_value.id,
+            ignore_missing=True,
+        )
+        expected = self.identity_api.find_user.return_value
+        assert returned == expected
+
+    @raises(MissingMandatoryParamError)
+    def test_find_user_all_domains_missing_identifier(self):
+        """
+        Checks a missing user identifier will raise correctly
+        """
+        self.instance.find_user_all_domains(NonCallableMock(), " \t")
+
+    def test_find_user_all_domains_returns_result(self):
+        """
+        Checks that find_user_all_domains returns the correct result
+        """
+        cloud, user = NonCallableMock(), NonCallableMock()
+        returned = self.instance.find_user_all_domains(cloud, user)
+
+        self.mocked_connection.assert_called_once_with(cloud)
+        self.identity_api.find_user.assert_called_once_with(
+            user.strip(),
             ignore_missing=True,
         )
         expected = self.identity_api.find_user.return_value

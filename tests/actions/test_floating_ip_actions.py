@@ -20,7 +20,7 @@ class TestFloatingIPActions(OpenstackActionTestBase):
         super().setUp()
         self.network_mock = create_autospec(OpenstackNetwork)
         self.action: FloatingIPActions = self.get_action_instance(
-            api_mock=self.network_mock
+            api_mocks=self.network_mock
         )
 
     def test_allocate_floating_ip_empty(self):
