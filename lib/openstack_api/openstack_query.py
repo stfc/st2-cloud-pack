@@ -21,11 +21,7 @@ class OpenstackQuery(OpenstackWrapperBase):
                            the query
         :return: List of items that match the given query
         """
-        result = []
-        for item in items:
-            if query_func(item):
-                result.append(item)
-        return result
+        return [item for item in items if query_func(item)]
 
     def datetime_before_x_days(
         self, value: str, days, date_time_format: str = "%Y-%m-%dT%H:%M:%SZ"

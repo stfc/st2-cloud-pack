@@ -8,6 +8,8 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 from typing import Dict, List
 
+from email_api.prep_html import prep_html
+
 
 class EmailApi:
     def load_template(self, path):
@@ -28,8 +30,6 @@ class EmailApi:
         :param smtp_config: The SMTP config from the pack
         :return: (Dictionary) SMTP account properties
         """
-        if not smtp_accounts:
-            raise ValueError("'smtp_accounts' is required to send email")
         try:
             key_value = {a["name"]: a for a in smtp_accounts}
             account_data = key_value[smtp_account]
@@ -101,21 +101,7 @@ class EmailApi:
         if send_as_html:
             msg.attach(
                 MIMEText(
-                    f"""\
-            <html>
-                <head>
-                <style>
-                    table, th, td {{ border: 1px solid black; border-collapse: collapse; }}
-                    th, td {{ padding: 8px; }}
-                </style>
-                </head>
-                <body>
-                    {header}
-                    {body}
-                    {footer}
-                </body>
-            </html>
-            """,
+                    prep_html(header=header, body=body, footer=footer),
                     "html",
                 )
             )
@@ -177,32 +163,14 @@ class EmailApi:
         if test_override:
             # Send a maximum of 10 emails
             emails = dict(random.sample(emails.items(), min(len(emails), 10)))
-
-            return all(
-                [
-                    self.send_email(
-                        smtp_accounts=smtp_accounts,
-                        subject=subject,
-                        email_to=test_override_email,
-                        email_from=email_from,
-                        email_cc=email_cc,
-                        header=header,
-                        footer=footer,
-                        body=value,
-                        attachment_filepaths=attachment_filepaths,
-                        smtp_account=smtp_account,
-                        send_as_html=send_as_html,
-                    )[0]
-                ]
-                for key, value in emails.items()
-            )
+            override_email = test_override_email
 
         return all(
             [
                 self.send_email(
                     smtp_accounts=smtp_accounts,
                     subject=subject,
-                    email_to=[key],
+                    email_to=[override_email if test_override else key],
                     email_from=email_from,
                     email_cc=email_cc,
                     header=header,

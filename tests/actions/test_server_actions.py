@@ -39,12 +39,12 @@ class TestServerActions(OpenstackActionTestBase):
         """
         for query_preset in OpenstackServer.SEARCH_QUERY_PRESETS:
             self.action.server_list(
-                NonCallableMock(),
-                NonCallableMock(),
-                query_preset,
-                NonCallableMock(),
-                NonCallableMock(),
-                NonCallableMock(),
+                cloud_account=NonCallableMock(),
+                project_identifier=NonCallableMock(),
+                query_preset=query_preset,
+                properties_to_select=NonCallableMock(),
+                group_by=NonCallableMock(),
+                get_html=NonCallableMock(),
                 days=60,
                 ids=None,
                 names=None,

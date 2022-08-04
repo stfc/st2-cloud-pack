@@ -44,16 +44,16 @@ class TestServerActions(OpenstackActionTestBase):
         Tests the action that sends an email
         """
         self.action.send_email(
-            NonCallableMock(),
-            NonCallableMock(),
-            NonCallableMock(),
-            NonCallableMock(),
-            NonCallableMock(),
-            NonCallableMock(),
-            NonCallableMock(),
-            NonCallableMock(),
-            NonCallableMock(),
-            NonCallableMock(),
+            subject=NonCallableMock(),
+            email_to=NonCallableMock(),
+            email_from=NonCallableMock(),
+            email_cc=NonCallableMock(),
+            header=NonCallableMock(),
+            footer=NonCallableMock(),
+            body=NonCallableMock(),
+            attachment_filepaths=NonCallableMock(),
+            smtp_account=NonCallableMock(),
+            send_as_html=NonCallableMock(),
         )
         self.email_mock.send_email.assert_called_once()
 
@@ -117,8 +117,11 @@ class TestServerActions(OpenstackActionTestBase):
         required for the query type
         """
 
+        i = 0
         for query_preset in OpenstackServer.SEARCH_QUERY_PRESETS_NO_PROJECT:
             self._email_server_users(query_preset)
+            i += 1
+            self.assertEqual(self.email_mock.send_emails.call_count, i)
 
     @raises(ValueError)
     def _check_email_server_users_raises(self, query_preset):

@@ -1,18 +1,22 @@
+from abc import ABC
 from typing import Dict
-from openstack_api.openstack_connection import OpenstackConnection
 
-from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
+import openstack
 
 from st2common.runners.base_action import Action
 
 
-class OpenstackAction(Action, OpenstackWrapperBase):
-    def __init__(
-        self, config=None, action_service=None, connection_cls=OpenstackConnection
-    ):
-        Action.__init__(self, config, action_service)
-        OpenstackWrapperBase.__init__(self, connection_cls)
+def connect_to_openstack():
+    """
+    Connect to openstack
+    :return: openstack connection object
+    """
+    return openstack.connect()
 
+
+class OpenstackAction(Action, ABC):
+    def __init__(self, config=None, action_service=None):
+        super().__init__(config, action_service)
         self.conn = None
         # Abstract method
         self.func: Dict
@@ -23,7 +27,7 @@ class OpenstackAction(Action, OpenstackWrapperBase):
         :param kwargs: arguments for openstack actions
         :return: (Status (Bool), Output <*>): tuple of action status (succeeded(T)/failed(F)) and the output
         """
-        self.conn = self._connection_cls(kwargs["cloud_account"])
+        self.conn = connect_to_openstack()
 
         function = self.func.get(kwargs["submodule"])
         return function(
