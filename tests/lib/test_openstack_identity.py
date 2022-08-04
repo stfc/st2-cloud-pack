@@ -21,6 +21,7 @@ class OpenstackIdentityTests(unittest.TestCase):
         super().setUp()
         self.mocked_connection = MagicMock()
         self.instance = OpenstackIdentity(self.mocked_connection)
+        self.api = self.mocked_connection.return_value.__enter__.return_value
         self.identity_api = (
             self.mocked_connection.return_value.__enter__.return_value.identity
         )
@@ -171,6 +172,15 @@ class OpenstackIdentityTests(unittest.TestCase):
         """
         self.instance.find_project = Mock(return_value=None)
         self.instance.find_mandatory_project(NonCallableMock(), NonCallableMock())
+
+    def test_list_projects(self):
+        """
+        Tests calling the API wrapper without a domain will throw
+        """
+        self.instance.list_projects("test")
+
+        self.mocked_connection.assert_called_once_with("test")
+        self.api.list_projects.assert_called_once()
 
     @raises(MissingMandatoryParamError)
     def test_find_user_missing_identifier(self):
