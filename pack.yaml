@@ -15,6 +15,7 @@ python_versions:
 
 dependencies:
   - core
+  - git
 
 # Authors :
 # Anish Mudaraddi
