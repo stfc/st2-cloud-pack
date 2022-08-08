@@ -155,6 +155,8 @@ class OpenstackQuery(OpenstackWrapperBase):
                     cloud_account, a["user_id"]
                 )["name"],
             }
+        if object_type == "floating_ip":
+            return {}
         raise ValueError(f"Unsupported object type '{object_type}'")
 
     # pylint:disable=too-many-arguments
