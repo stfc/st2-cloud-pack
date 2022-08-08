@@ -1,65 +1,87 @@
 ---
-description: List Float IPs
+description: List floating ips
 enabled: true
-entry_point: src/search_openstack.py
-name: floating.ip_addr.list
+entry_point: src/floating_ip_actions.py
+name: floating.ip.list
 parameters:
   timeout:
     default: 99999
   submodule:
-    default: search_openstack
+    default: floating_ip_list
     type: string
     immutable: true
   cloud_account:
-    description: "The clouds.yaml account to use whilst performing this action"
-    type: string
+    description: The clouds.yaml account to use whilst performing this action
     default: ""
     required: true
+    type: string
+  project_identifier:
+    type: string
+    description: Project (Name or ID) to search in - leave empty for all projects
+    required: false
+    default: ""
   query_preset:
-    description: "Name of a preset query"
-    default: "ip_addr_older_than"
     type: string
-    required: true
+    description: "Name of a preset query - e.g fips_older_than: list all floating ips older than"
+    default: fips_older_than
     enum:
-      - "id_in"
-      - "id_not_in"
-      - "ip_addr_older_than"
-      - "ip_addr_younger_than"
+      - "all_fips"
+      - "fips_older_than"
+      - "fips_younger_than"
+      - "fips_last_updated_before"
+      - "fips_last_updated_after"
+      - "fips_id_in"
+      - "fips_id_not_in"
+      - "fips_name_in"
+      - "fips_name_not_in"
+      - "fips_name_contains"
+      - "fips_name_not_contains"
+      - "fips_errored"
+      - "fips_shutoff"
+      - "fips_errored_and_shutoff"
+    required: true
   search_by:
+    default: floating_ip
     type: string
-    default: "ip_addr"
     immutable: true
   properties_to_select:
+    default:
+      - "id"
+      - "name"
+      - "status"
     type: array
     description: "Properties to display for the floating ips that match the chosen query"
-    default:
-      - "ip_id"
-      - "ip_fixed_address"
-      - "ip_floating_address"
-      - "ip_port_id"
-      - "project_id"
     required: true
-  search_criteria:
-    type: array
-    description: "Additional properties to select for"
-    required: false
-  sort_by_criteria:
-    type: array
-    description: "Properties to sort list openstack_resource"
+  group_by:
+    description: "Property to group the selected resources by e.g. user_email. Leave empty for no grouping."
+    type: string
+    default: ""
     required: false
   get_html:
     default: false
     description: "If True, get HTML"
     required: true
     type: boolean
+  names:
+    description: "Names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)"
+    type: array
+    default:
+      - ""
+    required: true
   ids:
     description: "ID to search openstack_resource (ignored unless query_preset=id_in etc)"
     type: array
     default:
       - ""
     required: true
+  name_snippets:
+    description: "Name snippets to search openstack_resource (ignored unless query_preset=name_contains etc)"
+    type: array
+    default:
+      - ""
+    required: true
   days:
-    description: "Number of days threshold for selecting servers (ignored unless submodule=ip_addr_older_than or ip_addr_younger_than"
+    description: "Number of days threshold for selecting floating ips (ignored unless query_preset=fips_older_than or fips_last_updated_before etc)"
     type: integer
     default: 60
     required: true
