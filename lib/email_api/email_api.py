@@ -170,7 +170,7 @@ class EmailApi:
                 self.send_email(
                     smtp_accounts=smtp_accounts,
                     subject=subject,
-                    email_to=[override_email if test_override else key],
+                    email_to=override_email if test_override else [key],
                     email_from=email_from,
                     email_cc=email_cc,
                     header=header,

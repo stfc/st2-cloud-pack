@@ -1,6 +1,7 @@
 from typing import List
 
 from openstack.compute.v2.server import Server
+from openstack.exceptions import HttpException
 
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
@@ -62,15 +63,19 @@ class OpenstackServer(OpenstackWrapperBase):
 
         with self._connection_cls(cloud_account) as conn:
             for project in projects:
-                selected_servers.extend(
-                    conn.list_servers(
-                        filters={
-                            "all_tenants": True,
-                            "project_id": project.id,
-                            "limit": 10000,
-                        }
+                try:
+                    selected_servers.extend(
+                        conn.list_servers(
+                            filters={
+                                "all_tenants": True,
+                                "project_id": project.id,
+                                "limit": 10000,
+                            }
+                        )
                     )
-                )
+                except HttpException as err:
+                    print(f"Failed to list servers in the project with id {project.id}")
+                    print(err)
         return selected_servers
 
     def search_servers_older_than(
