@@ -74,7 +74,7 @@ class OpenstackServer(OpenstackWrapperBase):
                         )
                     )
                 except HttpException as err:
-                    print(f"Failed to list servers in the project with id {project}")
+                    print(f"Failed to list servers in the project with id {project.id}")
                     print(err)
         return selected_servers
 
