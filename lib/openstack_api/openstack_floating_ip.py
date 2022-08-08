@@ -1,6 +1,7 @@
 from typing import List
 
 from openstack.network.v2.floating_ip import FloatingIP
+from openstack.exceptions import HttpException
 
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
@@ -61,15 +62,21 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
 
         with self._connection_cls(cloud_account) as conn:
             for project in projects:
-                selected_fips.extend(
-                    conn.list_floating_ips(
-                        filters={
-                            "all_tenants": True,
-                            "project_id": project.id,
-                            "limit": 10000,
-                        }
+                try:
+                    selected_fips.extend(
+                        conn.list_floating_ips(
+                            filters={
+                                "all_tenants": True,
+                                "project_id": project.id,
+                                "limit": 10000,
+                            }
+                        )
                     )
-                )
+                except HttpException as err:
+                    print(
+                        f"Failed to list floating ips in the project with id {project.id}"
+                    )
+                    print(err)
         return selected_fips
 
     def search_fips_older_than(
