@@ -2,6 +2,7 @@ import datetime
 import unittest
 from unittest import mock
 from unittest.mock import MagicMock, patch
+from openstack.exceptions import HttpException
 
 from openstack_api.openstack_server import OpenstackServer
 
@@ -88,6 +89,28 @@ class OpenstackServerTests(unittest.TestCase):
         """
         Tests calling search_all_servers
         """
+        self.instance.search_all_servers(
+            cloud_account="test", project_identifier="project"
+        )
+
+        self.identity_module.find_mandatory_project.assert_called_once_with(
+            "test", project_identifier="project"
+        )
+        self.mocked_connection.assert_called_once_with("test")
+
+        self.api.list_servers.assert_called_once_with(
+            filters={
+                "all_tenants": True,
+                "project_id": self.identity_module.find_mandatory_project.return_value.id,
+                "limit": 10000,
+            }
+        )
+
+    def test_search_all_servers_error(self):
+        """
+        Tests calling search_all_servers handles a HttpException correctly
+        """
+        self.api.list_servers.side_effect = HttpException()
         self.instance.search_all_servers(
             cloud_account="test", project_identifier="project"
         )

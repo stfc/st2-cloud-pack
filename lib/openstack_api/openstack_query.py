@@ -181,7 +181,7 @@ class OpenstackQuery(OpenstackWrapperBase):
         output = self.parse_properties(items, properties_to_select, property_funcs)
 
         if len(output) == 0:
-            return "No results"
+            return None
 
         if group_by != "":
             output = self.collate_results(output, group_by, get_html)
