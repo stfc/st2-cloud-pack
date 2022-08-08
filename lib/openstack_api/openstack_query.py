@@ -180,6 +180,9 @@ class OpenstackQuery(OpenstackWrapperBase):
         property_funcs = self.get_default_property_funcs(object_type, cloud_account)
         output = self.parse_properties(items, properties_to_select, property_funcs)
 
+        if len(output) == 0:
+            return "No results"
+
         if group_by != "":
             output = self.collate_results(output, group_by, get_html)
         else:
