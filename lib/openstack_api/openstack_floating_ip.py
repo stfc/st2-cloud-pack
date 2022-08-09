@@ -66,7 +66,6 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
                     selected_fips.extend(
                         conn.list_floating_ips(
                             filters={
-                                "all_tenants": True,
                                 "project_id": project.id,
                                 "limit": 10000,
                             }
