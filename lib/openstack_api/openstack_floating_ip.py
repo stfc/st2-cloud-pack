@@ -244,7 +244,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         self, cloud_account: str, project_identifier: str, **_
     ) -> List[FloatingIP]:
         """
-        Returns a list of floating ips with ids that aren't in the list given
+        Returns a list of floating ips with the status DOWN
         :param cloud_account: The associated clouds.yaml account
         :param project_identifier: The project to get all associated floating ips with, can be empty for all projects
         :return: A list of floating ips matching the query
