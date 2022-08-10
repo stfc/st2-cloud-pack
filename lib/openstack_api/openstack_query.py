@@ -156,7 +156,11 @@ class OpenstackQuery(OpenstackWrapperBase):
                 )["name"],
             }
         if object_type == "floating_ip":
-            return {}
+            return {
+                "project_name": lambda a: self._identity_api.find_project(
+                    cloud_account, a["project_id"]
+                )["name"]
+            }
         raise ValueError(f"Unsupported object type '{object_type}'")
 
     # pylint:disable=too-many-arguments
