@@ -7,8 +7,9 @@ from dateutil import parser
 from dateutil.relativedelta import relativedelta
 
 from jupyter_api.api_endpoints import API_ENDPOINTS
-from structs.jupyter_last_used import JupyterLastUsed
 from st2common.log import getLogger
+from structs.jupyter_last_used import JupyterLastUsed
+from structs.jupyter_users import JupyterUsers
 
 
 class UserApi:
@@ -48,19 +49,34 @@ class UserApi:
             return []
         raise RuntimeError(f"Failed to get users error was:\n{result.text}")
 
-    def delete_users(self, endpoint: str, auth_token: str, users: List[str]) -> None:
+    def delete_users(self, endpoint: str, auth_token: str, users: JupyterUsers) -> None:
         """
         Removes the given user(s) from the JupyterHub API
         """
-        for user in users:
-            self._log.info(f"Removing Jupyter user {user}")
-            result = requests.delete(
-                url=API_ENDPOINTS[endpoint] + f"/hub/api/users/{user}",
-                headers={"Authorization": f"token {auth_token}"},
-            )
+        if users.start_index or users.end_index:
+            if not (users.start_index and users.end_index):
+                raise RuntimeError("Both start_index and end_index must be provided")
+            if users.start_index > users.end_index:
+                raise RuntimeError("start_index must be less than end_index")
 
-            if result.status_code != 204:
-                raise RuntimeError(f"Failed to remove user {user}: {result.text}")
+        user_list = (
+            [f"{users.name}-{i}" for i in range(users.start_index, users.end_index + 1)]
+            if users.start_index
+            else [users.name]
+        )
+
+        for user in user_list:
+            self._delete_single_user(endpoint, auth_token, user)
+
+    def _delete_single_user(self, endpoint: str, auth_token: str, user: str):
+        self._log.info(f"Removing Jupyter user {user}")
+        result = requests.delete(
+            url=API_ENDPOINTS[endpoint] + f"/hub/api/users/{user}",
+            headers={"Authorization": f"token {auth_token}"},
+        )
+
+        if result.status_code != 204:
+            raise RuntimeError(f"Failed to remove user {user}: {result.text}")
 
     @staticmethod
     def _pack_users(users: List[Dict]) -> List[JupyterLastUsed]:

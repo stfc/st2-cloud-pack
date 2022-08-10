@@ -18,7 +18,15 @@ parameters:
       - dev
       - prod
       - training
-  users:
-    description: The list of users to remove
+  user:
+    description: The users to remove, or base name of the users to remove without the hyphen (e.g. "jupyter")
     required: true
-    type: array
+    type: string
+  first_index:
+    description: The index of the first user to remove
+    required: false
+    type: integer
+  last_index:
+    description: The index of the last user to remove (inclusive).
+    required: false
+    type: integer
