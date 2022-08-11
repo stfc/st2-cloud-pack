@@ -146,6 +146,13 @@ class OpenstackQuery(OpenstackWrapperBase):
         :param object_type: type of openstack object the functions will be used for e.g. server
         :return: Dict[str, str] (each key containing html or plaintext table of results)
         """
+
+        def get_project_prop(project_id, property):
+            project = self._identity_api.find_project(cloud_account, project_id)
+            if project:
+                return project["name"]
+            return None
+
         if object_type == "server":
             return {
                 "user_email": lambda a: self._identity_api.find_user_all_domains(
@@ -157,9 +164,7 @@ class OpenstackQuery(OpenstackWrapperBase):
             }
         if object_type == "floating_ip":
             return {
-                "project_name": lambda a: self._identity_api.find_project(
-                    cloud_account, a["project_id"]
-                )["name"]
+                "project_name": lambda a: get_project_prop(a["project_id"], "name"),
             }
         raise ValueError(f"Unsupported object type '{object_type}'")
 
