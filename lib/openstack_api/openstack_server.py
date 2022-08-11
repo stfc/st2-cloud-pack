@@ -104,8 +104,7 @@ class OpenstackServer(OpenstackWrapperBase):
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
-            selected_servers,
-            lambda a: self._query_api.query_datetime_before(a["created_at"], days),
+            selected_servers, self._query_api.query_datetime_before("created_at", days)
         )
 
     def search_servers_younger_than(
@@ -121,8 +120,7 @@ class OpenstackServer(OpenstackWrapperBase):
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
-            selected_servers,
-            lambda a: self._query_api.query_datetime_after(a["created_at"], days),
+            selected_servers, self._query_api.query_datetime_after("created_at", days)
         )
 
     def search_servers_last_updated_before(
@@ -138,8 +136,7 @@ class OpenstackServer(OpenstackWrapperBase):
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
-            selected_servers,
-            lambda a: self._query_api.query_datetime_before(a["updated_at"], days),
+            selected_servers, self._query_api.query_datetime_before("updated_at", days)
         )
 
     def search_servers_last_updated_after(
@@ -155,8 +152,7 @@ class OpenstackServer(OpenstackWrapperBase):
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
-            selected_servers,
-            lambda a: self._query_api.query_datetime_after(a["updated_at"], days),
+            selected_servers, self._query_api.query_datetime_after("updated_at", days)
         )
 
     def search_servers_name_in(
@@ -172,7 +168,7 @@ class OpenstackServer(OpenstackWrapperBase):
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
-            selected_servers, lambda a: self._query_api.query_value_in(a["name"], names)
+            selected_servers, self._query_api.query_prop_in("name", names)
         )
 
     def search_servers_name_not_in(
@@ -188,8 +184,7 @@ class OpenstackServer(OpenstackWrapperBase):
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
-            selected_servers,
-            lambda a: self._query_api.query_value_not_in(a["name"], names),
+            selected_servers, self._query_api.query_prop_not_in("name", names)
         )
 
     def search_servers_name_contains(
@@ -206,7 +201,7 @@ class OpenstackServer(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_servers,
-            lambda a: self._query_api.query_value_contains(a["name"], name_snippets),
+            self._query_api.query_prop_contains("name", name_snippets),
         )
 
     def search_servers_name_not_contains(
@@ -223,9 +218,7 @@ class OpenstackServer(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_servers,
-            lambda a: self._query_api.query_value_not_contains(
-                a["name"], name_snippets
-            ),
+            self._query_api.query_prop_not_contains("name", name_snippets),
         )
 
     def search_servers_id_in(
@@ -241,7 +234,8 @@ class OpenstackServer(OpenstackWrapperBase):
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
-            selected_servers, lambda a: self._query_api.query_value_in(a["id"], ids)
+            selected_servers,
+            self._query_api.query_prop_in("id", ids),
         )
 
     def search_servers_id_not_in(
@@ -257,7 +251,7 @@ class OpenstackServer(OpenstackWrapperBase):
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
-            selected_servers, lambda a: self._query_api.query_value_not_in(a["id"], ids)
+            selected_servers, self._query_api.query_prop_not_in("id", ids)
         )
 
     def search_servers_errored(
