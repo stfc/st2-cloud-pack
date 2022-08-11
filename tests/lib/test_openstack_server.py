@@ -341,3 +341,19 @@ class OpenstackServerTests(unittest.TestCase):
         )
 
         self.assertEqual(result, [self.mock_server_list[2]])
+
+    @mock.patch("openstack_api.openstack_query.datetime", wraps=datetime)
+    def test_search_servers_shutoff_before(self, mock_datetime):
+        """
+        Tests calling search_servers_shutoff_before
+        """
+        mock_datetime.datetime.now.return_value = datetime.datetime(2021, 8, 1)
+
+        self.instance.search_all_servers = MagicMock()
+        self.instance.search_all_servers.return_value = self.mock_server_list
+
+        result = self.instance.search_servers_shutoff_before(
+            cloud_account="test", project_identifier="", days=60
+        )
+
+        self.assertEqual(result, [self.mock_server_list[0]])

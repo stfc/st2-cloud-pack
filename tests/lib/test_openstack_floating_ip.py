@@ -271,3 +271,19 @@ class OpenstackFloatingIPTests(unittest.TestCase):
         )
 
         self.assertEqual(result, [self.mock_fip_list[0]])
+
+    @mock.patch("openstack_api.openstack_query.datetime", wraps=datetime)
+    def test_search_fips_down_before(self, mock_datetime):
+        """
+        Tests calling search_fips_down_before_before
+        """
+        mock_datetime.datetime.now.return_value = datetime.datetime(2021, 8, 1)
+
+        self.instance.search_all_fips = MagicMock()
+        self.instance.search_all_fips.return_value = self.mock_fip_list
+
+        result = self.instance.search_fips_down_before(
+            cloud_account="test", project_identifier="", days=60
+        )
+
+        self.assertEqual(result, [self.mock_fip_list[0]])
