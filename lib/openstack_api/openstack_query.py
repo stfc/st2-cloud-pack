@@ -8,6 +8,44 @@ from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
 class OpenstackQuery(OpenstackWrapperBase):
+
+    # Various queries useful for openstack objects
+    def query_datetime_before(self, datetime_value: str, days: int):
+        """
+        Returns whether datetime_value is before a specified number of days in the past
+        """
+        return self.datetime_before_x_days(datetime_value, days)
+
+    def query_datetime_after(self, datetime_value: str, days: int):
+        """
+        Returns whether datetime_value is after a specified number of days in the past
+        """
+        return not self.datetime_before_x_days(datetime_value, days)
+
+    def query_value_in(self, value: str, values: List[str]):
+        """
+        Returns whether values contains value
+        """
+        return value in values
+
+    def query_value_not_in(self, value: str, values: List[str]):
+        """
+        Returns whether values does not contain value
+        """
+        return value not in values
+
+    def query_value_contains(self, value: str, snippets: List[str]):
+        """
+        Returns whether value contains all the values in snippets
+        """
+        return all(snippet in value for snippet in snippets)
+
+    def query_value_not_contains(self, value: str, snippets: List[str]):
+        """
+        Returns whether value does not contain all the values in snippets
+        """
+        return all(snippet not in value for snippet in snippets)
+
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)
         self._identity_api = OpenstackIdentity(connection_cls)
@@ -23,6 +61,22 @@ class OpenstackQuery(OpenstackWrapperBase):
         """
         return [item for item in items if query_func(item)]
 
+    def apply_queries(
+        self, items: List, query_funcs: List[Callable[[Any], bool]]
+    ) -> List:
+        """
+        Removes items from a list by running a set of given query function
+        :param items: List of items to query e.g. list of servers
+        :param query_funcs: List of query functions that determines whether a given item
+                           matches the query - should return true if it passes
+                           the query
+        :return: List of items that match the given queries
+        """
+        result = items
+        for query_func in query_funcs:
+            result = self.apply_query(items=result, query_func=query_func)
+        return result
+
     def datetime_before_x_days(
         self, value: str, days, date_time_format: str = "%Y-%m-%dT%H:%M:%SZ"
     ) -> bool:
@@ -32,12 +86,12 @@ class OpenstackQuery(OpenstackWrapperBase):
         Parameters:
             value (string): timestamp that represents date and time
             a resource was created
-            days (int): number of days treshold
+            days (int): number of days threshold
             date_time_format (string): date-time format of 'created_at'
 
         Returns: (bool) True if older than days given else False
         """
-        return self.datetime_older_than_offset(
+        return OpenstackQuery.datetime_older_than_offset(
             value,
             datetime.timedelta(days=int(days)).total_seconds(),
             date_time_format,

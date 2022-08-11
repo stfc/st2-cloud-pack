@@ -34,6 +34,20 @@ class OpenstackServer(OpenstackWrapperBase):
         "servers_last_updated_before",
     ]
 
+    # Queries to be used for OpenstackQuery
+
+    def _query_errored(self, server: Server):
+        """
+        Returns whether a server has error in its status
+        """
+        return "ERROR" in server["status"]
+
+    def _query_shutoff(self, server: Server):
+        """
+        Returns whether a server has shutoff in its status
+        """
+        return "SHUTOFF" in server["status"]
+
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)
         self._identity_api = OpenstackIdentity(self._connection_cls)
@@ -92,7 +106,7 @@ class OpenstackServer(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_servers,
-            lambda a: self._query_api.datetime_before_x_days(a["created_at"], days),
+            lambda a: self._query_api.query_datetime_after(a["created_at"], days),
         )
 
     def search_servers_younger_than(
@@ -109,7 +123,7 @@ class OpenstackServer(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_servers,
-            lambda a: not self._query_api.datetime_before_x_days(a["created_at"], days),
+            lambda a: self._query_api.query_datetime_before(a["created_at"], days),
         )
 
     def search_servers_last_updated_before(
@@ -126,7 +140,7 @@ class OpenstackServer(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_servers,
-            lambda a: self._query_api.datetime_before_x_days(a["updated_at"], days),
+            lambda a: self._query_api.query_datetime_before(a["updated_at"], days),
         )
 
     def search_servers_last_updated_after(
@@ -143,7 +157,7 @@ class OpenstackServer(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_servers,
-            lambda a: not self._query_api.datetime_before_x_days(a["updated_at"], days),
+            lambda a: self._query_api.query_datetime_after(a["updated_at"], days),
         )
 
     def search_servers_name_in(
@@ -159,7 +173,7 @@ class OpenstackServer(OpenstackWrapperBase):
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
-            selected_servers, lambda a: a["name"] in names
+            selected_servers, lambda a: self._query_api.query_value_in(a["name"], names)
         )
 
     def search_servers_name_not_in(
@@ -175,7 +189,8 @@ class OpenstackServer(OpenstackWrapperBase):
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
-            selected_servers, lambda a: not a["name"] in names
+            selected_servers,
+            lambda a: self._query_api.query_value_not_in(a["name"], names),
         )
 
     def search_servers_name_contains(
@@ -192,7 +207,7 @@ class OpenstackServer(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_servers,
-            lambda a: all(name_snippet in a["name"] for name_snippet in name_snippets),
+            lambda a: self._query_api.query_value_contains(a["name"], name_snippets),
         )
 
     def search_servers_name_not_contains(
@@ -209,8 +224,8 @@ class OpenstackServer(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_servers,
-            lambda a: all(
-                name_snippet not in a["name"] for name_snippet in name_snippets
+            lambda a: self._query_api.query_value_not_contains(
+                a["name"], name_snippets
             ),
         )
 
@@ -226,7 +241,9 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
-        return self._query_api.apply_query(selected_servers, lambda a: a["id"] in ids)
+        return self._query_api.apply_query(
+            selected_servers, lambda a: self._query_api.query_value_in(a["id"], ids)
+        )
 
     def search_servers_id_not_in(
         self, cloud_account: str, project_identifier: str, ids: List[str], **_
@@ -241,7 +258,7 @@ class OpenstackServer(OpenstackWrapperBase):
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
-            selected_servers, lambda a: not a["id"] in ids
+            selected_servers, lambda a: self._query_api.query_value_not_in(a["id"], ids)
         )
 
     def search_servers_errored(
@@ -255,9 +272,7 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
-        return self._query_api.apply_query(
-            selected_servers, lambda a: "ERROR" in a["status"]
-        )
+        return self._query_api.apply_query(selected_servers, self._query_errored)
 
     def search_servers_shutoff(
         self, cloud_account: str, project_identifier: str, **_
@@ -270,9 +285,7 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
-        return self._query_api.apply_query(
-            selected_servers, lambda a: "SHUTOFF" in a["status"]
-        )
+        return self._query_api.apply_query(selected_servers, self._query_shutoff)
 
     def search_servers_errored_and_shutoff(
         self, cloud_account: str, project_identifier: str, **_
@@ -285,7 +298,7 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         selected_servers = self.search_all_servers(cloud_account, project_identifier)
 
-        return self._query_api.apply_query(
+        return self._query_api.apply_queries(
             selected_servers,
-            lambda a: all(x in a["status"] for x in ["SHUTOFF", "ERROR"]),
+            [self._query_shutoff, self._query_errored],
         )

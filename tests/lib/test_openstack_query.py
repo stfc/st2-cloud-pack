@@ -79,6 +79,17 @@ class OpenstackQueryTests(unittest.TestCase):
         assert not self.instance.apply_query(items, lambda item: False)
         assert self.instance.apply_query(items, lambda item: item > 2) == [3, 4]
 
+    def test_apply_queries(self):
+        """
+        Tests apply_queries works as expected
+        """
+
+        items = [1, 2, 3, 4]
+
+        assert self.instance.apply_queries(
+            items, [lambda item: item > 2, lambda item: item < 4]
+        ) == [3]
+
     def test_parse_properties(self):
         """
         Tests parse_properties works as expected
