@@ -147,10 +147,10 @@ class OpenstackQuery(OpenstackWrapperBase):
         :return: Dict[str, str] (each key containing html or plaintext table of results)
         """
 
-        def get_project_prop(project_id, property):
+        def get_project_prop(project_id, prop):
             project = self._identity_api.find_project(cloud_account, project_id)
             if project:
-                return project["name"]
+                return project[prop]
             return None
 
         if object_type == "server":

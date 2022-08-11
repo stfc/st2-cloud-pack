@@ -85,7 +85,7 @@ class FloatingIPActions(OpenstackAction):
         **kwargs,
     ) -> str:
         """
-        Finds all flaoting ips belonging to a project (or all floating ips if project is empty)
+        Finds all floating ips belonging to a project (or all floating ips if project is empty)
         :param cloud_account: The account from the clouds configuration to use
         :param project_identifier: The project this applies to (or empty for all floating ips)
         :param query_preset: The query to use when searching for floating ips
