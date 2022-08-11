@@ -35,7 +35,6 @@ class OpenstackServer(OpenstackWrapperBase):
     ]
 
     # Queries to be used for OpenstackQuery
-
     def _query_errored(self, server: Server):
         """
         Returns whether a server has error in its status
@@ -106,7 +105,7 @@ class OpenstackServer(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_servers,
-            lambda a: self._query_api.query_datetime_after(a["created_at"], days),
+            lambda a: self._query_api.query_datetime_before(a["created_at"], days),
         )
 
     def search_servers_younger_than(
@@ -123,7 +122,7 @@ class OpenstackServer(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_servers,
-            lambda a: self._query_api.query_datetime_before(a["created_at"], days),
+            lambda a: self._query_api.query_datetime_after(a["created_at"], days),
         )
 
     def search_servers_last_updated_before(

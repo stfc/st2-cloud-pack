@@ -10,13 +10,13 @@ from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 class OpenstackQuery(OpenstackWrapperBase):
 
     # Various queries useful for openstack objects
-    def query_datetime_before(self, datetime_value: str, days: int):
+    def query_datetime_before(self, datetime_value: str, days):
         """
         Returns whether datetime_value is before a specified number of days in the past
         """
         return self.datetime_before_x_days(datetime_value, days)
 
-    def query_datetime_after(self, datetime_value: str, days: int):
+    def query_datetime_after(self, datetime_value: str, days):
         """
         Returns whether datetime_value is after a specified number of days in the past
         """
@@ -91,7 +91,7 @@ class OpenstackQuery(OpenstackWrapperBase):
 
         Returns: (bool) True if older than days given else False
         """
-        return OpenstackQuery.datetime_older_than_offset(
+        return self.datetime_older_than_offset(
             value,
             datetime.timedelta(days=int(days)).total_seconds(),
             date_time_format,
@@ -100,7 +100,7 @@ class OpenstackQuery(OpenstackWrapperBase):
     def datetime_older_than_offset(
         self,
         value: str,
-        time_offset_in_seconds: int,
+        time_offset_in_seconds: float,
         date_time_format: str = "%Y-%m-%dT%H:%M:%SZ",
     ) -> bool:
         """
@@ -109,11 +109,12 @@ class OpenstackQuery(OpenstackWrapperBase):
         Parameters:
             value (string): timestamp that represents date and time
             a resource was created
-            time_offset_in_seconds (int): number of seconds threshold
+            time_offset_in_seconds (float): number of seconds threshold
             date_time_format (string): date-time format of 'created_at'
 
         Returns: (bool) True if older than days given else False
         """
+        print(datetime.datetime.now())
         offset_timestamp = (
             datetime.datetime.now()
         ).timestamp() - time_offset_in_seconds
