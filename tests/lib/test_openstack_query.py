@@ -18,6 +18,7 @@ class OpenstackQueryTests(unittest.TestCase):
             self.test1 = test1
             self.test2 = test2
             self.user_id = test1
+            self.project_id = test1
 
         def __getitem__(self, key):
             return getattr(self, key)
@@ -134,7 +135,9 @@ class OpenstackQueryTests(unittest.TestCase):
             ValueError, self.instance.get_default_property_funcs("cake", "test")
         )
 
-    def test_parse_and_output_table_with_grouping(self):
+    def _test_parse_and_output_table_with_grouping(
+        self, object_type, properties_to_select, group_by
+    ):
         """
         Tests parse_and_output_table works as expected when collating results
         """
@@ -149,9 +152,9 @@ class OpenstackQueryTests(unittest.TestCase):
         self.instance.parse_and_output_table(
             "test_account",
             items,
-            "server",
-            ["test2", "user_email"],
-            "user_email",
+            object_type,
+            properties_to_select,
+            group_by,
             False,
         )
 
@@ -167,9 +170,11 @@ class OpenstackQueryTests(unittest.TestCase):
 
         self.instance.collate_results.assert_called_once()
 
-    def test_parse_and_output_table_no_grouping(self):
+    def _test_parse_and_output_table_no_grouping(
+        self, object_type, properties_to_select
+    ):
         """
-        Tests parse_and_output_table works as expected when no collatating is required
+        Tests parse_and_output_table works as expected when no collating is required
         """
         items = [
             self.ItemTest("Item1", "Hello"),
@@ -183,11 +188,41 @@ class OpenstackQueryTests(unittest.TestCase):
         self.instance.parse_and_output_table(
             "test_account",
             items,
-            "server",
-            ["test2", "user_email"],
+            object_type,
+            properties_to_select,
             "",
             False,
         )
 
         self.instance.collate_results.assert_not_called()
         self.instance.generate_table.assert_called_once()
+
+    def test_parse_and_output_table_with_grouping(self):
+        """
+        Tests parse_and_output_table works as expected when collating results
+        """
+        types = {
+            "server": {
+                "properties_to_select": ["test2", "user_email"],
+                "group_by": "user_email",
+            },
+            "floating_ip": {
+                "properties_to_select": ["test2", "project_name"],
+                "group_by": "project_id",
+            },
+        }
+        for key, value in types.items():
+            self._test_parse_and_output_table_with_grouping(object_type=key, **value)
+
+    def test_parse_and_output_table_no_grouping(self):
+        """
+        Tests parse_and_output_table works as expected when no collating is required
+        """
+        object_types = {
+            "server": ["test2", "user_email"],
+            "floating_ip": ["test2", "project_name"],
+        }
+        for key, value in object_types.items():
+            self._test_parse_and_output_table_no_grouping(
+                object_type=key, properties_to_select=value
+            )
