@@ -1,0 +1,24 @@
+name: freeipa.generate.password
+description: Creates a given list of users
+
+enabled: true
+entry_point: src/freeipa.py
+runner_type: python-script
+
+parameters:
+  submodule:
+    default: generate_users
+    immutable: true
+    type: string
+  user_base_name:
+    description: The base name of the users, without a hyphen (e.g. "foo")
+    required: true
+    type: string
+  user_start_index:
+    description: The index of the first user to create
+    required: true
+    type: integer
+  user_end_index:
+    description: The index of the last user to create (inclusive).
+    required: true
+    type: integer
