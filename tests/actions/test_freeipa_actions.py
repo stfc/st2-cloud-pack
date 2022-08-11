@@ -1,8 +1,8 @@
-from typing import Callable
-from unittest.mock import NonCallableMock, Mock, create_autospec
+from unittest.mock import NonCallableMock, create_autospec
 
 from free_ipa.freeipa_helpers import FreeIpaHelpers
-from src.freeipa import FreeIpa
+from src.freeipaaction import FreeIpaAction
+
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase
 
 
@@ -11,18 +11,16 @@ class TestFreeIpaActions(OpenstackActionTestBase):
     Unit tests for the FreeIpa.* actions
     """
 
-    action_cls = FreeIpa
+    action_cls = FreeIpaAction
 
     # pylint: disable=invalid-name
     def setUp(self):
         super().setUp()
-        self.password_generator: Callable = Mock()
         self.freeipa_helpers: FreeIpaHelpers = create_autospec(FreeIpaHelpers)
         config = {
-            "password_gen": self.password_generator,
             "freeipa_helpers": self.freeipa_helpers,
         }
-        self.action: FreeIpa = self.get_action_instance(config=config)
+        self.action: FreeIpaAction = self.get_action_instance(config=config)
 
     def test_generate_users(self):
         base_name, start_index, end_index = (
@@ -39,5 +37,5 @@ class TestFreeIpaActions(OpenstackActionTestBase):
     def test_generate_password(self):
         num_chars = NonCallableMock()
         password = self.action.generate_password(num_chars)
-        self.password_generator.assert_called_once_with(num_chars)
-        assert password == self.password_generator.return_value
+        self.freeipa_helpers.generate_password.assert_called_once_with(num_chars)
+        assert password == self.freeipa_helpers.generate_password.return_value

@@ -1,18 +1,16 @@
 from typing import Dict, Callable, List
 
 from free_ipa.freeipa_helpers import FreeIpaHelpers
-from free_ipa.password import generate_password
 from st2common.runners.base_action import Action
 
 
-class FreeIpa(Action):
+class FreeIpaAction(Action):
     def __init__(self, *args, config: Dict = None, **kwargs):
         """constructor class"""
         super().__init__(*args, config=config, **kwargs)
         self._freeipa_helpers: FreeIpaHelpers = config.get(
             "freeipa_helpers", FreeIpaHelpers()
         )
-        self._password_gen: Callable = config.get("password_gen", generate_password)
 
     def run(self, submodule: str, **kwargs):
         """
@@ -29,4 +27,4 @@ class FreeIpa(Action):
         )
 
     def generate_password(self, password_length: int) -> str:
-        return self._password_gen(password_length)
+        return self._freeipa_helpers.generate_password(password_length)

@@ -1,3 +1,4 @@
+import secrets
 from typing import List
 
 
@@ -17,3 +18,12 @@ class FreeIpaHelpers:
         for i in range(start_index, end_index + 1):
             users.append(base_username + str(i))
         return users
+
+    @staticmethod
+    def generate_password(password_length: int) -> str:
+        """
+        Generate a random password
+        :param password_length: Length of the password
+        :return: Random password
+        """
+        return secrets.token_urlsafe(password_length)
