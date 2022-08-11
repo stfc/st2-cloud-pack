@@ -50,33 +50,12 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         :param project_identifier: The project to get all associated floating ips with, can be empty for all projects
         :return: A list of all floating ips
         """
-        selected_fips = []
-        if project_identifier == "":
-            projects = self._identity_api.list_projects(cloud_account)
-        else:
-            projects = [
-                self._identity_api.find_mandatory_project(
-                    cloud_account, project_identifier=project_identifier
-                )
-            ]
+        filters = {"limit": 10000}
+        if project_identifier != "":
+            filters.update({"project_id": project_identifier})
 
         with self._connection_cls(cloud_account) as conn:
-            for project in projects:
-                try:
-                    selected_fips.extend(
-                        conn.list_floating_ips(
-                            filters={
-                                "project_id": project.id,
-                                "limit": 10000,
-                            }
-                        )
-                    )
-                except HttpException as err:
-                    print(
-                        f"Failed to list floating ips in the project with id {project.id}"
-                    )
-                    print(err)
-        return selected_fips
+            return conn.list_floating_ips(filters=filters)
 
     def search_fips_older_than(
         self, cloud_account: str, project_identifier: str, days: int, **_
