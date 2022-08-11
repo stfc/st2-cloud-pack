@@ -118,7 +118,6 @@ class OpenstackQuery(OpenstackWrapperBase):
 
         Returns: (bool) True if older than days given else False
         """
-        print(datetime.datetime.now())
         offset_timestamp = (
             datetime.datetime.now()
         ).timestamp() - time_offset_in_seconds

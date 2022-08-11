@@ -26,12 +26,14 @@ class OpenstackServer(OpenstackWrapperBase):
         "servers_errored",
         "servers_shutoff",
         "servers_errored_and_shutoff",
+        "servers_shutoff_before",
     ]
 
     # Lists possible queries presets that don't require a project to function
     SEARCH_QUERY_PRESETS_NO_PROJECT: List[str] = [
         "servers_older_than",
         "servers_last_updated_before",
+        "servers_shutoff_before",
     ]
 
     # Queries to be used for OpenstackQuery
@@ -294,4 +296,24 @@ class OpenstackServer(OpenstackWrapperBase):
         return self._query_api.apply_queries(
             selected_servers,
             [self._query_shutoff, self._query_errored],
+        )
+
+    def search_servers_shutoff_before(
+        self, cloud_account: str, project_identifier: str, days: int, **_
+    ) -> List[Server]:
+        """
+        Returns a list of servers with ids that aren't in the list given
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated servers with, can be empty for all projects
+        :param days: The number of days before which the servers should have last updated
+        :return: A list of servers matching the query
+        """
+        selected_servers = self.search_all_servers(cloud_account, project_identifier)
+
+        return self._query_api.apply_queries(
+            selected_servers,
+            [
+                self._query_shutoff,
+                self._query_api.query_datetime_before("updated_at", days),
+            ],
         )

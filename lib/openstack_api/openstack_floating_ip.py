@@ -23,6 +23,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         "fips_name_contains",
         "fips_name_not_contains",
         "fips_down",
+        "fips_down_before",
     ]
 
     # Lists possible queries presets that don't require a project to function
@@ -30,6 +31,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         "fips_older_than",
         "fips_last_updated_before",
         "fips_down",
+        "fips_down_before",
     ]
 
     # Queries to be used for OpenstackQuery
@@ -242,3 +244,23 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         selected_fips = self.search_all_fips(cloud_account, project_identifier)
 
         return self._query_api.apply_query(selected_fips, self._query_down)
+
+    def search_fips_down_before(
+        self, cloud_account: str, project_identifier: str, days: int, **_
+    ) -> List[FloatingIP]:
+        """
+        Returns a list of floating ips with the status DOWN
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated floating ips with, can be empty for all projects
+        :param days: The number of days before which the servers should have last updated
+        :return: A list of floating ips matching the query
+        """
+        selected_fips = self.search_all_fips(cloud_account, project_identifier)
+
+        return self._query_api.apply_queries(
+            selected_fips,
+            [
+                self._query_down,
+                self._query_api.query_datetime_before("updated_at", days),
+            ],
+        )

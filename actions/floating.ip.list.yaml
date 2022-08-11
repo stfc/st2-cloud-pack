@@ -37,6 +37,7 @@ parameters:
       - "fips_name_contains"
       - "fips_name_not_contains"
       - "fips_down"
+      - "fips_down_before"
     required: true
   search_by:
     default: floating_ip
@@ -46,8 +47,9 @@ parameters:
     default:
       - "id"
       - "name"
-      - "status"
       - "floating_ip_address"
+      - "status"
+      - "updated_at"
       - "project_name"
     type: array
     description: "Properties to display for the floating ips that match the chosen query"
