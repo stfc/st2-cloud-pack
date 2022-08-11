@@ -1,6 +1,8 @@
 from unittest.mock import create_autospec, NonCallableMock
+from openstack_api.openstack_floating_ip import OpenstackFloatingIP
 
 from openstack_api.openstack_network import OpenstackNetwork
+from openstack_api.openstack_query import OpenstackQuery
 from src.floating_ip_actions import FloatingIPActions
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase
 
@@ -19,9 +21,31 @@ class TestFloatingIPActions(OpenstackActionTestBase):
         """
         super().setUp()
         self.network_mock = create_autospec(OpenstackNetwork)
+        self.floating_ip_mock = create_autospec(OpenstackFloatingIP)
+        # Want to keep __getitem__ otherwise all f"search_{query_preset}"
+        # calls will go to the same mock
+        self.floating_ip_mock.__getitem__ = OpenstackFloatingIP.__getitem__
+
+        self.query_mock = create_autospec(OpenstackQuery)
         self.action: FloatingIPActions = self.get_action_instance(
-            api_mocks=self.network_mock
+            api_mocks={
+                "openstack_network_api": self.network_mock,
+                "openstack_floating_ip_api": self.floating_ip_mock,
+                "openstack_query_api": self.query_mock,
+            }
         )
+
+    def test_run_method(self):
+        """
+        Tests that run can dispatch to the Stackstorm facing methods
+        """
+        expected_methods = [
+            "floating_ip_get",
+            "floating_ip_delete",
+            "floating_ip_create",
+            "floating_ip_list",
+        ]
+        self._test_run_dynamic_dispatch(expected_methods)
 
     def test_allocate_floating_ip_empty(self):
         """
@@ -77,3 +101,22 @@ class TestFloatingIPActions(OpenstackActionTestBase):
         expected_method_names = ["floating_ip_create", "floating_ip_get"]
 
         self._test_run_dynamic_dispatch(expected_method_names)
+
+    def test_list(self):
+        """
+        Tests the action returns the found floating ips
+        """
+        for query_preset in OpenstackFloatingIP.SEARCH_QUERY_PRESETS:
+            self.action.floating_ip_list(
+                cloud_account=NonCallableMock(),
+                project_identifier=NonCallableMock(),
+                query_preset=query_preset,
+                properties_to_select=NonCallableMock(),
+                group_by=NonCallableMock(),
+                get_html=NonCallableMock(),
+                days=60,
+                ids=None,
+                names=None,
+                name_snippets=None,
+            )
+            self.floating_ip_mock[f"search_{query_preset}"].assert_called_once()
