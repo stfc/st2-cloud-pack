@@ -21,7 +21,7 @@ class TestServerActions(OpenstackActionTestBase):
         super().setUp()
         self.server_mock = create_autospec(OpenstackServer)
 
-        # Want to keep mock of __getitem__ otherwise all f"search_{query_preset}"
+        # Want to keep __getitem__ otherwise all f"search_{query_preset}"
         # calls will go to the same mock
         self.server_mock.__getitem__ = OpenstackServer.__getitem__
 
