@@ -1,0 +1,68 @@
+version: 1.0
+description: Creates a user on the FreeIPA server with a randomly generated password
+
+input:
+  - server_env: dev  # Opt to dev for safety
+  - user_base_name
+  - first_index
+  - last_index
+  - password_length: 6
+
+vars:
+  - usernames: null
+  - passwords: null
+  - stdout: null
+
+tasks:
+  generate_users:
+    action: stackstorm_openstack.freeipa.generate.usernames
+      user_base_name=<% ctx(user_base_name) %>
+      user_start_index=<% ctx(first_index) %>
+      user_end_index=<% ctx(last_index) %>
+    next:
+        - when: <% succeeded() %>
+          publish:
+            - usernames: <% result().result %>
+          do:
+            - generate_passwords
+
+  generate_passwords:
+    action: stackstorm_openstack.freeipa.generate.passwords
+      num_of_passwords=<% ctx(usernames).len() %>
+      password_length=<% ctx(password_length) %>
+    next:
+        - when: <% succeeded() %>
+          publish:
+            - passwords: <% result().result %>
+          do:
+            - create_users
+            - print_usernames
+
+  create_users:
+    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
+    action: freeipa.user_add
+      cn=<% item(username) %>
+      connection=<% ctx().server_env %>
+      displayname=<% item(username) %>
+      gecos=<% item(username) %>
+      gidnumber=957400012
+      givenname=<% item(username) %>
+      homedirectory="/home/<% item(username) %>"
+      initials=<% item(username) %>
+      krbprincipalname=["<% item(username) %>"]
+      no_members=True
+      noprivate=True
+      sn=<% item(username) %>
+      uid=<% item(username) %>
+      uidnumber=<% random(1000000000, 1200000000) %>
+      userpassword=<% item(password) %>
+
+  print_usernames:
+    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
+    action: core.echo
+      message="<% item(username) %>, <% item(password) %>"
+    next:
+      - publish: stdout=<% result().stdout %>
+
+output:
+  - stdout: <% ctx(stdout) %>

@@ -1,7 +1,7 @@
 from unittest.mock import NonCallableMock, create_autospec
 
 from free_ipa.freeipa_helpers import FreeIpaHelpers
-from src.freeipaaction import FreeIpaAction
+from src.freeipa_action import FreeIpaAction
 
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase
 
@@ -35,7 +35,7 @@ class TestFreeIpaActions(OpenstackActionTestBase):
         assert users == self.freeipa_helpers.generate_users.return_value
 
     def test_generate_password(self):
-        num_chars = NonCallableMock()
-        password = self.action.generate_password(num_chars)
-        self.freeipa_helpers.generate_password.assert_called_once_with(num_chars)
+        num_passwords, num_chars = NonCallableMock(), NonCallableMock()
+        password = self.action.generate_password(num_passwords, num_chars)
+        self.freeipa_helpers.generate_password.assert_called_once_with(num_passwords, num_chars)
         assert password == self.freeipa_helpers.generate_password.return_value

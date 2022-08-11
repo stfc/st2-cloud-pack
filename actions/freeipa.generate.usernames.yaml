@@ -1,8 +1,8 @@
-name: freeipa.generate.password
+name: freeipa.generate.usernames
 description: Creates a given list of users
 
 enabled: true
-entry_point: src/freeipa.py
+entry_point: src/freeipa_action.py
 runner_type: python-script
 
 parameters:

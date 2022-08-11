@@ -26,5 +26,9 @@ class FreeIpaAction(Action):
             user_base_name, user_start_index, user_end_index
         )
 
-    def generate_password(self, password_length: int) -> str:
-        return self._freeipa_helpers.generate_password(password_length)
+    def generate_password(
+        self, num_of_passwords: int, password_length: int
+    ) -> List[str]:
+        return self._freeipa_helpers.generate_password(
+            num_of_passwords, password_length
+        )

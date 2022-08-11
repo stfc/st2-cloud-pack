@@ -16,7 +16,7 @@ python_versions:
 dependencies:
   - core
   - git
-  - freeipa
+  - https://github.com/EncoreTechnologies/stackstorm-freeipa
 
 # Authors :
 # Anish Mudaraddi

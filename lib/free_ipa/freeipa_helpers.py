@@ -20,10 +20,11 @@ class FreeIpaHelpers:
         return users
 
     @staticmethod
-    def generate_password(password_length: int) -> str:
+    def generate_password(num_of_passwords: int, password_length: int) -> List[str]:
         """
         Generate a random password
+        :param num_of_passwords: The number of passwords to generate
         :param password_length: Length of the password
         :return: Random password
         """
-        return secrets.token_urlsafe(password_length)
+        return [secrets.token_urlsafe(password_length) for _ in range(num_of_passwords)]
