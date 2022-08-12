@@ -126,8 +126,9 @@ class TestProjectAction(OpenstackActionTestBase):
                 group_by=NonCallableMock(),
                 get_html=NonCallableMock(),
                 days=60,
-                ids=None,
-                names=None,
-                name_snippets=None,
+                ids=NonCallableMock(),
+                names=NonCallableMock(),
+                name_snippets=NonCallableMock(),
+                description_snippets=NonCallableMock(),
             )
             self.project_mock[f"search_{query_preset}"].assert_called_once()

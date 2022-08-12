@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from openstack_api.openstack_project import OpenstackProject
 
@@ -13,11 +13,7 @@ class OpenstackProjectTests(unittest.TestCase):
     def setUp(self) -> None:
         super().setUp()
         self.mocked_connection = MagicMock()
-        with patch(
-            "openstack_api.openstack_project.OpenstackIdentity"
-        ) as identity_mock:
-            self.instance = OpenstackProject(self.mocked_connection)
-            self.identity_module = identity_mock.return_value
+        self.instance = OpenstackProject(self.mocked_connection)
 
         self.api = self.mocked_connection.return_value.__enter__.return_value
 
@@ -25,19 +21,50 @@ class OpenstackProjectTests(unittest.TestCase):
             {
                 "id": "projectid1",
                 "name": "Project1",
+                "description": "Description1",
                 "tags": ["test1@test.com"],
             },
             {
                 "id": "projectid2",
                 "name": "Project2",
+                "description": "Description2",
                 "tags": ["test2@test.com"],
             },
             {
                 "id": "projectid3",
                 "name": "Project3",
+                "description": "Description3",
                 "tags": [],
             },
         ]
+
+    def test_search_project_id_in(self):
+        """
+        Tests calling search_project_id_in
+        """
+
+        self.instance.search_all_projects = MagicMock()
+        self.instance.search_all_projects.return_value = self.mock_project_list
+
+        result = self.instance.search_projects_id_in(
+            cloud_account="test", ids=["projectid1", "projectid2"]
+        )
+
+        self.assertEqual(result, [self.mock_project_list[0], self.mock_project_list[1]])
+
+    def test_search_projects_id_not_in(self):
+        """
+        Tests calling search_project_id_not_in
+        """
+
+        self.instance.search_all_projects = MagicMock()
+        self.instance.search_all_projects.return_value = self.mock_project_list
+
+        result = self.instance.search_projects_id_not_in(
+            cloud_account="test", ids=["projectid1", "projectid2"]
+        )
+
+        self.assertEqual(result, [self.mock_project_list[2]])
 
     def test_search_all_projects_no_project(self):
         """
@@ -143,30 +170,70 @@ class OpenstackProjectTests(unittest.TestCase):
 
         self.assertEqual(result, [])
 
-    def test_search_project_id_in(self):
+    def test_search_projects_description_contains(self):
         """
-        Tests calling search_project_id_in
+        Tests calling search_projects_description_contains
         """
 
         self.instance.search_all_projects = MagicMock()
         self.instance.search_all_projects.return_value = self.mock_project_list
 
-        result = self.instance.search_projects_id_in(
-            cloud_account="test", ids=["projectid1", "projectid2"]
+        result = self.instance.search_projects_description_contains(
+            cloud_account="test",
+            description_snippets=["Description", "1"],
         )
 
-        self.assertEqual(result, [self.mock_project_list[0], self.mock_project_list[1]])
+        self.assertEqual(result, [self.mock_project_list[0]])
 
-    def test_search_projects_id_not_in(self):
+        result = self.instance.search_projects_description_contains(
+            cloud_account="test", description_snippets=["2"]
+        )
+
+        self.assertEqual(result, [self.mock_project_list[1]])
+
+        result = self.instance.search_projects_description_contains(
+            cloud_account="test", description_snippets=["Description"]
+        )
+
+        self.assertEqual(result, self.mock_project_list)
+
+    def test_search_projects_description_not_contains(self):
         """
-        Tests calling search_project_id_not_in
+        Tests calling search_projects_description_not_contains
         """
 
         self.instance.search_all_projects = MagicMock()
         self.instance.search_all_projects.return_value = self.mock_project_list
 
-        result = self.instance.search_projects_id_not_in(
-            cloud_account="test", ids=["projectid1", "projectid2"]
+        result = self.instance.search_projects_description_not_contains(
+            cloud_account="test",
+            description_snippets=["Description", "1"],
+        )
+
+        self.assertEqual(result, [])
+
+        result = self.instance.search_projects_description_not_contains(
+            cloud_account="test", description_snippets=["2"]
+        )
+
+        self.assertEqual(result, [self.mock_project_list[0], self.mock_project_list[2]])
+
+        result = self.instance.search_projects_description_not_contains(
+            cloud_account="test", description_snippets=["Description"]
+        )
+
+        self.assertEqual(result, [])
+
+    def test_search_projects_without_email(self):
+        """
+        Tests calling search_projects_without_email
+        """
+
+        self.instance.search_all_projects = MagicMock()
+        self.instance.search_all_projects.return_value = self.mock_project_list
+
+        result = self.instance.search_projects_without_email(
+            cloud_account="test",
         )
 
         self.assertEqual(result, [self.mock_project_list[2]])

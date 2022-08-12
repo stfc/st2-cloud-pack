@@ -27,6 +27,9 @@ parameters:
       - "projects_name_not_in"
       - "projects_name_contains"
       - "projects_name_not_contains"
+      - "projects_description_contains"
+      - "projects_description_not_contains"
+      - "projects_without_email"
   properties_to_select:
     default:
       - "id"
@@ -65,7 +68,7 @@ parameters:
       - ""
     required: true
   description_snippets:
-    description: "Name snippets to search openstack_resource (ignored unless query_preset=description_contains etc)"
+    description: "Description snippets to search openstack_resource (ignored unless query_preset=description_contains etc)"
     type: array
     default:
       - ""
