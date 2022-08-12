@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from openstack.exceptions import ConflictException
 from openstack.identity.v3.project import Project
@@ -24,6 +24,10 @@ class OpenstackIdentity(OpenstackWrapperBase):
         # domain_id can be blank, we will create a project in the default domain
         if not project_details.name:
             raise MissingMandatoryParamError("The project name is missing")
+        if not project_details.email:
+            raise MissingMandatoryParamError("The project contact email is missing")
+        if "@" not in project_details.email:
+            raise ValueError("The project contact email is invalid")
 
         with self._connection_cls(cloud_account) as conn:
             try:
@@ -33,6 +37,7 @@ class OpenstackIdentity(OpenstackWrapperBase):
                     domain_id="default",
                     description=project_details.description,
                     is_enabled=project_details.is_enabled,
+                    tags=[project_details.email],
                 )
             except ConflictException as err:
                 # Strip out frames that are noise by rethrowing
@@ -136,3 +141,16 @@ class OpenstackIdentity(OpenstackWrapperBase):
 
         with self._connection_cls(cloud_account) as conn:
             return conn.identity.find_user(user_identifier, ignore_missing=True)
+
+    def get_project_email(self, project: Project) -> Union[str, None]:
+        """
+        Returns the contact email of a project
+        :param project: The project to obtain the email from
+        :return: The found email or None
+        """
+        found_email = None
+        for tag in project["tags"]:
+            if "@" in tag:
+                found_email = tag
+                break
+        return found_email

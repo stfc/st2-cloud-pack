@@ -58,20 +58,22 @@ class ProjectAction(Action):
         self,
         cloud_account: str,
         name: str,
+        email: str,
         description: str,
         is_enabled: bool,
     ) -> Tuple[bool, Optional[Project]]:
         """
         Find and return a given project's properties. Expected
-        to be called within a workflow and not directly.
+        to be called within a workflow and not directly
         :param cloud_account: The account from the clouds configuration to use
-        :param: name: Name of new project
-        :param: description: Description for new project
-        :param: is_enabled: Set if new project enabled or disabled
+        :param name: Name of new project
+        :param email: Contact email of new project
+        :param description: Description for new project
+        :param is_enabled: Set if new project enabled or disabled
         :return: status, optional project
         """
         details = ProjectDetails(
-            name=name, description=description, is_enabled=is_enabled
+            name=name, email=email, description=description, is_enabled=is_enabled
         )
         project = self._api.create_project(
             cloud_account=cloud_account, project_details=details

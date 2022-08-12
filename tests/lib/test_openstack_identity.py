@@ -35,6 +35,27 @@ class OpenstackIdentityTests(unittest.TestCase):
             "", ProjectDetails(name="", description="", is_enabled=False)
         )
 
+    @raises(MissingMandatoryParamError)
+    def test_create_project_email_missing_throws(self):
+        """
+        Tests calling the API wrapper without an email will throw
+        """
+        self.instance.create_project(
+            "", ProjectDetails(name="Test", email="", description="", is_enabled=False)
+        )
+
+    @raises(ValueError)
+    def test_create_project_email_missing_throws(self):
+        """
+        Tests calling the API wrapper with an invalid email will throw
+        """
+        self.instance.create_project(
+            "",
+            ProjectDetails(
+                name="Test", email="NotAnEmail", description="", is_enabled=False
+            ),
+        )
+
     def test_create_project_forwards_result(self):
         """
         Tests that the params and result are forwarded as-is to/from the
@@ -43,6 +64,7 @@ class OpenstackIdentityTests(unittest.TestCase):
 
         expected_details = ProjectDetails(
             name=NonCallableMock(),
+            email="Test@Test.com",
             description=NonCallableMock(),
             is_enabled=NonCallableMock(),
         )
@@ -59,6 +81,7 @@ class OpenstackIdentityTests(unittest.TestCase):
             domain_id="default",
             description=expected_details.description,
             is_enabled=expected_details.is_enabled,
+            tags=[expected_details.email],
         )
 
     @raises(ConflictException)

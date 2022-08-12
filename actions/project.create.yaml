@@ -17,6 +17,10 @@ parameters:
     description: New project Name
     required: true
     type: string
+  email:
+    description: Contact email of new project
+    required: true
+    type: string
   description:
     description: New Project Description
     type: string
