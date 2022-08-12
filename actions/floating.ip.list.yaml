@@ -51,6 +51,7 @@ parameters:
       - "status"
       - "updated_at"
       - "project_name"
+      - "project_email"
     type: array
     description: "Properties to display for the floating ips that match the chosen query"
     required: true

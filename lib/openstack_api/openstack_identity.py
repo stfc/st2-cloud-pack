@@ -154,3 +154,16 @@ class OpenstackIdentity(OpenstackWrapperBase):
                 found_email = tag
                 break
         return found_email
+
+    def find_project_email(self, cloud_account: str, project_identifier: str):
+        """
+        Returns the contact email of a project
+        :param cloud_account: The clouds entry to use
+        :param project_identifier: The name or Openstack ID for the project
+        :return: The found email or None
+        """
+        found_email = None
+        project = self.find_project(cloud_account, project_identifier)
+        if project:
+            found_email = self.get_project_email(project)
+        return found_email
