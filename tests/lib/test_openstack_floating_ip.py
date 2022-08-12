@@ -9,7 +9,7 @@ from openstack_api.openstack_floating_ip import OpenstackFloatingIP
 class OpenstackFloatingIPTests(unittest.TestCase):
     """
     Runs various tests to ensure we are using the Openstack
-    Floating IP module in the expected way
+    Network module in the expected way
     """
 
     def setUp(self) -> None:

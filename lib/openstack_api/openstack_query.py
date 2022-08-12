@@ -1,5 +1,6 @@
 import datetime
 from typing import Any, Callable, Dict, List
+
 from tabulate import tabulate
 from openstack_api.openstack_connection import OpenstackConnection
 
@@ -198,12 +199,13 @@ class OpenstackQuery(OpenstackWrapperBase):
 
     def get_default_property_funcs(
         self, object_type: str, cloud_account: str
-    ) -> Dict[str, Callable[[Any], bool]]:
+    ) -> Dict[str, Callable[[Any], Any]]:
         """
         Returns a list of default property functions for use with 'parse_properties' above
         :param object_type: type of openstack object the functions will be used for e.g. server
         :param cloud_account: The account from the clouds configuration to use
-        :return: Dict[str, str] (each key containing html or plaintext table of results)
+        :return: Dict[str, Callable[[Any], Any]] functions that return properties from openstack
+                 objects
         """
 
         def get_project_prop(project_id, prop):
@@ -228,6 +230,10 @@ class OpenstackQuery(OpenstackWrapperBase):
                     cloud_account, a["project_id"]
                 ),
             }
+        if object_type == "project":
+            return {
+                "email": self._identity_api.get_project_email,
+            }
         raise ValueError(f"Unsupported object type '{object_type}'")
 
     # pylint:disable=too-many-arguments
@@ -243,6 +249,7 @@ class OpenstackQuery(OpenstackWrapperBase):
         """
         Finds all servers belonging to a project (or all servers if project is empty)
         :param cloud_account: The account from the clouds configuration to use
+        :param items: List of openstack objects to obtain properties from e.g. servers
         :param object_type: type of openstack object the functions will be used for e.g. server
         :param properties_to_select: The list of properties to select and output from the found servers
         :param group_by: Property to group returned results - can be empty for no grouping

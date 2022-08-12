@@ -39,10 +39,6 @@ parameters:
       - "fips_down"
       - "fips_down_before"
     required: true
-  search_by:
-    default: floating_ip
-    type: string
-    immutable: true
   properties_to_select:
     default:
       - "id"
@@ -56,7 +52,7 @@ parameters:
     description: "Properties to display for the floating ips that match the chosen query"
     required: true
   group_by:
-    description: "Property to group the selected resources by e.g. user_email. Leave empty for no grouping."
+    description: "Property to group the selected resources by e.g. project_email. Leave empty for no grouping."
     type: string
     default: ""
     required: false
@@ -66,7 +62,7 @@ parameters:
     required: true
     type: boolean
   names:
-    description: "Names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)"
+    description: "Names to search openstack_resource (ignored unless query_preset=name_in etc)"
     type: array
     default:
       - ""

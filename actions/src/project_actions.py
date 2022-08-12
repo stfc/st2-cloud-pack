@@ -1,8 +1,10 @@
-from typing import Tuple, Optional, Dict, Callable, Union
+from typing import Tuple, Optional, Dict, Callable, Union, List
 
 from openstack.identity.v3.project import Project
 
 from openstack_api.openstack_identity import OpenstackIdentity
+from openstack_api.openstack_project import OpenstackProject
+from openstack_api.openstack_query import OpenstackQuery
 from structs.project_details import ProjectDetails
 from st2common.runners.base_action import Action
 
@@ -11,7 +13,15 @@ class ProjectAction(Action):
     def __init__(self, *args, config: Dict = None, **kwargs):
         # DI handled in OpenstackActionTestCase
         super().__init__(*args, config=config, **kwargs)
-        self._api: OpenstackIdentity = config.get("openstack_api", OpenstackIdentity())
+        self._identity_api: OpenstackIdentity = config.get(
+            "openstack_identity_api", OpenstackIdentity()
+        )
+        self._project_api: OpenstackProject = config.get(
+            "openstack_project_api", OpenstackProject()
+        )
+        self._query_api: OpenstackQuery = config.get(
+            "openstack_query_api", OpenstackQuery()
+        )
 
     def run(self, submodule: str, **kwargs):
         """
@@ -32,7 +42,7 @@ class ProjectAction(Action):
         :param project_identifier: (Either) The project name to delete
         :return: The result of the operation
         """
-        delete_ok = self._api.delete_project(
+        delete_ok = self._identity_api.delete_project(
             cloud_account=cloud_account, project_identifier=project_identifier
         )
         # Currently, we only handle one error, other throws will propagate upwards
@@ -48,7 +58,7 @@ class ProjectAction(Action):
         :param project_identifier: Name or Openstack ID
         :return: status , Project object or error string
         """
-        project = self._api.find_project(
+        project = self._identity_api.find_project(
             cloud_account=cloud_account, project_identifier=project_identifier
         )
         output = project if project else "The project could not be found."
@@ -76,7 +86,35 @@ class ProjectAction(Action):
         details = ProjectDetails(
             name=name, email=email, description=description, is_enabled=is_enabled
         )
-        project = self._api.create_project(
+        project = self._identity_api.create_project(
             cloud_account=cloud_account, project_details=details
         )
         return bool(project), project
+
+    # pylint:disable=too-many-arguments
+    def project_list(
+        self,
+        cloud_account: str,
+        query_preset: str,
+        properties_to_select: List[str],
+        group_by: str,
+        get_html: bool,
+        **kwargs,
+    ) -> str:
+        """
+        Finds all projects that match a particular query
+        :param cloud_account: The account from the clouds configuration to use
+        :param query_preset: The query to use when searching for projects
+        :param properties_to_select: The list of properties to select and output from the found projects
+        :param group_by: Property to group returned results - can be empty for no grouping
+        :param get_html: When True tables returned are in html format
+        :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
+        """
+
+        fips = self._project_api[f"search_{query_preset}"](cloud_account, **kwargs)
+
+        output = self._query_api.parse_and_output_table(
+            cloud_account, fips, "project", properties_to_select, group_by, get_html
+        )
+
+        return output

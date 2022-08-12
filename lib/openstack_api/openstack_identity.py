@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from openstack.exceptions import ConflictException
 from openstack.identity.v3.project import Project
@@ -142,7 +142,7 @@ class OpenstackIdentity(OpenstackWrapperBase):
         with self._connection_cls(cloud_account) as conn:
             return conn.identity.find_user(user_identifier, ignore_missing=True)
 
-    def get_project_email(self, project: Project) -> Union[str, None]:
+    def get_project_email(self, project: Project) -> Optional[str]:
         """
         Returns the contact email of a project
         :param project: The project to obtain the email from
@@ -155,7 +155,9 @@ class OpenstackIdentity(OpenstackWrapperBase):
                 break
         return found_email
 
-    def find_project_email(self, cloud_account: str, project_identifier: str):
+    def find_project_email(
+        self, cloud_account: str, project_identifier: str
+    ) -> Optional[str]:
         """
         Returns the contact email of a project
         :param cloud_account: The clouds entry to use
