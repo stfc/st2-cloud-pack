@@ -39,6 +39,7 @@ parameters:
       - "servers_errored"
       - "servers_shutoff"
       - "servers_errored_and_shutoff"
+      - "servers_shutoff_before"
     required: true
   search_by:
     default: server
