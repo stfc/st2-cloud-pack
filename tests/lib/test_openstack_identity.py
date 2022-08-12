@@ -33,7 +33,10 @@ class OpenstackIdentityTests(unittest.TestCase):
         Tests calling the API wrapper without a domain will throw
         """
         self.instance.create_project(
-            "", ProjectDetails(name="", description="", is_enabled=False)
+            "",
+            ProjectDetails(
+                name="", description="", email="Test@Test.com", is_enabled=False
+            ),
         )
 
     @raises(MissingMandatoryParamError)
@@ -92,7 +95,13 @@ class OpenstackIdentityTests(unittest.TestCase):
         """
 
         self.identity_api.create_project.side_effect = ConflictException
-        self.instance.create_project(NonCallableMock(), NonCallableMock())
+        project_details = ProjectDetails(
+            name=NonCallableMock(),
+            email="Test@Test.com",
+            description=NonCallableMock(),
+            is_enabled=NonCallableMock(),
+        )
+        self.instance.create_project(NonCallableMock(), project_details)
 
     @staticmethod
     @raises(MissingMandatoryParamError)
