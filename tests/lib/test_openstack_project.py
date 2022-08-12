@@ -33,7 +33,7 @@ class OpenstackProjectTests(unittest.TestCase):
             {
                 "id": "projectid3",
                 "name": "Project3",
-                "description": "Description3",
+                "description": None,
                 "tags": [],
             },
         ]
@@ -195,7 +195,7 @@ class OpenstackProjectTests(unittest.TestCase):
             cloud_account="test", description_snippets=["Description"]
         )
 
-        self.assertEqual(result, self.mock_project_list)
+        self.assertEqual(result, [self.mock_project_list[0], self.mock_project_list[1]])
 
     def test_search_projects_description_not_contains(self):
         """
@@ -210,7 +210,7 @@ class OpenstackProjectTests(unittest.TestCase):
             description_snippets=["Description", "1"],
         )
 
-        self.assertEqual(result, [])
+        self.assertEqual(result, [self.mock_project_list[2]])
 
         result = self.instance.search_projects_description_not_contains(
             cloud_account="test", description_snippets=["2"]
@@ -222,7 +222,7 @@ class OpenstackProjectTests(unittest.TestCase):
             cloud_account="test", description_snippets=["Description"]
         )
 
-        self.assertEqual(result, [])
+        self.assertEqual(result, [self.mock_project_list[2]])
 
     def test_search_projects_without_email(self):
         """

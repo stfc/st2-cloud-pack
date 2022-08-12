@@ -37,19 +37,41 @@ class OpenstackQuery(OpenstackWrapperBase):
         """
         return lambda a: a[prop] not in values
 
+    def _query_if_prop_exists(
+        self, prop: str, query_func: Callable[[Any], bool], default_result: bool
+    ):
+        """
+        Returns the result of a query if the property actually exists, otherwise returns a default value
+        useful when openstack parameters may be None e.g. a project description
+        :param prop: Property of an openstack object to query e.g. id
+        :param query_func: Query function to use if the property isn't None
+        :param default_result: Boolean value to return for the query if the property is None
+        """
+
+        def check_func(item):
+            if not item[prop] is None:
+                return query_func(item)
+            return default_result
+
+        return check_func
+
     def query_prop_contains(self, prop: str, snippets: List[str]):
         """
         Returns a query for checking if a property value contains all the snippets given in
         a list
         """
-        return lambda a: all(snippet in a[prop] for snippet in snippets)
+        return self._query_if_prop_exists(
+            prop, lambda a: all(snippet in a[prop] for snippet in snippets), False
+        )
 
     def query_prop_not_contains(self, prop: str, snippets: List[str]):
         """
         Returns a query for checking if a property value does not contain all the snippets
         given in a list
         """
-        return lambda a: all(snippet not in a[prop] for snippet in snippets)
+        return self._query_if_prop_exists(
+            prop, lambda a: all(snippet not in a[prop] for snippet in snippets), True
+        )
 
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)
