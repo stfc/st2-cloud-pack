@@ -38,6 +38,8 @@ class TestProjectAction(OpenstackActionTestBase):
         expected_proj_params = {
             i: NonCallableMock() for i in ["name", "description", "is_enabled"]
         }
+        expected_proj_params.update({"email": "Test@Test.com"})
+
         # Check that default gets hard-coded in too
         packaged_proj = ProjectDetails(**expected_proj_params)
 
@@ -59,7 +61,7 @@ class TestProjectAction(OpenstackActionTestBase):
         self.identity_mock.create_project.return_value = None
 
         returned_values = self.action.project_create(
-            *{NonCallableMock() for _ in range(4)}
+            *{NonCallableMock() for _ in range(5)}
         )
         assert returned_values[0] is False
         assert returned_values[1] is None

@@ -218,7 +218,7 @@ class OpenstackQueryTests(unittest.TestCase):
                 "group_by": "user_email",
             },
             "floating_ip": {
-                "properties_to_select": ["test2", "project_name"],
+                "properties_to_select": ["test2", "project_name", "project_email"],
                 "group_by": "project_id",
             },
         }
@@ -231,7 +231,7 @@ class OpenstackQueryTests(unittest.TestCase):
         """
         object_types = {
             "server": ["test2", "user_email"],
-            "floating_ip": ["test2", "project_name"],
+            "floating_ip": ["test2", "project_name", "project_email"],
         }
         for key, value in object_types.items():
             self._test_parse_and_output_table_no_grouping(
