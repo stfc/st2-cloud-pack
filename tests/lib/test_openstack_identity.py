@@ -11,6 +11,7 @@ from openstack_api.openstack_identity import OpenstackIdentity
 from structs.project_details import ProjectDetails
 
 
+# pylint:disable=too-many-public-methods
 class OpenstackIdentityTests(unittest.TestCase):
     """
     Runs various tests to ensure we are using the Openstack
@@ -45,7 +46,7 @@ class OpenstackIdentityTests(unittest.TestCase):
         )
 
     @raises(ValueError)
-    def test_create_project_email_missing_throws(self):
+    def test_create_project_invalid_email_throws(self):
         """
         Tests calling the API wrapper with an invalid email will throw
         """
@@ -252,3 +253,33 @@ class OpenstackIdentityTests(unittest.TestCase):
         )
         expected = self.identity_api.find_user.return_value
         assert returned == expected
+
+    def test_get_project_email(self):
+        """
+        Checks that get_project_email functions correctly
+        """
+        expected_email = "Test@Test.com"
+        mock_project = {"tags": ["Test", expected_email, "12123421"]}
+
+        email = self.instance.get_project_email(mock_project)
+
+        self.assertEqual(expected_email, email)
+
+    def test_find_project_email(self):
+        """
+        Checks that find_project_email functions correctly
+        """
+        expected_email = "Test@Test.com"
+        mock_project = {"tags": ["Test", expected_email, "12123421"]}
+
+        cloud_account, project_identifier = NonCallableMock(), NonCallableMock()
+        self.identity_api.find_project.return_value = mock_project
+        found = self.instance.find_project_email(
+            cloud_account=cloud_account, project_identifier=project_identifier
+        )
+
+        self.mocked_connection.assert_called_once_with(cloud_account)
+        self.identity_api.find_project.assert_called_once_with(
+            project_identifier.strip(), ignore_missing=True
+        )
+        self.assertEqual(expected_email, found)

@@ -202,6 +202,7 @@ class OpenstackQuery(OpenstackWrapperBase):
         """
         Returns a list of default property functions for use with 'parse_properties' above
         :param object_type: type of openstack object the functions will be used for e.g. server
+        :param cloud_account: The account from the clouds configuration to use
         :return: Dict[str, str] (each key containing html or plaintext table of results)
         """
 
@@ -223,6 +224,9 @@ class OpenstackQuery(OpenstackWrapperBase):
         if object_type == "floating_ip":
             return {
                 "project_name": lambda a: get_project_prop(a["project_id"], "name"),
+                "project_email": lambda a: self._identity_api.find_project_email(
+                    cloud_account, a["project_id"]
+                ),
             }
         raise ValueError(f"Unsupported object type '{object_type}'")
 
