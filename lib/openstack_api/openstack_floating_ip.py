@@ -23,6 +23,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         "fips_name_contains",
         "fips_name_not_contains",
         "fips_down",
+        "fips_down_before",
     ]
 
     # Lists possible queries presets that don't require a project to function
@@ -30,7 +31,15 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         "fips_older_than",
         "fips_last_updated_before",
         "fips_down",
+        "fips_down_before",
     ]
+
+    # Queries to be used for OpenstackQuery
+    def _query_down(self, floating_ip: FloatingIP):
+        """
+        Returns whether a floating has down in its status
+        """
+        return "DOWN" in floating_ip["status"]
 
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)
@@ -70,7 +79,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_fips,
-            lambda a: self._query_api.datetime_before_x_days(a["created_at"], days),
+            self._query_api.query_datetime_before("created_at", days),
         )
 
     def search_fips_younger_than(
@@ -87,7 +96,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_fips,
-            lambda a: not self._query_api.datetime_before_x_days(a["created_at"], days),
+            self._query_api.query_datetime_after("created_at", days),
         )
 
     def search_fips_last_updated_before(
@@ -104,7 +113,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_fips,
-            lambda a: self._query_api.datetime_before_x_days(a["updated_at"], days),
+            self._query_api.query_datetime_before("updated_at", days),
         )
 
     def search_fips_last_updated_after(
@@ -121,7 +130,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_fips,
-            lambda a: not self._query_api.datetime_before_x_days(a["updated_at"], days),
+            self._query_api.query_datetime_after("updated_at", days),
         )
 
     def search_fips_name_in(
@@ -136,7 +145,9 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         """
         selected_fips = self.search_all_fips(cloud_account, project_identifier)
 
-        return self._query_api.apply_query(selected_fips, lambda a: a["name"] in names)
+        return self._query_api.apply_query(
+            selected_fips, self._query_api.query_prop_in("name", names)
+        )
 
     def search_fips_name_not_in(
         self, cloud_account: str, project_identifier: str, names: List[str], **_
@@ -151,7 +162,8 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         selected_fips = self.search_all_fips(cloud_account, project_identifier)
 
         return self._query_api.apply_query(
-            selected_fips, lambda a: not a["name"] in names
+            selected_fips,
+            self._query_api.query_prop_not_in("name", names),
         )
 
     def search_fips_name_contains(
@@ -168,7 +180,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_fips,
-            lambda a: all(name_snippet in a["name"] for name_snippet in name_snippets),
+            self._query_api.query_prop_contains("name", name_snippets),
         )
 
     def search_fips_name_not_contains(
@@ -185,9 +197,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_fips,
-            lambda a: all(
-                name_snippet not in a["name"] for name_snippet in name_snippets
-            ),
+            self._query_api.query_prop_not_contains("name", name_snippets),
         )
 
     def search_fips_id_in(
@@ -202,7 +212,9 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         """
         selected_fips = self.search_all_fips(cloud_account, project_identifier)
 
-        return self._query_api.apply_query(selected_fips, lambda a: a["id"] in ids)
+        return self._query_api.apply_query(
+            selected_fips, self._query_api.query_prop_in("id", ids)
+        )
 
     def search_fips_id_not_in(
         self, cloud_account: str, project_identifier: str, ids: List[str], **_
@@ -216,7 +228,9 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         """
         selected_fips = self.search_all_fips(cloud_account, project_identifier)
 
-        return self._query_api.apply_query(selected_fips, lambda a: not a["id"] in ids)
+        return self._query_api.apply_query(
+            selected_fips, self._query_api.query_prop_not_in("id", ids)
+        )
 
     def search_fips_down(
         self, cloud_account: str, project_identifier: str, **_
@@ -229,6 +243,24 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         """
         selected_fips = self.search_all_fips(cloud_account, project_identifier)
 
-        return self._query_api.apply_query(
-            selected_fips, lambda a: "DOWN" in a["status"]
+        return self._query_api.apply_query(selected_fips, self._query_down)
+
+    def search_fips_down_before(
+        self, cloud_account: str, project_identifier: str, days: int, **_
+    ) -> List[FloatingIP]:
+        """
+        Returns a list of floating ips with the status DOWN
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated floating ips with, can be empty for all projects
+        :param days: The number of days before which the servers should have last updated
+        :return: A list of floating ips matching the query
+        """
+        selected_fips = self.search_all_fips(cloud_account, project_identifier)
+
+        return self._query_api.apply_queries(
+            selected_fips,
+            [
+                self._query_down,
+                self._query_api.query_datetime_before("updated_at", days),
+            ],
         )
