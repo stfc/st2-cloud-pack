@@ -80,3 +80,32 @@ class ProjectAction(Action):
             cloud_account=cloud_account, project_details=details
         )
         return bool(project), project
+
+    def project_update(
+        self,
+        cloud_account: str,
+        project_identifier: str,
+        name: str,
+        email: str,
+        description: str,
+        is_enabled: bool,
+    ) -> Tuple[bool, Optional[Project]]:
+        """
+        Find and update a given project's properties.
+        :param cloud_account: The account from the clouds configuration to use
+        :param project_identifier: Name or Openstack ID of the project to update
+        :param name: Name of the project
+        :param email: Contact email of the project
+        :param description: Description of the project
+        :param is_enabled: Enable or disable the project
+        :return: status, optional project
+        """
+        details = ProjectDetails(
+            name=name, email=email, description=description, is_enabled=is_enabled
+        )
+        project = self._api.update_project(
+            cloud_account=cloud_account,
+            project_identifier=project_identifier,
+            project_details=details,
+        )
+        return bool(project), project

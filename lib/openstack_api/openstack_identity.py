@@ -167,3 +167,38 @@ class OpenstackIdentity(OpenstackWrapperBase):
         if project:
             found_email = self.get_project_email(project)
         return found_email
+
+    def update_project(
+        self,
+        cloud_account: str,
+        project_identifier: str,
+        project_details: ProjectDetails,
+    ):
+        """
+        Creates a given project with the provided details
+        :param cloud_account: The clouds entry to use
+        :param project_identifier: The name or Openstack ID for the project
+        :param project_details: A datastructure containing all the new project details
+        :return: A clouds project, or None if it was unsuccessful
+        """
+        project = self.find_mandatory_project(cloud_account, project_identifier)
+
+        params_to_update = {}
+        if project_details.name:
+            params_to_update.update({"name": project_details.name})
+        if project_details.description:
+            params_to_update.update({"description": project_details.description})
+        if project_details.is_enabled is not None:
+            params_to_update.update({"is_enabled": project_details.is_enabled})
+        if project_details.email is not None:
+            params_to_update.update({"tags": [project_details.email]})
+
+        with self._connection_cls(cloud_account) as conn:
+            try:
+                return conn.identity.update_project(
+                    project=project,
+                    **params_to_update,
+                )
+            except ConflictException as err:
+                # Strip out frames that are noise by rethrowing
+                raise ConflictException(err.message) from err
