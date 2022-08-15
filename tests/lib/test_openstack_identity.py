@@ -354,7 +354,7 @@ class OpenstackIdentityTests(unittest.TestCase):
             name=expected_details.name,
             description=expected_details.description,
             is_enabled=expected_details.is_enabled,
-            tags=[expected_details.email],
+            tags=["sometag", "anothertag", expected_details.email],
         )
 
     def test_update_project_email(self):
@@ -382,5 +382,5 @@ class OpenstackIdentityTests(unittest.TestCase):
         assert result == self.identity_api.update_project.return_value
         self.identity_api.update_project.assert_called_once_with(
             project=mock_project,
-            tags=[expected_details.email],
+            tags=["sometag", expected_details.email, "anothertag"],
         )
