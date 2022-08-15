@@ -292,3 +292,95 @@ class OpenstackIdentityTests(unittest.TestCase):
             project_identifier.strip(), ignore_missing=True
         )
         self.assertEqual(expected_email, found)
+
+    def test_update_project_without_tags(self):
+        """
+        Tests that the params and result are forwarded as-is to/from the
+        update_project API
+        """
+        mock_project = {"tags": []}
+        self.identity_api.find_project.return_value = mock_project
+
+        expected_details = ProjectDetails(
+            name=NonCallableMock(),
+            email="Test@Test.com",
+            description=NonCallableMock(),
+            is_enabled=NonCallableMock(),
+        )
+
+        result = self.instance.update_project(
+            cloud_account="test",
+            project_identifier="ProjectID",
+            project_details=expected_details,
+        )
+
+        self.mocked_connection.assert_called_with("test")
+
+        assert result == self.identity_api.update_project.return_value
+        self.identity_api.update_project.assert_called_once_with(
+            project=mock_project,
+            name=expected_details.name,
+            description=expected_details.description,
+            is_enabled=expected_details.is_enabled,
+            tags=[expected_details.email],
+        )
+
+    def test_update_project_with_tags(self):
+        """
+        Tests that the params and result are forwarded as-is to/from the
+        update_project API
+        """
+        mock_project = {"tags": ["sometag", "anothertag"]}
+        self.identity_api.find_project.return_value = mock_project
+
+        expected_details = ProjectDetails(
+            name=NonCallableMock(),
+            email="Test@Test.com",
+            description=NonCallableMock(),
+            is_enabled=NonCallableMock(),
+        )
+
+        result = self.instance.update_project(
+            cloud_account="test",
+            project_identifier="ProjectID",
+            project_details=expected_details,
+        )
+
+        self.mocked_connection.assert_called_with("test")
+
+        assert result == self.identity_api.update_project.return_value
+        self.identity_api.update_project.assert_called_once_with(
+            project=mock_project,
+            name=expected_details.name,
+            description=expected_details.description,
+            is_enabled=expected_details.is_enabled,
+            tags=[expected_details.email],
+        )
+
+    def test_update_project_email(self):
+        """
+        Tests that the params and result are forwarded as-is to/from the
+        update_project API
+        """
+        mock_project = {"tags": ["sometag", "existing@email.com", "anothertag"]}
+        self.identity_api.find_project.return_value = mock_project
+
+        expected_details = ProjectDetails(
+            name="",
+            email="new@email.com",
+            description="",
+        )
+
+        result = self.instance.update_project(
+            cloud_account="test",
+            project_identifier="ProjectID",
+            project_details=expected_details,
+        )
+
+        self.mocked_connection.assert_called_with("test")
+
+        assert result == self.identity_api.update_project.return_value
+        self.identity_api.update_project.assert_called_once_with(
+            project=mock_project,
+            tags=[expected_details.email],
+        )

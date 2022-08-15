@@ -190,15 +190,11 @@ class OpenstackIdentity(OpenstackWrapperBase):
             params_to_update.update({"description": project_details.description})
         if project_details.is_enabled is not None:
             params_to_update.update({"is_enabled": project_details.is_enabled})
-        if project_details.email is not None:
+        if project_details.email:
             params_to_update.update({"tags": [project_details.email]})
 
         with self._connection_cls(cloud_account) as conn:
-            try:
-                return conn.identity.update_project(
-                    project=project,
-                    **params_to_update,
-                )
-            except ConflictException as err:
-                # Strip out frames that are noise by rethrowing
-                raise ConflictException(err.message) from err
+            return conn.identity.update_project(
+                project=project,
+                **params_to_update,
+            )
