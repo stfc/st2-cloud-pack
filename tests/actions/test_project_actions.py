@@ -96,7 +96,7 @@ class TestProjectAction(OpenstackActionTestBase):
 
     def test_update_project(self):
         """
-        Tests that create project forwards the result when successful
+        Tests that update project forwards the result when successful
         """
         expected_proj_params = {
             i: NonCallableMock() for i in ["name", "description", "is_enabled"]
@@ -106,15 +106,22 @@ class TestProjectAction(OpenstackActionTestBase):
         # Check that default gets hard-coded in too
         packaged_proj = ProjectDetails(**expected_proj_params)
 
-        returned_values = self.action.project_update(
-            cloud_account="foo", project_identifier="bar", **expected_proj_params
-        )
-        self.identity_mock.update_project.assert_called_once_with(
-            cloud_account="foo", project_identifier="bar", project_details=packaged_proj
-        )
+        # Ensure is_enabled is assigned if specefied
+        for value in ["unchanged", "true", "false"]:
+            expected_proj_params["is_enabled"] = value
+            packaged_proj.is_enabled = None if value == "unchanged" else value == "true"
 
-        assert returned_values[0] is True
-        assert returned_values[1] == self.identity_mock.update_project.return_value
+            returned_values = self.action.project_update(
+                cloud_account="foo", project_identifier="bar", **expected_proj_params
+            )
+            self.identity_mock.update_project.assert_called_with(
+                cloud_account="foo",
+                project_identifier="bar",
+                project_details=packaged_proj,
+            )
+
+            assert returned_values[0] is True
+            assert returned_values[1] == self.identity_mock.update_project.return_value
 
     def test_run_dispatch(self):
         """

@@ -236,8 +236,6 @@ class OpenstackIdentity(OpenstackWrapperBase):
             params_to_update.update({"description": project_details.description})
         if project_details.is_enabled is not None:
             params_to_update.update({"is_enabled": project_details.is_enabled})
-
-        # Currently unsure how tags are updated without testing - here will assume the old tags are overwritten
         if project_details.email:
             new_tags = self.update_project_tag(
                 project["tags"], self._select_project_email, project_details.email

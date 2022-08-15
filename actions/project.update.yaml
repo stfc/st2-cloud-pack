@@ -31,7 +31,11 @@ parameters:
     required: false
     type: string
   is_enabled:
-    default: true
     description: Project is enabled or not
-    type: boolean
+    type: string
+    default: unchanged
+    enum:
+      - unchanged
+      - true
+      - false
 runner_type: python-script

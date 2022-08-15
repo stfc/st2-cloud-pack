@@ -88,7 +88,7 @@ class ProjectAction(Action):
         name: str,
         email: str,
         description: str,
-        is_enabled: bool,
+        is_enabled: str,
     ) -> Tuple[bool, Optional[Project]]:
         """
         Find and update a given project's properties.
@@ -97,11 +97,17 @@ class ProjectAction(Action):
         :param name: Name of the project
         :param email: Contact email of the project
         :param description: Description of the project
-        :param is_enabled: Enable or disable the project
+        :param is_enabled: Enable or disable the project (takes values of unchanged, true or false)
         :return: status, optional project
         """
+        is_enabled_value = None
+        if is_enabled == "true":
+            is_enabled_value = True
+        elif is_enabled == "false":
+            is_enabled_value = False
+
         details = ProjectDetails(
-            name=name, email=email, description=description, is_enabled=is_enabled
+            name=name, email=email, description=description, is_enabled=is_enabled_value
         )
         project = self._api.update_project(
             cloud_account=cloud_account,
