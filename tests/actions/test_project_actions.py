@@ -94,10 +94,32 @@ class TestProjectAction(OpenstackActionTestBase):
         assert returned_values[0] is False
         assert "could not be found" in returned_values[1]
 
+    def test_update_project(self):
+        """
+        Tests that create project forwards the result when successful
+        """
+        expected_proj_params = {
+            i: NonCallableMock() for i in ["name", "description", "is_enabled"]
+        }
+        expected_proj_params.update({"email": "Test@Test.com"})
+
+        # Check that default gets hard-coded in too
+        packaged_proj = ProjectDetails(**expected_proj_params)
+
+        returned_values = self.action.project_update(
+            cloud_account="foo", project_identifier="bar", **expected_proj_params
+        )
+        self.identity_mock.update_project.assert_called_once_with(
+            cloud_account="foo", project_identifier="bar", project_details=packaged_proj
+        )
+
+        assert returned_values[0] is True
+        assert returned_values[1] == self.identity_mock.update_project.return_value
+
     def test_run_dispatch(self):
         """
         Tests that dynamic dispatch works for all the expected methods
         """
         self._test_run_dynamic_dispatch(
-            ["project_create", "project_delete", "project_find"]
+            ["project_create", "project_delete", "project_find", "project_update"]
         )
