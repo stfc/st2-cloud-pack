@@ -2,7 +2,7 @@
 description: Create internal project orquesta workflow
 enabled: true
 entry_point: workflows/project.create.internal.yaml
-name: workflows.project.create.internal
+name: workflow.project.create.internal
 parameters:
   cloud_account:
     description: The clouds.yaml account to use whilst performing this action
