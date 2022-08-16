@@ -1,4 +1,4 @@
-from unittest.mock import create_autospec, NonCallableMock
+from unittest.mock import ANY, create_autospec, NonCallableMock
 from email_api.email_api import EmailApi
 from openstack_api.openstack_floating_ip import OpenstackFloatingIP
 
@@ -64,6 +64,63 @@ class TestServerActions(OpenstackActionTestBase):
             send_as_html=NonCallableMock(),
         )
         self.email_mock.send_email.assert_called_once()
+
+    def test_email_server_users(self):
+        """
+        Tests the action that sends emails to server users works correctly
+        """
+        arguments = {
+            "cloud_account": "test_account",
+            "project_identifier": "test_project",
+            "query_preset": "servers_older_than",
+            "message": "Message",
+            "properties_to_select": ["id", "user_email"],
+            "subject": "Subject",
+            "email_from": "testemail",
+            "email_cc": [],
+            "header": "",
+            "footer": "",
+            "attachment_filepaths": [],
+            "smtp_account": "",
+            "test_override": False,
+            "test_override_email": [""],
+            "send_as_html": False,
+            "days": 60,
+            "ids": None,
+            "names": None,
+            "name_snippets": None,
+        }
+        self.action.email_server_users(**arguments)
+        self.server_mock["search_servers_older_than"].assert_called_once_with(
+            arguments["cloud_account"],
+            arguments["project_identifier"],
+            days=arguments["days"],
+            ids=arguments["ids"],
+            names=arguments["names"],
+            name_snippets=arguments["name_snippets"],
+        )
+        self.query_mock.parse_and_output_table.assert_called_once_with(
+            cloud_account=arguments["cloud_account"],
+            items=self.server_mock["search_servers_older_than"].return_value,
+            object_type="server",
+            properties_to_select=arguments["properties_to_select"],
+            group_by="user_email",
+            get_html=arguments["send_as_html"],
+        )
+        self.email_mock.send_emails.assert_called_once_with(
+            smtp_accounts=ANY,
+            emails=ANY,
+            subject=arguments["subject"],
+            email_from=arguments["email_from"],
+            email_cc=arguments["email_cc"],
+            header=arguments["header"],
+            footer=arguments["footer"],
+            attachment_filepaths=arguments["attachment_filepaths"],
+            smtp_account=arguments["smtp_account"],
+            test_override=arguments["test_override"],
+            test_override_email=arguments["test_override_email"],
+            send_as_html=arguments["send_as_html"],
+        )
 
     @raises(ValueError)
     def test_email_server_users_no_email_error(self):
@@ -154,6 +211,63 @@ class TestServerActions(OpenstackActionTestBase):
 
         for query_preset in should_not_pass:
             self._check_email_server_users_raises(query_preset)
+
+    def test_email_floating_ip_users(self):
+        """
+        Tests the action that sends emails to floating ip project contacts works correctly
+        """
+        arguments = {
+            "cloud_account": "test_account",
+            "project_identifier": "test_project",
+            "query_preset": "fips_older_than",
+            "message": "Message",
+            "properties_to_select": ["id", "project_email"],
+            "subject": "Subject",
+            "email_from": "testemail",
+            "email_cc": [],
+            "header": "",
+            "footer": "",
+            "attachment_filepaths": [],
+            "smtp_account": "",
+            "test_override": False,
+            "test_override_email": [""],
+            "send_as_html": False,
+            "days": 60,
+            "ids": None,
+            "names": None,
+            "name_snippets": None,
+        }
+        self.action.email_floating_ip_users(**arguments)
+        self.floating_ip_mock["search_fips_older_than"].assert_called_once_with(
+            arguments["cloud_account"],
+            arguments["project_identifier"],
+            days=arguments["days"],
+            ids=arguments["ids"],
+            names=arguments["names"],
+            name_snippets=arguments["name_snippets"],
+        )
+        self.query_mock.parse_and_output_table.assert_called_once_with(
+            cloud_account=arguments["cloud_account"],
+            items=self.floating_ip_mock["search_fips_older_than"].return_value,
+            object_type="floating_ip",
+            properties_to_select=arguments["properties_to_select"],
+            group_by="project_email",
+            get_html=arguments["send_as_html"],
+        )
+        self.email_mock.send_emails.assert_called_once_with(
+            smtp_accounts=ANY,
+            emails=ANY,
+            subject=arguments["subject"],
+            email_from=arguments["email_from"],
+            email_cc=arguments["email_cc"],
+            header=arguments["header"],
+            footer=arguments["footer"],
+            attachment_filepaths=arguments["attachment_filepaths"],
+            smtp_account=arguments["smtp_account"],
+            test_override=arguments["test_override"],
+            test_override_email=arguments["test_override_email"],
+            send_as_html=arguments["send_as_html"],
+        )
 
     @raises(ValueError)
     def test_email_floating_ip_users_no_email_error(self):

@@ -124,12 +124,12 @@ class EmailActions(Action):
         )
 
         emails = self._query_api.parse_and_output_table(
-            cloud_account,
-            servers,
-            "server",
-            properties_to_select,
-            "user_email",
-            send_as_html,
+            cloud_account=cloud_account,
+            items=servers,
+            object_type="server",
+            properties_to_select=properties_to_select,
+            group_by="user_email",
+            get_html=send_as_html,
         )
 
         for key, value in emails.items():
@@ -201,17 +201,17 @@ class EmailActions(Action):
                     f"project_identifier needed for the query type '{query_preset}'"
                 )
 
-        servers = self._floating_ip_api[f"search_{query_preset}"](
+        floating_ips = self._floating_ip_api[f"search_{query_preset}"](
             cloud_account, project_identifier, **kwargs
         )
 
         emails = self._query_api.parse_and_output_table(
-            cloud_account,
-            servers,
-            "floating_ip",
-            properties_to_select,
-            "project_email",
-            send_as_html,
+            cloud_account=cloud_account,
+            items=floating_ips,
+            object_type="floating_ip",
+            properties_to_select=properties_to_select,
+            group_by="project_email",
+            get_html=send_as_html,
         )
 
         for key, value in emails.items():
