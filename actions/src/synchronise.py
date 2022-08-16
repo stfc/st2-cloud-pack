@@ -9,7 +9,7 @@ class SyncAction(Action):
             projects = conn.list_projects()
             count = 1
         for i in projects:
-            if count == 10:
+            if count == 3:
                 break
             if i["name"] != "admin":  # Check if project is the admin project
                 with OpenstackConnection(cloud) as conn:
@@ -34,7 +34,7 @@ class SyncAction(Action):
                         self._create_project(  # Start project creation
                             dupe_cloud=dupe_cloud, original=i
                         )
-                    count += 1
+                        count += 1
             self._grant_roles(
                 cloud=cloud, dupe_cloud=dupe_cloud, proj_users=stfc_users, project=i
             )  # Give correct roles to users
