@@ -240,12 +240,50 @@ Required parameters:
 - `api_key` - The api key of the account used to log into atlassian
 - `servicedesk_id` - The service desk to create tickets in. All tickets passed to the action will be created in this service desk. You cannot specify multiple service desks or different service desks for different tickets. You can find the list of service desks and their IDs at `<Your workspace>.atlassian.net/rest/servicedeskapi/servicedesk`
 - `requesttype_id` - The request type to create tickets under. You can find the list of request types and their IDs at `<Your workspace>.atlassian.net/rest/servicedeskapi/servicedesk/<servicedesk_id>/requesttype`
+
+Required for developers only:
+
 - `tickets_info` - The dictionary of information that will be used to generate tickets. When using this action in a workflow you will need to pass the output of the previous action as an `object` type. The dictionary should include the same formatting as laid out below.
   - `title` - A python string with one or more sections to format. Example: `"This is the {p[title]}"`
   - `body` - A python string with one or more sections to format. Can be made entirely of the formatting section. Example: `"This is the {p[body]}, there has been a problem with {p[server]}"` or `"{p[body]}"`
   - `server_list` - A python list of arbitrary length. The list will include one or more dictionaries with the following keys.
     - `dataTitle` - The keys in this dictionary will be used to format the `title` entry. The keys can be called anything as long as they are included in the string in `title`. Example: `{"title": "This replaces the {p[title]} value!"}`.
     - `dataBody` - The keys in this dictionary will be used to format the `body` entry. The keys can be called anything as long as they are included in the string in `body`. Example `{"body": "This replaces the {p[body]} value", "server": "host2400"}`
+
+## Openstack Check Actions
+
+`workflow.checks.old.snapshots`: Checks for snapshots that were last updated before this month.
+Required parameters:
+
+- `cloud_account` - The clouds.yaml account to use to connect to openstack
+- One of:
+  - `project_id` - The project to scan
+  - `all_projects` - Toggle to scan the whole cloud
+
+The following is required for creating tickets in atlassian. For more information see [Create Tickets](#create-tickets).
+
+- `email` - The email of the account used to log into atlassian
+- `api_key` - The api key of the account used to log into atlassian
+- `servicedesk_id` - The service desk to create tickets in.
+- `requesttype_id` - The request type to create tickets under.
+
+`workflow.checks.security.groups`: Checks for security groups that meet the given parameters.
+Required parameters:
+
+- `ip_prefix` - The IP addresses that are allowed to access the given port range. Example: `0.0.0.0/0` for the whole internet.
+- `max_port` - The upper limit of the port range.
+- `min_port` - the lower limit of the port range.
+- `cloud_account` - The clouds.yaml account to use to connect to openstack
+- One of:
+  - `project_id` - The project to scan
+  - `all_projects` - Toggle to scan the whole cloud
+
+The following is required for creating tickets in atlassian. For more information see [Create Tickets](#create-tickets).
+
+- `email` - The email of the account used to log into atlassian
+- `api_key` - The api key of the account used to log into atlassian
+- `servicedesk_id` - The service desk to create tickets in.
+- `requesttype_id` - The request type to create tickets under.
 
 # Rules
 
