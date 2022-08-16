@@ -60,7 +60,11 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         """
         filters = {"limit": 10000}
         if project_identifier != "":
-            filters.update({"project_id": project_identifier})
+            # list_floating_ips can only take project ids in the filters, not names so workaround
+            project = self._identity_api.find_mandatory_project(
+                cloud_account=cloud_account, project_identifier=project_identifier
+            )
+            filters.update({"project_id": project["id"]})
 
         with self._connection_cls(cloud_account) as conn:
             return conn.list_floating_ips(filters=filters)
