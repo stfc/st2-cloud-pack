@@ -7,10 +7,7 @@ class SyncAction(Action):
     def run(self, cloud, dupe_cloud):
         with OpenstackConnection(cloud) as conn:
             projects = conn.list_projects()
-            count = 1
         for i in projects:
-            if count == 3:
-                break
             if i["name"] != "admin":  # Check if project is the admin project
                 with OpenstackConnection(cloud) as conn:
                     project_users = conn.list_role_assignments(
@@ -19,12 +16,12 @@ class SyncAction(Action):
                         }  # Get list of users with access to project
                     )
                     stfc_users = []
-                    for y in project_users:
-                        yuser = conn.identity.get_user(y["user"])
-                        if yuser["domain_id"] == "5b43841657b74888b449975636082a3f":
-                            print(f"{yuser['name']} is in stfc")
+                    for user in project_users:
+                        user_info = conn.identity.get_user(user["user"])
+                        if user_info["domain_id"] == "5b43841657b74888b449975636082a3f":
+                            print(f"{user_info['name']} is in stfc")
                             stfc_users.append(
-                                yuser
+                                user_info
                             )  # Add user to list, so Can add them to project later
                 with OpenstackConnection(dupe_cloud) as conn:
                     dev_proj = conn.list_projects()
@@ -34,7 +31,7 @@ class SyncAction(Action):
                         self._create_project(  # Start project creation
                             dupe_cloud=dupe_cloud, original=i
                         )
-                        count += 1
+
             self._grant_roles(
                 cloud=cloud, dupe_cloud=dupe_cloud, proj_users=stfc_users, project=i
             )  # Give correct roles to users
@@ -86,6 +83,3 @@ class SyncAction(Action):
 
 # Do not sync admin project and IRIS IAM accounts, just FedID
 # Just sync projects with names and accounts that have access.
-
-# with OpenstackConnection("dev") as conn:
-#    print(dir(conn.identity))
