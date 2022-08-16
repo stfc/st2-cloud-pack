@@ -302,6 +302,19 @@ class OpenstackIdentityTests(unittest.TestCase):
         )
         self.assertEqual(expected_email, found)
 
+    @raises(ValueError)
+    def test_update_project_invalid_email_throws(self):
+        """
+        Tests calling the API wrapper with an invalid email will throw
+        """
+        self.instance.update_project(
+            "",
+            "",
+            ProjectDetails(
+                name="Test", email="NotAnEmail", description="", is_enabled=False
+            ),
+        )
+
     def test_update_project_without_tags(self):
         """
         Tests that the params and result are forwarded as-is to/from the

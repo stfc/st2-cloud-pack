@@ -237,6 +237,9 @@ class OpenstackIdentity(OpenstackWrapperBase):
         if project_details.is_enabled is not None:
             params_to_update.update({"is_enabled": project_details.is_enabled})
         if project_details.email:
+            if "@" not in project_details.email:
+                raise ValueError("The project contact email is invalid")
+
             new_tags = self.update_project_tag(
                 project["tags"], self._select_project_email, project_details.email
             )
