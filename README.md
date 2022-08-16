@@ -220,6 +220,15 @@ In addition, `hypervisor, server, user, float.ip and project` all have `list` ac
 - allows for more refined and complex searches than what openstack currently allows
 - uses the `queryopenstack` library: see usage here: <link to queryopestack git>
 
+## Openstack Actions
+
+`openstack.projects.sync`: Duplicates projects and user rights between openstack instances. This action will only copy user rights for users that are in the STFC domain.
+
+Required Parameters:
+
+- `cloud` - The original cloud to copy projects and users from
+- `dupe_cloud` - The secondary cloud to create the duplicated projects and user roles on.
+
 ## Reboot/Disable Hypervisor Actions
 
 `hypervisor.remove.icinga.downtime`: Removes all downtimes associated with a hypervisor
@@ -286,15 +295,6 @@ Required for developers only:
   - `server_list` - A python list of arbitrary length. The list will include one or more dictionaries with the following keys.
     - `dataTitle` - The keys in this dictionary will be used to format the `title` entry. The keys can be called anything as long as they are included in the string in `title`. Example: `{"title": "This replaces the {p[title]} value!"}`.
     - `dataBody` - The keys in this dictionary will be used to format the `body` entry. The keys can be called anything as long as they are included in the string in `body`. Example `{"body": "This replaces the {p[body]} value", "server": "host2400"}`
-
-## Openstack Actions
-
-`openstack.projects.sync`: Duplicates projects and user rights between openstack instances. This action will only copy user rights for users that are in the STFC domain.
-
-Required Parameters:
-
-- `cloud` - The original cloud to copy projects and users from
-- `dupe_cloud` - The secondary cloud to create the duplicated projects and user roles on.
 
 # Rules
 
