@@ -24,9 +24,10 @@ This repository uses automated testing using GitHub actions.
 Many steps are available to run locally with the following setup:
 
 ### Setup
+
 - Clone this repository
 - Install [pre-commit](https://pre-commit.com/#install). This will format your code
-on commit and in the future run many automated tests.
+  on commit and in the future run many automated tests.
 - If you are on Linux a helper script is included to setup and run Stackstorm unit tests.
   This is done by running `./run_tests.sh`
 - Additionally, tests can be run locally using `nose` through the IDE or CLI.
@@ -34,6 +35,7 @@ on commit and in the future run many automated tests.
 ## General Development Notes
 
 ### Coding Standards
+
 - Work must include appropriate unit tests to exercise the functionality (typically through mocking)
 - All changes must pass through the PR process and associated CI tests
 - The Black formatter enforces the coding style, rather than PEP8
@@ -43,6 +45,7 @@ Where possible we want to separate out the Stackstorm layer from our functionali
 This makes it trivial to test without having to invoke the ST2 testing mechanism.
 
 For actions the architecture looks something like:
+
 ```
 |actions or sensors| <-> | lib module | <-> | API endpoints |
 ```
@@ -227,6 +230,22 @@ action that:
 
 1. Disables hypervisor (same process as hypervisor disable)
 2. Schedules downtime on icinga TODO: convert to orquesta workflow
+
+## Create Tickets
+
+`atlassian.create.ticket`: Creates tickets in atlassian.
+Required parameters:
+
+- `email` - The email of the account used to log into atlassian
+- `api_key` - The api key of the account used to log into atlassian
+- `servicedesk_id` - The service desk to create tickets in. All tickets passed to the action will be created in this service desk. You cannot specify multiple service desks or different service desks for different tickets. You can find the list of service desks and their IDs at `<Your workspace>.atlassian.net/rest/servicedeskapi/servicedesk`
+- `requesttype_id` - The request type to create tickets under. You can find the list of request types and their IDs at `<Your workspace>.atlassian.net/rest/servicedeskapi/servicedesk/<servicedesk_id>/requesttype`
+- `tickets_info` - The dictionary of information that will be used to generate tickets. When using this action in a workflow you will need to pass the output of the previous action as an `object` type. The dictionary should include the same formatting as laid out below.
+  - `title` - A python string with one or more sections to format. Example: `"This is the {p[title]}"`
+  - `body` - A python string with one or more sections to format. Can be made entirely of the formatting section. Example: `"This is the {p[body]}, there has been a problem with {p[server]}"` or `"{p[body]}"`
+  - `server_list` - A python list of arbitrary length. The list will include one or more dictionaries with the following keys.
+    - `dataTitle` - The keys in this dictionary will be used to format the `title` entry. The keys can be called anything as long as they are included in the string in `title`. Example: `{"title": "This replaces the {p[title]} value!"}`.
+    - `dataBody` - The keys in this dictionary will be used to format the `body` entry. The keys can be called anything as long as they are included in the string in `body`. Example `{"body": "This replaces the {p[body]} value", "server": "host2400"}`
 
 # Rules
 
