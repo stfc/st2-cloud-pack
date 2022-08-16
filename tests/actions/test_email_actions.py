@@ -158,10 +158,10 @@ class TestServerActions(OpenstackActionTestBase):
     @raises(ValueError)
     def test_email_floating_ip_users_no_email_error(self):
         """
-        Tests the action that sends emails to floating ip users gives a value error when user_email
+        Tests the action that sends emails to floating ip users gives a value error when project_email
         is not present in the `properties_to_select`
         """
-        self.action.email_server_users(
+        self.action.email_floating_ip_users(
             cloud_account="test_account",
             project_identifier="",
             query_preset="fips_older_than",
