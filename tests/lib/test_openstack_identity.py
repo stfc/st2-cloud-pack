@@ -18,6 +18,15 @@ class OpenstackIdentityTests(unittest.TestCase):
     Identity module in the expected way
     """
 
+    # pylint:disable=too-few-public-methods
+    class MockProject:
+        def __init__(self, tags):
+            self.tags = tags
+            self.set_tags = Mock()
+
+        def __getitem__(self, item):
+            return getattr(self, item)
+
     def setUp(self) -> None:
         super().setUp()
         self.mocked_connection = MagicMock()
@@ -298,7 +307,7 @@ class OpenstackIdentityTests(unittest.TestCase):
         Tests that the params and result are forwarded as-is to/from the
         update_project API
         """
-        mock_project = {"tags": []}
+        mock_project = self.MockProject(tags=[])
         self.identity_api.find_project.return_value = mock_project
 
         expected_details = ProjectDetails(
@@ -315,6 +324,9 @@ class OpenstackIdentityTests(unittest.TestCase):
         )
 
         self.mocked_connection.assert_called_with("test")
+        mock_project.set_tags.assert_called_once_with(
+            self.identity_api, [expected_details.email]
+        )
 
         assert result == self.identity_api.update_project.return_value
         self.identity_api.update_project.assert_called_once_with(
@@ -330,7 +342,7 @@ class OpenstackIdentityTests(unittest.TestCase):
         Tests that the params and result are forwarded as-is to/from the
         update_project API
         """
-        mock_project = {"tags": ["sometag", "anothertag"]}
+        mock_project = self.MockProject(tags=["sometag", "anothertag"])
         self.identity_api.find_project.return_value = mock_project
 
         expected_details = ProjectDetails(
@@ -347,6 +359,9 @@ class OpenstackIdentityTests(unittest.TestCase):
         )
 
         self.mocked_connection.assert_called_with("test")
+        mock_project.set_tags.assert_called_once_with(
+            self.identity_api, ["sometag", "anothertag", expected_details.email]
+        )
 
         assert result == self.identity_api.update_project.return_value
         self.identity_api.update_project.assert_called_once_with(
@@ -362,7 +377,10 @@ class OpenstackIdentityTests(unittest.TestCase):
         Tests that the params and result are forwarded as-is to/from the
         update_project API
         """
-        mock_project = {"tags": ["sometag", "existing@email.com", "anothertag"]}
+        mock_project = self.MockProject(
+            tags=["sometag", "existing@email.com", "anothertag"]
+        )
+
         self.identity_api.find_project.return_value = mock_project
 
         expected_details = ProjectDetails(
@@ -378,6 +396,9 @@ class OpenstackIdentityTests(unittest.TestCase):
         )
 
         self.mocked_connection.assert_called_with("test")
+        mock_project.set_tags.assert_called_once_with(
+            self.identity_api, ["sometag", expected_details.email, "anothertag"]
+        )
 
         assert result == self.identity_api.update_project.return_value
         self.identity_api.update_project.assert_called_once_with(

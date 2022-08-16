@@ -33,9 +33,9 @@ parameters:
   is_enabled:
     description: Project is enabled or not
     type: string
-    default: unchanged
+    default: "unchanged"
     enum:
-      - unchanged
-      - true
-      - false
+      - "unchanged"
+      - "true"
+      - "false"
 runner_type: python-script

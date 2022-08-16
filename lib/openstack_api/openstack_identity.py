@@ -243,6 +243,11 @@ class OpenstackIdentity(OpenstackWrapperBase):
             params_to_update.update({"tags": new_tags})
 
         with self._connection_cls(cloud_account) as conn:
+            # This update_project does not currently update tags for some reason
+            # have to use project.set_tags instead
+            if "tags" in params_to_update:
+                project.set_tags(conn.identity, params_to_update["tags"])
+
             return conn.identity.update_project(
                 project=project,
                 **params_to_update,
