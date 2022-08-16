@@ -1,0 +1,129 @@
+---
+description: Sends email notifications to floating ip project contacts based on a given query.
+enabled: true
+entry_point: src/email_actions.py
+name: email.floating.ip.users
+parameters:
+  timeout:
+    default: 3600
+  submodule:
+    default: email_floating_ip_users
+    immutable: true
+    type: string
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    type: string
+    default: ""
+    required: true
+  project_identifier:
+    type: string
+    description: "Project (Name or ID) to search in - leave empty for all projects"
+    required: false
+    default: ""
+  query_preset:
+    description: "Name of a preset query - e.g fips_older_than: list all floating ips older than"
+    type: string
+    default: "fips_older_than"
+    enum:
+      - "all_fips"
+      - "fips_older_than"
+      - "fips_younger_than"
+      - "fips_last_updated_before"
+      - "fips_last_updated_after"
+      - "fips_id_in"
+      - "fips_id_not_in"
+      - "fips_name_in"
+      - "fips_name_not_in"
+      - "fips_name_contains"
+      - "fips_name_not_contains"
+      - "fips_down"
+      - "fips_down_before"
+    required: true
+  properties_to_select:
+    type: array
+    description: "Properties to display for floating ips, must include project_email"
+    required: true
+    default:
+      - "id"
+      - "name"
+      - "status"
+      - "project_name"
+      - "project_email"
+  email_from:
+    type: string
+    description: "Email address to send email from"
+    required: true
+    default: "cloud-support@stfc.ac.uk"
+    immutable: true
+  email_cc:
+    description: "Email Addresses to Cc in (comma separated)"
+    required: false
+    type: array
+  header:
+    type: string
+    description: "Email Header filepath"
+    required: true
+    default: "/opt/stackstorm/packs/stackstorm_openstack/email_templates/header.html"
+  message:
+    type: string
+    description: "Email message to put in the body"
+    required: true
+  footer:
+    type: string
+    description: "Email footer filepath"
+    required: true
+    default: "/opt/stackstorm/packs/stackstorm_openstack/email_templates/footer.html"
+  attachment_filepaths:
+    description: "Filepaths to email attachments (comma separated)"
+    required: false
+    type: array
+  subject:
+    type: string
+    description: "Email subject"
+    required: true
+    default: "Test Message"
+  smtp_account:
+    type: string
+    description: "SMTP Account to use. Must be configured in in the pack settings."
+    required: true
+    default: "default"
+  send_as_html:
+    type: boolean
+    description: "Send email body as HTML"
+    required: true
+    default: true
+  test_override:
+    type: boolean
+    description: "Overrides email sending to a single address for testing purposes (Will only send a subset of emails if there are lots of them)"
+    required: true
+    default: false
+  test_override_email:
+    type: array
+    description: "Email to send the output to if test_override is checked"
+    required: true
+    default:
+      - ""
+  names:
+    type: array
+    description: "Names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)"
+    required: true
+    default:
+      - ""
+  ids:
+    type: array
+    description: "ID to search openstack_resource (ignored unless query_preset=id_in etc)"
+    required: true
+    default:
+      - ""
+  name_snippets:
+    type: array
+    description: "Name snippets to search openstack_resource (ignored unless query_preset=name_contains etc)"
+    required: true
+    default:
+      - ""
+  days:
+    type: integer
+    description: "Number of days threshold for selecting floating ips (ignored unless submodule=fips_older_than or fips_younger_than"
+    required: true
+    default: 60
+runner_type: python-script
