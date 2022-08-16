@@ -164,6 +164,43 @@ Optional Parameters:
   `attachment_filepaths`: Array of filepaths for file attache=ments
 - default: `None` - not required
 
+## Openstack Check Workflows
+
+`workflow.checks.old.snapshots`: Checks for snapshots that were last updated before this month.
+
+Required parameters:
+
+- `cloud_account` - The clouds.yaml account to use to connect to openstack
+- One of:
+  - `project_id` - The project to scan
+  - `all_projects` - Toggle to scan the whole cloud
+
+The following is required for creating tickets in atlassian. For more information see [Create Tickets](#create-tickets).
+
+- `email` - The email of the account used to log into atlassian
+- `api_key` - The api key of the account used to log into atlassian
+- `servicedesk_id` - The service desk to create tickets in.
+- `requesttype_id` - The request type to create tickets under.
+
+`workflow.checks.security.groups`: Checks for security groups that meet the given parameters.
+
+Required parameters:
+
+- `ip_prefix` - The IP addresses that are allowed to access the given port range. Example: `0.0.0.0/0` for the whole internet.
+- `max_port` - The upper limit of the port range.
+- `min_port` - the lower limit of the port range.
+- `cloud_account` - The clouds.yaml account to use to connect to openstack
+- One of:
+  - `project_id` - The project to scan
+  - `all_projects` - Toggle to scan the whole cloud
+
+The following is required for creating tickets in atlassian. For more information see [Create Tickets](#create-tickets).
+
+- `email` - The email of the account used to log into atlassian
+- `api_key` - The api key of the account used to log into atlassian
+- `servicedesk_id` - The service desk to create tickets in.
+- `requesttype_id` - The request type to create tickets under.
+
 # Actions
 
 Contains the following actions:
@@ -250,40 +287,14 @@ Required for developers only:
     - `dataTitle` - The keys in this dictionary will be used to format the `title` entry. The keys can be called anything as long as they are included in the string in `title`. Example: `{"title": "This replaces the {p[title]} value!"}`.
     - `dataBody` - The keys in this dictionary will be used to format the `body` entry. The keys can be called anything as long as they are included in the string in `body`. Example `{"body": "This replaces the {p[body]} value", "server": "host2400"}`
 
-## Openstack Check Actions
+## Openstack Actions
 
-`workflow.checks.old.snapshots`: Checks for snapshots that were last updated before this month.
-Required parameters:
+`openstack.projects.sync`: Duplicates projects and user rights between openstack instances. This action will only copy user rights for users that are in the STFC domain.
 
-- `cloud_account` - The clouds.yaml account to use to connect to openstack
-- One of:
-  - `project_id` - The project to scan
-  - `all_projects` - Toggle to scan the whole cloud
+Required Parameters:
 
-The following is required for creating tickets in atlassian. For more information see [Create Tickets](#create-tickets).
-
-- `email` - The email of the account used to log into atlassian
-- `api_key` - The api key of the account used to log into atlassian
-- `servicedesk_id` - The service desk to create tickets in.
-- `requesttype_id` - The request type to create tickets under.
-
-`workflow.checks.security.groups`: Checks for security groups that meet the given parameters.
-Required parameters:
-
-- `ip_prefix` - The IP addresses that are allowed to access the given port range. Example: `0.0.0.0/0` for the whole internet.
-- `max_port` - The upper limit of the port range.
-- `min_port` - the lower limit of the port range.
-- `cloud_account` - The clouds.yaml account to use to connect to openstack
-- One of:
-  - `project_id` - The project to scan
-  - `all_projects` - Toggle to scan the whole cloud
-
-The following is required for creating tickets in atlassian. For more information see [Create Tickets](#create-tickets).
-
-- `email` - The email of the account used to log into atlassian
-- `api_key` - The api key of the account used to log into atlassian
-- `servicedesk_id` - The service desk to create tickets in.
-- `requesttype_id` - The request type to create tickets under.
+- `cloud` - The original cloud to copy projects and users from
+- `dupe_cloud` - The secondary cloud to create the duplicated projects and user roles on.
 
 # Rules
 
