@@ -308,6 +308,16 @@ to handle rabbitmq message commands.
 - matches trigger `rabbit.message` with `message_type=RESTART_VM` and calls `server.restart`
   using `stackstorm_send_notification.rabbit.execute`
 
+## Openstack rules
+
+`openstack.deletedmachines.rule`
+
+- matches trigger `openstack.deletingmachines` when a machine is stuck in the deleting state for more than 10m. Calls the `atlassian.create.tickets` action. The sensor for this rule runs every 7 days.
+
+`openstack.loadbalancers.rule`
+
+- matches trigger `openstack.loadbalancer` when a loadbalancer or amphora is not pingable or is reporting an error. Calls the `atlassian.create.tickets` action. The sensor for this rule runs every 7 days.
+
 # Aliases and Chatops
 
 A number of Aliases are pre-configured to allow listing of information using ChatOps. Aliases are a more human-readable
