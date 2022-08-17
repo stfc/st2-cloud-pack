@@ -12,6 +12,14 @@ class OpenstackFloatingIPTests(unittest.TestCase):
     Network module in the expected way
     """
 
+    # pylint:disable=too-few-public-methods,invalid-name
+    class MockProject:
+        def __init__(self):
+            self.id = "ProjectID"
+
+        def __getitem__(self, item):
+            return getattr(self, item)
+
     def setUp(self) -> None:
         super().setUp()
         self.mocked_connection = MagicMock()
@@ -65,7 +73,7 @@ class OpenstackFloatingIPTests(unittest.TestCase):
         """
         Tests calling search_all_fips
         """
-        self.identity_module.find_mandatory_project.return_value = {"id": "ProjectID"}
+        self.identity_module.find_mandatory_project.return_value = self.MockProject()
         self.instance.search_all_fips(
             cloud_account="test", project_identifier="ProjectName"
         )
@@ -236,7 +244,7 @@ class OpenstackFloatingIPTests(unittest.TestCase):
 
     def test_search_fip_id_in(self):
         """
-        Tests calling search_fip_id_in
+        Tests calling search_fips_id_in
         """
 
         self.instance.search_all_fips = MagicMock()
@@ -250,7 +258,7 @@ class OpenstackFloatingIPTests(unittest.TestCase):
 
     def test_search_fips_id_not_in(self):
         """
-        Tests calling search_fip_id_not_in
+        Tests calling search_fips_id_not_in
         """
 
         self.instance.search_all_fips = MagicMock()

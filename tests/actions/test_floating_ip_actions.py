@@ -94,14 +94,6 @@ class TestFloatingIPActions(OpenstackActionTestBase):
         assert returned[0] is False
         assert "could not be found" in returned[1]
 
-    def test_run_has_expected_method_names(self):
-        """
-        Tests that run has the expected methods
-        """
-        expected_method_names = ["floating_ip_create", "floating_ip_get"]
-
-        self._test_run_dynamic_dispatch(expected_method_names)
-
     def test_list(self):
         """
         Tests the action returns the found floating ips

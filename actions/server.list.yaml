@@ -5,7 +5,7 @@ entry_point: src/server_actions.py
 name: server.list
 parameters:
   timeout:
-    default: 99999
+    default: 5400
   submodule:
     default: server_list
     type: string
