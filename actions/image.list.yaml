@@ -5,7 +5,7 @@ entry_point: src/image_actions.py
 name: image.list
 parameters:
   timeout:
-    default: 99999
+    default: 5400
   submodule:
     default: image_list
     type: string
