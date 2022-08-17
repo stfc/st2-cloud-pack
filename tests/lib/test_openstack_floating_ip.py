@@ -65,15 +65,19 @@ class OpenstackFloatingIPTests(unittest.TestCase):
         """
         Tests calling search_all_fips
         """
+        self.identity_module.find_mandatory_project.return_value = {"id": "ProjectID"}
         self.instance.search_all_fips(
-            cloud_account="test", project_identifier="project"
+            cloud_account="test", project_identifier="ProjectName"
         )
 
         self.mocked_connection.assert_called_once_with("test")
 
+        self.identity_module.find_mandatory_project.assert_called_once_with(
+            cloud_account="test", project_identifier="ProjectName"
+        )
         self.api.list_floating_ips.assert_called_once_with(
             filters={
-                "project_id": "project",
+                "project_id": "ProjectID",
                 "limit": 10000,
             }
         )
