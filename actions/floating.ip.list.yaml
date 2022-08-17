@@ -62,7 +62,7 @@ parameters:
     required: true
     type: boolean
   names:
-    description: "Names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)"
+    description: "Names to search openstack_resource (ignored unless query_preset=name_in etc)"
     type: array
     default:
       - ""

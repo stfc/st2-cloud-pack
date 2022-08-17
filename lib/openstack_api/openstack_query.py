@@ -1,5 +1,6 @@
 import datetime
 from typing import Any, Callable, Dict, List
+
 from tabulate import tabulate
 from openstack_api.openstack_connection import OpenstackConnection
 
@@ -36,19 +37,41 @@ class OpenstackQuery(OpenstackWrapperBase):
         """
         return lambda a: a[prop] not in values
 
+    def _query_if_prop_exists(
+        self, prop: str, query_func: Callable[[Any], bool], default_result: bool
+    ):
+        """
+        Returns the result of a query if the property actually exists, otherwise returns a default value
+        useful when openstack parameters may be None e.g. a project description
+        :param prop: Property of an openstack object to query e.g. id
+        :param query_func: Query function to use if the property isn't None
+        :param default_result: Boolean value to return for the query if the property is None
+        """
+
+        def check_func(item):
+            if not item[prop] is None:
+                return query_func(item)
+            return default_result
+
+        return check_func
+
     def query_prop_contains(self, prop: str, snippets: List[str]):
         """
         Returns a query for checking if a property value contains all the snippets given in
         a list
         """
-        return lambda a: all(snippet in a[prop] for snippet in snippets)
+        return self._query_if_prop_exists(
+            prop, lambda a: all(snippet in a[prop] for snippet in snippets), False
+        )
 
     def query_prop_not_contains(self, prop: str, snippets: List[str]):
         """
         Returns a query for checking if a property value does not contain all the snippets
         given in a list
         """
-        return lambda a: all(snippet not in a[prop] for snippet in snippets)
+        return self._query_if_prop_exists(
+            prop, lambda a: all(snippet not in a[prop] for snippet in snippets), True
+        )
 
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)
@@ -198,12 +221,13 @@ class OpenstackQuery(OpenstackWrapperBase):
 
     def get_default_property_funcs(
         self, object_type: str, cloud_account: str
-    ) -> Dict[str, Callable[[Any], bool]]:
+    ) -> Dict[str, Callable[[Any], Any]]:
         """
         Returns a list of default property functions for use with 'parse_properties' above
         :param object_type: type of openstack object the functions will be used for e.g. server
         :param cloud_account: The account from the clouds configuration to use
-        :return: Dict[str, str] (each key containing html or plaintext table of results)
+        :return: Dict[str, Callable[[Any], Any]] functions that return properties from openstack
+                 objects
         """
 
         def get_project_prop(project_id, prop):
@@ -227,6 +251,10 @@ class OpenstackQuery(OpenstackWrapperBase):
                 "project_email": lambda a: self._identity_api.find_project_email(
                     cloud_account, a["project_id"]
                 ),
+            }
+        if object_type == "project":
+            return {
+                "email": self._identity_api.get_project_email,
             }
         if object_type == "image":
             return {

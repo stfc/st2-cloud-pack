@@ -41,10 +41,6 @@ parameters:
       - "servers_errored_and_shutoff"
       - "servers_shutoff_before"
     required: true
-  search_by:
-    default: server
-    type: string
-    immutable: true
   properties_to_select:
     default:
       - "id"
@@ -66,7 +62,7 @@ parameters:
     required: true
     type: boolean
   names:
-    description: "Names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)"
+    description: "Names to search openstack_resource (ignored unless query_preset=name_in etc)"
     type: array
     default:
       - ""

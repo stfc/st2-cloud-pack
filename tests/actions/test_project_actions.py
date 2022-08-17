@@ -1,7 +1,9 @@
 from unittest.mock import create_autospec, NonCallableMock
 
 from openstack_api.openstack_identity import OpenstackIdentity
-from src.project_action import ProjectAction
+from openstack_api.openstack_project import OpenstackProject
+from openstack_api.openstack_query import OpenstackQuery
+from src.project_actions import ProjectAction
 from structs.project_details import ProjectDetails
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase
 
@@ -20,8 +22,18 @@ class TestProjectAction(OpenstackActionTestBase):
         """
         super().setUp()
         self.identity_mock = create_autospec(OpenstackIdentity)
+        self.project_mock = create_autospec(OpenstackProject)
+        # Want to keep __getitem__ otherwise all f"search_{query_preset}"
+        # calls will go to the same mock
+        self.project_mock.__getitem__ = OpenstackProject.__getitem__
+
+        self.query_mock = create_autospec(OpenstackQuery)
         self.action: ProjectAction = self.get_action_instance(
-            api_mocks=self.identity_mock
+            api_mocks={
+                "openstack_identity_api": self.identity_mock,
+                "openstack_project_api": self.project_mock,
+                "openstack_query_api": self.query_mock,
+            }
         )
 
     def test_project_action_can_be_instantiated(self):
@@ -128,5 +140,30 @@ class TestProjectAction(OpenstackActionTestBase):
         Tests that dynamic dispatch works for all the expected methods
         """
         self._test_run_dynamic_dispatch(
-            ["project_create", "project_delete", "project_find", "project_update"]
+            [
+                "project_create",
+                "project_delete",
+                "project_find",
+                "project_list",
+                "project_update",
+            ]
         )
+
+    def test_project_list(self):
+        """
+        Tests the action returns the found projects
+        """
+        for query_preset in OpenstackProject.SEARCH_QUERY_PRESETS:
+            self.action.project_list(
+                cloud_account=NonCallableMock(),
+                query_preset=query_preset,
+                properties_to_select=NonCallableMock(),
+                group_by=NonCallableMock(),
+                get_html=NonCallableMock(),
+                days=60,
+                ids=NonCallableMock(),
+                names=NonCallableMock(),
+                name_snippets=NonCallableMock(),
+                description_snippets=NonCallableMock(),
+            )
+            self.project_mock[f"search_{query_preset}"].assert_called_once()
