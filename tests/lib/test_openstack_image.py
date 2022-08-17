@@ -19,7 +19,7 @@ class OpenstackImageTests(unittest.TestCase):
             self.instance = OpenstackImage(self.mocked_connection)
             self.identity_module = identity_mock.return_value
 
-        self.api = self.mocked_connection.return_value.__enter__.return_value
+        self.api = self.mocked_connection.return_value.__enter__.return_value.image
 
         self.mock_image_list = [
             {
@@ -50,10 +50,8 @@ class OpenstackImageTests(unittest.TestCase):
 
         self.mocked_connection.assert_called_once_with("test")
 
-        self.api.list_images.assert_called_once_with(
-            filters={
-                "limit": 10000,
-            }
+        self.api.images.assert_called_once_with(
+            limit=10000,
         )
 
     def test_search_all_images(self):
@@ -70,11 +68,9 @@ class OpenstackImageTests(unittest.TestCase):
         self.identity_module.find_mandatory_project.assert_called_once_with(
             cloud_account="test", project_identifier="ProjectName"
         )
-        self.api.list_images.assert_called_once_with(
-            filters={
-                "project_id": "ProjectID",
-                "limit": 10000,
-            }
+        self.api.images.assert_called_once_with(
+            owner="ProjectID",
+            limit=10000,
         )
 
     @mock.patch("openstack_api.openstack_query.datetime", wraps=datetime)

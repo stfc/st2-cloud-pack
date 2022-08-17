@@ -53,10 +53,10 @@ class OpenstackImage(OpenstackWrapperBase):
             project = self._identity_api.find_mandatory_project(
                 cloud_account=cloud_account, project_identifier=project_identifier
             )
-            filters.update({"project_id": project["id"]})
+            filters.update({"owner": project["id"]})
 
         with self._connection_cls(cloud_account) as conn:
-            return conn.list_images(filters=filters)
+            return conn.image.images(**filters)
 
     def search_images_older_than(
         self, cloud_account: str, project_identifier: str, days: int, **_
