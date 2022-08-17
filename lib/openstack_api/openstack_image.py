@@ -22,18 +22,29 @@ class OpenstackImage(OpenstackWrapperBase):
         "images_name_not_in",
         "images_name_contains",
         "images_name_not_contains",
+        "images_non_existent_project",
     ]
 
     # Lists possible queries presets that don't require a project to function
     SEARCH_QUERY_PRESETS_NO_PROJECT: List[str] = [
         "images_older_than",
         "images_last_updated_before",
+        "images_non_existent_project",
     ]
 
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)
         self._identity_api = OpenstackIdentity(self._connection_cls)
         self._query_api = OpenstackQuery(self._connection_cls)
+
+    # Queries to be used for OpenstackQuery
+    def _query_non_existent_project(self, cloud_account: str):
+        """
+        Returns a query that returns true when an image has a non-existent project
+        """
+        return (
+            lambda a: self._identity_api.find_project(cloud_account, a["owner"]) is None
+        )
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -223,4 +234,19 @@ class OpenstackImage(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_images, self._query_api.query_prop_not_in("id", ids)
+        )
+
+    def search_images_non_existent_project(
+        self, cloud_account: str, project_identifier: str, **_
+    ) -> List[Image]:
+        """
+        Returns a list of images with ids that aren't in the list given
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated images with, can be empty for all projects
+        :return: A list of images matching the query
+        """
+        selected_images = self.search_all_images(cloud_account, project_identifier)
+
+        return self._query_api.apply_query(
+            selected_images, self._query_non_existent_project(cloud_account)
         )

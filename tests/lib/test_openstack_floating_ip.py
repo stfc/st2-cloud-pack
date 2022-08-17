@@ -236,7 +236,7 @@ class OpenstackFloatingIPTests(unittest.TestCase):
 
     def test_search_fip_id_in(self):
         """
-        Tests calling search_fip_id_in
+        Tests calling search_fips_id_in
         """
 
         self.instance.search_all_fips = MagicMock()
@@ -250,7 +250,7 @@ class OpenstackFloatingIPTests(unittest.TestCase):
 
     def test_search_fips_id_not_in(self):
         """
-        Tests calling search_fip_id_not_in
+        Tests calling search_fips_id_not_in
         """
 
         self.instance.search_all_fips = MagicMock()

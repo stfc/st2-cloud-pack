@@ -25,18 +25,21 @@ class OpenstackImageTests(unittest.TestCase):
             {
                 "id": "imageid1",
                 "name": "ScientificLinux-6",
+                "owner": "projectid1",
                 "created_at": "2020-06-28T14:00:00Z",
                 "updated_at": "2020-06-28T14:00:00Z",
             },
             {
                 "id": "imageid2",
                 "name": "ScientificLinux-7",
+                "owner": "projectid1",
                 "created_at": "2021-04-28T14:00:00Z",
                 "updated_at": "2021-06-28T14:00:00Z",
             },
             {
                 "id": "imageid3",
                 "name": "Rocky Linux 8",
+                "owner": "projectid2",
                 "created_at": "2021-06-28T14:00:00Z",
                 "updated_at": "2021-06-28T14:00:00Z",
             },
@@ -227,7 +230,7 @@ class OpenstackImageTests(unittest.TestCase):
 
     def test_search_image_id_in(self):
         """
-        Tests calling search_image_id_in
+        Tests calling search_images_id_in
         """
 
         self.instance.search_all_images = MagicMock()
@@ -241,7 +244,7 @@ class OpenstackImageTests(unittest.TestCase):
 
     def test_search_images_id_not_in(self):
         """
-        Tests calling search_image_id_not_in
+        Tests calling search_images_id_not_in
         """
 
         self.instance.search_all_images = MagicMock()
@@ -252,3 +255,19 @@ class OpenstackImageTests(unittest.TestCase):
         )
 
         self.assertEqual(result, [self.mock_image_list[2]])
+
+    def test_search_images_non_existent_project(self):
+        """
+        Tests calling search_images_non_existent_project
+        """
+
+        self.instance.search_all_images = MagicMock()
+        self.instance.search_all_images.return_value = self.mock_image_list
+
+        self.identity_module.find_project.side_effect = [None, "Project", None]
+
+        result = self.instance.search_images_non_existent_project(
+            cloud_account="test", project_identifier=""
+        )
+
+        self.assertEqual(result, [self.mock_image_list[0], self.mock_image_list[2]])

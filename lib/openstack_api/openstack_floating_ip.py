@@ -37,7 +37,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
     # Queries to be used for OpenstackQuery
     def _query_down(self, floating_ip: FloatingIP):
         """
-        Returns whether a floating has down in its status
+        Returns whether a floating ip has down in its status
         """
         return "DOWN" in floating_ip["status"]
 
@@ -64,7 +64,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
             project = self._identity_api.find_mandatory_project(
                 cloud_account=cloud_account, project_identifier=project_identifier
             )
-            filters.update({"project_id": project["id"]})
+            filters.update({"project_id": project.id})
 
         with self._connection_cls(cloud_account) as conn:
             return conn.list_floating_ips(filters=filters)

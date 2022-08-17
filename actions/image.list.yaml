@@ -36,6 +36,7 @@ parameters:
       - "images_name_not_in"
       - "images_name_contains"
       - "images_name_not_contains"
+      - "images_non_existent_project"
     required: true
   properties_to_select:
     default:
