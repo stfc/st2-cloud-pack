@@ -1,55 +1,52 @@
 ---
-description: List floating ips
+description: List images
 enabled: true
-entry_point: src/floating_ip_actions.py
-name: floating.ip.list
+entry_point: src/image_actions.py
+name: image.list
 parameters:
   timeout:
     default: 99999
   submodule:
-    default: floating_ip_list
+    default: image_list
     type: string
     immutable: true
   cloud_account:
-    description: The clouds.yaml account to use whilst performing this action
+    description: "The clouds.yaml account to use whilst performing this action"
     default: ""
     required: true
     type: string
   project_identifier:
     type: string
-    description: Project (Name or ID) to search in - leave empty for all projects
+    description: "Project (Name or ID) to search in - leave empty for all projects"
     required: false
     default: ""
   query_preset:
     type: string
-    description: "Name of a preset query - e.g fips_older_than: list all floating ips older than"
-    default: fips_older_than
+    description: "Name of a preset query - e.g images_older_than: list all images older than"
+    default: images_older_than
     enum:
-      - "all_fips"
-      - "fips_older_than"
-      - "fips_younger_than"
-      - "fips_last_updated_before"
-      - "fips_last_updated_after"
-      - "fips_id_in"
-      - "fips_id_not_in"
-      - "fips_name_in"
-      - "fips_name_not_in"
-      - "fips_name_contains"
-      - "fips_name_not_contains"
-      - "fips_down"
-      - "fips_down_before"
+      - "all_images"
+      - "images_older_than"
+      - "images_younger_than"
+      - "images_last_updated_before"
+      - "images_last_updated_after"
+      - "images_id_in"
+      - "images_id_not_in"
+      - "images_name_in"
+      - "images_name_not_in"
+      - "images_name_contains"
+      - "images_name_not_contains"
     required: true
   properties_to_select:
     default:
       - "id"
       - "name"
-      - "floating_ip_address"
       - "status"
       - "updated_at"
       - "project_name"
       - "project_email"
     type: array
-    description: "Properties to display for the floating ips that match the chosen query"
+    description: "Properties to display for the images that match the chosen query"
     required: true
   group_by:
     description: "Property to group the selected resources by e.g. project_email. Leave empty for no grouping."
@@ -80,7 +77,7 @@ parameters:
       - ""
     required: true
   days:
-    description: "Number of days threshold for selecting floating ips (ignored unless query_preset=fips_older_than or fips_last_updated_before etc)"
+    description: "Number of days threshold for selecting floating ips (ignored unless query_preset=images_older_than or images_last_updated_before etc)"
     type: integer
     default: 60
     required: true

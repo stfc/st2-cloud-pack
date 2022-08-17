@@ -228,6 +228,13 @@ class OpenstackQuery(OpenstackWrapperBase):
                     cloud_account, a["project_id"]
                 ),
             }
+        if object_type == "image":
+            return {
+                "project_name": lambda a: get_project_prop(a["owner"], "name"),
+                "project_email": lambda a: self._identity_api.find_project_email(
+                    cloud_account, a["owner"]
+                ),
+            }
         raise ValueError(f"Unsupported object type '{object_type}'")
 
     # pylint:disable=too-many-arguments
@@ -243,6 +250,7 @@ class OpenstackQuery(OpenstackWrapperBase):
         """
         Finds all servers belonging to a project (or all servers if project is empty)
         :param cloud_account: The account from the clouds configuration to use
+        :param items: List of items to obtain properties from
         :param object_type: type of openstack object the functions will be used for e.g. server
         :param properties_to_select: The list of properties to select and output from the found servers
         :param group_by: Property to group returned results - can be empty for no grouping
