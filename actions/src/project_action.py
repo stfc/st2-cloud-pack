@@ -101,9 +101,9 @@ class ProjectAction(Action):
         :return: status, optional project
         """
         is_enabled_value = None
-        if is_enabled == "true":
+        if is_enabled.casefold() == "true".casefold():
             is_enabled_value = True
-        elif is_enabled == "false":
+        elif is_enabled.casefold() == "false".casefold():
             is_enabled_value = False
 
         details = ProjectDetails(

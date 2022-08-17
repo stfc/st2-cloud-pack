@@ -144,17 +144,17 @@ class OpenstackIdentity(OpenstackWrapperBase):
 
     def _find_project_tag_index(
         self, project_tags: List[str], select_func: Callable[[str], bool]
-    ) -> int:
+    ) -> Optional[int]:
         """
         Returns the index of a project tag matching a given query
         :param project_tags: The project tags
         :param select_func: Function that determines whether a tag should be selected
-        :return: The index of found tag or -1
+        :return: The index of found tag or None
         """
         for i, project_tag in enumerate(project_tags):
             if select_func(project_tag):
                 return i
-        return -1
+        return None
 
     def find_project_tag(
         self, project_tags: List[str], select_func: Callable[[str], bool]
@@ -166,7 +166,7 @@ class OpenstackIdentity(OpenstackWrapperBase):
         :return: The tag found or None
         """
         tag_index = self._find_project_tag_index(project_tags, select_func)
-        if tag_index >= 0:
+        if tag_index is not None:
             return project_tags[tag_index]
         return None
 
@@ -181,10 +181,10 @@ class OpenstackIdentity(OpenstackWrapperBase):
         :param project_tags: The project tags
         :param select_func: Function that determines whether a tag should be selected
         :param new_value: New value of the tag
-        :return: The index of found tag or -1
+        :return: The index of found tag or None
         """
         tag_index = self._find_project_tag_index(project_tags, select_func)
-        if tag_index >= 0:
+        if tag_index is not None:
             project_tags[tag_index] = new_value
         else:
             project_tags.append(new_value)
