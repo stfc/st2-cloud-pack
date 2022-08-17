@@ -164,6 +164,43 @@ Optional Parameters:
   `attachment_filepaths`: Array of filepaths for file attache=ments
 - default: `None` - not required
 
+## Openstack Check Workflows
+
+`workflow.checks.old.snapshots`: Checks for snapshots that were last updated before this month.
+
+Required parameters:
+
+- `cloud_account` - The clouds.yaml account to use to connect to openstack
+- One of:
+  - `project_id` - The project to scan
+  - `all_projects` - Toggle to scan the whole cloud
+
+The following is required for creating tickets in atlassian. For more information see [Create Tickets](#create-tickets).
+
+- `email` - The email of the account used to log into atlassian
+- `api_key` - The api key of the account used to log into atlassian
+- `servicedesk_id` - The service desk to create tickets in.
+- `requesttype_id` - The request type to create tickets under.
+
+`workflow.checks.security.groups`: Checks for security groups that meet the given parameters.
+
+Required parameters:
+
+- `ip_prefix` - The IP addresses that are allowed to access the given port range. Example: `0.0.0.0/0` for the whole internet.
+- `max_port` - The upper limit of the port range.
+- `min_port` - the lower limit of the port range.
+- `cloud_account` - The clouds.yaml account to use to connect to openstack
+- One of:
+  - `project_id` - The project to scan
+  - `all_projects` - Toggle to scan the whole cloud
+
+The following is required for creating tickets in atlassian. For more information see [Create Tickets](#create-tickets).
+
+- `email` - The email of the account used to log into atlassian
+- `api_key` - The api key of the account used to log into atlassian
+- `servicedesk_id` - The service desk to create tickets in.
+- `requesttype_id` - The request type to create tickets under.
+
 # Actions
 
 Contains the following actions:
@@ -182,6 +219,15 @@ In addition, `hypervisor, server, user, float.ip and project` all have `list` ac
 
 - allows for more refined and complex searches than what openstack currently allows
 - uses the `queryopenstack` library: see usage here: <link to queryopestack git>
+
+## Openstack Actions
+
+`openstack.projects.sync`: Duplicates projects and user rights between openstack instances. This action will only copy user rights for users that are in the STFC domain.
+
+Required Parameters:
+
+- `cloud` - The original cloud to copy projects and users from
+- `dupe_cloud` - The secondary cloud to create the duplicated projects and user roles on.
 
 ## Reboot/Disable Hypervisor Actions
 
@@ -240,6 +286,9 @@ Required parameters:
 - `api_key` - The api key of the account used to log into atlassian
 - `servicedesk_id` - The service desk to create tickets in. All tickets passed to the action will be created in this service desk. You cannot specify multiple service desks or different service desks for different tickets. You can find the list of service desks and their IDs at `<Your workspace>.atlassian.net/rest/servicedeskapi/servicedesk`
 - `requesttype_id` - The request type to create tickets under. You can find the list of request types and their IDs at `<Your workspace>.atlassian.net/rest/servicedeskapi/servicedesk/<servicedesk_id>/requesttype`
+
+Required for developers only:
+
 - `tickets_info` - The dictionary of information that will be used to generate tickets. When using this action in a workflow you will need to pass the output of the previous action as an `object` type. The dictionary should include the same formatting as laid out below.
   - `title` - A python string with one or more sections to format. Example: `"This is the {p[title]}"`
   - `body` - A python string with one or more sections to format. Can be made entirely of the formatting section. Example: `"This is the {p[body]}, there has been a problem with {p[server]}"` or `"{p[body]}"`
@@ -307,6 +356,16 @@ to handle rabbitmq message commands.
 
 - matches trigger `rabbit.message` with `message_type=RESTART_VM` and calls `server.restart`
   using `stackstorm_send_notification.rabbit.execute`
+
+## Openstack rules
+
+`openstack.deletedmachines.rule`
+
+- matches trigger `openstack.deletingmachines` when a machine is stuck in the deleting state for more than 10m. Calls the `atlassian.create.tickets` action. The sensor for this rule runs every 7 days.
+
+`openstack.loadbalancers.rule`
+
+- matches trigger `openstack.loadbalancer` when a loadbalancer or amphora is not pingable or is reporting an error. Calls the `atlassian.create.tickets` action. The sensor for this rule runs every 7 days.
 
 # Aliases and Chatops
 
