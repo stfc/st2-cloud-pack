@@ -1,0 +1,41 @@
+---
+description: Update an Openstack Project
+enabled: true
+entry_point: src/project_action.py
+name: project.update
+parameters:
+  submodule:
+    default: project_update
+    immutable: true
+    type: string
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    default: ''
+    required: true
+    type: string
+  project_identifier:
+    description: Project to update (name or Openstack ID)
+    required: true
+    type: string
+    default: ''
+  name:
+    description: New project Name
+    required: false
+    type: string
+  email:
+    description: New contact email for the project
+    required: false
+    type: string
+  description:
+    description: New project description
+    required: false
+    type: string
+  is_enabled:
+    description: Project is enabled or not
+    type: string
+    default: "unchanged"
+    enum:
+      - "unchanged"
+      - "true"
+      - "false"
+runner_type: python-script
