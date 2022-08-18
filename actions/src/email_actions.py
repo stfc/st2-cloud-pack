@@ -132,6 +132,9 @@ class EmailActions(Action):
             get_html=send_as_html,
         )
 
+        if emails is None:
+            return "No emails to send"
+
         for key, value in emails.items():
             separator = "<br><br>" if send_as_html else "\n\n"
             emails[key] = f"{message}{separator}{value}"
@@ -213,6 +216,9 @@ class EmailActions(Action):
             group_by="project_email",
             get_html=send_as_html,
         )
+
+        if emails is None:
+            return "No emails to send"
 
         for key, value in emails.items():
             separator = "<br><br>" if send_as_html else "\n\n"
