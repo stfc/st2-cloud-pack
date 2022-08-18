@@ -236,14 +236,16 @@ class OpenstackQuery(OpenstackWrapperBase):
                 return project[prop]
             return None
 
+        def get_user_prop(user_id, prop):
+            user = self._identity_api.find_user_all_domains(cloud_account, user_id)
+            if user:
+                return user[prop]
+            return None
+
         if object_type == "server":
             return {
-                "user_email": lambda a: self._identity_api.find_user_all_domains(
-                    cloud_account, a["user_id"]
-                )["email"],
-                "user_name": lambda a: self._identity_api.find_user_all_domains(
-                    cloud_account, a["user_id"]
-                )["name"],
+                "user_email": lambda a: get_user_prop(a["user_id"], "email"),
+                "user_name": lambda a: get_user_prop(a["user_id"], "name"),
             }
         if object_type == "floating_ip":
             return {
