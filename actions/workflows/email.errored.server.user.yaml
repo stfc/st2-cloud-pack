@@ -13,10 +13,12 @@ input:
 vars:
   - stdout: null
   - stderr: null
+  - result: null
 
 output:
   - stdout: <% ctx().stdout %>
   - stderr: <% ctx().stderr %>
+  - result: <% ctx().result %>
 
 tasks:
   send_emails:
@@ -37,3 +39,9 @@ tasks:
       names=<% [] %>
       name_snippets=<% [] %>
       days=<% 1 %>
+    next:
+      - when: <% succeeded() %>
+        publish:
+          - stdout: <% result().stdout %>
+          - stderr: <% result().stderr %>
+          - result: <% task(send_emails).result %>
