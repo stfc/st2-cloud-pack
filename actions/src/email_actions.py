@@ -1,4 +1,5 @@
-from typing import Callable, Dict, List
+from dataclasses import dataclass
+from typing import Callable, Dict, List, Union
 from email_api.email_api import EmailApi
 from openstack_api.openstack_floating_ip import OpenstackFloatingIP
 from openstack_api.openstack_image import OpenstackImage
@@ -9,6 +10,25 @@ from st2common.runners.base_action import Action
 
 
 class EmailActions(Action):
+    @dataclass
+    class EmailActionParams:
+        """
+        Structure containing the information needed to _email_users for a particular OpenstackResource
+        :param: required_email_property: The name of the property that must be obtained to get the email of the
+                                         user associated with the object. An error is thrown if it is not in the
+                                         properties_to_select.
+        :param: valid_search_queries_no_project: List of query_preset's that can be run without a project. An error
+                                                 will be thrown if one of them is used without a project.
+        :param: search_api: API wrapper that contains the search methods that can be used
+        :param: object_type: Type of object to be passed to OpenstackQuery's parse_and_output_table function
+        :return:
+        """
+
+        required_email_property: str
+        valid_search_queries_no_project: List[str]
+        search_api: Union[OpenstackServer, OpenstackFloatingIP, OpenstackImage]
+        object_type: str
+
     def __init__(self, *args, config: Dict = None, **kwargs):
         super().__init__(*args, config=config, **kwargs)
         self._api: EmailApi = config.get("email_api", EmailApi())
@@ -74,6 +94,72 @@ class EmailActions(Action):
         )
 
     # pylint:disable=too-many-arguments,too-many-locals
+    def _email_users(
+        self,
+        action_params: EmailActionParams,
+        cloud_account: str,
+        project_identifier: str,
+        query_preset: str,
+        message: str,
+        properties_to_select: List[str],
+        subject: str,
+        email_from: str,
+        email_cc: List[str],
+        header: str,
+        footer: str,
+        attachment_filepaths: List[str],
+        smtp_account: str,
+        test_override: bool,
+        test_override_email: List[str],
+        send_as_html: bool,
+        **kwargs,
+    ):
+        if action_params.required_email_property not in properties_to_select:
+            raise ValueError(
+                f"properties_to_select must contain '{action_params.required_email_property}'"
+            )
+
+        # Ensure only a valid query preset is used when there is no project
+        # (try and prevent mistakenly emailing loads of people)
+        if project_identifier == "":
+            if query_preset not in action_params.valid_search_queries_no_project:
+                raise ValueError(
+                    f"project_identifier needed for the query type '{query_preset}'"
+                )
+
+        openstack_objects = action_params.search_api[f"search_{query_preset}"](
+            cloud_account, project_identifier, **kwargs
+        )
+
+        emails = self._query_api.parse_and_output_table(
+            cloud_account=cloud_account,
+            items=openstack_objects,
+            object_type=action_params.object_type,
+            properties_to_select=properties_to_select,
+            group_by=action_params.required_email_property,
+            get_html=send_as_html,
+        )
+
+        for key, value in emails.items():
+            separator = "<br><br>" if send_as_html else "\n\n"
+            emails[key] = f"{message}{separator}{value}"
+
+        return self._api.send_emails(
+            smtp_accounts=self.config.get("smtp_accounts", None),
+            emails=emails,
+            subject=subject,
+            email_from=email_from,
+            email_cc=email_cc,
+            header=header,
+            footer=footer,
+            attachment_filepaths=attachment_filepaths,
+            smtp_account=smtp_account,
+            test_override=test_override,
+            test_override_email=test_override_email,
+            send_as_html=send_as_html,
+        )
+
+    # pylint:disable=too-many-arguments,too-many-locals
     def email_server_users(
         self,
         cloud_account: str,
@@ -112,37 +198,21 @@ class EmailActions(Action):
         :param: send_as_html (Bool): If true will send in HTML format
         :return:
         """
-        if "user_email" not in properties_to_select:
-            raise ValueError("properties_to_select must contain 'user_email'")
 
-        # Ensure only a valid query preset is used when there is no project
-        # (try and prevent mistakenly emailing loads of people)
-        if project_identifier == "":
-            if query_preset not in OpenstackServer.SEARCH_QUERY_PRESETS_NO_PROJECT:
-                raise ValueError(
-                    f"project_identifier needed for the query type '{query_preset}'"
-                )
-
-        servers = self._server_api[f"search_{query_preset}"](
-            cloud_account, project_identifier, **kwargs
-        )
-
-        emails = self._query_api.parse_and_output_table(
-            cloud_account=cloud_account,
-            items=servers,
+        action_params = self.EmailActionParams(
+            required_email_property="user_email",
+            valid_search_queries_no_project=OpenstackServer.SEARCH_QUERY_PRESETS_NO_PROJECT,
+            search_api=self._server_api,
             object_type="server",
-            properties_to_select=properties_to_select,
-            group_by="user_email",
-            get_html=send_as_html,
         )
 
-        for key, value in emails.items():
-            separator = "<br><br>" if send_as_html else "\n\n"
-            emails[key] = f"{message}{separator}{value}"
-
-        return self._api.send_emails(
-            smtp_accounts=self.config.get("smtp_accounts", None),
-            emails=emails,
+        self._email_users(
+            action_params=action_params,
+            cloud_account=cloud_account,
+            project_identifier=project_identifier,
+            query_preset=query_preset,
+            message=message,
+            properties_to_select=properties_to_select,
             subject=subject,
             email_from=email_from,
             email_cc=email_cc,
@@ -153,6 +223,7 @@ class EmailActions(Action):
             test_override=test_override,
             test_override_email=test_override_email,
             send_as_html=send_as_html,
+            **kwargs,
         )
 
     # pylint:disable=too-many-arguments,too-many-locals
@@ -194,37 +265,20 @@ class EmailActions(Action):
         :param: send_as_html (Bool): If true will send in HTML format
         :return:
         """
-        if "project_email" not in properties_to_select:
-            raise ValueError("properties_to_select must contain 'project_email'")
-
-        # Ensure only a valid query preset is used when there is no project
-        # (try and prevent mistakenly emailing loads of people)
-        if project_identifier == "":
-            if query_preset not in OpenstackFloatingIP.SEARCH_QUERY_PRESETS_NO_PROJECT:
-                raise ValueError(
-                    f"project_identifier needed for the query type '{query_preset}'"
-                )
-
-        floating_ips = self._floating_ip_api[f"search_{query_preset}"](
-            cloud_account, project_identifier, **kwargs
-        )
-
-        emails = self._query_api.parse_and_output_table(
-            cloud_account=cloud_account,
-            items=floating_ips,
+        action_params = self.EmailActionParams(
+            required_email_property="project_email",
+            valid_search_queries_no_project=OpenstackFloatingIP.SEARCH_QUERY_PRESETS_NO_PROJECT,
+            search_api=self._floating_ip_api,
             object_type="floating_ip",
-            properties_to_select=properties_to_select,
-            group_by="project_email",
-            get_html=send_as_html,
         )
 
-        for key, value in emails.items():
-            separator = "<br><br>" if send_as_html else "\n\n"
-            emails[key] = f"{message}{separator}{value}"
-
-        return self._api.send_emails(
-            smtp_accounts=self.config.get("smtp_accounts", None),
-            emails=emails,
+        self._email_users(
+            action_params=action_params,
+            cloud_account=cloud_account,
+            project_identifier=project_identifier,
+            query_preset=query_preset,
+            message=message,
+            properties_to_select=properties_to_select,
             subject=subject,
             email_from=email_from,
             email_cc=email_cc,
@@ -235,6 +289,7 @@ class EmailActions(Action):
             test_override=test_override,
             test_override_email=test_override_email,
             send_as_html=send_as_html,
+            **kwargs,
         )
 
     # pylint:disable=too-many-arguments,too-many-locals
@@ -276,37 +331,21 @@ class EmailActions(Action):
         :param: send_as_html (Bool): If true will send in HTML format
         :return:
         """
-        if "project_email" not in properties_to_select:
-            raise ValueError("properties_to_select must contain 'project_email'")
 
-        # Ensure only a valid query preset is used when there is no project
-        # (try and prevent mistakenly emailing loads of people)
-        if project_identifier == "":
-            if query_preset not in OpenstackImage.SEARCH_QUERY_PRESETS_NO_PROJECT:
-                raise ValueError(
-                    f"project_identifier needed for the query type '{query_preset}'"
-                )
-
-        images = self._image_api[f"search_{query_preset}"](
-            cloud_account, project_identifier, **kwargs
-        )
-
-        emails = self._query_api.parse_and_output_table(
-            cloud_account=cloud_account,
-            items=images,
+        action_params = self.EmailActionParams(
+            required_email_property="project_email",
+            valid_search_queries_no_project=OpenstackImage.SEARCH_QUERY_PRESETS_NO_PROJECT,
+            search_api=self._image_api,
             object_type="image",
-            properties_to_select=properties_to_select,
-            group_by="project_email",
-            get_html=send_as_html,
         )
 
-        for key, value in emails.items():
-            separator = "<br><br>" if send_as_html else "\n\n"
-            emails[key] = f"{message}{separator}{value}"
-
-        return self._api.send_emails(
-            smtp_accounts=self.config.get("smtp_accounts", None),
-            emails=emails,
+        self._email_users(
+            action_params=action_params,
+            cloud_account=cloud_account,
+            project_identifier=project_identifier,
+            query_preset=query_preset,
+            message=message,
+            properties_to_select=properties_to_select,
             subject=subject,
             email_from=email_from,
             email_cc=email_cc,
@@ -317,4 +356,5 @@ class EmailActions(Action):
             test_override=test_override,
             test_override_email=test_override_email,
             send_as_html=send_as_html,
+            **kwargs,
         )

@@ -1,3 +1,4 @@
+from typing import Callable, Dict
 from unittest.mock import ANY, create_autospec, NonCallableMock
 from email_api.email_api import EmailApi
 from openstack_api.openstack_floating_ip import OpenstackFloatingIP
@@ -18,6 +19,13 @@ class TestServerActions(OpenstackActionTestBase):
 
     action_cls = EmailActions
 
+    def _create_search_api_mock(self, spec):
+        # Want to keep mock of __getitem__ otherwise all f"search_{query_preset}"
+        # calls will go to the same mock
+        mock = create_autospec(spec)
+        mock.__getitem__ = spec.__getitem__
+        return mock
+
     # pylint: disable=invalid-name
     def setUp(self):
         """
@@ -25,23 +33,9 @@ class TestServerActions(OpenstackActionTestBase):
         """
         super().setUp()
         self.email_mock = create_autospec(EmailApi)
-        self.server_mock = create_autospec(OpenstackServer)
-
-        # Want to keep mock of __getitem__ otherwise all f"search_{query_preset}"
-        # calls will go to the same mock
-        self.server_mock.__getitem__ = OpenstackServer.__getitem__
-
-        self.floating_ip_mock = create_autospec(OpenstackFloatingIP)
-
-        # Want to keep mock of __getitem__ otherwise all f"search_{query_preset}"
-        # calls will go to the same mock
-        self.floating_ip_mock.__getitem__ = OpenstackFloatingIP.__getitem__
-
-        self.image_mock = create_autospec(OpenstackImage)
-
-        # Want to keep mock of __getitem__ otherwise all f"search_{query_preset}"
-        # calls will go to the same mock
-        self.image_mock.__getitem__ = OpenstackImage.__getitem__
+        self.server_mock = self._create_search_api_mock(OpenstackServer)
+        self.floating_ip_mock = self._create_search_api_mock(OpenstackFloatingIP)
+        self.image_mock = self._create_search_api_mock(OpenstackImage)
 
         self.query_mock = create_autospec(OpenstackQuery)
 
@@ -73,6 +67,51 @@ class TestServerActions(OpenstackActionTestBase):
         )
         self.email_mock.send_email.assert_called_once()
 
+    def _test_email_users(
+        self,
+        arguments: Dict,
+        action_function: Callable,
+        action_params: EmailActions.EmailActionParams,
+    ):
+        """
+        Helper function that checks an email_users action works correctly
+        """
+        action_function(**arguments)
+        action_params.search_api[
+            f"search_{arguments['query_preset']}"
+        ].assert_called_once_with(
+            arguments["cloud_account"],
+            arguments["project_identifier"],
+            days=arguments["days"],
+            ids=arguments["ids"],
+            names=arguments["names"],
+            name_snippets=arguments["name_snippets"],
+        )
+        self.query_mock.parse_and_output_table.assert_called_once_with(
+            cloud_account=arguments["cloud_account"],
+            items=action_params.search_api[
+                f"search_{arguments['query_preset']}"
+            ].return_value,
+            object_type=action_params.object_type,
+            properties_to_select=arguments["properties_to_select"],
+            group_by=action_params.required_email_property,
+            get_html=arguments["send_as_html"],
+        )
+        self.email_mock.send_emails.assert_called_once_with(
+            smtp_accounts=ANY,
+            emails=ANY,
+            subject=arguments["subject"],
+            email_from=arguments["email_from"],
+            email_cc=arguments["email_cc"],
+            header=arguments["header"],
+            footer=arguments["footer"],
+            attachment_filepaths=arguments["attachment_filepaths"],
+            smtp_account=arguments["smtp_account"],
+            test_override=arguments["test_override"],
+            test_override_email=arguments["test_override_email"],
+            send_as_html=arguments["send_as_html"],
+        )
+
     def test_email_server_users(self):
         """
         Tests the action that sends emails to server users works correctly
@@ -98,37 +137,13 @@ class TestServerActions(OpenstackActionTestBase):
             "names": None,
             "name_snippets": None,
         }
-        self.action.email_server_users(**arguments)
-        self.server_mock["search_servers_older_than"].assert_called_once_with(
-            arguments["cloud_account"],
-            arguments["project_identifier"],
-            days=arguments["days"],
-            ids=arguments["ids"],
-            names=arguments["names"],
-            name_snippets=arguments["name_snippets"],
-        )
-        self.query_mock.parse_and_output_table.assert_called_once_with(
-            cloud_account=arguments["cloud_account"],
-            items=self.server_mock["search_servers_older_than"].return_value,
+        action_params = EmailActions.EmailActionParams(
+            required_email_property="user_email",
+            valid_search_queries_no_project=OpenstackServer.SEARCH_QUERY_PRESETS_NO_PROJECT,
+            search_api=self.server_mock,
             object_type="server",
-            properties_to_select=arguments["properties_to_select"],
-            group_by="user_email",
-            get_html=arguments["send_as_html"],
         )
-        self.email_mock.send_emails.assert_called_once_with(
-            smtp_accounts=ANY,
-            emails=ANY,
-            subject=arguments["subject"],
-            email_from=arguments["email_from"],
-            email_cc=arguments["email_cc"],
-            header=arguments["header"],
-            footer=arguments["footer"],
-            attachment_filepaths=arguments["attachment_filepaths"],
-            smtp_account=arguments["smtp_account"],
-            test_override=arguments["test_override"],
-            test_override_email=arguments["test_override_email"],
-            send_as_html=arguments["send_as_html"],
-        )
+        self._test_email_users(arguments, self.action.email_server_users, action_params)
 
     @raises(ValueError)
     def test_email_server_users_no_email_error(self):
@@ -245,36 +260,14 @@ class TestServerActions(OpenstackActionTestBase):
             "names": None,
             "name_snippets": None,
         }
-        self.action.email_floating_ip_users(**arguments)
-        self.floating_ip_mock["search_fips_older_than"].assert_called_once_with(
-            arguments["cloud_account"],
-            arguments["project_identifier"],
-            days=arguments["days"],
-            ids=arguments["ids"],
-            names=arguments["names"],
-            name_snippets=arguments["name_snippets"],
-        )
-        self.query_mock.parse_and_output_table.assert_called_once_with(
-            cloud_account=arguments["cloud_account"],
-            items=self.floating_ip_mock["search_fips_older_than"].return_value,
+        action_params = EmailActions.EmailActionParams(
+            required_email_property="project_email",
+            valid_search_queries_no_project=OpenstackFloatingIP.SEARCH_QUERY_PRESETS_NO_PROJECT,
+            search_api=self.floating_ip_mock,
             object_type="floating_ip",
-            properties_to_select=arguments["properties_to_select"],
-            group_by="project_email",
-            get_html=arguments["send_as_html"],
         )
-        self.email_mock.send_emails.assert_called_once_with(
-            smtp_accounts=ANY,
-            emails=ANY,
-            subject=arguments["subject"],
-            email_from=arguments["email_from"],
-            email_cc=arguments["email_cc"],
-            header=arguments["header"],
-            footer=arguments["footer"],
-            attachment_filepaths=arguments["attachment_filepaths"],
-            smtp_account=arguments["smtp_account"],
-            test_override=arguments["test_override"],
-            test_override_email=arguments["test_override_email"],
-            send_as_html=arguments["send_as_html"],
+        self._test_email_users(
+            arguments, self.action.email_floating_ip_users, action_params
         )
 
     @raises(ValueError)
@@ -392,37 +385,13 @@ class TestServerActions(OpenstackActionTestBase):
             "names": None,
             "name_snippets": None,
         }
-        self.action.email_image_users(**arguments)
-        self.image_mock["search_images_older_than"].assert_called_once_with(
-            arguments["cloud_account"],
-            arguments["project_identifier"],
-            days=arguments["days"],
-            ids=arguments["ids"],
-            names=arguments["names"],
-            name_snippets=arguments["name_snippets"],
-        )
-        self.query_mock.parse_and_output_table.assert_called_once_with(
-            cloud_account=arguments["cloud_account"],
-            items=self.image_mock["search_images_older_than"].return_value,
+        action_params = EmailActions.EmailActionParams(
+            required_email_property="project_email",
+            valid_search_queries_no_project=OpenstackImage.SEARCH_QUERY_PRESETS_NO_PROJECT,
+            search_api=self.image_mock,
             object_type="image",
-            properties_to_select=arguments["properties_to_select"],
-            group_by="project_email",
-            get_html=arguments["send_as_html"],
         )
-        self.email_mock.send_emails.assert_called_once_with(
-            smtp_accounts=ANY,
-            emails=ANY,
-            subject=arguments["subject"],
-            email_from=arguments["email_from"],
-            email_cc=arguments["email_cc"],
-            header=arguments["header"],
-            footer=arguments["footer"],
-            attachment_filepaths=arguments["attachment_filepaths"],
-            smtp_account=arguments["smtp_account"],
-            test_override=arguments["test_override"],
-            test_override_email=arguments["test_override_email"],
-            send_as_html=arguments["send_as_html"],
-        )
+        self._test_email_users(arguments, self.action.email_image_users, action_params)
 
     @raises(ValueError)
     def test_email_image_users_no_email_error(self):
