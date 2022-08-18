@@ -1,0 +1,36 @@
+description: Emails users of shutoff VMs
+enabled: true
+entry_point: workflows/email.shutoff.server.user.yaml
+name: workflow.email.shutoff.server.user
+parameters:
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    default: ""
+    required: true
+    type: string
+  project_id:
+    description: Project (Name or ID) to search in - leave empty for all projects
+    default: ""
+    required: false
+    type: string
+  email_cc:
+    description: "Email Addresses to Cc in (comma separated)"
+    required: false
+    type: array
+  smtp_account:
+    type: string
+    description: "SMTP Account to use. Must be configured in in the pack settings."
+    required: true
+    default: "default"
+  test_override:
+    type: boolean
+    description: "Overrides email sending to a single address for testing purposes (Will only send a subset of emails if there are lots of them)"
+    required: true
+    default: false
+  test_override_email:
+    type: array
+    description: "Email to send the output to if test_override is checked"
+    required: true
+    default:
+      - ""
+runner_type: orquesta
