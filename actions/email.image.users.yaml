@@ -1,13 +1,13 @@
 ---
-description: Sends email notifications to floating ip project contacts based on a given query.
+description: Sends email notifications to image project contacts based on a given query.
 enabled: true
 entry_point: src/email_actions.py
-name: email.floating.ip.users
+name: email.image.users
 parameters:
   timeout:
     default: 5400
   submodule:
-    default: email_floating_ip_users
+    default: email_image_users
     immutable: true
     type: string
   cloud_account:
@@ -21,27 +21,26 @@ parameters:
     required: false
     default: ""
   query_preset:
-    description: "Name of a preset query - e.g fips_older_than: list all floating ips older than"
+    description: "Name of a preset query - e.g images_older_than: list all images older than"
     type: string
-    default: "fips_older_than"
+    default: "images_older_than"
     enum:
-      - "all_fips"
-      - "fips_older_than"
-      - "fips_younger_than"
-      - "fips_last_updated_before"
-      - "fips_last_updated_after"
-      - "fips_id_in"
-      - "fips_id_not_in"
-      - "fips_name_in"
-      - "fips_name_not_in"
-      - "fips_name_contains"
-      - "fips_name_not_contains"
-      - "fips_down"
-      - "fips_down_before"
+      - "all_images"
+      - "images_older_than"
+      - "images_younger_than"
+      - "images_last_updated_before"
+      - "images_last_updated_after"
+      - "images_id_in"
+      - "images_id_not_in"
+      - "images_name_in"
+      - "images_name_not_in"
+      - "images_name_contains"
+      - "images_name_not_contains"
+      - "images_non_existent_project"
     required: true
   properties_to_select:
     type: array
-    description: "Properties to display for floating ips, must include project_email"
+    description: "Properties to display for images, must include project_email"
     required: true
     default:
       - "id"
@@ -124,7 +123,7 @@ parameters:
       - ""
   days:
     type: integer
-    description: "Number of days threshold for selecting floating ips (ignored unless submodule=fips_older_than or fips_younger_than"
+    description: "Number of days threshold for selecting images ips (ignored unless submodule=images_older_than or images_younger_than"
     required: true
     default: 60
 runner_type: python-script

@@ -1,6 +1,7 @@
 from unittest.mock import ANY, create_autospec, NonCallableMock
 from email_api.email_api import EmailApi
 from openstack_api.openstack_floating_ip import OpenstackFloatingIP
+from openstack_api.openstack_image import OpenstackImage
 
 from openstack_api.openstack_server import OpenstackServer
 from openstack_api.openstack_query import OpenstackQuery
@@ -36,6 +37,12 @@ class TestServerActions(OpenstackActionTestBase):
         # calls will go to the same mock
         self.floating_ip_mock.__getitem__ = OpenstackFloatingIP.__getitem__
 
+        self.image_mock = create_autospec(OpenstackImage)
+
+        # Want to keep mock of __getitem__ otherwise all f"search_{query_preset}"
+        # calls will go to the same mock
+        self.image_mock.__getitem__ = OpenstackImage.__getitem__
+
         self.query_mock = create_autospec(OpenstackQuery)
 
         self.action: EmailActions = self.get_action_instance(
@@ -43,6 +50,7 @@ class TestServerActions(OpenstackActionTestBase):
                 "email_api": self.email_mock,
                 "openstack_server_api": self.server_mock,
                 "openstack_floating_ip_api": self.floating_ip_mock,
+                "openstack_image_api": self.image_mock,
                 "openstack_query_api": self.query_mock,
             },
         )
@@ -359,6 +367,153 @@ class TestServerActions(OpenstackActionTestBase):
         for query_preset in should_not_pass:
             self._check_email_floating_ip_users_raises(query_preset)
 
+    def test_email_image_users(self):
+        """
+        Tests the action that sends emails to image project contacts works correctly
+        """
+        arguments = {
+            "cloud_account": "test_account",
+            "project_identifier": "test_project",
+            "query_preset": "images_older_than",
+            "message": "Message",
+            "properties_to_select": ["id", "project_email"],
+            "subject": "Subject",
+            "email_from": "testemail",
+            "email_cc": [],
+            "header": "",
+            "footer": "",
+            "attachment_filepaths": [],
+            "smtp_account": "",
+            "test_override": False,
+            "test_override_email": [""],
+            "send_as_html": False,
+            "days": 60,
+            "ids": None,
+            "names": None,
+            "name_snippets": None,
+        }
+        self.action.email_image_users(**arguments)
+        self.image_mock["search_images_older_than"].assert_called_once_with(
+            arguments["cloud_account"],
+            arguments["project_identifier"],
+            days=arguments["days"],
+            ids=arguments["ids"],
+            names=arguments["names"],
+            name_snippets=arguments["name_snippets"],
+        )
+        self.query_mock.parse_and_output_table.assert_called_once_with(
+            cloud_account=arguments["cloud_account"],
+            items=self.image_mock["search_images_older_than"].return_value,
+            object_type="image",
+            properties_to_select=arguments["properties_to_select"],
+            group_by="project_email",
+            get_html=arguments["send_as_html"],
+        )
+        self.email_mock.send_emails.assert_called_once_with(
+            smtp_accounts=ANY,
+            emails=ANY,
+            subject=arguments["subject"],
+            email_from=arguments["email_from"],
+            email_cc=arguments["email_cc"],
+            header=arguments["header"],
+            footer=arguments["footer"],
+            attachment_filepaths=arguments["attachment_filepaths"],
+            smtp_account=arguments["smtp_account"],
+            test_override=arguments["test_override"],
+            test_override_email=arguments["test_override_email"],
+            send_as_html=arguments["send_as_html"],
+        )
+
+    @raises(ValueError)
+    def test_email_image_users_no_email_error(self):
+        """
+        Tests the action that sends emails to image users gives a value error when project_email
+        is not present in the `properties_to_select`
+        """
+        self.action.email_image_users(
+            cloud_account="test_account",
+            project_identifier="",
+            query_preset="images_older_than",
+            message="Message",
+            properties_to_select=["id"],
+            subject="Subject",
+            email_from="testemail",
+            email_cc=[],
+            header="",
+            footer="",
+            attachment_filepaths=[],
+            smtp_account="",
+            test_override=False,
+            test_override_email=[""],
+            send_as_html=False,
+            days=60,
+            ids=None,
+            names=None,
+            name_snippets=None,
+        )
+
+    def _email_image_users(self, query_preset: str):
+        """
+        Helper for checking email_image_users works correctly
+        """
+        return self.action.email_image_users(
+            cloud_account="test_account",
+            project_identifier="",
+            query_preset=query_preset,
+            message="Message",
+            properties_to_select=["project_email"],
+            subject="Subject",
+            email_from="testemail",
+            email_cc=[],
+            header="",
+            footer="",
+            attachment_filepaths=[],
+            smtp_account="",
+            test_override=False,
+            test_override_email=[""],
+            send_as_html=False,
+            days=60,
+            ids=None,
+            names=None,
+            name_snippets=None,
+        )
+
+    def test_email_image_users_no_project(self):
+        """
+        Tests the action that sends emails to image users does not give a value error when a project
+        is required for the query type
+        """
+
+        i = 0
+        for query_preset in OpenstackImage.SEARCH_QUERY_PRESETS_NO_PROJECT:
+            self._email_image_users(query_preset)
+            i += 1
+            self.assertEqual(self.email_mock.send_emails.call_count, i)
+
+    @raises(ValueError)
+    def _check_email_image_users_raises(self, query_preset):
+        """
+        Helper for checking email_image_users raises a ValueError when needed
+        (needed to allow multiple to be checked in the same test otherwise it stops
+         after the first error)
+        """
+        self.assertRaises(ValueError, self._email_image_users(query_preset))
+
+    def test_email_image_users_no_project_error(self):
+        """
+        Tests the action that sends emails to image users gives a value error when a project
+        is required for the query type
+        """
+
+        # Should raise an error for all but a few queries
+        should_pass = OpenstackImage.SEARCH_QUERY_PRESETS_NO_PROJECT
+        should_not_pass = OpenstackImage.SEARCH_QUERY_PRESETS
+        for x in should_pass:
+            should_not_pass.remove(x)
+
+        for query_preset in should_not_pass:
+            self._check_email_image_users_raises(query_preset)
+
     def test_run_method(self):
         """
         Tests that run can dispatch to the Stackstorm facing methods
@@ -367,5 +522,6 @@ class TestServerActions(OpenstackActionTestBase):
             "send_email",
             "email_server_users",
             "email_floating_ip_users",
+            "email_image_users",
         ]
         self._test_run_dynamic_dispatch(expected_methods)
