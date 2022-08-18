@@ -1,5 +1,6 @@
-from typing import List
+from typing import List, Dict
 
+import openstack.exceptions
 from openstack.compute.v2.server import Server
 from openstack.exceptions import HttpException
 
@@ -317,3 +318,40 @@ class OpenstackServer(OpenstackWrapperBase):
                 self._query_api.query_datetime_before("updated_at", days),
             ],
         )
+
+    def find_non_existent_servers(
+        self, cloud_account: str, project_identifier: str
+    ) -> Dict[str, str]:
+        """
+        Returns a dictionary containing the ids of non-existent servers along with the project they are listed in
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated servers with, can be empty for all projects
+        :return: A dictionary containing the non-existent server ids and their projects
+        """
+        selected_servers = {}
+        if project_identifier == "":
+            projects = self._identity_api.list_projects(cloud_account)
+        else:
+            projects = [
+                self._identity_api.find_mandatory_project(
+                    cloud_account, project_identifier=project_identifier
+                )
+            ]
+
+        with self._connection_cls(cloud_account) as conn:
+            for project in projects:
+                servers_in_project = conn.list_servers(
+                    detailed=False,
+                    all_projects=True,
+                    bare=True,
+                    filters={
+                        "all_tenants": True,
+                        "project_id": project.id,
+                    },
+                )
+                for server in servers_in_project:
+                    try:
+                        conn.compute.get_server(server.id)
+                    except openstack.exceptions.ResourceNotFound:
+                        selected_servers.update({project.id: server.id})
+        return selected_servers
