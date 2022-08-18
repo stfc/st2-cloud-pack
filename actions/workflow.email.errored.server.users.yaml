@@ -1,7 +1,7 @@
 description: Emails users of shutoff VMs
 enabled: true
-entry_point: workflows/email.shutoff.server.user.yaml
-name: workflow.email.shutoff.server.user
+entry_point: workflows/email.errored.server.users.yaml
+name: workflow.email.errored.server.users
 parameters:
   cloud_account:
     description: "The clouds.yaml account to use whilst performing this action"

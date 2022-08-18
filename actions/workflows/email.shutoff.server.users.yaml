@@ -1,6 +1,6 @@
 version: 1.0
 
-description: Executes the email.server.users action for errored VMs to informing users about them
+description: Executes the email.server.users action for shutoff VMs to informing users about them
 
 input:
   - cloud_account
@@ -11,13 +11,9 @@ input:
   - test_override_email
 
 vars:
-  - stdout: null
-  - stderr: null
   - result: null
 
 output:
-  - stdout: <% ctx().stdout %>
-  - stderr: <% ctx().stderr %>
   - result: <% ctx().result %>
 
 tasks:
@@ -29,12 +25,12 @@ tasks:
       smtp_account=<% ctx().smtp_account %>
       test_override=<% ctx().test_override %>
       test_override_email=<% ctx().test_override_email %>
-      query_preset=<% 'servers_errored' %>
+      query_preset=<% 'servers_shutoff' %>
       properties_to_select=<% ['id', 'name', 'status', 'updated', 'user_name', 'user_email'] %>
       header=<% '/opt/stackstorm/packs/stackstorm_openstack/email_templates/header.html' %>
-      message=<% 'The following VMs are in an errored state. Please submit a ticket if they are needed or delete them if they are not.' %>
+      message=<% 'The following VMs are shutoff. These VMs will still take up resources while shutoff, please consider whether they are needed and delete them if they are not.' %>
       footer=<% '/opt/stackstorm/packs/stackstorm_openstack/email_templates/footer.html' %>
-      subject=<% 'Errored VMs' %>
+      subject=<% 'Shutoff VMs' %>
       send_as_html=<% true %>
       names=<% [] %>
       name_snippets=<% [] %>
@@ -42,6 +38,4 @@ tasks:
     next:
       - when: <% succeeded() %>
         publish:
-          - stdout: <% result().stdout %>
-          - stderr: <% result().stderr %>
           - result: <% task(send_emails).result %>
