@@ -10,6 +10,15 @@ def test_secret_module_used():
         assert patched_secrets.token_urlsafe.return_value in returned
 
 
+def test_secret_module_multiple_passwords():
+    with patch("free_ipa.freeipa_helpers.secrets") as patched_secrets:
+        returned = FreeIpaHelpers.generate_password(3, 10)
+        patched_secrets.token_urlsafe.assert_called_with(10)
+        assert patched_secrets.token_urlsafe.call_count == 3
+        assert patched_secrets.token_urlsafe.return_value in returned
+        assert len(returned) == 3
+
+
 def test_generate_users():
     base_name = "test"
     expected = ["test5", "test6", "test7"]

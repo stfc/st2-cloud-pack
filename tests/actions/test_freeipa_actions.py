@@ -37,5 +37,7 @@ class TestFreeIpaActions(OpenstackActionTestBase):
     def test_generate_password(self):
         num_passwords, num_chars = NonCallableMock(), NonCallableMock()
         password = self.action.generate_password(num_passwords, num_chars)
-        self.freeipa_helpers.generate_password.assert_called_once_with(num_passwords, num_chars)
+        self.freeipa_helpers.generate_password.assert_called_once_with(
+            num_passwords, num_chars
+        )
         assert password == self.freeipa_helpers.generate_password.return_value
