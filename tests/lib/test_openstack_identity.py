@@ -91,7 +91,6 @@ class OpenstackIdentityTests(unittest.TestCase):
         assert found == self.identity_api.create_project.return_value
         self.identity_api.create_project.assert_called_once_with(
             name=expected_details.name,
-            domain_id="default",
             description=expected_details.description,
             is_enabled=expected_details.is_enabled,
             tags=[expected_details.email],
