@@ -1,7 +1,6 @@
 from typing import Dict, Callable, List
 
 from openstack.compute.v2.server import Server
-from tabulate import tabulate
 
 from openstack_api.openstack_server import OpenstackServer
 from openstack_api.openstack_query import OpenstackQuery
@@ -71,6 +70,18 @@ class ServerActions(Action):
         server_project_dict = self._server_api.find_non_existent_servers(
             cloud_account=cloud_account, project_identifier=project_identifier
         )
+        return server_project_dict
 
-        output = tabulate(server_project_dict.items(), ["Server", "Project"], "grid")
-        return output
+    def find_non_existent_projects(self, cloud_account: str):
+        """
+        Returns a dictionary containing the ids of non-existent servers along with the project they are listed in
+        This will not necessarily be a complete list as once some are found the query has errored and there
+        are no ways to get past it and check for more - however in manual testing it appears these are singular
+        and listed at the ends of projects
+        :param cloud_account: The associated clouds.yaml account
+        :return: A dictionary containing the non-existent server ids and their projects
+        """
+        server_project_dict = self._server_api.find_non_existent_projects(
+            cloud_account=cloud_account
+        )
+        return server_project_dict

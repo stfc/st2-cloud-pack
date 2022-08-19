@@ -61,9 +61,22 @@ class TestServerActions(OpenstackActionTestBase):
             cloud_account="Cloud", project_identifier="Project"
         )
 
+    def test_find_non_existent_projects(self):
+        """
+        Tests that find_non_existent_servers works correctly
+        """
+        self.action.find_non_existent_projects("Cloud")
+        self.server_mock.find_non_existent_servers.assert_called_once_with(
+            cloud_account="Cloud"
+        )
+
     def test_run_method(self):
         """
         Tests that run can dispatch to the Stackstorm facing methods
         """
-        expected_methods = ["server_list", "find_non_existent_servers"]
+        expected_methods = [
+            "server_list",
+            "find_non_existent_servers",
+            "test_find_non_existent_projects",
+        ]
         self._test_run_dynamic_dispatch(expected_methods)

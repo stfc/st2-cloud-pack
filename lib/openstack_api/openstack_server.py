@@ -321,14 +321,14 @@ class OpenstackServer(OpenstackWrapperBase):
 
     def find_non_existent_servers(
         self, cloud_account: str, project_identifier: str
-    ) -> Dict[str, str]:
+    ) -> Dict[str, List[str]]:
         """
-        Returns a dictionary containing the ids of non-existent servers along with the project they are listed in
+        Returns a dictionary containing the ids of projects along with a list of non-existent servers found within them
         :param cloud_account: The associated clouds.yaml account
         :param project_identifier: The project to get all associated servers with, can be empty for all projects
         :return: A dictionary containing the non-existent server ids and their projects
         """
-        selected_servers = {}
+        selected_projects = {}
         if project_identifier == "":
             projects = self._identity_api.list_projects(cloud_account)
         else:
@@ -353,5 +353,35 @@ class OpenstackServer(OpenstackWrapperBase):
                     try:
                         conn.compute.get_server(server.id)
                     except openstack.exceptions.ResourceNotFound:
-                        selected_servers.update({server.id: project.id})
-        return selected_servers
+                        if project.id in selected_projects:
+                            selected_projects[project.id].append(server.id)
+                        else:
+                            selected_projects.update({project.id: [server.id]})
+        return selected_projects
+
+    def find_non_existent_projects(self, cloud_account: str) -> Dict[str, List[str]]:
+        """
+        Returns a dictionary containing the ids of non-existent projects along with a list of servers that
+        refer to them
+        :param cloud_account: The associated clouds.yaml account
+        :return: A dictionary containing the non-existent projects and a list of servers that refer to them servers
+        """
+        selected_projects = {}
+        with self._connection_cls(cloud_account) as conn:
+            all_servers = conn.list_servers(
+                detailed=False,
+                all_projects=True,
+                bare=True,
+                filters={
+                    "all_tenants": True,
+                },
+            )
+            for server in all_servers:
+                try:
+                    conn.identity.get_project(server.project_id)
+                except openstack.exceptions.ResourceNotFound:
+                    if server.project_id in selected_projects:
+                        selected_projects[server.project_id].append(server.id)
+                    else:
+                        selected_projects.update({server.project_id: [server.id]})
+        return selected_projects
