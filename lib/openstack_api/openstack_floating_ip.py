@@ -270,6 +270,42 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
             ],
         )
 
+    def find_non_existent_fips(
+        self, cloud_account: str, project_identifier: str
+    ) -> Dict[str, List[str]]:
+        """
+        Returns a dictionary containing the ids of projects along with a list of non-existent servers found within them
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated servers with, can be empty for all projects
+        :return: A dictionary containing the non-existent server ids and their projects
+        """
+        selected_projects = {}
+        if project_identifier == "":
+            projects = self._identity_api.list_projects(cloud_account)
+        else:
+            projects = [
+                self._identity_api.find_mandatory_project(
+                    cloud_account, project_identifier=project_identifier
+                )
+            ]
+
+        with self._connection_cls(cloud_account) as conn:
+            for project in projects:
+                fips_in_project = conn.list_floating_ips(
+                    filters={
+                        "project_id": project.id,
+                    },
+                )
+                for fip in fips_in_project:
+                    try:
+                        conn.network.get_ip(fip.id)
+                    except openstack.exceptions.ResourceNotFound:
+                        if project.id in selected_projects:
+                            selected_projects[project.id].append(fip.id)
+                        else:
+                            selected_projects.update({project.id: [fip.id]})
+        return selected_projects
+
     def find_non_existent_projects(self, cloud_account: str) -> Dict[str, List[str]]:
         """
         Returns a dictionary containing the ids of non-existent projects along with a list of floating ips that

@@ -44,6 +44,7 @@ class TestFloatingIPActions(OpenstackActionTestBase):
             "floating_ip_delete",
             "floating_ip_create",
             "floating_ip_list",
+            "find_non_existent_floating_ips",
             "find_non_existent_projects",
         ]
         self._test_run_dynamic_dispatch(expected_methods)
@@ -113,6 +114,15 @@ class TestFloatingIPActions(OpenstackActionTestBase):
                 name_snippets=None,
             )
             self.floating_ip_mock[f"search_{query_preset}"].assert_called_once()
+
+    def test_find_non_existent_floating_ips(self):
+        """
+        Tests that find_non_existent_floating_ips works correctly
+        """
+        self.action.find_non_existent_floating_ips("Cloud", "Project")
+        self.floating_ip_mock.find_non_existent_fips.assert_called_once_with(
+            cloud_account="Cloud", project_identifier="Project"
+        )
 
     def test_find_non_existent_projects(self):
         """

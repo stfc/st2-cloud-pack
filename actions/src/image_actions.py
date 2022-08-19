@@ -55,6 +55,17 @@ class ImageActions(OpenstackAction):
 
         return output
 
+    def find_non_existent_images(self, cloud_account: str, project_identifier: str):
+        """
+        Returns a dictionary containing the ids of projects along with a list of non-existent images found within them
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated servers with, can be empty for all projects
+        :return: A dictionary containing the non-existent server ids and their projects
+        """
+        return self._image_api.find_non_existent_images(
+            cloud_account=cloud_account, project_identifier=project_identifier
+        )
+
     def find_non_existent_projects(self, cloud_account: str):
         """
         Returns a dictionary containing the ids of non-existent projects along with a list of images that

@@ -282,6 +282,46 @@ class OpenstackImageTests(unittest.TestCase):
 
         self.assertEqual(result, [self.mock_image_list[0], self.mock_image_list[2]])
 
+    def test_find_non_existent_images(self):
+        """
+        Tests calling find_non_existent_images
+        """
+        # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
+        class ObjectMock:
+            def __init__(self, owner):
+                self.owner = owner
+
+        self.api.list_images.return_value = [
+            ObjectMock("ImageID1"),
+            ObjectMock("ImageID2"),
+        ]
+        self.api.image.get_image.side_effect = openstack.exceptions.ResourceNotFound()
+
+        result = self.instance.find_non_existent_images(
+            cloud_account="test", project_identifier="project"
+        )
+
+        self.identity_module.find_mandatory_project.assert_called_once_with(
+            "test", project_identifier="project"
+        )
+        self.mocked_connection.assert_called_once_with("test")
+
+        self.api.list_images.assert_called_once_with(
+            filters={
+                "owner": self.identity_module.find_mandatory_project.return_value.id,
+            },
+        )
+
+        self.assertEqual(
+            result,
+            {
+                self.identity_module.find_mandatory_project.return_value.id: [
+                    "ImageID1",
+                    "ImageID2",
+                ],
+            },
+        )
+
     def test_find_non_existent_projects(self):
         """
         Tests calling find_non_existent_projects
