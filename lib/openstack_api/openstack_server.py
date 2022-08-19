@@ -353,5 +353,5 @@ class OpenstackServer(OpenstackWrapperBase):
                     try:
                         conn.compute.get_server(server.id)
                     except openstack.exceptions.ResourceNotFound:
-                        selected_servers.update({project.id: server.id})
+                        selected_servers.update({server.id: project.id})
         return selected_servers
