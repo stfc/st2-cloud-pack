@@ -465,7 +465,7 @@ class OpenstackServerTests(unittest.TestCase):
 
     def test_find_non_existent_projects(self):
         """
-        Tests calling find_non_existent_servers
+        Tests calling find_non_existent_projects
         """
         # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
         class ObjectMock:

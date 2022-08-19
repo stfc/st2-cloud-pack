@@ -2,6 +2,7 @@ import datetime
 import unittest
 from unittest import mock
 from unittest.mock import MagicMock, patch
+import openstack
 
 from openstack_api.openstack_floating_ip import OpenstackFloatingIP
 
@@ -299,3 +300,34 @@ class OpenstackFloatingIPTests(unittest.TestCase):
         )
 
         self.assertEqual(result, [self.mock_fip_list[0]])
+
+    def test_find_non_existent_projects(self):
+        """
+        Tests calling find_non_existent_projects
+        """
+        # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
+        class ObjectMock:
+            def __init__(self, id):
+                self.id = id
+                self.project_id = "Project"
+
+        self.api.list_floating_ips.return_value = [
+            ObjectMock("FipID1"),
+            ObjectMock("FipID2"),
+        ]
+        self.api.identity.get_project.side_effect = (
+            openstack.exceptions.ResourceNotFound()
+        )
+
+        result = self.instance.find_non_existent_projects(cloud_account="test")
+
+        self.mocked_connection.assert_called_once_with("test")
+
+        self.api.list_floating_ips.assert_called_once_with()
+
+        self.assertEqual(
+            result,
+            {
+                "Project": ["FipID1", "FipID2"],
+            },
+        )

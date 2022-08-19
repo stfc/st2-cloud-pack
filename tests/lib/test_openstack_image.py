@@ -3,6 +3,8 @@ import unittest
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
+import openstack
+
 from openstack_api.openstack_image import OpenstackImage
 
 
@@ -27,7 +29,7 @@ class OpenstackImageTests(unittest.TestCase):
             self.instance = OpenstackImage(self.mocked_connection)
             self.identity_module = identity_mock.return_value
 
-        self.api = self.mocked_connection.return_value.__enter__.return_value.image
+        self.api = self.mocked_connection.return_value.__enter__.return_value
 
         self.mock_image_list = [
             {
@@ -61,7 +63,7 @@ class OpenstackImageTests(unittest.TestCase):
 
         self.mocked_connection.assert_called_once_with("test")
 
-        self.api.images.assert_called_once_with(
+        self.api.image.images.assert_called_once_with(
             limit=10000,
         )
 
@@ -79,7 +81,7 @@ class OpenstackImageTests(unittest.TestCase):
         self.identity_module.find_mandatory_project.assert_called_once_with(
             cloud_account="test", project_identifier="ProjectName"
         )
-        self.api.images.assert_called_once_with(
+        self.api.image.images.assert_called_once_with(
             owner="ProjectID",
             limit=10000,
         )
@@ -279,3 +281,34 @@ class OpenstackImageTests(unittest.TestCase):
         )
 
         self.assertEqual(result, [self.mock_image_list[0], self.mock_image_list[2]])
+
+    def test_find_non_existent_projects(self):
+        """
+        Tests calling find_non_existent_projects
+        """
+        # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
+        class ObjectMock:
+            def __init__(self, id):
+                self.id = id
+                self.owner = "Project"
+
+        self.api.list_images.return_value = [
+            ObjectMock("ImageID1"),
+            ObjectMock("ImageID2"),
+        ]
+        self.api.identity.get_project.side_effect = (
+            openstack.exceptions.ResourceNotFound()
+        )
+
+        result = self.instance.find_non_existent_projects(cloud_account="test")
+
+        self.mocked_connection.assert_called_once_with("test")
+
+        self.api.list_images.assert_called_once_with()
+
+        self.assertEqual(
+            result,
+            {
+                "Project": ["ImageID1", "ImageID2"],
+            },
+        )

@@ -63,10 +63,10 @@ class TestServerActions(OpenstackActionTestBase):
 
     def test_find_non_existent_projects(self):
         """
-        Tests that find_non_existent_servers works correctly
+        Tests that find_non_existent_projects works correctly
         """
         self.action.find_non_existent_projects("Cloud")
-        self.server_mock.find_non_existent_servers.assert_called_once_with(
+        self.server_mock.find_non_existent_projects.assert_called_once_with(
             cloud_account="Cloud"
         )
 
@@ -77,6 +77,6 @@ class TestServerActions(OpenstackActionTestBase):
         expected_methods = [
             "server_list",
             "find_non_existent_servers",
-            "test_find_non_existent_projects",
+            "find_non_existent_projects",
         ]
         self._test_run_dynamic_dispatch(expected_methods)

@@ -59,29 +59,20 @@ class ServerActions(Action):
 
     def find_non_existent_servers(self, cloud_account: str, project_identifier: str):
         """
-        Returns a dictionary containing the ids of non-existent servers along with the project they are listed in
-        This will not necessarily be a complete list as once some are found the query has errored and there
-        are no ways to get past it and check for more - however in manual testing it appears these are singular
-        and listed at the ends of projects
+        Returns a dictionary containing the ids of projects along with a list of non-existent servers found within them
         :param cloud_account: The associated clouds.yaml account
         :param project_identifier: The project to get all associated servers with, can be empty for all projects
         :return: A dictionary containing the non-existent server ids and their projects
         """
-        server_project_dict = self._server_api.find_non_existent_servers(
+        return self._server_api.find_non_existent_servers(
             cloud_account=cloud_account, project_identifier=project_identifier
         )
-        return server_project_dict
 
     def find_non_existent_projects(self, cloud_account: str):
         """
-        Returns a dictionary containing the ids of non-existent servers along with the project they are listed in
-        This will not necessarily be a complete list as once some are found the query has errored and there
-        are no ways to get past it and check for more - however in manual testing it appears these are singular
-        and listed at the ends of projects
+        Returns a dictionary containing the ids of non-existent projects along with a list of servers that
+        refer to them
         :param cloud_account: The associated clouds.yaml account
         :return: A dictionary containing the non-existent server ids and their projects
         """
-        server_project_dict = self._server_api.find_non_existent_projects(
-            cloud_account=cloud_account
-        )
-        return server_project_dict
+        return self._server_api.find_non_existent_projects(cloud_account=cloud_account)

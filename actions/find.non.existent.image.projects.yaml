@@ -1,0 +1,18 @@
+---
+description: Find non-existent projects referenced by images
+enabled: true
+entry_point: src/image_actions.py
+name: find.non.existent.image.projects
+parameters:
+  timeout:
+    default: 5400
+  submodule:
+    default: find_non_existent_projects
+    type: string
+    immutable: true
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    default: ""
+    required: true
+    type: string
+runner_type: python-script

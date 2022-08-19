@@ -1,5 +1,6 @@
-from typing import List
+from typing import List, Dict
 
+import openstack
 from openstack.image.v2.image import Image
 
 from openstack_api.openstack_connection import OpenstackConnection
@@ -250,3 +251,23 @@ class OpenstackImage(OpenstackWrapperBase):
         return self._query_api.apply_query(
             selected_images, self._query_non_existent_project(cloud_account)
         )
+
+    def find_non_existent_projects(self, cloud_account: str) -> Dict[str, List[str]]:
+        """
+        Returns a dictionary containing the ids of non-existent projects along with a list of images that
+        refer to them
+        :param cloud_account: The associated clouds.yaml account
+        :return: A dictionary containing the non-existent projects and a list of images that refer to them
+        """
+        selected_projects = {}
+        with self._connection_cls(cloud_account) as conn:
+            all_images = conn.list_images()
+            for image in all_images:
+                try:
+                    conn.identity.get_project(image.owner)
+                except openstack.exceptions.ResourceNotFound:
+                    if image.owner in selected_projects:
+                        selected_projects[image.owner].append(image.id)
+                    else:
+                        selected_projects.update({image.owner: [image.id]})
+        return selected_projects
