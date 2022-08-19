@@ -84,7 +84,6 @@ class OpenstackServer(OpenstackWrapperBase):
                             filters={
                                 "all_tenants": True,
                                 "project_id": project.id,
-                                "limit": 10000,
                             }
                         )
                     )

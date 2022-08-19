@@ -58,7 +58,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         :param project_identifier: The project to get all associated floating ips with, can be empty for all projects
         :return: A list of all floating ips
         """
-        filters = {"limit": 10000}
+        filters = {}
         if project_identifier != "":
             # list_floating_ips can only take project ids in the filters, not names so workaround
             project = self._identity_api.find_mandatory_project(

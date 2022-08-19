@@ -73,14 +73,12 @@ class OpenstackServerTests(unittest.TestCase):
                     filters={
                         "all_tenants": True,
                         "project_id": "ID1",
-                        "limit": 10000,
                     }
                 ),
                 mock.call(
                     filters={
                         "all_tenants": True,
                         "project_id": "ID2",
-                        "limit": 10000,
                     }
                 ),
             ],
@@ -104,7 +102,6 @@ class OpenstackServerTests(unittest.TestCase):
             filters={
                 "all_tenants": True,
                 "project_id": self.identity_module.find_mandatory_project.return_value.id,
-                "limit": 10000,
             }
         )
 
@@ -126,7 +123,6 @@ class OpenstackServerTests(unittest.TestCase):
             filters={
                 "all_tenants": True,
                 "project_id": self.identity_module.find_mandatory_project.return_value.id,
-                "limit": 10000,
             }
         )
 

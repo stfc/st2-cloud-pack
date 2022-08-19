@@ -64,11 +64,7 @@ class OpenstackFloatingIPTests(unittest.TestCase):
 
         self.mocked_connection.assert_called_once_with("test")
 
-        self.api.list_floating_ips.assert_called_once_with(
-            filters={
-                "limit": 10000,
-            }
-        )
+        self.api.list_floating_ips.assert_called_once_with(filters={})
 
     def test_search_all_fips(self):
         """
@@ -87,7 +83,6 @@ class OpenstackFloatingIPTests(unittest.TestCase):
         self.api.list_floating_ips.assert_called_once_with(
             filters={
                 "project_id": "ProjectID",
-                "limit": 10000,
             }
         )
 

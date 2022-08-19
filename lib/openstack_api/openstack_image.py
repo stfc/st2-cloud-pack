@@ -58,7 +58,7 @@ class OpenstackImage(OpenstackWrapperBase):
         :param project_identifier: The project to get all associated images with, can be empty for all projects
         :return: A list of all images
         """
-        filters = {"limit": 10000}
+        filters = {}
         if project_identifier != "":
             # list_images can only take project ids in the filters, not names so workaround
             project = self._identity_api.find_mandatory_project(

@@ -63,9 +63,7 @@ class OpenstackImageTests(unittest.TestCase):
 
         self.mocked_connection.assert_called_once_with("test")
 
-        self.api.image.images.assert_called_once_with(
-            limit=10000,
-        )
+        self.api.image.images.assert_called_once_with()
 
     def test_search_all_images(self):
         """
@@ -83,7 +81,6 @@ class OpenstackImageTests(unittest.TestCase):
         )
         self.api.image.images.assert_called_once_with(
             owner="ProjectID",
-            limit=10000,
         )
 
     @mock.patch("openstack_api.openstack_query.datetime", wraps=datetime)
