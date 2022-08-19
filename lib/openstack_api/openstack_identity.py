@@ -33,8 +33,6 @@ class OpenstackIdentity(OpenstackWrapperBase):
             try:
                 return conn.identity.create_project(
                     name=project_details.name,
-                    # This is intentionally hard-coded as it's very rare we create something in another domain
-                    domain_id="default",
                     description=project_details.description,
                     is_enabled=project_details.is_enabled,
                     tags=[project_details.email],
