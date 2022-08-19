@@ -28,7 +28,7 @@ tasks:
       query_preset=<% 'servers_shutoff' %>
       properties_to_select=<% ['id', 'name', 'status', 'updated', 'user_name', 'user_email'] %>
       header=<% '/opt/stackstorm/packs/stackstorm_openstack/email_templates/header.html' %>
-      message=<% 'The following VMs are shutoff. These VMs will still take up resources while shutoff, please consider whether they are needed and delete them if they are not.' %>
+      message=<% 'The following VMs are shutoff. As these VMs still take up resources while shutoff, please consider whether they are needed and delete them if they are not.' %>
       footer=<% '/opt/stackstorm/packs/stackstorm_openstack/email_templates/footer.html' %>
       subject=<% 'Shutoff VMs' %>
       send_as_html=<% true %>
