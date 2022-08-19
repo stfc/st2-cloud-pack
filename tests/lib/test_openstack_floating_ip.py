@@ -307,37 +307,36 @@ class OpenstackFloatingIPTests(unittest.TestCase):
         """
         # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
         class ObjectMock:
-            def __init__(self, id):
+            def __init__(self, id, project_id):
                 self.id = id
+                self.project_id = project_id
+
+            def __getitem__(self, item):
+                return getattr(self, item)
 
         self.api.list_floating_ips.return_value = [
-            ObjectMock("FipID1"),
-            ObjectMock("FipID2"),
+            ObjectMock("ObjectID1", "ProjectID1"),
+            ObjectMock("ObjectID2", "ProjectID1"),
+            ObjectMock("ObjectID3", "ProjectID1"),
         ]
-        self.api.network.get_ip.side_effect = openstack.exceptions.ResourceNotFound()
+
+        self.api.network.get_ip.side_effect = [
+            openstack.exceptions.ResourceNotFound(),
+            openstack.exceptions.ResourceNotFound(),
+            "",
+        ]
 
         result = self.instance.find_non_existent_fips(
             cloud_account="test", project_identifier="project"
         )
 
-        self.identity_module.find_mandatory_project.assert_called_once_with(
-            "test", project_identifier="project"
-        )
-        self.mocked_connection.assert_called_once_with("test")
-
-        self.api.list_floating_ips.assert_called_once_with(
-            filters={
-                "project_id": self.identity_module.find_mandatory_project.return_value.id,
-            },
-        )
-
         self.assertEqual(
             result,
             {
-                self.identity_module.find_mandatory_project.return_value.id: [
-                    "FipID1",
-                    "FipID2",
-                ],
+                self.api.identity.find_project.return_value.id: [
+                    "ObjectID1",
+                    "ObjectID2",
+                ]
             },
         )
 
@@ -347,27 +346,25 @@ class OpenstackFloatingIPTests(unittest.TestCase):
         """
         # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
         class ObjectMock:
-            def __init__(self, id):
+            def __init__(self, id, project_id):
                 self.id = id
-                self.project_id = "Project"
+                self.project_id = project_id
+
+            def __getitem__(self, item):
+                return getattr(self, item)
 
         self.api.list_floating_ips.return_value = [
-            ObjectMock("FipID1"),
-            ObjectMock("FipID2"),
+            ObjectMock("FipID1", "ProjectID1"),
+            ObjectMock("FipID2", "ProjectID1"),
+            ObjectMock("FipID3", "ProjectID2"),
         ]
-        self.api.identity.get_project.side_effect = (
-            openstack.exceptions.ResourceNotFound()
-        )
+
+        self.api.identity.get_project.side_effect = [
+            openstack.exceptions.ResourceNotFound(),
+            openstack.exceptions.ResourceNotFound(),
+            "",
+        ]
 
         result = self.instance.find_non_existent_projects(cloud_account="test")
 
-        self.mocked_connection.assert_called_once_with("test")
-
-        self.api.list_floating_ips.assert_called_once_with()
-
-        self.assertEqual(
-            result,
-            {
-                "Project": ["FipID1", "FipID2"],
-            },
-        )
+        self.assertEqual(result, {"ProjectID1": ["FipID1", "FipID2"]})

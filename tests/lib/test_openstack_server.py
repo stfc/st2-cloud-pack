@@ -360,106 +360,42 @@ class OpenstackServerTests(unittest.TestCase):
 
         self.assertEqual(result, [self.mock_server_list[0]])
 
-    def test_find_non_existent_servers_no_project(self):
-        """
-        Tests calling find_non_existent_servers with no project selected
-        """
-        # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
-        class ObjectMock:
-            def __init__(self, id):
-                self.id = id
-
-        self.identity_module.list_projects.return_value = [
-            ObjectMock("ProjectID1"),
-            ObjectMock("ProjectID2"),
-        ]
-
-        self.api.list_servers.side_effect = [
-            [ObjectMock("ServerID1"), ObjectMock("ServerID2")],
-            [ObjectMock("ServerID3")],
-        ]
-        self.api.compute.get_server.side_effect = (
-            openstack.exceptions.ResourceNotFound()
-        )
-        result = self.instance.find_non_existent_servers(
-            cloud_account="test", project_identifier=""
-        )
-
-        self.identity_module.list_projects.assert_called_once_with("test")
-        self.mocked_connection.assert_called_once_with("test")
-
-        self.api.list_servers.assert_has_calls(
-            [
-                mock.call(
-                    detailed=False,
-                    all_projects=True,
-                    bare=True,
-                    filters={
-                        "all_tenants": True,
-                        "project_id": "ProjectID1",
-                    },
-                ),
-                mock.call(
-                    detailed=False,
-                    all_projects=True,
-                    bare=True,
-                    filters={
-                        "all_tenants": True,
-                        "project_id": "ProjectID2",
-                    },
-                ),
-            ],
-            any_order=True,
-        )
-
-        self.assertEqual(
-            result,
-            {"ProjectID1": ["ServerID1", "ServerID2"], "ProjectID2": ["ServerID3"]},
-        )
-
     def test_find_non_existent_servers(self):
         """
         Tests calling find_non_existent_servers
         """
         # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
         class ObjectMock:
-            def __init__(self, id):
+            def __init__(self, id, project_id):
                 self.id = id
+                self.project_id = project_id
+
+            def __getitem__(self, item):
+                return getattr(self, item)
 
         self.api.list_servers.return_value = [
-            ObjectMock("ServerID1"),
-            ObjectMock("ServerID2"),
+            ObjectMock("ObjectID1", "ProjectID1"),
+            ObjectMock("ObjectID2", "ProjectID1"),
+            ObjectMock("ObjectID3", "ProjectID1"),
         ]
-        self.api.compute.get_server.side_effect = (
-            openstack.exceptions.ResourceNotFound()
-        )
+
+        self.api.compute.get_server.side_effect = [
+            openstack.exceptions.ResourceNotFound(),
+            openstack.exceptions.ResourceNotFound(),
+            "",
+        ]
 
         result = self.instance.find_non_existent_servers(
             cloud_account="test", project_identifier="project"
         )
 
-        self.identity_module.find_mandatory_project.assert_called_once_with(
-            "test", project_identifier="project"
-        )
-        self.mocked_connection.assert_called_once_with("test")
-
-        self.api.list_servers.assert_called_once_with(
-            detailed=False,
-            all_projects=True,
-            bare=True,
-            filters={
-                "all_tenants": True,
-                "project_id": self.identity_module.find_mandatory_project.return_value.id,
-            },
-        )
-
         self.assertEqual(
             result,
             {
-                self.identity_module.find_mandatory_project.return_value.id: [
-                    "ServerID1",
-                    "ServerID2",
-                ],
+                self.api.identity.find_project.return_value.id: [
+                    "ObjectID1",
+                    "ObjectID2",
+                ]
             },
         )
 
@@ -469,34 +405,25 @@ class OpenstackServerTests(unittest.TestCase):
         """
         # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
         class ObjectMock:
-            def __init__(self, id):
+            def __init__(self, id, project_id):
                 self.id = id
-                self.project_id = "Project"
+                self.project_id = project_id
+
+            def __getitem__(self, item):
+                return getattr(self, item)
 
         self.api.list_servers.return_value = [
-            ObjectMock("ServerID1"),
-            ObjectMock("ServerID2"),
+            ObjectMock("ServerID1", "ProjectID1"),
+            ObjectMock("ServerID2", "ProjectID1"),
+            ObjectMock("ServerID3", "ProjectID2"),
         ]
-        self.api.identity.get_project.side_effect = (
-            openstack.exceptions.ResourceNotFound()
-        )
+
+        self.api.identity.get_project.side_effect = [
+            openstack.exceptions.ResourceNotFound(),
+            openstack.exceptions.ResourceNotFound(),
+            "",
+        ]
 
         result = self.instance.find_non_existent_projects(cloud_account="test")
 
-        self.mocked_connection.assert_called_once_with("test")
-
-        self.api.list_servers.assert_called_once_with(
-            detailed=False,
-            all_projects=True,
-            bare=True,
-            filters={
-                "all_tenants": True,
-            },
-        )
-
-        self.assertEqual(
-            result,
-            {
-                "Project": ["ServerID1", "ServerID2"],
-            },
-        )
+        self.assertEqual(result, {"ProjectID1": ["ServerID1", "ServerID2"]})

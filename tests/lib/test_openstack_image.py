@@ -288,37 +288,36 @@ class OpenstackImageTests(unittest.TestCase):
         """
         # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
         class ObjectMock:
-            def __init__(self, owner):
-                self.owner = owner
+            def __init__(self, id, project_id):
+                self.id = id
+                self.owner = project_id
 
-        self.api.list_images.return_value = [
-            ObjectMock("ImageID1"),
-            ObjectMock("ImageID2"),
+            def __getitem__(self, item):
+                return getattr(self, item)
+
+        self.api.image.images.return_value = [
+            ObjectMock("ObjectID1", "ProjectID1"),
+            ObjectMock("ObjectID2", "ProjectID1"),
+            ObjectMock("ObjectID3", "ProjectID1"),
         ]
-        self.api.image.get_image.side_effect = openstack.exceptions.ResourceNotFound()
+
+        self.api.image.get_image.side_effect = [
+            openstack.exceptions.ResourceNotFound(),
+            openstack.exceptions.ResourceNotFound(),
+            "",
+        ]
 
         result = self.instance.find_non_existent_images(
             cloud_account="test", project_identifier="project"
         )
 
-        self.identity_module.find_mandatory_project.assert_called_once_with(
-            "test", project_identifier="project"
-        )
-        self.mocked_connection.assert_called_once_with("test")
-
-        self.api.list_images.assert_called_once_with(
-            filters={
-                "owner": self.identity_module.find_mandatory_project.return_value.id,
-            },
-        )
-
         self.assertEqual(
             result,
             {
-                self.identity_module.find_mandatory_project.return_value.id: [
-                    "ImageID1",
-                    "ImageID2",
-                ],
+                self.api.identity.find_project.return_value.id: [
+                    "ObjectID1",
+                    "ObjectID2",
+                ]
             },
         )
 
@@ -328,27 +327,25 @@ class OpenstackImageTests(unittest.TestCase):
         """
         # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
         class ObjectMock:
-            def __init__(self, id):
+            def __init__(self, id, project_id):
                 self.id = id
-                self.owner = "Project"
+                self.owner = project_id
+
+            def __getitem__(self, item):
+                return getattr(self, item)
 
         self.api.list_images.return_value = [
-            ObjectMock("ImageID1"),
-            ObjectMock("ImageID2"),
+            ObjectMock("ImageID1", "ProjectID1"),
+            ObjectMock("ImageID2", "ProjectID1"),
+            ObjectMock("ImageID3", "ProjectID2"),
         ]
-        self.api.identity.get_project.side_effect = (
-            openstack.exceptions.ResourceNotFound()
-        )
+
+        self.api.identity.get_project.side_effect = [
+            openstack.exceptions.ResourceNotFound(),
+            openstack.exceptions.ResourceNotFound(),
+            "",
+        ]
 
         result = self.instance.find_non_existent_projects(cloud_account="test")
 
-        self.mocked_connection.assert_called_once_with("test")
-
-        self.api.list_images.assert_called_once_with()
-
-        self.assertEqual(
-            result,
-            {
-                "Project": ["ImageID1", "ImageID2"],
-            },
-        )
+        self.assertEqual(result, {"ProjectID1": ["ImageID1", "ImageID2"]})

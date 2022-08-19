@@ -1,6 +1,5 @@
 from typing import List, Dict
 
-import openstack.exceptions
 from openstack.network.v2.floating_ip import FloatingIP
 
 from openstack_api.openstack_connection import OpenstackConnection
@@ -279,32 +278,20 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         :param project_identifier: The project to get all associated servers with, can be empty for all projects
         :return: A dictionary containing the non-existent server ids and their projects
         """
-        selected_projects = {}
-        if project_identifier == "":
-            projects = self._identity_api.list_projects(cloud_account)
-        else:
-            projects = [
-                self._identity_api.find_mandatory_project(
-                    cloud_account, project_identifier=project_identifier
-                )
-            ]
-
-        with self._connection_cls(cloud_account) as conn:
-            for project in projects:
-                fips_in_project = conn.list_floating_ips(
+        return self._query_api.find_non_existent_objects(
+            cloud_account=cloud_account,
+            project_identifier=project_identifier,
+            check_params=OpenstackQuery.NonExistentCheckParams(
+                object_list_func=lambda conn, project: conn.list_floating_ips(
                     filters={
                         "project_id": project.id,
                     },
-                )
-                for fip in fips_in_project:
-                    try:
-                        conn.network.get_ip(fip.id)
-                    except openstack.exceptions.ResourceNotFound:
-                        if project.id in selected_projects:
-                            selected_projects[project.id].append(fip.id)
-                        else:
-                            selected_projects.update({project.id: [fip.id]})
-        return selected_projects
+                ),
+                object_get_func=lambda conn, object_id: conn.network.get_ip(object_id),
+                object_id_param_name="id",
+                object_project_param_name="project_id",
+            ),
+        )
 
     def find_non_existent_projects(self, cloud_account: str) -> Dict[str, List[str]]:
         """
@@ -313,15 +300,11 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         :param cloud_account: The associated clouds.yaml account
         :return: A dictionary containing the non-existent projects and a list of floating ips that refer to them
         """
-        selected_projects = {}
-        with self._connection_cls(cloud_account) as conn:
-            all_fips = conn.list_floating_ips()
-            for fip in all_fips:
-                try:
-                    conn.identity.get_project(fip.project_id)
-                except openstack.exceptions.ResourceNotFound:
-                    if fip.project_id in selected_projects:
-                        selected_projects[fip.project_id].append(fip.id)
-                    else:
-                        selected_projects.update({fip.project_id: [fip.id]})
-        return selected_projects
+        return self._query_api.find_non_existant_object_projects(
+            cloud_account=cloud_account,
+            check_params=OpenstackQuery.NonExistentProjectCheckParams(
+                object_list_func=lambda conn: conn.list_floating_ips(),
+                object_id_param_name="id",
+                object_project_param_name="project_id",
+            ),
+        )

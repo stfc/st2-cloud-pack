@@ -1,6 +1,5 @@
 from typing import List, Dict
 
-import openstack.exceptions
 from openstack.compute.v2.server import Server
 from openstack.exceptions import HttpException
 
@@ -328,19 +327,11 @@ class OpenstackServer(OpenstackWrapperBase):
         :param project_identifier: The project to get all associated servers with, can be empty for all projects
         :return: A dictionary containing the non-existent server ids and their projects
         """
-        selected_projects = {}
-        if project_identifier == "":
-            projects = self._identity_api.list_projects(cloud_account)
-        else:
-            projects = [
-                self._identity_api.find_mandatory_project(
-                    cloud_account, project_identifier=project_identifier
-                )
-            ]
-
-        with self._connection_cls(cloud_account) as conn:
-            for project in projects:
-                servers_in_project = conn.list_servers(
+        return self._query_api.find_non_existent_objects(
+            cloud_account=cloud_account,
+            project_identifier=project_identifier,
+            check_params=OpenstackQuery.NonExistentCheckParams(
+                object_list_func=lambda conn, project: conn.list_servers(
                     detailed=False,
                     all_projects=True,
                     bare=True,
@@ -348,40 +339,34 @@ class OpenstackServer(OpenstackWrapperBase):
                         "all_tenants": True,
                         "project_id": project.id,
                     },
-                )
-                for server in servers_in_project:
-                    try:
-                        conn.compute.get_server(server.id)
-                    except openstack.exceptions.ResourceNotFound:
-                        if project.id in selected_projects:
-                            selected_projects[project.id].append(server.id)
-                        else:
-                            selected_projects.update({project.id: [server.id]})
-        return selected_projects
+                ),
+                object_get_func=lambda conn, object_id: conn.compute.get_server(
+                    object_id
+                ),
+                object_id_param_name="id",
+                object_project_param_name="project_id",
+            ),
+        )
 
     def find_non_existent_projects(self, cloud_account: str) -> Dict[str, List[str]]:
         """
-        Returns a dictionary containing the ids of non-existent projects along with a list of servers that
+        Returns a dictionary containing the ids of non-existent projects along with a list of server ids that
         refer to them
         :param cloud_account: The associated clouds.yaml account
-        :return: A dictionary containing the non-existent projects and a list of servers that refer to them
+        :return: A dictionary containing the non-existent projects and a list of server ids that refer to them
         """
-        selected_projects = {}
-        with self._connection_cls(cloud_account) as conn:
-            all_servers = conn.list_servers(
-                detailed=False,
-                all_projects=True,
-                bare=True,
-                filters={
-                    "all_tenants": True,
-                },
-            )
-            for server in all_servers:
-                try:
-                    conn.identity.get_project(server.project_id)
-                except openstack.exceptions.ResourceNotFound:
-                    if server.project_id in selected_projects:
-                        selected_projects[server.project_id].append(server.id)
-                    else:
-                        selected_projects.update({server.project_id: [server.id]})
-        return selected_projects
+        return self._query_api.find_non_existant_object_projects(
+            cloud_account=cloud_account,
+            check_params=OpenstackQuery.NonExistentProjectCheckParams(
+                object_list_func=lambda conn: conn.list_servers(
+                    detailed=False,
+                    all_projects=True,
+                    bare=True,
+                    filters={
+                        "all_tenants": True,
+                    },
+                ),
+                object_id_param_name="id",
+                object_project_param_name="project_id",
+            ),
+        )

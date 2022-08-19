@@ -2,6 +2,8 @@ import datetime
 import unittest
 from unittest import mock
 from unittest.mock import MagicMock
+
+import openstack
 from nose.tools import raises
 
 from openstack_api.openstack_query import OpenstackQuery
@@ -28,6 +30,7 @@ class OpenstackQueryTests(unittest.TestCase):
         super().setUp()
         self.mocked_connection = MagicMock()
         self.instance = OpenstackQuery(self.mocked_connection)
+        self.api = self.mocked_connection.return_value.__enter__.return_value
         self.identity_api = (
             self.mocked_connection.return_value.__enter__.return_value.identity
         )
@@ -243,3 +246,109 @@ class OpenstackQueryTests(unittest.TestCase):
             self._test_parse_and_output_table_no_grouping(
                 object_type=key, properties_to_select=value
             )
+
+    def test_find_non_existent_objects(self):
+        """
+        Tests calling find_non_existent_objects
+        """
+        # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
+        class ObjectMock:
+            def __init__(self, id, project_id):
+                self.id = id
+                self.project_id = project_id
+
+            def __getitem__(self, item):
+                return getattr(self, item)
+
+        # pylint:disable=unused-argument
+        def object_get_func(conn, object_id):
+            if object_id in {"ObjectID1", "ObjectID2"}:
+                raise openstack.exceptions.ResourceNotFound()
+
+        # pylint:disable=unused-argument
+        def object_list_func(conn, project):
+            if project.id == "ProjectID1":
+                return [
+                    ObjectMock("ObjectID1", "ProjectID1"),
+                    ObjectMock("ObjectID2", "ProjectID1"),
+                    ObjectMock("ObjectID3", "ProjectID1"),
+                ]
+            return [
+                ObjectMock("ObjectID1", "ProjectID2"),
+            ]
+
+        check_params = OpenstackQuery.NonExistentCheckParams(
+            object_list_func=object_list_func,
+            object_get_func=object_get_func,
+            object_id_param_name="id",
+            object_project_param_name="project_id",
+        )
+
+        self.api.list_projects.return_value = [
+            ObjectMock("ProjectID1", ""),
+            ObjectMock("ProjectID2", ""),
+        ]
+
+        result = self.instance.find_non_existent_objects(
+            cloud_account="test", project_identifier="", check_params=check_params
+        )
+
+        self.mocked_connection.assert_called_with("test")
+
+        self.assertEqual(
+            result,
+            {
+                "ProjectID1": [
+                    "ObjectID1",
+                    "ObjectID2",
+                ],
+                "ProjectID2": ["ObjectID1"],
+            },
+        )
+
+    def test_find_non_existant_object_projects(self):
+        """
+        Tests calling find_non_existant_object_projects
+        """
+        # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
+        class ObjectMock:
+            def __init__(self, id, project_id):
+                self.id = id
+                self.project_id = project_id
+
+            def __getitem__(self, item):
+                return getattr(self, item)
+
+        self.identity_api.get_project.side_effect = [
+            openstack.exceptions.ResourceNotFound(),
+            openstack.exceptions.ResourceNotFound(),
+            "",
+        ]
+
+        check_params = OpenstackQuery.NonExistentProjectCheckParams(
+            object_list_func=lambda conn: [
+                ObjectMock("ObjectID1", "ProjectID1"),
+                ObjectMock("ObjectID2", "ProjectID1"),
+                ObjectMock("ObjectID3", "ProjectID1"),
+            ],
+            object_id_param_name="id",
+            object_project_param_name="project_id",
+        )
+
+        self.identity_api.find_project.return_value = ObjectMock("ProjectID1", "")
+
+        result = self.instance.find_non_existant_object_projects(
+            cloud_account="test", check_params=check_params
+        )
+
+        self.mocked_connection.assert_called_with("test")
+
+        self.assertEqual(
+            result,
+            {
+                "ProjectID1": [
+                    "ObjectID1",
+                    "ObjectID2",
+                ],
+            },
+        )

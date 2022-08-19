@@ -1,6 +1,5 @@
 from typing import List, Dict
 
-import openstack
 from openstack.image.v2.image import Image
 
 from openstack_api.openstack_connection import OpenstackConnection
@@ -261,32 +260,18 @@ class OpenstackImage(OpenstackWrapperBase):
         :param project_identifier: The project to get all associated servers with, can be empty for all projects
         :return: A dictionary containing the non-existent server ids and their projects
         """
-        selected_projects = {}
-        if project_identifier == "":
-            projects = self._identity_api.list_projects(cloud_account)
-        else:
-            projects = [
-                self._identity_api.find_mandatory_project(
-                    cloud_account, project_identifier=project_identifier
-                )
-            ]
-
-        with self._connection_cls(cloud_account) as conn:
-            for project in projects:
-                images_in_project = conn.list_images(
-                    filters={
-                        "owner": project.id,
-                    },
-                )
-                for image in images_in_project:
-                    try:
-                        conn.image.get_image(image.owner)
-                    except openstack.exceptions.ResourceNotFound:
-                        if project.id in selected_projects:
-                            selected_projects[project.id].append(image.owner)
-                        else:
-                            selected_projects.update({project.id: [image.owner]})
-        return selected_projects
+        return self._query_api.find_non_existent_objects(
+            cloud_account=cloud_account,
+            project_identifier=project_identifier,
+            check_params=OpenstackQuery.NonExistentCheckParams(
+                object_list_func=lambda conn, project: conn.image.images(
+                    owner=project.id,
+                ),
+                object_get_func=lambda conn, object_id: conn.image.get_image(object_id),
+                object_id_param_name="id",
+                object_project_param_name="owner",
+            ),
+        )
 
     def find_non_existent_projects(self, cloud_account: str) -> Dict[str, List[str]]:
         """
@@ -295,15 +280,11 @@ class OpenstackImage(OpenstackWrapperBase):
         :param cloud_account: The associated clouds.yaml account
         :return: A dictionary containing the non-existent projects and a list of images that refer to them
         """
-        selected_projects = {}
-        with self._connection_cls(cloud_account) as conn:
-            all_images = conn.list_images()
-            for image in all_images:
-                try:
-                    conn.identity.get_project(image.owner)
-                except openstack.exceptions.ResourceNotFound:
-                    if image.owner in selected_projects:
-                        selected_projects[image.owner].append(image.id)
-                    else:
-                        selected_projects.update({image.owner: [image.id]})
-        return selected_projects
+        return self._query_api.find_non_existant_object_projects(
+            cloud_account=cloud_account,
+            check_params=OpenstackQuery.NonExistentProjectCheckParams(
+                object_list_func=lambda conn: conn.list_images(),
+                object_id_param_name="id",
+                object_project_param_name="owner",
+            ),
+        )
