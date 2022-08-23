@@ -1,4 +1,5 @@
-from typing import Optional
+
+from typing import Optional, List
 
 from cinderclient.v3 import client
 
@@ -31,6 +32,5 @@ class OpenStackVolumeThreshold(OpenstackWrapperBase):
                 else:
                     FCount + 1
             return volumesizes, TCount, FCount
-
 
 
