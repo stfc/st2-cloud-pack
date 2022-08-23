@@ -1,7 +1,7 @@
 import openstack.connection
 from openstack import connect
 
-from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
+from lib.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 
 
 class OpenstackConnection:

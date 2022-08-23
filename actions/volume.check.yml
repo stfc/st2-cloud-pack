@@ -1,0 +1,19 @@
+---
+description: Check Volume
+enabled: true
+entry_point: src/volume_management.py
+name: volume.check
+parameters:
+  submodule:
+    default: volume_check
+    immutable: True
+    type: string
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    required: true
+    type: string
+  project_identifier:
+    description: Project (Name or ID) to search in
+    required: true
+    type: string
+runner_type: python-script

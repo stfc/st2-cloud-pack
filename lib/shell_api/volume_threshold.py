@@ -1,18 +1,36 @@
-import shutil
-from typing import Optional, List
+from typing import Optional
 
-from shell_api.disk_space import DiskSpace
+from cinderclient.v3 import client
+
+from openstack_api.openstack_connection import OpenstackConnection
+from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
-class VolumeThreshold:
-    def __init__(self, shutil_di: Optional = None):
-        self.shutil = shutil_di if shutil_di else shutil
+class OpenStackVolumeThreshold(OpenstackWrapperBase):
 
-    def get_disk_space(self) -> DiskSpace:
-        # TODO: GET RID OF HARD CODED ROOT
-        returned = self.shutil.disk_usage("/")
-        return DiskSpace(total=returned[0], used=returned[1], free=returned[2])
+    def __init__(self, connection_cls=OpenstackConnection, CinderClient: Optional = None):
+        super().__init__(connection_cls)
+        self.CinderClient = CinderClient if CinderClient else client.Client
 
-    def get_disk_list(self) -> List[str]:
-        # TODO: Check disks are real
-        return ["NotADisk"]
+    def get_disk_space(self, cloud: str):
+        with self._connection_cls(cloud) as conn:
+            cinder = self.CinderClient(version=3, session=conn.session)
+            volumeList = cinder.volumes.list()
+            count = volumeList.len()
+            volumesizes = []
+            TCount = 0
+            FCount = 0
+            for i in count:
+                temp = volumeList[i].vol.id()
+                quota = temp.get_volume_quotas()
+                threshold = quota / temp.size * 100()
+                volumesizes.append(temp.vol.size)
+                volumesizes.append(threshold)
+                if threshold > 80:
+                    TCount + 1
+                else:
+                    FCount + 1
+            return volumesizes, TCount, FCount
+
+
+
