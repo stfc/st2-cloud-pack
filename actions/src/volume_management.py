@@ -1,3 +1,9 @@
+from typing import Dict, Callable
+
+from openstack_action import OpenstackAction
+from openstack_api.openstack_network import OpenstackNetwork
+
+
 class RouterActions(OpenstackAction):
     def __init__(self, *args, config: Dict = None, **kwargs):
         """constructor class"""
