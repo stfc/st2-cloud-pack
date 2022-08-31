@@ -15,13 +15,10 @@ class EmailActions(Action):
         """
         Structure containing the information needed to _email_users for a particular OpenstackResource
         :param: required_email_property: The name of the property that must be obtained to get the email of the
-                                         user associated with the object. An error is thrown if it is not in the
-                                         properties_to_select.
-        :param: valid_search_queries_no_project: List of query_preset's that can be run without a project. An error
-                                                 will be thrown if one of them is used without a project.
+                                         user associated with the object.
+        :param: valid_search_queries_no_project: List of query_preset's that can be run without a project.
         :param: search_api: API wrapper that contains the search methods that can be used
         :param: object_type: Type of object to be passed to OpenstackQuery's parse_and_output_table function
-        :return:
         """
 
         required_email_property: str
@@ -114,6 +111,29 @@ class EmailActions(Action):
         send_as_html: bool,
         **kwargs,
     ):
+        """
+        Finds all servers matching a query and then sends emails to their users
+        :param: action_params: See EmailActionParams
+        :param: cloud_account: The account from the clouds configuration to use
+        :param: project_identifier: The project this applies to (or empty for all projects)
+        :param: query_preset: The query to use when searching for servers
+        :param: message: Message to add to the body of emails sent
+        :param: properties_to_select: The list of properties to select and output from the found servers
+        :param: subject (String): Subject of the emails
+        :param: email_from (String): Sender Email, subject (String): Email Subject,
+        :param: email_cc (List[String]): Email addresses to Cc
+        :param: header (String): filepath to header file,
+        :param: footer (String): filepath to footer file,
+        :param: attachment (List): list of attachment filepaths,
+        :param: smtp_account (String): email config to use,
+        :param: test_override (Boolean): send all emails to test emails
+        :param: test_override_email (List[String]): send to this email if test_override enabled
+        :param: send_as_html (Bool): If true will send in HTML format
+        :raises ValueError: If action_params.required_email_property is not present in properties_to_select
+        :raises ValueError: If project_identifier is empty and query_preset is not present in
+                            action_params.valid_search_queries_no_project
+        :return:
+        """
         if action_params.required_email_property not in properties_to_select:
             raise ValueError(
                 f"properties_to_select must contain '{action_params.required_email_property}'"

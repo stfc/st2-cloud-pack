@@ -453,10 +453,10 @@ class TestServerActions(OpenstackActionTestBase):
         is required for the query type
         """
 
-        i = 0
-        for query_preset in OpenstackImage.SEARCH_QUERY_PRESETS_NO_PROJECT:
+        for i, query_preset in enumerate(
+            OpenstackImage.SEARCH_QUERY_PRESETS_NO_PROJECT, start=1
+        ):
             self._email_image_users(query_preset)
-            i += 1
             self.assertEqual(self.email_mock.send_emails.call_count, i)
 
     @raises(ValueError)
