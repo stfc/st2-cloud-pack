@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import datetime
 import unittest
 from unittest import mock
@@ -300,19 +301,20 @@ class OpenstackFloatingIPTests(unittest.TestCase):
         """
         Tests calling find_non_existent_fips
         """
-        # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
-        class ObjectMock:
-            def __init__(self, id, project_id):
-                self.id = id
-                self.project_id = project_id
+
+        @dataclass
+        class _ObjectMock:
+            # pylint: disable=invalid-name
+            id: str
+            project_id: str
 
             def __getitem__(self, item):
                 return getattr(self, item)
 
         self.api.list_floating_ips.return_value = [
-            ObjectMock("ObjectID1", "ProjectID1"),
-            ObjectMock("ObjectID2", "ProjectID1"),
-            ObjectMock("ObjectID3", "ProjectID1"),
+            _ObjectMock("ObjectID1", "ProjectID1"),
+            _ObjectMock("ObjectID2", "ProjectID1"),
+            _ObjectMock("ObjectID3", "ProjectID1"),
         ]
 
         self.api.network.get_ip.side_effect = [
@@ -339,19 +341,20 @@ class OpenstackFloatingIPTests(unittest.TestCase):
         """
         Tests calling find_non_existent_projects
         """
-        # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
-        class ObjectMock:
-            def __init__(self, id, project_id):
-                self.id = id
-                self.project_id = project_id
+
+        @dataclass
+        class _ObjectMock:
+            # pylint: disable=invalid-name
+            id: str
+            project_id: str
 
             def __getitem__(self, item):
                 return getattr(self, item)
 
         self.api.list_floating_ips.return_value = [
-            ObjectMock("FipID1", "ProjectID1"),
-            ObjectMock("FipID2", "ProjectID1"),
-            ObjectMock("FipID3", "ProjectID2"),
+            _ObjectMock("FipID1", "ProjectID1"),
+            _ObjectMock("FipID2", "ProjectID1"),
+            _ObjectMock("FipID3", "ProjectID2"),
         ]
 
         self.api.identity.get_project.side_effect = [

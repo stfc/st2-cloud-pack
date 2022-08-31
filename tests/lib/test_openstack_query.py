@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import datetime
 import unittest
 from unittest import mock
@@ -255,11 +256,12 @@ class OpenstackQueryTests(unittest.TestCase):
         """
         Tests calling find_non_existent_objects
         """
-        # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
-        class ObjectMock:
-            def __init__(self, id, project_id):
-                self.id = id
-                self.project_id = project_id
+
+        @dataclass
+        class _ObjectMock:
+            # pylint: disable=invalid-name
+            id: str
+            project_id: str
 
             def __getitem__(self, item):
                 return getattr(self, item)
@@ -273,12 +275,12 @@ class OpenstackQueryTests(unittest.TestCase):
         def object_list_func(conn, project):
             if project.id == "ProjectID1":
                 return [
-                    ObjectMock("ObjectID1", "ProjectID1"),
-                    ObjectMock("ObjectID2", "ProjectID1"),
-                    ObjectMock("ObjectID3", "ProjectID1"),
+                    _ObjectMock("ObjectID1", "ProjectID1"),
+                    _ObjectMock("ObjectID2", "ProjectID1"),
+                    _ObjectMock("ObjectID3", "ProjectID1"),
                 ]
             return [
-                ObjectMock("ObjectID1", "ProjectID2"),
+                _ObjectMock("ObjectID1", "ProjectID2"),
             ]
 
         check_params = NonExistentCheckParams(
@@ -289,8 +291,8 @@ class OpenstackQueryTests(unittest.TestCase):
         )
 
         self.api.list_projects.return_value = [
-            ObjectMock("ProjectID1", ""),
-            ObjectMock("ProjectID2", ""),
+            _ObjectMock("ProjectID1", ""),
+            _ObjectMock("ProjectID2", ""),
         ]
 
         result = self.instance.find_non_existent_objects(
@@ -314,11 +316,12 @@ class OpenstackQueryTests(unittest.TestCase):
         """
         Tests calling find_non_existant_object_projects
         """
-        # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
-        class ObjectMock:
-            def __init__(self, id, project_id):
-                self.id = id
-                self.project_id = project_id
+
+        @dataclass
+        class _ObjectMock:
+            # pylint: disable=invalid-name
+            id: str
+            project_id: str
 
             def __getitem__(self, item):
                 return getattr(self, item)
@@ -331,15 +334,15 @@ class OpenstackQueryTests(unittest.TestCase):
 
         check_params = NonExistentProjectCheckParams(
             object_list_func=lambda conn: [
-                ObjectMock("ObjectID1", "ProjectID1"),
-                ObjectMock("ObjectID2", "ProjectID1"),
-                ObjectMock("ObjectID3", "ProjectID1"),
+                _ObjectMock("ObjectID1", "ProjectID1"),
+                _ObjectMock("ObjectID2", "ProjectID1"),
+                _ObjectMock("ObjectID3", "ProjectID1"),
             ],
             object_id_param_name="id",
             object_project_param_name="project_id",
         )
 
-        self.identity_api.find_project.return_value = ObjectMock("ProjectID1", "")
+        self.identity_api.find_project.return_value = _ObjectMock("ProjectID1", "")
 
         result = self.instance.find_non_existant_object_projects(
             cloud_account="test", check_params=check_params

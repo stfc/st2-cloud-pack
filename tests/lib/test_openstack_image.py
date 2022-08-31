@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import datetime
 import unittest
 from unittest import mock
@@ -283,19 +284,20 @@ class OpenstackImageTests(unittest.TestCase):
         """
         Tests calling find_non_existent_images
         """
-        # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
-        class ObjectMock:
-            def __init__(self, id, project_id):
-                self.id = id
-                self.owner = project_id
+
+        @dataclass
+        class _ObjectMock:
+            # pylint: disable=invalid-name
+            id: str
+            owner: str
 
             def __getitem__(self, item):
                 return getattr(self, item)
 
         self.api.image.images.return_value = [
-            ObjectMock("ObjectID1", "ProjectID1"),
-            ObjectMock("ObjectID2", "ProjectID1"),
-            ObjectMock("ObjectID3", "ProjectID1"),
+            _ObjectMock("ObjectID1", "ProjectID1"),
+            _ObjectMock("ObjectID2", "ProjectID1"),
+            _ObjectMock("ObjectID3", "ProjectID1"),
         ]
 
         self.api.image.get_image.side_effect = [
@@ -322,19 +324,20 @@ class OpenstackImageTests(unittest.TestCase):
         """
         Tests calling find_non_existent_projects
         """
-        # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
-        class ObjectMock:
-            def __init__(self, id, project_id):
-                self.id = id
-                self.owner = project_id
+
+        @dataclass
+        class _ObjectMock:
+            # pylint: disable=invalid-name
+            id: str
+            owner: str
 
             def __getitem__(self, item):
                 return getattr(self, item)
 
         self.api.list_images.return_value = [
-            ObjectMock("ImageID1", "ProjectID1"),
-            ObjectMock("ImageID2", "ProjectID1"),
-            ObjectMock("ImageID3", "ProjectID2"),
+            _ObjectMock("ImageID1", "ProjectID1"),
+            _ObjectMock("ImageID2", "ProjectID1"),
+            _ObjectMock("ImageID3", "ProjectID2"),
         ]
 
         self.api.identity.get_project.side_effect = [

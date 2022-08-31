@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import datetime
 import unittest
 from unittest import mock
@@ -52,14 +53,15 @@ class OpenstackServerTests(unittest.TestCase):
         """
         Tests calling search_all_servers with no project selected
         """
-        # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
-        class ProjectMock:
-            def __init__(self, id):
-                self.id = id
+
+        @dataclass
+        class _ProjectMock:
+            # pylint: disable=invalid-name
+            id: str
 
         self.identity_module.list_projects.return_value = [
-            ProjectMock("ID1"),
-            ProjectMock("ID2"),
+            _ProjectMock("ID1"),
+            _ProjectMock("ID2"),
         ]
 
         self.instance.search_all_servers(cloud_account="test", project_identifier="")
@@ -360,19 +362,20 @@ class OpenstackServerTests(unittest.TestCase):
         """
         Tests calling find_non_existent_servers
         """
-        # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
-        class ObjectMock:
-            def __init__(self, id, project_id):
-                self.id = id
-                self.project_id = project_id
+
+        @dataclass
+        class _ObjectMock:
+            # pylint: disable=invalid-name
+            id: str
+            project_id: str
 
             def __getitem__(self, item):
                 return getattr(self, item)
 
         self.api.list_servers.return_value = [
-            ObjectMock("ObjectID1", "ProjectID1"),
-            ObjectMock("ObjectID2", "ProjectID1"),
-            ObjectMock("ObjectID3", "ProjectID1"),
+            _ObjectMock("ObjectID1", "ProjectID1"),
+            _ObjectMock("ObjectID2", "ProjectID1"),
+            _ObjectMock("ObjectID3", "ProjectID1"),
         ]
 
         self.api.compute.get_server.side_effect = [
@@ -399,19 +402,20 @@ class OpenstackServerTests(unittest.TestCase):
         """
         Tests calling find_non_existent_projects
         """
-        # pylint:disable=too-few-public-methods,invalid-name,redefined-builtin
-        class ObjectMock:
-            def __init__(self, id, project_id):
-                self.id = id
-                self.project_id = project_id
+
+        @dataclass
+        class _ObjectMock:
+            # pylint: disable=invalid-name
+            id: str
+            project_id: str
 
             def __getitem__(self, item):
                 return getattr(self, item)
 
         self.api.list_servers.return_value = [
-            ObjectMock("ServerID1", "ProjectID1"),
-            ObjectMock("ServerID2", "ProjectID1"),
-            ObjectMock("ServerID3", "ProjectID2"),
+            _ObjectMock("ServerID1", "ProjectID1"),
+            _ObjectMock("ServerID2", "ProjectID1"),
+            _ObjectMock("ServerID3", "ProjectID2"),
         ]
 
         self.api.identity.get_project.side_effect = [
