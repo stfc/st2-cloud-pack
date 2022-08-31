@@ -36,7 +36,7 @@ tasks:
       send_as_html=<% true %>
       names=<% [] %>
       name_snippets=<% [] %>
-      days=<% 1 %>
+      days=0
     next:
       - when: <% succeeded() %>
         publish:
