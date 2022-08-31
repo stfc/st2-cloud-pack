@@ -1,8 +1,8 @@
 ---
-description: Find non-existent projects referenced by floating ips
+description: Find non-existent projects referenced by images
 enabled: true
-entry_point: src/floating_ip_actions.py
-name: find.non.existent.floating.ip.projects
+entry_point: src/image_actions.py
+name: correctness.find.images.in.non.existent.projects
 parameters:
   timeout:
     default: 5400

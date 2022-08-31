@@ -1,8 +1,8 @@
 ---
-description: Find non-existent projects referenced by servers
+description: Find non-existent projects referenced by floating ips
 enabled: true
-entry_point: src/server_actions.py
-name: find.non.existent.server.projects
+entry_point: src/floating_ip_actions.py
+name: correctness.find.floating.ips.in.non.existent.projects
 parameters:
   timeout:
     default: 5400

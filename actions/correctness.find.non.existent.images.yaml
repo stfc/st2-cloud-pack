@@ -2,7 +2,7 @@
 description: Find non-existent images that are still listed in projects
 enabled: true
 entry_point: src/image_actions.py
-name: find.non.existent.images
+name: correctness.find.non.existent.images
 parameters:
   timeout:
     default: 5400

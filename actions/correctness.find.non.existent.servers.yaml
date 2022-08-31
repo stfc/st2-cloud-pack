@@ -2,7 +2,7 @@
 description: Find non-existent servers that are still listed in projects
 enabled: true
 entry_point: src/server_actions.py
-name: find.non.existent.servers
+name: correctness.find.non.existent.servers
 parameters:
   timeout:
     default: 5400

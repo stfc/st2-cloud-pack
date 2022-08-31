@@ -2,7 +2,7 @@
 description: Find non-existent floating ips that are still listed in projects
 enabled: true
 entry_point: src/floating_ip_actions.py
-name: find.non.existent.floating.ips
+name: correctness.find.non.existent.floating.ips
 parameters:
   timeout:
     default: 5400

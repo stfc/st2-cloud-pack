@@ -1,8 +1,8 @@
 ---
-description: Find non-existent projects referenced by images
+description: Find non-existent projects referenced by servers
 enabled: true
-entry_point: src/image_actions.py
-name: find.non.existent.image.projects
+entry_point: src/server_actions.py
+name: correctness.find.servers.in.non.existent.projects
 parameters:
   timeout:
     default: 5400
