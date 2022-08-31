@@ -5,6 +5,7 @@ from parameterized import parameterized
 
 from jupyter_api.user_api import UserApi
 from src.jupyter import Jupyter
+from structs.jupyter_users import JupyterUsers
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase
 
 
@@ -30,12 +31,17 @@ class TestJupyterActions(OpenstackActionTestBase):
     def test_user_delete_gets_correct_key(self, endpoint):
         token = self.jupyter_keys[endpoint]
 
-        users = [NonCallableMock(), NonCallableMock()]
+        users, start_index, end_index = (
+            NonCallableMock(),
+            NonCallableMock(),
+            NonCallableMock(),
+        )
+        expected = JupyterUsers(users, start_index, end_index)
         self.action.action_service.get_value = Mock()
-        self.action.user_delete(endpoint, users)
+        self.action.user_delete(endpoint, users, start_index, end_index)
 
         self.user_mock.delete_users.assert_called_once_with(
-            endpoint=endpoint, auth_token=token, users=users
+            endpoint=endpoint, auth_token=token, users=expected
         )
 
     @raises(KeyError)

@@ -3,14 +3,24 @@ from typing import Tuple, Union, Dict, List, Callable
 from openstack.network.v2.floating_ip import FloatingIP
 
 from openstack_action import OpenstackAction
+from openstack_api.openstack_floating_ip import OpenstackFloatingIP
 from openstack_api.openstack_network import OpenstackNetwork
+from openstack_api.openstack_query import OpenstackQuery
 
 
 class FloatingIPActions(OpenstackAction):
     def __init__(self, *args, config: Dict = None, **kwargs):
         """constructor class"""
         super().__init__(*args, **kwargs)
-        self._api: OpenstackNetwork = config.get("openstack_api", OpenstackNetwork())
+        self._network_api: OpenstackNetwork = config.get(
+            "openstack_network_api", OpenstackNetwork()
+        )
+        self._fip_api: OpenstackFloatingIP = config.get(
+            "openstack_floating_ip_api", OpenstackFloatingIP()
+        )
+        self._query_api: OpenstackQuery = config.get(
+            "openstack_query_api", OpenstackQuery()
+        )
 
     def run(self, submodule: str, **kwargs):
         """
@@ -28,7 +38,7 @@ class FloatingIPActions(OpenstackAction):
         :param ip_addr: IP address to lookup
         :return: status, result if found else error message
         """
-        found = self._api.get_floating_ip(cloud_account, ip_addr)
+        found = self._network_api.get_floating_ip(cloud_account, ip_addr)
         to_return = found if found else "The requested floating IP could not be found"
         return bool(found), to_return
 
@@ -55,10 +65,42 @@ class FloatingIPActions(OpenstackAction):
         :param number_to_create: Number of floating ips to create
         :return: List of all allocated floating IPs
         """
-        created = self._api.allocate_floating_ips(
+        created = self._network_api.allocate_floating_ips(
             cloud_account,
             network_identifier=network_identifier,
             project_identifier=project_identifier,
             number_to_create=number_to_create,
         )
         return bool(created), created
+
+    # pylint:disable=too-many-arguments
+    def floating_ip_list(
+        self,
+        cloud_account: str,
+        project_identifier: str,
+        query_preset: str,
+        properties_to_select: List[str],
+        group_by: str,
+        get_html: bool,
+        **kwargs,
+    ) -> str:
+        """
+        Finds all floating ips belonging to a project (or all floating ips if project is empty)
+        :param cloud_account: The account from the clouds configuration to use
+        :param project_identifier: The project this applies to (or empty for all floating ips)
+        :param query_preset: The query to use when searching for floating ips
+        :param properties_to_select: The list of properties to select and output from the found floating ips
+        :param group_by: Property to group returned results - can be empty for no grouping
+        :param get_html: When True tables returned are in html format
+        :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
+        """
+
+        fips = self._fip_api[f"search_{query_preset}"](
+            cloud_account, project_identifier, **kwargs
+        )
+
+        output = self._query_api.parse_and_output_table(
+            cloud_account, fips, "floating_ip", properties_to_select, group_by, get_html
+        )
+
+        return output

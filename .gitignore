@@ -7,3 +7,4 @@ coverage.coverage
 
 # Compiled Python Files
 *.pyc
+.vscode/settings.json

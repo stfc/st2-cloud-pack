@@ -5,6 +5,7 @@ description: Create Internal Project Workflow
 input:
   - cloud_account
   - project_name
+  - project_email
   - project_description
   - admin_user_list
   - stfc_user_list
@@ -20,6 +21,7 @@ tasks:
     action: stackstorm_openstack.project.create
       cloud_account=<% ctx().cloud_account %>
       name=<% ctx().project_name %>
+      email=<% ctx().project_email %>
       description=<% ctx().project_description %>
     next:
       - when: <% succeeded() %>

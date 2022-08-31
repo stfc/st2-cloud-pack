@@ -5,10 +5,12 @@ from unittest.mock import patch, NonCallableMock, Mock, call
 import pytz
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
+from nose.tools import raises
 from parameterized import parameterized
 
 from jupyter_api.api_endpoints import API_ENDPOINTS
 from jupyter_api.user_api import UserApi
+from structs.jupyter_users import JupyterUsers
 
 
 @patch("jupyter_api.user_api.requests")
@@ -117,18 +119,60 @@ class UserApiTests(unittest.TestCase):
         )
         assert not returned
 
-    def test_remove_users(self, requests):
+    def test_remove_users_single_user(self, requests):
         """
         Tests that the delete_users method calls the correct endpoint
         """
         token = NonCallableMock()
-        user_names = ["test", "test2"]
+        user_names = JupyterUsers(name="test", start_index=None, end_index=None)
         requests.delete.return_value.status_code = 204
 
         self.api.delete_users("dev", token, user_names)
-        for i, name in enumerate(user_names):
+        requests.delete.assert_called_once_with(
+            url=API_ENDPOINTS["dev"] + "/hub/api/users/test",
+            headers={"Authorization": f"token {token}"},
+        )
+
+    def test_remove_users_multiple_users(self, requests):
+        """
+        Tests that the delete_users method calls the correct endpoint
+        and usernames
+        """
+        token = NonCallableMock()
+        start_index, end_index = 1, 10
+        user_names = JupyterUsers(
+            name="test", start_index=start_index, end_index=end_index
+        )
+        requests.delete.return_value.status_code = 204
+
+        self.api.delete_users("dev", token, user_names)
+        for i, user_index in enumerate(range(start_index, end_index + 1)):
             assert requests.delete.call_args_list[i] == call(
-                url=API_ENDPOINTS["dev"] + f"/hub/api/users/{name}",
+                url=API_ENDPOINTS["dev"] + f"/hub/api/users/test-{user_index}",
                 headers={"Authorization": f"token {token}"},
             )
-        assert requests.delete.call_count == len(user_names)
+        assert requests.delete.call_count == (end_index - start_index + 1)
+
+    @raises(RuntimeError)
+    def test_remove_users_missing_start_index(self, _):
+        """
+        Tests that the delete_users method raises an error if the start_index is not provided
+        """
+        user_names = JupyterUsers(name="test", start_index=None, end_index=1)
+        self.api.delete_users("dev", "token", user_names)
+
+    @raises(RuntimeError)
+    def test_remove_users_missing_end_index(self, _):
+        """
+        Tests that the delete_users method raises an error if the end_index is not provided
+        """
+        user_names = JupyterUsers(name="test", start_index=1, end_index=None)
+        self.api.delete_users("dev", "token", user_names)
+
+    @raises(RuntimeError)
+    def test_remove_users_incorrect_order(self, _):
+        """
+        Tests that the delete_users method raises an error if the start_index is not provided
+        """
+        user_names = JupyterUsers(name="test", start_index=1, end_index=2)
+        self.api.delete_users("dev", "token", user_names)

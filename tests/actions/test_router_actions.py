@@ -21,7 +21,7 @@ class TestRouterActions(OpenstackActionTestBase):
         super().setUp()
         self.network_mock = create_autospec(OpenstackNetwork)
         self.action: RouterActions = self.get_action_instance(
-            api_mock=self.network_mock
+            api_mocks=self.network_mock
         )
 
     def test_router_create(self):

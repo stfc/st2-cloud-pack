@@ -1,7 +1,8 @@
-from typing import Dict, Callable, List
+from typing import Dict, Callable, Optional
 
 from jupyter_api.user_api import UserApi
 from st2common.runners.base_action import Action
+from structs.jupyter_users import JupyterUsers
 
 
 class Jupyter(Action):
@@ -17,7 +18,13 @@ class Jupyter(Action):
         func: Callable = getattr(self, submodule)
         return func(**kwargs)
 
-    def user_delete(self, jupyter_env: str, users: List[str]):
+    def user_delete(
+        self,
+        jupyter_env: str,
+        user: str,
+        first_index: Optional[int] = None,
+        last_index: Optional[int] = None,
+    ):
         """
         Delete users from the given environment
         """
@@ -35,4 +42,5 @@ class Jupyter(Action):
             raise KeyError("Unknown Jupyter environment")
 
         token = jupyter_keys[key_name]
-        self._api.delete_users(jupyter_env, token, users)
+        user_details = JupyterUsers(user, first_index, last_index)
+        self._api.delete_users(jupyter_env, token, user_details)

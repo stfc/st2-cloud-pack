@@ -18,6 +18,49 @@ A Stackstorm pack for running Openstack scripts:
   in `etc/openstack/clouds.yaml` or `/home/<user>/.config/openstack/clouds.yaml`.
 - Copy the configuration in [stackstorm_openstack.yaml.example](https://github.com/stfc/st2-cloud-pack/blob/main/stackstorm_openstack.yaml.example) to `/opt/stackstorm/configs/stackstorm_openstack.yaml and populate the values.
 
+# Developer Instructions
+
+This repository uses automated testing using GitHub actions.
+Many steps are available to run locally with the following setup:
+
+### Setup
+
+- Clone this repository
+- Install [pre-commit](https://pre-commit.com/#install). This will format your code
+  on commit and in the future run many automated tests.
+- If you are on Linux a helper script is included to setup and run Stackstorm unit tests.
+  This is done by running `./run_tests.sh`
+- Additionally, tests can be run locally using `nose` through the IDE or CLI.
+
+## General Development Notes
+
+### Coding Standards
+
+- Work must include appropriate unit tests to exercise the functionality (typically through mocking)
+- All changes must pass through the PR process and associated CI tests
+- The Black formatter enforces the coding style, rather than PEP8
+- `main` should only include production ready, or disabled actions
+
+Where possible we want to separate out the Stackstorm layer from our functionality.
+This makes it trivial to test without having to invoke the ST2 testing mechanism.
+
+For actions the architecture looks something like:
+
+```
+|actions or sensors| <-> | lib module | <-> | API endpoints |
+```
+
+This makes it trivial to inject mocks and tests into files contained within `lib`,
+and allows us to re-use various API calls and functionality.
+
+A complete example can be found in the following files:
+[actions/jupyter](https://github.com/stfc/st2-cloud-pack/blob/main/actions/src/jupyter.py),
+[lib/jupyter_api](https://github.com/stfc/st2-cloud-pack/blob/main/lib/jupyter_api/user_api.py)
+
+and their associated tests:
+[test_jupyter_actions](https://github.com/stfc/st2-cloud-pack/blob/main/tests/actions/test_jupyter_actions.py),
+[test_user_api](https://github.com/stfc/st2-cloud-pack/blob/main/tests/lib/jupyter/test_user_api.py).
+
 # Openstack Workflow
 
 `project.create.internal` - Action Orquesta workflow to create a pre-configured Openstack Project to be used internally
@@ -88,7 +131,7 @@ Optional Parameters:
 - `egress_external_ips`: Array of IPs to be given TCP/UDP egress rules
   - default: (Taken from Datastore and decrypted)
 
-`send.server.email` - Action Orquesta workflow to email users information about their servers (Shutoff/Error VM
+`send.server.email` - Action to email users information about their servers (Shutoff/Error VM
 Reminders)
 
 1. Perform a search on servers per user
@@ -101,31 +144,62 @@ Required Parameters:
 Optional Parameters:
 `properties_to_select`: Properties to select for servers
 
-- default: `["server_id", "server_name", "server_status", "user_name", "user_email"]`
-  `search_criteria`: Array of additional properties to select for:
-- default: `None` - not required provide in format: `[<criteria_name>, [<ARGS>]]`
-  `sort_by_criteria`: Property selected to sort results by
-- default: `None` - not required
+- default: `["id", "name", "status", "user_name", "user_email"]`
+  `message`: Message to send in the email
+- default: `None`
   `subject`: String of email subject
 - default: `Test Message`
-  `email_from`: String for sender email address
-- default: `cloud-support@gridpp.rl.ac.uk`
   `header`: filepath to standard header file
-- default: `/home/<user>/html_templates/header.html`
+- default: `/opt/stackstorm/packs/stackstorm_openstack/email_templates/header.html`
   `footer`: filepath to standard footer file
-- default: `/home/<user>/html_templates/footer.html`
-  `send_as_html`: Boolean, if true, send email as html, if false, as plaintext
-- default: `true`
-  `admin_override`: Boolean, if true override sending email, instead sending to a test email address.
-- default: `true` # should be changed in production
-  `admin_override_email`: Email to send if `admin_override` set to true
-- default: `jacob.ward@stfc.ac.uk`
-  `smtp_account`: smtp account name to use - must be configured in email.yaml
+- default: `/opt/stackstorm/packs/stackstorm_openstack/email_templates/footer.html`
+  `test_override`: Boolean, if true override sending email, instead sending to a test email address.
+- default: `false`
+  `test_override_email`: Email to send if `test_override` is set to true
+- default: `None`
+  `smtp_account`: smtp account name to use - must be configured in pack settings
 - default: `default`
   `email_cc`: Array of email addresses to cc in
 - default: `None` - not required
   `attachment_filepaths`: Array of filepaths for file attache=ments
 - default: `None` - not required
+
+## Openstack Check Workflows
+
+`workflow.checks.old.snapshots`: Checks for snapshots that were last updated before this month.
+
+Required parameters:
+
+- `cloud_account` - The clouds.yaml account to use to connect to openstack
+- One of:
+  - `project_id` - The project to scan
+  - `all_projects` - Toggle to scan the whole cloud
+
+The following is required for creating tickets in atlassian. For more information see [Create Tickets](#create-tickets).
+
+- `email` - The email of the account used to log into atlassian
+- `api_key` - The api key of the account used to log into atlassian
+- `servicedesk_id` - The service desk to create tickets in.
+- `requesttype_id` - The request type to create tickets under.
+
+`workflow.checks.security.groups`: Checks for security groups that meet the given parameters.
+
+Required parameters:
+
+- `ip_prefix` - The IP addresses that are allowed to access the given port range. Example: `0.0.0.0/0` for the whole internet.
+- `max_port` - The upper limit of the port range.
+- `min_port` - the lower limit of the port range.
+- `cloud_account` - The clouds.yaml account to use to connect to openstack
+- One of:
+  - `project_id` - The project to scan
+  - `all_projects` - Toggle to scan the whole cloud
+
+The following is required for creating tickets in atlassian. For more information see [Create Tickets](#create-tickets).
+
+- `email` - The email of the account used to log into atlassian
+- `api_key` - The api key of the account used to log into atlassian
+- `servicedesk_id` - The service desk to create tickets in.
+- `requesttype_id` - The request type to create tickets under.
 
 # Actions
 
@@ -145,6 +219,15 @@ In addition, `hypervisor, server, user, float.ip and project` all have `list` ac
 
 - allows for more refined and complex searches than what openstack currently allows
 - uses the `queryopenstack` library: see usage here: <link to queryopestack git>
+
+## Openstack Actions
+
+`openstack.projects.sync`: Duplicates projects and user rights between openstack instances. This action will only copy user rights for users that are in the STFC domain.
+
+Required Parameters:
+
+- `cloud` - The original cloud to copy projects and users from
+- `dupe_cloud` - The secondary cloud to create the duplicated projects and user roles on.
 
 ## Reboot/Disable Hypervisor Actions
 
@@ -193,6 +276,25 @@ action that:
 
 1. Disables hypervisor (same process as hypervisor disable)
 2. Schedules downtime on icinga TODO: convert to orquesta workflow
+
+## Create Tickets
+
+`atlassian.create.ticket`: Creates tickets in atlassian.
+Required parameters:
+
+- `email` - The email of the account used to log into atlassian
+- `api_key` - The api key of the account used to log into atlassian
+- `servicedesk_id` - The service desk to create tickets in. All tickets passed to the action will be created in this service desk. You cannot specify multiple service desks or different service desks for different tickets. You can find the list of service desks and their IDs at `<Your workspace>.atlassian.net/rest/servicedeskapi/servicedesk`
+- `requesttype_id` - The request type to create tickets under. You can find the list of request types and their IDs at `<Your workspace>.atlassian.net/rest/servicedeskapi/servicedesk/<servicedesk_id>/requesttype`
+
+Required for developers only:
+
+- `tickets_info` - The dictionary of information that will be used to generate tickets. When using this action in a workflow you will need to pass the output of the previous action as an `object` type. The dictionary should include the same formatting as laid out below.
+  - `title` - A python string with one or more sections to format. Example: `"This is the {p[title]}"`
+  - `body` - A python string with one or more sections to format. Can be made entirely of the formatting section. Example: `"This is the {p[body]}, there has been a problem with {p[server]}"` or `"{p[body]}"`
+  - `server_list` - A python list of arbitrary length. The list will include one or more dictionaries with the following keys.
+    - `dataTitle` - The keys in this dictionary will be used to format the `title` entry. The keys can be called anything as long as they are included in the string in `title`. Example: `{"title": "This replaces the {p[title]} value!"}`.
+    - `dataBody` - The keys in this dictionary will be used to format the `body` entry. The keys can be called anything as long as they are included in the string in `body`. Example `{"body": "This replaces the {p[body]} value", "server": "host2400"}`
 
 # Rules
 
@@ -254,6 +356,16 @@ to handle rabbitmq message commands.
 
 - matches trigger `rabbit.message` with `message_type=RESTART_VM` and calls `server.restart`
   using `stackstorm_send_notification.rabbit.execute`
+
+## Openstack rules
+
+`openstack.deletedmachines.rule`
+
+- matches trigger `openstack.deletingmachines` when a machine is stuck in the deleting state for more than 10m. Calls the `atlassian.create.tickets` action. The sensor for this rule runs every 7 days.
+
+`openstack.loadbalancers.rule`
+
+- matches trigger `openstack.loadbalancer` when a loadbalancer or amphora is not pingable or is reporting an error. Calls the `atlassian.create.tickets` action. The sensor for this rule runs every 7 days.
 
 # Aliases and Chatops
 
