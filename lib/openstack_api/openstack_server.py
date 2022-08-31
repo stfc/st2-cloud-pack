@@ -2,6 +2,10 @@ from typing import List, Dict
 
 from openstack.compute.v2.server import Server
 from openstack.exceptions import HttpException
+from openstack_api.dataclasses import (
+    NonExistentCheckParams,
+    NonExistentProjectCheckParams,
+)
 
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
@@ -329,7 +333,7 @@ class OpenstackServer(OpenstackWrapperBase):
         return self._query_api.find_non_existent_objects(
             cloud_account=cloud_account,
             project_identifier=project_identifier,
-            check_params=OpenstackQuery.NonExistentCheckParams(
+            check_params=NonExistentCheckParams(
                 object_list_func=lambda conn, project: conn.list_servers(
                     detailed=False,
                     all_projects=True,
@@ -356,7 +360,7 @@ class OpenstackServer(OpenstackWrapperBase):
         """
         return self._query_api.find_non_existant_object_projects(
             cloud_account=cloud_account,
-            check_params=OpenstackQuery.NonExistentProjectCheckParams(
+            check_params=NonExistentProjectCheckParams(
                 object_list_func=lambda conn: conn.list_servers(
                     detailed=False,
                     all_projects=True,

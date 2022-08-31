@@ -1,6 +1,10 @@
 from typing import List, Dict
 
 from openstack.network.v2.floating_ip import FloatingIP
+from openstack_api.dataclasses import (
+    NonExistentCheckParams,
+    NonExistentProjectCheckParams,
+)
 
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
@@ -281,7 +285,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         return self._query_api.find_non_existent_objects(
             cloud_account=cloud_account,
             project_identifier=project_identifier,
-            check_params=OpenstackQuery.NonExistentCheckParams(
+            check_params=NonExistentCheckParams(
                 object_list_func=lambda conn, project: conn.list_floating_ips(
                     filters={
                         "project_id": project.id,
@@ -302,7 +306,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         """
         return self._query_api.find_non_existant_object_projects(
             cloud_account=cloud_account,
-            check_params=OpenstackQuery.NonExistentProjectCheckParams(
+            check_params=NonExistentProjectCheckParams(
                 object_list_func=lambda conn: conn.list_floating_ips(),
                 object_id_param_name="id",
                 object_project_param_name="project_id",

@@ -1,11 +1,12 @@
 import datetime
-from dataclasses import dataclass
 from typing import Any, Callable, Dict, List
 
 import openstack
-from openstack.connection import Connection
-from openstack.identity.v3.project import Project
 from tabulate import tabulate
+from openstack_api.dataclasses import (
+    NonExistentCheckParams,
+    NonExistentProjectCheckParams,
+)
 from openstack_api.openstack_connection import OpenstackConnection
 
 from openstack_api.openstack_identity import OpenstackIdentity
@@ -305,26 +306,6 @@ class OpenstackQuery(OpenstackWrapperBase):
 
         return output
 
-    @dataclass
-    class NonExistentCheckParams:
-        """
-        Contains the data needed for running find_non_existent_objects
-        :param object_list_func: Function that takes the connection and project and should return all instances
-                                 of the chosen openstack object in that project as a list
-        :param object_get_func: Function that takes the connection and an openstack object id and should attempt
-                                to get that object (Throwing an openstack.exceptions.ResourceNotFound error if it
-                                fails)
-        :param object_id_param_name: Name of the parameter that contains the object id in the objects returned by
-                                     'object_list_func'
-        :param object_project_param_name: Name of the parameter that contains the project id in the objects returned
-                                          by 'object_list_func'
-        """
-
-        object_list_func: Callable[[Connection, Project], List]
-        object_get_func: Callable[[Connection, str], Any]
-        object_id_param_name: str
-        object_project_param_name: str
-
     def find_non_existent_objects(
         self,
         cloud_account: str,
@@ -362,22 +343,6 @@ class OpenstackQuery(OpenstackWrapperBase):
                         else:
                             selected_projects.update({project.id: [object_id]})
         return selected_projects
-
-    @dataclass
-    class NonExistentProjectCheckParams:
-        """
-        Contains the data needed for running find_non_existent_objects
-        :param object_list_func: Function that takes the connection and should return all instances
-                                 of the chosen openstack object in that project as a list
-        :param object_id_param_name: Name of the parameter that contains the object id in the objects returned by
-                                     'object_list_func'
-        :param object_project_param_name: Name of the parameter that contains the project id in the objects returned
-                                          by 'object_list_func'
-        """
-
-        object_list_func: Callable[[Connection], List]
-        object_id_param_name: str
-        object_project_param_name: str
 
     def find_non_existant_object_projects(
         self,

@@ -5,6 +5,10 @@ from unittest.mock import MagicMock
 
 import openstack
 from nose.tools import raises
+from openstack_api.dataclasses import (
+    NonExistentCheckParams,
+    NonExistentProjectCheckParams,
+)
 
 from openstack_api.openstack_query import OpenstackQuery
 
@@ -277,7 +281,7 @@ class OpenstackQueryTests(unittest.TestCase):
                 ObjectMock("ObjectID1", "ProjectID2"),
             ]
 
-        check_params = OpenstackQuery.NonExistentCheckParams(
+        check_params = NonExistentCheckParams(
             object_list_func=object_list_func,
             object_get_func=object_get_func,
             object_id_param_name="id",
@@ -325,7 +329,7 @@ class OpenstackQueryTests(unittest.TestCase):
             "",
         ]
 
-        check_params = OpenstackQuery.NonExistentProjectCheckParams(
+        check_params = NonExistentProjectCheckParams(
             object_list_func=lambda conn: [
                 ObjectMock("ObjectID1", "ProjectID1"),
                 ObjectMock("ObjectID2", "ProjectID1"),

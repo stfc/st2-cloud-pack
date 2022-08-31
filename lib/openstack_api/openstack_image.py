@@ -1,6 +1,10 @@
 from typing import List, Dict
 
 from openstack.image.v2.image import Image
+from openstack_api.dataclasses import (
+    NonExistentCheckParams,
+    NonExistentProjectCheckParams,
+)
 
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
@@ -263,7 +267,7 @@ class OpenstackImage(OpenstackWrapperBase):
         return self._query_api.find_non_existent_objects(
             cloud_account=cloud_account,
             project_identifier=project_identifier,
-            check_params=OpenstackQuery.NonExistentCheckParams(
+            check_params=NonExistentCheckParams(
                 object_list_func=lambda conn, project: conn.image.images(
                     owner=project.id,
                 ),
@@ -282,7 +286,7 @@ class OpenstackImage(OpenstackWrapperBase):
         """
         return self._query_api.find_non_existant_object_projects(
             cloud_account=cloud_account,
-            check_params=OpenstackQuery.NonExistentProjectCheckParams(
+            check_params=NonExistentProjectCheckParams(
                 object_list_func=lambda conn: conn.list_images(),
                 object_id_param_name="id",
                 object_project_param_name="owner",
