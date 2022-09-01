@@ -101,7 +101,7 @@ class UserApi:
 
     def _create_single_user(self, endpoint: str, auth_token: str, user: str):
         self._log.info(f"Creating Jupyter user {user}")
-        result = requests.create(
+        result = requests.post(
             url=API_ENDPOINTS[endpoint] + f"/hub/api/users/{user}",
             headers={"Authorization": f"token {auth_token}"},
         )
