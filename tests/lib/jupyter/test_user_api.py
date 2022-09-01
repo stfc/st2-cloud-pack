@@ -38,6 +38,7 @@ class UserApiTests(unittest.TestCase):
         requests.get.assert_called_once_with(
             url=API_ENDPOINTS[endpoint] + "/hub/api/users",
             headers={"Authorization": f"token {token}"},
+            timeout=300,
         )
         assert len(returned) == 1
         assert returned[0][0] == expected_name
@@ -58,6 +59,7 @@ class UserApiTests(unittest.TestCase):
         requests.get.assert_called_once_with(
             url=API_ENDPOINTS[endpoint] + "/hub/api/users",
             headers={"Authorization": f"token {token}"},
+            timeout=300,
         )
         assert len(returned) == 0
 
@@ -131,6 +133,7 @@ class UserApiTests(unittest.TestCase):
         requests.delete.assert_called_once_with(
             url=API_ENDPOINTS["dev"] + "/hub/api/users/test",
             headers={"Authorization": f"token {token}"},
+            timeout=300,
         )
 
     def test_remove_users_multiple_users(self, requests):
@@ -150,6 +153,7 @@ class UserApiTests(unittest.TestCase):
             assert requests.delete.call_args_list[i] == call(
                 url=API_ENDPOINTS["dev"] + f"/hub/api/users/test-{user_index}",
                 headers={"Authorization": f"token {token}"},
+                timeout=300,
             )
         assert requests.delete.call_count == (end_index - start_index + 1)
 
