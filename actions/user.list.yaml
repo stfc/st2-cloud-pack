@@ -17,7 +17,7 @@ parameters:
     type: string
   user_domain:
     type: string
-    description: Domain (Name or ID) to search in
+    description: "Domain (Name or ID) to search in"
     required: true
     default: "default"
   query_preset:
