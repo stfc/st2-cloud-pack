@@ -1,0 +1,13 @@
+---
+name: "install.from.git.branch"
+pack: "stackstorm_openstack"
+description: "Installs a pack when a commit is pushed to a branch"
+enabled: true
+
+trigger:
+    type: git.head_sha_monitor
+action:
+    ref: "packs.install"
+    parameters:
+        packs:
+          - "{{ trigger.repository_url }}={{ trigger.branch }}"

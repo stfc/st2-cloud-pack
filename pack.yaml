@@ -8,16 +8,20 @@ description: Pack containing openstack scripts
 keywords:
   - openstack
 
-version: 0.1.0
+version: 1.0.0
 
 python_versions:
   - "3"
 
 dependencies:
   - core
+  - git
 
 # Authors :
 # Anish Mudaraddi
 # David Fairbrother
+# Joel Davies
+# Reilly Hewitson
+
 author: STFC Cloud Team
 email: cloud-support@stfc.ac.uk

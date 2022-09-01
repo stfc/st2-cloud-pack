@@ -21,7 +21,7 @@ class TestRoleActions(OpenstackActionTestBase):
         """
         super().setUp()
         self.role_mock = create_autospec(OpenstackRoles)
-        self.action: RoleActions = self.get_action_instance(api_mock=self.role_mock)
+        self.action: RoleActions = self.get_action_instance(api_mocks=self.role_mock)
 
     def test_role_add(self):
         """

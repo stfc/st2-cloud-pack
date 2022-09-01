@@ -20,7 +20,9 @@ class TestQuotaActions(OpenstackActionTestBase):
         """
         super().setUp()
         self.network_mock = create_autospec(OpenstackQuota)
-        self.action: QuotaActions = self.get_action_instance(api_mock=self.network_mock)
+        self.action: QuotaActions = self.get_action_instance(
+            api_mocks=self.network_mock
+        )
 
     def test_quota_set(self):
         """

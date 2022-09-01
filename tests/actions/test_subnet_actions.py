@@ -20,7 +20,7 @@ class TestSubnetActions(OpenstackActionTestBase):
         super().setUp()
         self.network_mock = create_autospec(OpenstackNetwork)
         self.action: SubnetActions = self.get_action_instance(
-            api_mock=self.network_mock
+            api_mocks=self.network_mock
         )
 
     def test_create_subnet(self):

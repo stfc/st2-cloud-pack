@@ -22,7 +22,7 @@ class TestNetworkActions(OpenstackActionTestBase):
         super().setUp()
         self.network_mock = create_autospec(OpenstackNetwork)
         self.action: NetworkActions = self.get_action_instance(
-            api_mock=self.network_mock
+            api_mocks=self.network_mock
         )
 
     def test_find_network_found(self):
