@@ -208,6 +208,7 @@ class Hypervisor(OpenstackAction):
                     "fixed": not is_flexible,
                 }
             ),
+            timeout=300,
         )
 
         if request.ok:
@@ -252,6 +253,7 @@ class Hypervisor(OpenstackAction):
                     "filter": f'host.name=="{hypervisor_hostname}"',
                 }
             ),
+            timeout=300,
         )
         if request.ok:
             return True, f"Downtimes of Host {hypervisor_hostname} Removed"
