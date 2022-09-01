@@ -29,4 +29,5 @@ def post_ticket(
             "serviceDeskId": service_desk_id,  # Point this at relevant service desk
             "requestTypeId": request_type_id,
         },
+        timeout=300,
     )
