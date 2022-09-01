@@ -16,4 +16,5 @@ def get_amphorae(cloud_account: str):
         return requests.get(
             url,
             headers={"X-Auth-Token": conn.auth_token},
+            timeout=300,
         )
