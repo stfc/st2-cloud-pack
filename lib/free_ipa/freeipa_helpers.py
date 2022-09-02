@@ -16,7 +16,7 @@ class FreeIpaHelpers:
         """
         users = []
         for i in range(start_index, end_index + 1):
-            users.append(base_username + str(i))
+            users.append(f"{base_username}-{i}")
         return users
 
     @staticmethod

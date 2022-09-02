@@ -21,6 +21,6 @@ def test_secret_module_multiple_passwords():
 
 def test_generate_users():
     base_name = "test"
-    expected = ["test5", "test6", "test7"]
+    expected = ["test-5", "test-6", "test-7"]
     returned = FreeIpaHelpers.generate_users(base_name, 5, 7)
     assert expected == returned
