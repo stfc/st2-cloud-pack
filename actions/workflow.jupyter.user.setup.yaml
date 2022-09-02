@@ -1,0 +1,34 @@
+name: workflow.jupyter.user.setup
+description: Creates a given list of users in FreeIPA and JupyterHub, and starts the servers
+enabled: true
+entry_point: workflows/jupyter.user.setup.yaml
+runner_type: orquesta
+
+parameters:
+  server_env:
+    description: The FreeIPA environment to create users on
+    required: true
+    type: string
+    enum:
+      - prod
+      - dev
+  jupyter_env:
+    description: The Jupyter environment to create users on
+    required: true
+    type: string
+    enum:
+      - prod
+      - dev
+      - training
+  user_base_name:
+    description: The users to remove, or base name of the users to remove without the hyphen (e.g. "jupyter")
+    required: true
+    type: string
+  first_index:
+    description: The index of the first user to remove
+    required: false
+    type: integer
+  last_index:
+    description: The index of the last user to remove (inclusive).
+    required: false
+    type: integer
