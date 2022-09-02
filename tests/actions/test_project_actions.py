@@ -48,7 +48,8 @@ class TestProjectAction(OpenstackActionTestBase):
         Tests that create project forwards the result when successful
         """
         expected_proj_params = {
-            i: NonCallableMock() for i in ["name", "description", "is_enabled"]
+            i: NonCallableMock()
+            for i in ["name", "description", "is_enabled", "immutable"]
         }
         expected_proj_params.update({"email": "Test@Test.com"})
 
@@ -73,7 +74,7 @@ class TestProjectAction(OpenstackActionTestBase):
         self.identity_mock.create_project.return_value = None
 
         returned_values = self.action.project_create(
-            *{NonCallableMock() for _ in range(5)}
+            *{NonCallableMock() for _ in range(6)}
         )
         assert returned_values[0] is False
         assert returned_values[1] is None
@@ -111,7 +112,8 @@ class TestProjectAction(OpenstackActionTestBase):
         Tests that update project forwards the result when successful
         """
         expected_proj_params = {
-            i: NonCallableMock() for i in ["name", "description", "is_enabled"]
+            i: NonCallableMock()
+            for i in ["name", "description", "is_enabled", "immutable"]
         }
         expected_proj_params.update({"email": "Test@Test.com"})
 
@@ -121,7 +123,9 @@ class TestProjectAction(OpenstackActionTestBase):
         # Ensure is_enabled is assigned if specefied
         for value in ["unchanged", "true", "false"]:
             expected_proj_params["is_enabled"] = value
+            expected_proj_params["immutable"] = value
             packaged_proj.is_enabled = None if value == "unchanged" else value == "true"
+            packaged_proj.immutable = None if value == "unchanged" else value == "true"
 
             returned_values = self.action.project_update(
                 cloud_account="foo", project_identifier="bar", **expected_proj_params

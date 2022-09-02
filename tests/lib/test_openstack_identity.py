@@ -282,6 +282,20 @@ class OpenstackIdentityTests(unittest.TestCase):
 
         self.assertEqual(expected_email, email)
 
+    def test_is_project_immutable(self):
+        """
+        Checks that get_project_email functions correctly
+        """
+        mock_project = {"tags": ["Test", "Test@Test.com", "12123421"]}
+        immutable = self.instance.is_project_immutable(mock_project)
+
+        self.assertEqual(immutable, False)
+
+        mock_project = {"tags": ["Test", "Test@Test.com", "immutable", "12123421"]}
+        immutable = self.instance.is_project_immutable(mock_project)
+
+        self.assertEqual(immutable, True)
+
     def test_find_project_email(self):
         """
         Checks that find_project_email functions correctly
@@ -327,6 +341,7 @@ class OpenstackIdentityTests(unittest.TestCase):
             email="Test@Test.com",
             description=NonCallableMock(),
             is_enabled=NonCallableMock(),
+            immutable=None,
         )
 
         result = self.instance.update_project(
@@ -362,6 +377,7 @@ class OpenstackIdentityTests(unittest.TestCase):
             email="Test@Test.com",
             description=NonCallableMock(),
             is_enabled=NonCallableMock(),
+            immutable=NonCallableMock(),
         )
 
         result = self.instance.update_project(
@@ -372,7 +388,8 @@ class OpenstackIdentityTests(unittest.TestCase):
 
         self.mocked_connection.assert_called_with("test")
         mock_project.set_tags.assert_called_once_with(
-            self.identity_api, ["sometag", "anothertag", expected_details.email]
+            self.identity_api,
+            ["sometag", "anothertag", expected_details.email, "immutable"],
         )
 
         assert result == self.identity_api.update_project.return_value
@@ -381,7 +398,7 @@ class OpenstackIdentityTests(unittest.TestCase):
             name=expected_details.name,
             description=expected_details.description,
             is_enabled=expected_details.is_enabled,
-            tags=["sometag", "anothertag", expected_details.email],
+            tags=["sometag", "anothertag", expected_details.email, "immutable"],
         )
 
     def test_update_project_email(self):

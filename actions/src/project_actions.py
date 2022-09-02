@@ -72,6 +72,7 @@ class ProjectAction(Action):
         email: str,
         description: str,
         is_enabled: bool,
+        immutable: bool,
     ) -> Tuple[bool, Optional[Project]]:
         """
         Find and return a given project's properties. Expected
@@ -81,10 +82,15 @@ class ProjectAction(Action):
         :param email: Contact email of new project
         :param description: Description for new project
         :param is_enabled: Set if new project enabled or disabled
+        :param immutable: Set if new project is immutable or not
         :return: status, optional project
         """
         details = ProjectDetails(
-            name=name, email=email, description=description, is_enabled=is_enabled
+            name=name,
+            email=email,
+            description=description,
+            is_enabled=is_enabled,
+            immutable=immutable,
         )
         project = self._identity_api.create_project(
             cloud_account=cloud_account, project_details=details
@@ -127,6 +133,7 @@ class ProjectAction(Action):
         email: str,
         description: str,
         is_enabled: str,
+        immutable: str,
     ) -> Tuple[bool, Optional[Project]]:
         """
         Find and update a given project's properties.
@@ -136,16 +143,23 @@ class ProjectAction(Action):
         :param email: Contact email of the project
         :param description: Description of the project
         :param is_enabled: Enable or disable the project (takes values of unchanged, true or false)
+        :param immutable: Make the project immutable or not (takes values of unchanged, true or false)
         :return: status, optional project
         """
-        is_enabled_value = None
-        if is_enabled.casefold() == "true".casefold():
-            is_enabled_value = True
-        elif is_enabled.casefold() == "false".casefold():
-            is_enabled_value = False
+
+        def convert_to_optional_bool(value: str) -> Optional[bool]:
+            if value.casefold() == "true".casefold():
+                return True
+            if value.casefold() == "false".casefold():
+                return False
+            return None
 
         details = ProjectDetails(
-            name=name, email=email, description=description, is_enabled=is_enabled_value
+            name=name,
+            email=email,
+            description=description,
+            is_enabled=convert_to_optional_bool(is_enabled),
+            immutable=convert_to_optional_bool(immutable),
         )
         project = self._identity_api.update_project(
             cloud_account=cloud_account,

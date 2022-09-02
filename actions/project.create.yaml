@@ -28,4 +28,8 @@ parameters:
     default: true
     description: Project is enabled or not
     type: boolean
+  immutable:
+    default: false
+    description: Project is immutable or not
+    type: boolean
 runner_type: python-script
