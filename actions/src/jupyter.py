@@ -10,6 +10,9 @@ class Jupyter(Action):
         """constructor class"""
         super().__init__(*args, config=config, **kwargs)
         self._api: UserApi = config.get("user_api", UserApi())
+        self._jupyter_helpers: JupyterHelpers = config.get(
+            "jupyter_helpers", JupyterHelpers()
+        )
 
     def run(self, submodule: str, **kwargs):
         """
@@ -29,19 +32,7 @@ class Jupyter(Action):
         Delete users from the given environment
         """
         jupyter_keys = self.config["jupyter"]
-
-        key_name = None
-        env = jupyter_env.casefold()
-        if env == "prod".casefold():
-            key_name = "prod_token"
-        if env == "training".casefold():
-            key_name = "training_token"
-        if env == "dev".casefold():
-            key_name = "dev_token"
-        if not key_name:
-            raise KeyError("Unknown Jupyter environment")
-
-        token = jupyter_keys[key_name]
+        token = self._jupyter_helpers.get_token(jupyter_env, jupyter_keys)
         user_details = JupyterUsers(user, first_index, last_index)
         self._api.delete_users(jupyter_env, token, user_details)
 
@@ -56,19 +47,7 @@ class Jupyter(Action):
         Create users from the given environment
         """
         jupyter_keys = self.config["jupyter"]
-
-        key_name = None
-        env = jupyter_env.casefold()
-        if env == "prod".casefold():
-            key_name = "prod_token"
-        if env == "training".casefold():
-            key_name = "training_token"
-        if env == "dev".casefold():
-            key_name = "dev_token"
-        if not key_name:
-            raise KeyError("Unknown Jupyter environment")
-
-        token = jupyter_keys[key_name]
+        token = self._jupyter_helpers.get_token(jupyter_env, jupyter_keys)
         user_details = JupyterUsers(user, first_index, last_index)
         self._api.create_users(jupyter_env, token, user_details)
 
@@ -83,19 +62,7 @@ class Jupyter(Action):
         Start servers for users from the given environment
         """
         jupyter_keys = self.config["jupyter"]
-
-        key_name = None
-        env = jupyter_env.casefold()
-        if env == "prod".casefold():
-            key_name = "prod_token"
-        if env == "training".casefold():
-            key_name = "training_token"
-        if env == "dev".casefold():
-            key_name = "dev_token"
-        if not key_name:
-            raise KeyError("Unknown Jupyter environment")
-
-        token = jupyter_keys[key_name]
+        token = self._jupyter_helpers.get_token(jupyter_env, jupyter_keys)
         user_details = JupyterUsers(user, first_index, last_index)
         self._api.start_servers(jupyter_env, token, user_details)
 
@@ -110,18 +77,6 @@ class Jupyter(Action):
         Stop servers for users from the given environment
         """
         jupyter_keys = self.config["jupyter"]
-
-        key_name = None
-        env = jupyter_env.casefold()
-        if env == "prod".casefold():
-            key_name = "prod_token"
-        if env == "training".casefold():
-            key_name = "training_token"
-        if env == "dev".casefold():
-            key_name = "dev_token"
-        if not key_name:
-            raise KeyError("Unknown Jupyter environment")
-
-        token = jupyter_keys[key_name]
+        token = self._jupyter_helpers.get_token(jupyter_env, jupyter_keys)
         user_details = JupyterUsers(user, first_index, last_index)
         self._api.stop_servers(jupyter_env, token, user_details)
