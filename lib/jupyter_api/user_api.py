@@ -109,6 +109,39 @@ class UserApi:
         if result.status_code != 201:
             raise RuntimeError(f"Failed to create user {user}: {result.text}")
 
+    def start_servers(
+        self, endpoint: str, auth_token: str, users: JupyterUsers
+    ) -> None:
+        """
+        Starts servers for the given user(s) from the JupyterHub API
+        """
+        if users.start_index or users.end_index:
+            if not (users.start_index and users.end_index):
+                raise RuntimeError("Both start_index and end_index must be provided")
+            if users.start_index > users.end_index:
+                raise RuntimeError("start_index must be less than end_index")
+
+        user_list = (
+            [f"{users.name}-{i}" for i in range(users.start_index, users.end_index + 1)]
+            if users.start_index
+            else [users.name]
+        )
+
+        for user in user_list:
+            self._start_single_server(endpoint, auth_token, user)
+
+    def _start_single_server(self, endpoint: str, auth_token: str, user: str):
+        self._log.info(f"Starting server for Jupyter user {user}")
+        result = requests.post(
+            url=API_ENDPOINTS[endpoint] + f"/hub/api/users/{user}/server",
+            headers={"Authorization": f"token {auth_token}"},
+        )
+
+        if result.status_code != 201 and result.status_code != 202:
+            raise RuntimeError(
+                f"Failed to request server for user {user}: {result.text}"
+            )
+
     @staticmethod
     def _pack_users(users: List[Dict]) -> List[JupyterLastUsed]:
         """
