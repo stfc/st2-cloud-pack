@@ -96,6 +96,34 @@ class OpenstackIdentityTests(unittest.TestCase):
             tags=[expected_details.email],
         )
 
+    def test_create_project_immutable(self):
+        """
+        Tests that the params and result are forwarded as-is to/from the
+        create_project API
+        """
+
+        expected_details = ProjectDetails(
+            name=NonCallableMock(),
+            email="Test@Test.com",
+            description=NonCallableMock(),
+            is_enabled=NonCallableMock(),
+            immutable=True,
+        )
+
+        found = self.instance.create_project(
+            cloud_account="test", project_details=expected_details
+        )
+
+        self.mocked_connection.assert_called_once_with("test")
+
+        assert found == self.identity_api.create_project.return_value
+        self.identity_api.create_project.assert_called_once_with(
+            name=expected_details.name,
+            description=expected_details.description,
+            is_enabled=expected_details.is_enabled,
+            tags=[expected_details.email, "immutable"],
+        )
+
     @raises(ConflictException)
     def test_create_project_forwards_conflict_exception(self):
         """
@@ -146,6 +174,7 @@ class OpenstackIdentityTests(unittest.TestCase):
         """
 
         self.instance.find_project = Mock()
+        self.instance.find_project.return_value = self.MockProject(tags=[])
         self.identity_api.delete_project.return_value = None
 
         identifier = NonCallableMock()

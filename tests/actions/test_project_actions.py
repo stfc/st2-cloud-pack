@@ -1,4 +1,4 @@
-from unittest.mock import create_autospec, NonCallableMock
+from unittest.mock import ANY, create_autospec, NonCallableMock
 
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_project import OpenstackProject
@@ -85,9 +85,36 @@ class TestProjectAction(OpenstackActionTestBase):
         """
         self.identity_mock.delete_project.return_value = True
         returned_values = self.action.project_delete(
-            NonCallableMock(), NonCallableMock()
+            cloud_account=NonCallableMock(),
+            project_identifier=NonCallableMock(),
+            delete=True,
         )
         assert returned_values == (True, "")
+
+    def test_project_delete_safeguard(self):
+        """
+        Tests that project_delete does not delete when delete is False
+        """
+        self.identity_mock.delete_project.return_value = True
+        self.identity_mock.find_mandatory_project.return_value = NonCallableMock()
+        returned_values = self.action.project_delete(
+            cloud_account="test",
+            project_identifier="ProjectID",
+            delete=False,
+        )
+        self.identity_mock.delete_project.assert_not_called()
+        self.identity_mock.find_mandatory_project.assert_called_once_with(
+            cloud_account="test", project_identifier="ProjectID"
+        )
+        self.query_mock.parse_and_output_table.assert_called_once_with(
+            cloud_account="test",
+            items=[self.identity_mock.find_mandatory_project.return_value],
+            object_type="project",
+            properties_to_select=["id", "name", "description", "email"],
+            group_by="",
+            get_html=False,
+        )
+        self.assertEqual(returned_values, (False, ANY))
 
     def test_project_find_success(self):
         """
