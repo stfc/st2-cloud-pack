@@ -26,14 +26,14 @@ tasks:
             - print_usernames
 
   delete_users:
-    with: username, <% ctx(usernames) %>
+    with: username in <% ctx(usernames) %>
     action: freeipa.user_del
       uid=<% item(username) %>
       continue=False
       connection=<% ctx().server_env %>
 
   print_usernames:
-    with: username, password in <% ctx(usernames) %>
+    with: username in <% ctx(usernames) %>
     action: core.echo
       message="<% item(username) %>"
     next:
