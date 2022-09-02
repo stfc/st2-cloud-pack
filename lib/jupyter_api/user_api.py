@@ -106,7 +106,7 @@ class UserApi:
             timeout=60,
         )
 
-        if result.status_code != 201 and result.status_code != 202:
+        if result.status_code not in (201, 202):
             raise RuntimeError(
                 f"Failed to request server for user {user}: {result.text}"
             )
@@ -127,7 +127,7 @@ class UserApi:
             timeout=60,
         )
 
-        if result.status_code != 202 and result.status_code != 204:
+        if result.status_code not in (202, 204):
             raise RuntimeError(f"Failed to stop server for user {user}: {result.text}")
 
     @staticmethod
