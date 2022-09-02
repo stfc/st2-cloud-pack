@@ -34,20 +34,39 @@ class ProjectAction(Action):
         return func(**kwargs)
 
     def project_delete(
-        self, cloud_account: str, project_identifier: str
+        self, cloud_account: str, project_identifier: str, delete: bool
     ) -> Tuple[bool, str]:
         """
         Deletes a project
         :param cloud_account: The account from the clouds configuration to use
         :param project_identifier: (Either) The project name to delete
+        :param delete: When true will delete the project, when false will only return it to reduce
+                       chances of accidental deletion
         :return: The result of the operation
         """
-        delete_ok = self._identity_api.delete_project(
+        if delete:
+            delete_ok = self._identity_api.delete_project(
+                cloud_account=cloud_account, project_identifier=project_identifier
+            )
+            # Currently, we only handle one error, other throws will propagate upwards
+            err = "" if delete_ok else "The specified project was not found"
+            return delete_ok, err
+
+        project = self._identity_api.find_mandatory_project(
             cloud_account=cloud_account, project_identifier=project_identifier
         )
-        # Currently, we only handle one error, other throws will propagate upwards
-        err = "" if delete_ok else "The specified project was not found"
-        return delete_ok, err
+        project_string = self._query_api.parse_and_output_table(
+            cloud_account=cloud_account,
+            items=[project],
+            object_type="project",
+            properties_to_select=["id", "name", "description", "email"],
+            group_by="",
+            get_html=False,
+        )
+        return (
+            False,
+            f"Tick the delete checkbox to delete the project: \n\n{project_string}",
+        )
 
     def project_find(
         self, cloud_account: str, project_identifier: str
@@ -117,10 +136,10 @@ class ProjectAction(Action):
         :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
         """
 
-        fips = self._project_api[f"search_{query_preset}"](cloud_account, **kwargs)
+        projects = self._project_api[f"search_{query_preset}"](cloud_account, **kwargs)
 
         output = self._query_api.parse_and_output_table(
-            cloud_account, fips, "project", properties_to_select, group_by, get_html
+            cloud_account, projects, "project", properties_to_select, group_by, get_html
         )
 
         return output
