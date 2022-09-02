@@ -1,7 +1,6 @@
 class JupyterHelpers:
     @staticmethod
     def get_token(
-        self,
         jupyter_env: str,
         jupyter_keys: str,
     ) -> str:
