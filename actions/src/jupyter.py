@@ -1,6 +1,7 @@
 from typing import Dict, Callable, Optional
 
 from jupyter_api.user_api import UserApi
+from jupyter_api.jupyter_helpers import JupyterHelpers
 from st2common.runners.base_action import Action
 from structs.jupyter_users import JupyterUsers
 
