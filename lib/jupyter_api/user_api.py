@@ -82,6 +82,7 @@ class UserApi:
         result = requests.post(
             url=API_ENDPOINTS[endpoint] + f"/hub/api/users/{user}",
             headers={"Authorization": f"token {auth_token}"},
+            timeout=60,
         )
 
         if result.status_code != 201:
@@ -102,6 +103,7 @@ class UserApi:
         result = requests.post(
             url=API_ENDPOINTS[endpoint] + f"/hub/api/users/{user}/server",
             headers={"Authorization": f"token {auth_token}"},
+            timeout=60,
         )
 
         if result.status_code != 201 and result.status_code != 202:
@@ -122,6 +124,7 @@ class UserApi:
         result = requests.delete(
             url=API_ENDPOINTS[endpoint] + f"/hub/api/users/{user}/server",
             headers={"Authorization": f"token {auth_token}"},
+            timeout=60,
         )
 
         if result.status_code != 202 and result.status_code != 204:
