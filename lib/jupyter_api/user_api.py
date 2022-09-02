@@ -106,7 +106,7 @@ class UserApi:
             headers={"Authorization": f"token {auth_token}"},
         )
 
-        if result.status_code != 204:
+        if result.status_code != 201:
             raise RuntimeError(f"Failed to create user {user}: {result.text}")
 
     @staticmethod
