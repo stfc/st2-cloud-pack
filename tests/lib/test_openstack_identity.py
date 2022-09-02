@@ -169,6 +169,19 @@ class OpenstackIdentityTests(unittest.TestCase):
         result = self.instance.delete_project("", project_identifier="test")
         assert result is False
 
+    @raises(ValueError)
+    def test_delete_immutable_project_throws(self):
+        """
+        Tests that trying to deleting an immutable project raises an error
+        """
+        mock_project = self.MockProject(tags=["immutable"])
+        self.identity_api.find_project.return_value = mock_project
+
+        self.instance.delete_project(
+            cloud_account="test",
+            project_identifier="ProjectID",
+        )
+
     @raises(MissingMandatoryParamError)
     def test_find_project_raises_missing_project_identifier(self):
         """
@@ -399,6 +412,60 @@ class OpenstackIdentityTests(unittest.TestCase):
             description=expected_details.description,
             is_enabled=expected_details.is_enabled,
             tags=["sometag", "anothertag", expected_details.email, "immutable"],
+        )
+
+    def test_update_immutable_project(self):
+        """
+        Tests that the params and result are forwarded as-is to/from the
+        update_project API
+        """
+        mock_project = self.MockProject(tags=["immutable"])
+        self.identity_api.find_project.return_value = mock_project
+
+        expected_details = ProjectDetails(
+            name="",
+            email="",
+            description="",
+            is_enabled=None,
+            immutable=False,
+        )
+
+        result = self.instance.update_project(
+            cloud_account="test",
+            project_identifier="ProjectID",
+            project_details=expected_details,
+        )
+
+        self.mocked_connection.assert_called_with("test")
+        mock_project.set_tags.assert_called_once_with(
+            self.identity_api,
+            [],
+        )
+
+        assert result == self.identity_api.update_project.return_value
+        self.identity_api.update_project.assert_called_once_with(
+            project=mock_project,
+            tags=[],
+        )
+
+    @raises(ValueError)
+    def test_update_immutable_project_throws(self):
+        """
+        Tests that trying to update an immutable project raises an error
+        """
+        mock_project = self.MockProject(tags=["immutable"])
+        self.identity_api.find_project.return_value = mock_project
+
+        self.instance.update_project(
+            cloud_account="test",
+            project_identifier="ProjectID",
+            project_details=ProjectDetails(
+                name="",
+                email="Test",
+                description="",
+                is_enabled=None,
+                immutable=False,
+            ),
         )
 
     def test_update_project_email(self):

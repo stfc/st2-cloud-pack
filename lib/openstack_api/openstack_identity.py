@@ -58,6 +58,9 @@ class OpenstackIdentity(OpenstackWrapperBase):
         if not project:
             return False
 
+        if self.is_project_immutable(project):
+            raise ValueError("Project is immutable and so can't be deleted")
+
         with self._connection_cls(cloud_account) as conn:
             result = conn.identity.delete_project(project=project, ignore_missing=False)
             return result is None  # Where None == success
@@ -273,6 +276,13 @@ class OpenstackIdentity(OpenstackWrapperBase):
                 "immutable" if project_details.immutable else None,
             )
             params_to_update.update({"tags": project_tags})
+
+        if self.is_project_immutable(project):
+            # Ensure only change is to the immutability
+            if params_to_update.keys() != {"tags"}:
+                raise ValueError(
+                    "The project is immutable and so only the immutability can be changed"
+                )
 
         with self._connection_cls(cloud_account) as conn:
             # This update_project does not currently update tags for some reason
