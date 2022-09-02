@@ -19,7 +19,7 @@ parameters:
       - prod
       - training
   user:
-    description: The users to start servers for, or base name of the users to create without the hyphen (e.g. "jupyter")
+    description: The users to start servers for, or base name of the users without the hyphen (e.g. "jupyter")
     required: true
     type: string
   first_index:
