@@ -54,18 +54,7 @@ class UserApi:
         """
         Removes the given user(s) from the JupyterHub API
         """
-        if users.start_index or users.end_index:
-            if not (users.start_index and users.end_index):
-                raise RuntimeError("Both start_index and end_index must be provided")
-            if users.start_index > users.end_index:
-                raise RuntimeError("start_index must be less than end_index")
-
-        user_list = (
-            [f"{users.name}-{i}" for i in range(users.start_index, users.end_index + 1)]
-            if users.start_index
-            else [users.name]
-        )
-
+        user_list = self._get_user_list(users)
         for user in user_list:
             self._delete_single_user(endpoint, auth_token, user)
 
@@ -84,18 +73,7 @@ class UserApi:
         """
         Creates the given user(s) from the JupyterHub API
         """
-        if users.start_index or users.end_index:
-            if not (users.start_index and users.end_index):
-                raise RuntimeError("Both start_index and end_index must be provided")
-            if users.start_index > users.end_index:
-                raise RuntimeError("start_index must be less than end_index")
-
-        user_list = (
-            [f"{users.name}-{i}" for i in range(users.start_index, users.end_index + 1)]
-            if users.start_index
-            else [users.name]
-        )
-
+        user_list = self._get_user_list(users)
         for user in user_list:
             self._create_single_user(endpoint, auth_token, user)
 
@@ -115,18 +93,7 @@ class UserApi:
         """
         Starts servers for the given user(s) from the JupyterHub API
         """
-        if users.start_index or users.end_index:
-            if not (users.start_index and users.end_index):
-                raise RuntimeError("Both start_index and end_index must be provided")
-            if users.start_index > users.end_index:
-                raise RuntimeError("start_index must be less than end_index")
-
-        user_list = (
-            [f"{users.name}-{i}" for i in range(users.start_index, users.end_index + 1)]
-            if users.start_index
-            else [users.name]
-        )
-
+        user_list = self._get_user_list(users)
         for user in user_list:
             self._start_single_server(endpoint, auth_token, user)
 
@@ -146,18 +113,7 @@ class UserApi:
         """
         Stops servers for the given user(s) from the JupyterHub API
         """
-        if users.start_index or users.end_index:
-            if not (users.start_index and users.end_index):
-                raise RuntimeError("Both start_index and end_index must be provided")
-            if users.start_index > users.end_index:
-                raise RuntimeError("start_index must be less than end_index")
-
-        user_list = (
-            [f"{users.name}-{i}" for i in range(users.start_index, users.end_index + 1)]
-            if users.start_index
-            else [users.name]
-        )
-
+        user_list = self._get_user_list(users)
         for user in user_list:
             self._stop_single_server(endpoint, auth_token, user)
 
@@ -170,6 +126,24 @@ class UserApi:
 
         if result.status_code != 202 and result.status_code != 204:
             raise RuntimeError(f"Failed to stop server for user {user}: {result.text}")
+
+    @staticmethod
+    def _get_user_list(users: JupyterUsers) -> List[str]:
+        """
+        Creates list of users from name and indices
+        """
+        if users.start_index or users.end_index:
+            if not (users.start_index and users.end_index):
+                raise RuntimeError("Both start_index and end_index must be provided")
+            if users.start_index > users.end_index:
+                raise RuntimeError("start_index must be less than end_index")
+
+        user_list = (
+            [f"{users.name}-{i}" for i in range(users.start_index, users.end_index + 1)]
+            if users.start_index
+            else [users.name]
+        )
+        return user_list
 
     @staticmethod
     def _pack_users(users: List[Dict]) -> List[JupyterLastUsed]:
