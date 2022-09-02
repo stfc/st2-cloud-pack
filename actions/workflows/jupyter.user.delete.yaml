@@ -24,6 +24,7 @@ tasks:
             - usernames: <% result().result %>
           do:
             - delete_freeipa_users
+            - print_usernames
 
   delete_freeipa_users:
     with: username in <% ctx(usernames) %>
