@@ -1,7 +1,7 @@
 from typing import Dict, Callable, Optional
 
 from jupyter_api.user_api import UserApi
-from jupyter_api.jupyter_helpers import JupyterHelpers
+from jupyter_api.get_token import get_token
 from st2common.runners.base_action import Action
 from structs.jupyter_users import JupyterUsers
 
@@ -11,9 +11,6 @@ class Jupyter(Action):
         """constructor class"""
         super().__init__(*args, config=config, **kwargs)
         self._api: UserApi = config.get("user_api", UserApi())
-        self._jupyter_helpers: JupyterHelpers = config.get(
-            "jupyter_helpers", JupyterHelpers()
-        )
 
     def run(self, submodule: str, **kwargs):
         """
@@ -33,7 +30,7 @@ class Jupyter(Action):
         Delete users from the given environment
         """
         jupyter_keys = self.config["jupyter"]
-        token = self._jupyter_helpers.get_token(jupyter_env, jupyter_keys)
+        token = get_token(jupyter_env, jupyter_keys)
         user_details = JupyterUsers(user, first_index, last_index)
         self._api.delete_users(jupyter_env, token, user_details)
 
@@ -48,7 +45,7 @@ class Jupyter(Action):
         Create users from the given environment
         """
         jupyter_keys = self.config["jupyter"]
-        token = self._jupyter_helpers.get_token(jupyter_env, jupyter_keys)
+        token = get_token(jupyter_env, jupyter_keys)
         user_details = JupyterUsers(user, first_index, last_index)
         self._api.create_users(jupyter_env, token, user_details)
 
@@ -63,7 +60,7 @@ class Jupyter(Action):
         Start servers for users from the given environment
         """
         jupyter_keys = self.config["jupyter"]
-        token = self._jupyter_helpers.get_token(jupyter_env, jupyter_keys)
+        token = get_token(jupyter_env, jupyter_keys)
         user_details = JupyterUsers(user, first_index, last_index)
         self._api.start_servers(jupyter_env, token, user_details)
 
@@ -78,6 +75,6 @@ class Jupyter(Action):
         Stop servers for users from the given environment
         """
         jupyter_keys = self.config["jupyter"]
-        token = self._jupyter_helpers.get_token(jupyter_env, jupyter_keys)
+        token = get_token(jupyter_env, jupyter_keys)
         user_details = JupyterUsers(user, first_index, last_index)
         self._api.stop_servers(jupyter_env, token, user_details)
