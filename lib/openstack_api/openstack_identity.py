@@ -253,6 +253,7 @@ class OpenstackIdentity(OpenstackWrapperBase):
         """
         project = self.find_mandatory_project(cloud_account, project_identifier)
         project_tags = project["tags"]
+        project_immutable = self.is_project_immutable(project)
 
         params_to_update = {}
         if project_details.name:
@@ -277,7 +278,7 @@ class OpenstackIdentity(OpenstackWrapperBase):
             )
             params_to_update.update({"tags": project_tags})
 
-        if self.is_project_immutable(project):
+        if project_immutable:
             # Ensure only change is to the immutability
             if params_to_update.keys() != {"tags"}:
                 raise ValueError(
