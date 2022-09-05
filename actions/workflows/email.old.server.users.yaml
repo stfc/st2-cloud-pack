@@ -28,13 +28,13 @@ tasks:
       query_preset=<% 'servers_last_updated_before' %>
       properties_to_select=<% ['id', 'name', 'status', 'updated', 'user_name', 'user_email'] %>
       header=<% '/opt/stackstorm/packs/stackstorm_openstack/email_templates/header.html' %>
-      message=<% 'The following VMs are old. Please ensure they are updated or delete them if they are no longer needed.' %>
+      message=<% 'The following VMs are over 90 days old. Please ensure they are updated or delete them if they are no longer needed.' %>
       footer=<% '/opt/stackstorm/packs/stackstorm_openstack/email_templates/footer.html' %>
       subject=<% 'Old VMs' %>
       send_as_html=<% true %>
       names=<% [] %>
       name_snippets=<% [] %>
-      days=92
+      days=90
     next:
       - when: <% succeeded() %>
         publish:

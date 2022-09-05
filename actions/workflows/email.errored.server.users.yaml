@@ -30,7 +30,7 @@ tasks:
       query_preset=<% 'servers_errored' %>
       properties_to_select=<% ['id', 'name', 'status', 'updated', 'user_name', 'user_email'] %>
       header=<% '/opt/stackstorm/packs/stackstorm_openstack/email_templates/header.html' %>
-      message=<% 'The following VMs are in an errored state. Please submit a ticket if they are needed or delete them if they are not.' %>
+      message=<% 'The following VMs are in an errored state. Please submit a ticket to <a href="mailto&#58; cloud-support@stfc.ac.uk">cloud-support@stfc.ac.uk</a> if they are needed or delete them if they are not.' %>
       footer=<% '/opt/stackstorm/packs/stackstorm_openstack/email_templates/footer.html' %>
       subject=<% 'Errored VMs' %>
       send_as_html=<% true %>
