@@ -16,4 +16,11 @@ parameters:
     description: Project (Name or ID) to search in
     required: true
     type: string
+  query_preset:
+    description: "Name of a preset query"
+    type: string
+    default: "get_disk_space"
+    enum:
+      - "get_disk_space"
+    required: true
 runner_type: python-script
