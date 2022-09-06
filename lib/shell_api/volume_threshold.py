@@ -20,15 +20,13 @@ class OpenStackVolumeThreshold(OpenstackWrapperBase):
         with self._connection_cls(cloud) as conn:
             cinder = self.CinderClient(version=3, session=conn.session)
             volumeList = cinder.volumes.list()
-            volumeUnMetaList = []
-            volumeUnMetaList = [volumeList]
-            print(len(volumeList))
-            count = len(volumeUnMetaList)
+            print(volumeList)
+            count = len(volumeList)
             volumesizes = []
             TCount = 0
             FCount = 0
             for i in count:
-                temp = volumeUnMetaList[i].vol.id()
+                temp = volumeList[i].vol.id()
                 quota = temp.get_volume_quotas()
                 threshold = quota / temp.size * 100()
                 volumesizes.append(temp.vol.size)
