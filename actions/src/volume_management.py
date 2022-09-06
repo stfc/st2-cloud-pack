@@ -18,7 +18,7 @@ class volume_management(OpenstackAction):
         return func(**kwargs)
 
     # pylint: disable=too-many-arguments
-    def volume_check(
+    def get_disk_space(
         self,
         cloud_account: str,
         project_identifier: str,
