@@ -22,7 +22,7 @@ class OpenStackVolumeThreshold(OpenstackWrapperBase):
             volumeList = cinder.volumes.list()
             volumeUnMetaList = []
             volumeUnMetaList = [volumeList]
-            print(volumeUnMetaList)
+            print(len(volumeUnMetaList))
             count = len(volumeUnMetaList)
             volumesizes = []
             TCount = 0
