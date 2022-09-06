@@ -9,7 +9,7 @@ class volume_management(OpenstackAction):
     def __init__(self, *args, config: Dict = None, **kwargs):
         """constructor class"""
         super().__init__(*args, **kwargs)
-        self._api: OpenstackNetwork = config.get("openstack_api", OpenstackNetwork())
+        self._api: OpenstackNetwork = config.get("shell_api", OpenstackNetwork())
         self._server_api: OpenstackServer = config.get(
             "openstack_server_api", OpenstackServer()
         )
