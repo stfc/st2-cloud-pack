@@ -2,6 +2,7 @@ from typing import Dict, Callable
 
 from openstack_action import OpenstackAction
 from openstack_api.openstack_network import OpenstackNetwork
+from openstack_api.openstack_server import OpenstackServer
 
 
 class volume_management(OpenstackAction):
@@ -9,6 +10,9 @@ class volume_management(OpenstackAction):
         """constructor class"""
         super().__init__(*args, **kwargs)
         self._api: OpenstackNetwork = config.get("openstack_api", OpenstackNetwork())
+        self._server_api: OpenstackServer = config.get(
+            "openstack_server_api", OpenstackServer()
+        )
 
     def run(self, submodule: str, **kwargs):
         """
