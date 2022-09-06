@@ -3,6 +3,7 @@ from typing import Dict, Callable
 from openstack_action import OpenstackAction
 from openstack_api.openstack_network import OpenstackNetwork
 from openstack_api.openstack_server import OpenstackServer
+from shell_api.volume_threshold import OpenStackVolumeThreshold
 
 
 class volume_management(OpenstackAction):
@@ -11,7 +12,7 @@ class volume_management(OpenstackAction):
         super().__init__(*args, **kwargs)
         self._api: OpenstackNetwork = config.get("shell_api", OpenstackNetwork())
         self._server_api: OpenstackServer = config.get(
-            "openstack_server_api", OpenstackServer()
+            "openstack_volume_threshold", OpenStackVolumeThreshold()
         )
 
     def run(self, submodule: str, **kwargs):
@@ -34,7 +35,7 @@ class volume_management(OpenstackAction):
         :param: project_identifier (String): project id
         """
 
-        volumes = self._server_api[f"search_{query_preset}"](
+        volumes = self._server_api[f"{query_preset}"](
             cloud_account, project_identifier
         )
         return volumes
