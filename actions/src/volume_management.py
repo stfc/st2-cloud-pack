@@ -4,7 +4,7 @@ from openstack_action import OpenstackAction
 from openstack_api.openstack_network import OpenstackNetwork
 
 
-class RouterActions(OpenstackAction):
+class volume_management(OpenstackAction):
     def __init__(self, *args, config: Dict = None, **kwargs):
         """constructor class"""
         super().__init__(*args, **kwargs)
@@ -22,13 +22,18 @@ class RouterActions(OpenstackAction):
         self,
         cloud_account: str,
         project_identifier: str,
+        query_preset: str,
     ):
         """
-        Sends an email
+        Retrieves volume list
         :param: cloud_account (String): Cloud account to use
         :param: project_identifier (String): project id
         """
 
+        volumes = self._server_api[f"search_{query_preset}"](
+            cloud_account
+        )
+        return volumes
 
 
 

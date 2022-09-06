@@ -5,7 +5,7 @@ entry_point: src/volume_management.py
 name: volume.check
 parameters:
   submodule:
-    default: volume_check
+    default: get_disk_space
     immutable: True
     type: string
   cloud_account:
