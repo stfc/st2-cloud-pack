@@ -36,7 +36,7 @@ class volume_management(OpenstackAction):
         """
 
         volumes = self._server_api[f"{query_preset}"](
-            cloud_account, project_identifier
+            cloud_account
         )
         return volumes
 
