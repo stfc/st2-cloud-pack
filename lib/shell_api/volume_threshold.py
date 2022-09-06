@@ -23,7 +23,7 @@ class OpenStackVolumeThreshold(OpenstackWrapperBase):
             volumeUnMetaList = []
             volumeUnMetaList = [volumeList]
             print(volumeUnMetaList)
-            count = volumeList.len()
+            count = volumeUnMetaList.len()
             volumesizes = []
             TCount = 0
             FCount = 0
