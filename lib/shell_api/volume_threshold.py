@@ -13,6 +13,9 @@ class OpenStackVolumeThreshold(OpenstackWrapperBase):
         super().__init__(connection_cls)
         self.CinderClient = CinderClient if CinderClient else client.Client
 
+    def __getitem__(self, item):
+        return getattr(self, item)
+
     def get_disk_space(self, cloud: str):
         with self._connection_cls(cloud) as conn:
             cinder = self.CinderClient(version=3, session=conn.session)
