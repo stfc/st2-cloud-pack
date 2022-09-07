@@ -1,0 +1,41 @@
+version: 1.0
+
+description: Executes the email.server.users action for shutoff VMs to informing users about them
+
+input:
+  - cloud_account
+  - project_id
+  - email_cc
+  - smtp_account
+  - test_override
+  - test_override_email
+
+vars:
+  - result: null
+
+output:
+  - result: <% ctx().result %>
+
+tasks:
+  send_emails:
+    action: stackstorm_openstack.email.server.users
+      cloud_account=<% ctx().cloud_account %>
+      project_identifier=<% ctx().project_id %>
+      email_cc=<% ctx().email_cc %>
+      smtp_account=<% ctx().smtp_account %>
+      test_override=<% ctx().test_override %>
+      test_override_email=<% ctx().test_override_email %>
+      query_preset=<% 'servers_shutoff' %>
+      properties_to_select=<% ['id', 'name', 'status', 'updated', 'user_name', 'user_email'] %>
+      header=<% '/opt/stackstorm/packs/stackstorm_openstack/email_templates/header.html' %>
+      message=<% 'The following VMs are shutoff. As these VMs still take up resources while shutoff, please consider whether they are needed and delete them if they are not.' %>
+      footer=<% '/opt/stackstorm/packs/stackstorm_openstack/email_templates/footer.html' %>
+      subject=<% 'Shutoff VMs' %>
+      send_as_html=<% true %>
+      names=<% [] %>
+      name_snippets=<% [] %>
+      days=0
+    next:
+      - when: <% succeeded() %>
+        publish:
+          - result: <% task(send_emails).result %>
