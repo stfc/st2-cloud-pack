@@ -77,6 +77,46 @@ class UserApi:
         if result.status_code != 201:
             raise RuntimeError(f"Failed to create user {user}: {result.text}")
 
+    def start_servers(
+        self, endpoint: str, auth_token: str, users: JupyterUsers
+    ) -> None:
+        """
+        Starts servers for the given user(s) from the JupyterHub API
+        """
+        user_list = self._get_user_list(users)
+        for user in user_list:
+            self._start_single_server(endpoint, auth_token, user)
+
+    def _start_single_server(self, endpoint: str, auth_token: str, user: str):
+        result = requests.post(
+            url=API_ENDPOINTS[endpoint] + f"/hub/api/users/{user}/server",
+            headers={"Authorization": f"token {auth_token}"},
+            timeout=60,
+        )
+
+        if result.status_code not in (201, 202):
+            raise RuntimeError(
+                f"Failed to request server for user {user}: {result.text}"
+            )
+
+    def stop_servers(self, endpoint: str, auth_token: str, users: JupyterUsers) -> None:
+        """
+        Stops servers for the given user(s) from the JupyterHub API
+        """
+        user_list = self._get_user_list(users)
+        for user in user_list:
+            self._stop_single_server(endpoint, auth_token, user)
+
+    def _stop_single_server(self, endpoint: str, auth_token: str, user: str):
+        result = requests.delete(
+            url=API_ENDPOINTS[endpoint] + f"/hub/api/users/{user}/server",
+            headers={"Authorization": f"token {auth_token}"},
+            timeout=60,
+        )
+
+        if result.status_code not in (202, 204):
+            raise RuntimeError(f"Failed to stop server for user {user}: {result.text}")
+
     @staticmethod
     def _get_user_list(users: JupyterUsers) -> List[str]:
         """

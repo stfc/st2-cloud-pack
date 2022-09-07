@@ -48,3 +48,33 @@ class Jupyter(Action):
         token = get_token(jupyter_env, jupyter_keys)
         user_details = JupyterUsers(user, first_index, last_index)
         self._api.create_users(jupyter_env, token, user_details)
+
+    def server_start(
+        self,
+        jupyter_env: str,
+        user: str,
+        first_index: Optional[int] = None,
+        last_index: Optional[int] = None,
+    ):
+        """
+        Start servers for users from the given environment
+        """
+        jupyter_keys = self.config["jupyter"]
+        token = get_token(jupyter_env, jupyter_keys)
+        user_details = JupyterUsers(user, first_index, last_index)
+        self._api.start_servers(jupyter_env, token, user_details)
+
+    def server_stop(
+        self,
+        jupyter_env: str,
+        user: str,
+        first_index: Optional[int] = None,
+        last_index: Optional[int] = None,
+    ):
+        """
+        Stop servers for users from the given environment
+        """
+        jupyter_keys = self.config["jupyter"]
+        token = get_token(jupyter_env, jupyter_keys)
+        user_details = JupyterUsers(user, first_index, last_index)
+        self._api.stop_servers(jupyter_env, token, user_details)
