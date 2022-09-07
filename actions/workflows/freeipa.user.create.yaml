@@ -36,7 +36,7 @@ tasks:
             - passwords: <% result().result %>
           do:
             - create_users
-            - print_usernames
+#            - print_usernames
 
   create_users:
     with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
@@ -57,12 +57,12 @@ tasks:
       uidnumber=<% random(1000000000, 1200000000) %>
       userpassword=<% item(password) %>
 
-  print_usernames:
-    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
-    action: core.echo
-      message="<% item(username) %>, <% item(password) %>"
-    next:
-      - publish: stdout=<% result().stdout %>
+#  print_usernames:
+#    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
+#    action: core.echo
+#      message="<% item(username) %>, <% item(password) %>"
+#    next:
+#      - publish: stdout=<% result().stdout %>
 
-output:
-  - stdout: <% ctx(stdout) %>
+#output:
+#  - stdout: <% ctx(stdout) %>
