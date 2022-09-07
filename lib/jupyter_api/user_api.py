@@ -7,29 +7,20 @@ from dateutil import parser
 from dateutil.relativedelta import relativedelta
 
 from jupyter_api.api_endpoints import API_ENDPOINTS
-from st2common.log import getLogger
 from structs.jupyter_last_used import JupyterLastUsed
 from structs.jupyter_users import JupyterUsers
 
 
 class UserApi:
-    def __init__(self):
-        """
-        Injects the credentials and threshold from the KV store
-        """
-        self._log = getLogger(__name__)
-
     def get_inactive_users(
         self, endpoint: str, auth_token: str, threshold: relativedelta
     ) -> List[JupyterLastUsed]:
         """
         Polls the given endpoint for users and returns the list of users
         """
-        self._log.info(f"Polling for inactive users on {endpoint}")
         try:
             users = self.get_users(endpoint, auth_token)
         except RuntimeError as err:
-            self._log.warning(f"Failed to get users on {endpoint}: {err}")
             return []
 
         return self._filter_inactive(users, threshold)
@@ -70,7 +61,6 @@ class UserApi:
             self._delete_single_user(endpoint, auth_token, user)
 
     def _delete_single_user(self, endpoint: str, auth_token: str, user: str):
-        self._log.info(f"Removing Jupyter user {user}")
         result = requests.delete(
             url=API_ENDPOINTS[endpoint] + f"/hub/api/users/{user}",
             headers={"Authorization": f"token {auth_token}"},
