@@ -20,7 +20,7 @@ class UserApi:
         """
         try:
             users = self.get_users(endpoint, auth_token)
-        except RuntimeError as err:
+        except RuntimeError:
             return []
 
         return self._filter_inactive(users, threshold)

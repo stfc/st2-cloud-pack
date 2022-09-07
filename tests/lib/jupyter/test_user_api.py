@@ -5,7 +5,7 @@ from unittest.mock import patch, NonCallableMock, Mock, call
 import pytz
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
-from nose.tools import raises
+from nose.tools import assert_raises_regexp, raises
 from parameterized import parameterized
 
 from jupyter_api.api_endpoints import API_ENDPOINTS
@@ -173,10 +173,10 @@ class UserApiTests(unittest.TestCase):
         user_names = JupyterUsers(name="test", start_index=1, end_index=None)
         self.api.delete_users("dev", "token", user_names)
 
-    @raises(RuntimeError)
     def test_remove_users_incorrect_order(self, _):
         """
-        Tests that the delete_users method raises an error if the start_index is not provided
+        Tests that the delete_users method raises an error if the end_index is greater than start
         """
-        user_names = JupyterUsers(name="test", start_index=1, end_index=2)
-        self.api.delete_users("dev", "token", user_names)
+        user_names = JupyterUsers(name="test", start_index=2, end_index=1)
+        with assert_raises_regexp(RuntimeError, "must be less than"):
+            self.api.delete_users("dev", "token", user_names)
