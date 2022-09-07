@@ -272,6 +272,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
             ],
         )
 
+    # pylint:disable=too-many-arguments
     def email_users(
         self,
         cloud_account: str,
@@ -292,6 +293,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         :param: message: Message to add to the body of emails sent
         :param: properties_to_select: The list of properties to select and output from the found floating ips
         :param: email_params: See EmailParams
+        :param: kwargs: Additional parameters required for the query_preset chosen
         :return:
         """
         query_params = EmailQueryParams(

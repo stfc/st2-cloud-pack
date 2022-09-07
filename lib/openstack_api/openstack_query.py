@@ -329,6 +329,7 @@ class OpenstackQuery(OpenstackWrapperBase):
         :param: message: Message to add to the body of emails sent
         :param: properties_to_select: The list of properties to select and output from the found resources
         :param: email_params: See EmailParams
+        :param: kwargs: Additional parameters required for the query_preset chosen
         :raises ValueError: If action_params.required_email_property is not present in properties_to_select
         :raises ValueError: If project_identifier is empty and query_preset is not present in
                             action_params.valid_search_queries_no_project

@@ -3,6 +3,7 @@ from typing import List
 
 
 @dataclass
+# pylint:disable=too-many-instance-attributes
 class EmailParams:
     """
     Email parameters that are shared between the send_email and send_emails functions in EmailApi
