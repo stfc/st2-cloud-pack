@@ -59,7 +59,7 @@ class EmailApi:
 
         chosen_email_to = email_params.test_override_email
 
-        if not email_params.test_override_email:
+        if not email_params.test_override:
             chosen_email_to = (
                 (email_to + email_params.email_cc)
                 if email_params.email_cc
@@ -103,7 +103,7 @@ class EmailApi:
         if smtp_account.smtp_auth:
             smtp.login(smtp_account.username, smtp_account.password)
 
-        smtp.sendmail(email_params.email_from, email_to, msg.as_string())
+        smtp.sendmail(email_params.email_from, chosen_email_to, msg.as_string())
         smtp.quit()
         return (True, "Email sent")
 
