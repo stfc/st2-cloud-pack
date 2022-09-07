@@ -27,6 +27,7 @@ class OpenstackQueryTests(unittest.TestCase):
             self.user_id = test1
             self.project_id = test1
             self.tags = [test2]
+            self.owner = test1
 
         def __getitem__(self, key):
             return getattr(self, key)
@@ -230,6 +231,10 @@ class OpenstackQueryTests(unittest.TestCase):
                 "properties_to_select": ["test2", "project_name", "project_email"],
                 "group_by": "project_id",
             },
+            "image": {
+                "properties_to_select": ["test2", "project_name", "project_email"],
+                "group_by": "project_id",
+            },
             "project": {
                 "properties_to_select": ["test2", "email"],
                 "group_by": "email",
@@ -245,6 +250,7 @@ class OpenstackQueryTests(unittest.TestCase):
         object_types = {
             "server": ["test2", "user_email"],
             "floating_ip": ["test2", "project_name", "project_email"],
+            "image": ["test2", "project_name", "project_email"],
             "project": ["test2", "email"],
         }
         for key, value in object_types.items():
