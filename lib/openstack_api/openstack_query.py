@@ -282,7 +282,8 @@ class OpenstackQuery(OpenstackWrapperBase):
         get_html: bool,
     ):
         """
-        Finds all servers belonging to a project (or all servers if project is empty)
+        Finds selected properties of a list of OpenStack resources and then generates tables for them
+        grouping the results by a particular property if requested
         :param cloud_account: The account from the clouds configuration to use
         :param items: List of items to obtain properties from
         :param object_type: type of openstack object the functions will be used for e.g. server
@@ -319,14 +320,14 @@ class OpenstackQuery(OpenstackWrapperBase):
         **kwargs,
     ):
         """
-        Finds all servers matching a query and then sends emails to their users
+        Finds all OpenStack resources matching a query and then sends emails to their users
+        :param: cloud_account: The account from the clouds configuration to use
         :param: smtp_account (SMTPAccount): SMTP config
         :param: query_params: See EmailQueryParams
-        :param: cloud_account: The account from the clouds configuration to use
         :param: project_identifier: The project this applies to (or empty for all projects)
-        :param: query_preset: The query to use when searching for servers
+        :param: query_preset: The query to use when searching for OpenStack resources
         :param: message: Message to add to the body of emails sent
-        :param: properties_to_select: The list of properties to select and output from the found servers
+        :param: properties_to_select: The list of properties to select and output from the found resources
         :param: email_params: See EmailParams
         :raises ValueError: If action_params.required_email_property is not present in properties_to_select
         :raises ValueError: If project_identifier is empty and query_preset is not present in
