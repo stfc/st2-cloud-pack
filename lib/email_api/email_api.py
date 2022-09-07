@@ -9,6 +9,7 @@ from email.utils import formatdate
 from typing import Dict, List
 
 from email_api.prep_html import prep_html
+from structs.email_params import EmailParams
 from structs.smtp_account import SMTPAccount
 
 
@@ -44,15 +45,9 @@ class EmailApi:
     def send_email(
         self,
         smtp_account: SMTPAccount,
-        subject: str,
+        email_params: EmailParams,
         email_to: List[str],
-        email_from: str,
-        email_cc: List[str],
-        header: str,
-        footer: str,
         body: str,
-        attachment_filepaths: List[str],
-        send_as_html: bool,
     ):
         """
         Send an email
@@ -70,16 +65,16 @@ class EmailApi:
         """
 
         msg = MIMEMultipart()
-        msg["Subject"] = Header(subject, "utf-8")
-        msg["From"] = email_from
+        msg["Subject"] = Header(email_params.subject, "utf-8")
+        msg["From"] = email_params.email_from
         msg["To"] = ", ".join(email_to)
 
         msg["Date"] = formatdate(localtime=True)
 
-        header = self.load_template(header)
-        footer = self.load_template(footer)
+        header = self.load_template(email_params.header)
+        footer = self.load_template(email_params.footer)
 
-        if send_as_html:
+        if email_params.send_as_html:
             msg.attach(
                 MIMEText(
                     prep_html(header=header, body=body, footer=footer),
@@ -89,11 +84,14 @@ class EmailApi:
         else:
             msg.attach(MIMEText(f"{header}\n{body}\n{footer}", "plain", "utf-8"))
 
-        if email_cc:
-            msg["Cc"] = ", ".join(email_cc)
+        if email_params.email_cc:
+            msg["Cc"] = ", ".join(email_params.email_cc)
 
-        if attachment_filepaths and len(attachment_filepaths) > 0:
-            msg = self.attach_files(msg, attachment_filepaths)
+        if (
+            email_params.attachment_filepaths
+            and len(email_params.attachment_filepaths) > 0
+        ):
+            msg = self.attach_files(msg, email_params.attachment_filepaths)
 
         smtp = SMTP_SSL(smtp_account.server, smtp_account.port, timeout=60)
         smtp.ehlo()
@@ -103,9 +101,11 @@ class EmailApi:
         if smtp_account.smtp_auth:
             smtp.login(smtp_account.username, smtp_account.password)
 
-        email_to = (email_to + email_cc) if email_cc else email_to
+        email_to = (
+            (email_to + email_params.email_cc) if email_params.email_cc else email_to
+        )
 
-        smtp.sendmail(email_from, email_to, msg.as_string())
+        smtp.sendmail(email_params.email_from, email_to, msg.as_string())
         smtp.quit()
         return (True, "Email sent")
 
@@ -114,15 +114,7 @@ class EmailApi:
         self,
         smtp_account: SMTPAccount,
         emails: Dict[str, str],
-        subject: str,
-        email_from: str,
-        email_cc: List[str],
-        header: str,
-        footer: str,
-        attachment_filepaths: List[str],
-        test_override: bool,
-        test_override_email: List[str],
-        send_as_html: bool,
+        email_params: EmailParams,
     ):
         """
         Sends multiple emails
@@ -139,24 +131,18 @@ class EmailApi:
         :param: send_as_html (Bool): If true will send in HTML format
         :return: Status (Bool): tuple of action status (succeeded(T)/failed(F))
         """
-        if test_override:
+        if email_params.test_override:
             # Send a maximum of 10 emails
             emails = dict(random.sample(emails.items(), min(len(emails), 10)))
-            override_email = test_override_email
+            override_email = email_params.test_override_email
 
         return all(
             [
                 self.send_email(
                     smtp_account=smtp_account,
-                    subject=subject,
-                    email_to=override_email if test_override else [key],
-                    email_from=email_from,
-                    email_cc=email_cc,
-                    header=header,
-                    footer=footer,
+                    email_params=email_params,
+                    email_to=override_email if email_params.test_override else [key],
                     body=value,
-                    attachment_filepaths=attachment_filepaths,
-                    send_as_html=send_as_html,
                 )[0]
             ]
             for key, value in emails.items()

@@ -2,10 +2,15 @@ import datetime
 from typing import Any, Callable, Dict, List
 
 from tabulate import tabulate
+
+from email_api.email_api import EmailApi
 from openstack_api.openstack_connection import OpenstackConnection
 
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
+from structs.email_params import EmailParams
+from structs.email_query_params import EmailQueryParams
+from structs.smtp_account import SMTPAccount
 
 
 class OpenstackQuery(OpenstackWrapperBase):
@@ -76,6 +81,7 @@ class OpenstackQuery(OpenstackWrapperBase):
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)
         self._identity_api = OpenstackIdentity(connection_cls)
+        self._email_api = EmailApi()
 
     def apply_query(self, items: List, query_func: Callable[[Any], bool]) -> List:
         """
@@ -298,3 +304,75 @@ class OpenstackQuery(OpenstackWrapperBase):
             output = self.generate_table(output, get_html)
 
         return output
+
+    # pylint:disable=too-many-arguments,too-many-locals
+    def email_users(
+        self,
+        cloud_account: str,
+        smtp_account: SMTPAccount,
+        query_params: EmailQueryParams,
+        project_identifier: str,
+        query_preset: str,
+        message: str,
+        properties_to_select: List[str],
+        email_params: EmailParams,
+        **kwargs,
+    ):
+        """
+        Finds all servers matching a query and then sends emails to their users
+        :param: smtp_account (SMTPAccount): SMTP config
+        :param: query_params: See EmailQueryParams
+        :param: cloud_account: The account from the clouds configuration to use
+        :param: project_identifier: The project this applies to (or empty for all projects)
+        :param: query_preset: The query to use when searching for servers
+        :param: message: Message to add to the body of emails sent
+        :param: properties_to_select: The list of properties to select and output from the found servers
+        :param: email_params: See EmailParams
+        :raises ValueError: If action_params.required_email_property is not present in properties_to_select
+        :raises ValueError: If project_identifier is empty and query_preset is not present in
+                            action_params.valid_search_queries_no_project
+        :return:
+        """
+        if query_params.required_email_property not in properties_to_select:
+            raise ValueError(
+                f"properties_to_select must contain '{query_params.required_email_property}'"
+            )
+
+        if query_preset not in query_params.valid_search_queries:
+            raise ValueError(
+                f"query_preset is invalid, must be one of {','.join(query_params.valid_search_queries)}"
+            )
+
+        # Ensure only a valid query preset is used when there is no project
+        # (try and prevent mistakenly emailing loads of people)
+        if project_identifier == "":
+            if query_preset not in query_params.valid_search_queries_no_project:
+                raise ValueError(
+                    f"project_identifier needed for the query type '{query_preset}'"
+                )
+
+        openstack_objects = query_params.search_api[f"search_{query_preset}"](
+            cloud_account, project_identifier, **kwargs
+        )
+
+        emails = self.parse_and_output_table(
+            cloud_account=cloud_account,
+            items=openstack_objects,
+            object_type=query_params.object_type,
+            properties_to_select=properties_to_select,
+            group_by=query_params.required_email_property,
+            get_html=email_params.send_as_html,
+        )
+
+        if emails is None:
+            return "No emails to send"
+
+        for key, value in emails.items():
+            separator = "<br><br>" if email_params.send_as_html else "\n\n"
+            emails[key] = f"{message}{separator}{value}"
+
+        return self._email_api.send_emails(
+            smtp_account=smtp_account,
+            email_params=email_params,
+            emails=emails,
+        )
