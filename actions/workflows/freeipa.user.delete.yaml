@@ -23,7 +23,7 @@ tasks:
             - usernames: <% result().result %>
           do:
             - delete_users
-            - print_usernames
+#            - print_usernames
 
   delete_users:
     with: username in <% ctx(usernames) %>
@@ -32,12 +32,12 @@ tasks:
       continue=False
       connection=<% ctx().server_env %>
 
-  print_usernames:
-    with: username in <% ctx(usernames) %>
-    action: core.echo
-      message="<% item(username) %>"
-    next:
-      - publish: stdout=<% result().stdout %>
+#  print_usernames:
+#    with: username in <% ctx(usernames) %>
+#    action: core.echo
+#      message="<% item(username) %>"
+#    next:
+#      - publish: stdout=<% result().stdout %>
 
-output:
-  - stdout: <% ctx(stdout) %>
+#output:
+#  - stdout: <% ctx(stdout) %>
