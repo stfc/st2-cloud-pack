@@ -9,23 +9,24 @@ from openstack_api.openstack_server import OpenstackServer
 from st2common.runners.base_action import Action
 
 
+@dataclass
+class _EmailActionParams:
+    """
+    Structure containing the information needed to _email_users for a particular OpenstackResource
+    :param: required_email_property: The name of the property that must be obtained to get the email of the
+                                     user associated with the object.
+    :param: valid_search_queries_no_project: List of query_preset's that can be run without a project.
+    :param: search_api: API wrapper that contains the search methods that can be used
+    :param: object_type: Type of object to be passed to OpenstackQuery's parse_and_output_table function
+    """
+
+    required_email_property: str
+    valid_search_queries_no_project: List[str]
+    search_api: Union[OpenstackServer, OpenstackFloatingIP, OpenstackImage]
+    object_type: str
+
+
 class EmailActions(Action):
-    @dataclass
-    class EmailActionParams:
-        """
-        Structure containing the information needed to _email_users for a particular OpenstackResource
-        :param: required_email_property: The name of the property that must be obtained to get the email of the
-                                         user associated with the object.
-        :param: valid_search_queries_no_project: List of query_preset's that can be run without a project.
-        :param: search_api: API wrapper that contains the search methods that can be used
-        :param: object_type: Type of object to be passed to OpenstackQuery's parse_and_output_table function
-        """
-
-        required_email_property: str
-        valid_search_queries_no_project: List[str]
-        search_api: Union[OpenstackServer, OpenstackFloatingIP, OpenstackImage]
-        object_type: str
-
     def __init__(self, *args, config: Dict = None, **kwargs):
         super().__init__(*args, config=config, **kwargs)
         self._api: EmailApi = config.get("email_api", EmailApi())
@@ -93,7 +94,7 @@ class EmailActions(Action):
     # pylint:disable=too-many-arguments,too-many-locals
     def _email_users(
         self,
-        action_params: EmailActionParams,
+        action_params: _EmailActionParams,
         cloud_account: str,
         project_identifier: str,
         query_preset: str,
@@ -113,7 +114,7 @@ class EmailActions(Action):
     ):
         """
         Finds all servers matching a query and then sends emails to their users
-        :param: action_params: See EmailActionParams
+        :param: action_params: See _EmailActionParams
         :param: cloud_account: The account from the clouds configuration to use
         :param: project_identifier: The project this applies to (or empty for all projects)
         :param: query_preset: The query to use when searching for servers
@@ -222,7 +223,7 @@ class EmailActions(Action):
         :return:
         """
 
-        action_params = self.EmailActionParams(
+        action_params = _EmailActionParams(
             required_email_property="user_email",
             valid_search_queries_no_project=OpenstackServer.SEARCH_QUERY_PRESETS_NO_PROJECT,
             search_api=self._server_api,
@@ -288,7 +289,7 @@ class EmailActions(Action):
         :param: send_as_html (Bool): If true will send in HTML format
         :return:
         """
-        action_params = self.EmailActionParams(
+        action_params = _EmailActionParams(
             required_email_property="project_email",
             valid_search_queries_no_project=OpenstackFloatingIP.SEARCH_QUERY_PRESETS_NO_PROJECT,
             search_api=self._floating_ip_api,
@@ -355,7 +356,7 @@ class EmailActions(Action):
         :return:
         """
 
-        action_params = self.EmailActionParams(
+        action_params = _EmailActionParams(
             required_email_property="project_email",
             valid_search_queries_no_project=OpenstackImage.SEARCH_QUERY_PRESETS_NO_PROJECT,
             search_api=self._image_api,

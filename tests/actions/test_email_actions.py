@@ -6,7 +6,7 @@ from openstack_api.openstack_image import OpenstackImage
 
 from openstack_api.openstack_server import OpenstackServer
 from openstack_api.openstack_query import OpenstackQuery
-from src.email_actions import EmailActions
+from src.email_actions import EmailActions, _EmailActionParams
 from nose.tools import raises
 
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase
@@ -71,7 +71,7 @@ class TestServerActions(OpenstackActionTestBase):
         self,
         arguments: Dict,
         action_function: Callable,
-        action_params: EmailActions.EmailActionParams,
+        action_params: _EmailActionParams,
     ):
         """
         Helper function that checks an email_users action works correctly
@@ -137,7 +137,7 @@ class TestServerActions(OpenstackActionTestBase):
             "names": None,
             "name_snippets": None,
         }
-        action_params = EmailActions.EmailActionParams(
+        action_params = _EmailActionParams(
             required_email_property="user_email",
             valid_search_queries_no_project=OpenstackServer.SEARCH_QUERY_PRESETS_NO_PROJECT,
             search_api=self.server_mock,
@@ -260,7 +260,7 @@ class TestServerActions(OpenstackActionTestBase):
             "names": None,
             "name_snippets": None,
         }
-        action_params = EmailActions.EmailActionParams(
+        action_params = _EmailActionParams(
             required_email_property="project_email",
             valid_search_queries_no_project=OpenstackFloatingIP.SEARCH_QUERY_PRESETS_NO_PROJECT,
             search_api=self.floating_ip_mock,
@@ -385,7 +385,7 @@ class TestServerActions(OpenstackActionTestBase):
             "names": None,
             "name_snippets": None,
         }
-        action_params = EmailActions.EmailActionParams(
+        action_params = _EmailActionParams(
             required_email_property="project_email",
             valid_search_queries_no_project=OpenstackImage.SEARCH_QUERY_PRESETS_NO_PROJECT,
             search_api=self.image_mock,
