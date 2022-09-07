@@ -17,6 +17,7 @@ from structs.email_params import EmailParams
 class EmailActions(Action):
     def __init__(self, *args, config: Dict = None, **kwargs):
         super().__init__(*args, config=config, **kwargs)
+        self._api = config.get("email_api", EmailApi())
         self._server_api: OpenstackServer = config.get(
             "openstack_server_api", OpenstackServer()
         )
@@ -64,17 +65,23 @@ class EmailActions(Action):
         :param: send_as_html (Bool): If true will send in HTML format
         :return: (Status (Bool), Output <*>): tuple of action status (succeeded(T)/failed(F)) and the output
         """
-        return self._api.send_email(
-            smtp_account=EmailHelpers.load_smtp_account(self.config, smtp_account),
+        email_params = EmailParams(
             subject=subject,
-            email_to=email_to,
             email_from=email_from,
             email_cc=email_cc,
             header=header,
             footer=footer,
-            body=body,
             attachment_filepaths=attachment_filepaths,
+            test_override=False,
+            test_override_email=[""],
             send_as_html=send_as_html,
+        )
+
+        return self._api.send_email(
+            smtp_account=EmailHelpers.load_smtp_account(self.config, smtp_account),
+            email_params=email_params,
+            email_to=email_to,
+            body=body,
         )
 
     # pylint:disable=too-many-arguments,too-many-locals
