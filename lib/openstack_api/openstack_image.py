@@ -254,6 +254,7 @@ class OpenstackImage(OpenstackWrapperBase):
             selected_images, self._query_non_existent_project(cloud_account)
         )
 
+    # pylint:disable=too-many-arguments
     def email_users(
         self,
         cloud_account: str,
@@ -274,6 +275,7 @@ class OpenstackImage(OpenstackWrapperBase):
         :param: message: Message to add to the body of emails sent
         :param: properties_to_select: The list of properties to select and output from the found images
         :param: email_params: See EmailParams
+        :param: kwargs: Additional parameters required for the query_preset chosen
         :return:
         """
         query_params = EmailQueryParams(

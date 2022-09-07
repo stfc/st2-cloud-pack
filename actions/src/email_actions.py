@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from typing import Callable, Dict, List, Union
+from typing import Callable, Dict, List
 from email_api.email_api import EmailApi
 from email_api.email_helpers import EmailHelpers
 from openstack_api.openstack_floating_ip import OpenstackFloatingIP
@@ -8,8 +7,6 @@ from openstack_api.openstack_query import OpenstackQuery
 from openstack_api.openstack_server import OpenstackServer
 
 from st2common.runners.base_action import Action
-
-from structs.email_query_params import EmailQueryParams
 
 from structs.email_params import EmailParams
 
