@@ -5,7 +5,7 @@ entry_point: src/email_actions.py
 name: email.server.users
 parameters:
   timeout:
-    default: 3600
+    default: 5400
   submodule:
     default: email_server_users
     immutable: true
@@ -49,6 +49,7 @@ parameters:
       - "id"
       - "name"
       - "status"
+      - "updated"
       - "user_name"
       - "user_email"
   email_from:
