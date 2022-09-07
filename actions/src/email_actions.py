@@ -117,14 +117,6 @@ class EmailActions(Action):
         :return:
         """
 
-        query_params = EmailQueryParams(
-            required_email_property="user_email",
-            valid_search_queries=OpenstackServer.SEARCH_QUERY_PRESETS,
-            valid_search_queries_no_project=OpenstackServer.SEARCH_QUERY_PRESETS_NO_PROJECT,
-            search_api=self._server_api,
-            object_type="server",
-        )
-
         email_params = EmailParams(
             subject=subject,
             email_from=email_from,
@@ -137,10 +129,9 @@ class EmailActions(Action):
             send_as_html=send_as_html,
         )
 
-        self._query_api.email_users(
+        self._server_api.email_users(
             cloud_account=cloud_account,
             smtp_account=EmailHelpers.load_smtp_account(self.config, smtp_account),
-            query_params=query_params,
             project_identifier=project_identifier,
             query_preset=query_preset,
             message=message,
@@ -188,13 +179,6 @@ class EmailActions(Action):
         :param: send_as_html (Bool): If true will send in HTML format
         :return:
         """
-        query_params = EmailQueryParams(
-            required_email_property="project_email",
-            valid_search_queries=OpenstackFloatingIP.SEARCH_QUERY_PRESETS,
-            valid_search_queries_no_project=OpenstackFloatingIP.SEARCH_QUERY_PRESETS_NO_PROJECT,
-            search_api=self._floating_ip_api,
-            object_type="floating_ip",
-        )
 
         email_params = EmailParams(
             subject=subject,
@@ -208,10 +192,9 @@ class EmailActions(Action):
             send_as_html=send_as_html,
         )
 
-        self._query_api.email_users(
+        self._floating_ip_api.email_users(
             cloud_account=cloud_account,
             smtp_account=EmailHelpers.load_smtp_account(self.config, smtp_account),
-            query_params=query_params,
             project_identifier=project_identifier,
             query_preset=query_preset,
             message=message,
@@ -260,14 +243,6 @@ class EmailActions(Action):
         :return:
         """
 
-        query_params = EmailQueryParams(
-            required_email_property="project_email",
-            valid_search_queries=OpenstackImage.SEARCH_QUERY_PRESETS,
-            valid_search_queries_no_project=OpenstackImage.SEARCH_QUERY_PRESETS_NO_PROJECT,
-            search_api=self._image_api,
-            object_type="image",
-        )
-
         email_params = EmailParams(
             subject=subject,
             email_from=email_from,
@@ -280,10 +255,9 @@ class EmailActions(Action):
             send_as_html=send_as_html,
         )
 
-        self._query_api.email_users(
+        self._image_api.email_users(
             cloud_account=cloud_account,
             smtp_account=EmailHelpers.load_smtp_account(self.config, smtp_account),
-            query_params=query_params,
             project_identifier=project_identifier,
             query_preset=query_preset,
             message=message,

@@ -6,6 +6,9 @@ from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_query import OpenstackQuery
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
+from structs.email_params import EmailParams
+from structs.email_query_params import EmailQueryParams
+from structs.smtp_account import SMTPAccount
 
 
 class OpenstackImage(OpenstackWrapperBase):
@@ -249,4 +252,46 @@ class OpenstackImage(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_images, self._query_non_existent_project(cloud_account)
+        )
+
+    def email_users(
+        self,
+        cloud_account: str,
+        smtp_account: SMTPAccount,
+        project_identifier: str,
+        query_preset: str,
+        message: str,
+        properties_to_select: List[str],
+        email_params: EmailParams,
+        **kwargs,
+    ):
+        """
+        Finds all images matching a query and then sends emails to their project's contact email
+        :param: smtp_account (SMTPAccount): SMTP config
+        :param: cloud_account: The account from the clouds configuration to use
+        :param: project_identifier: The project this applies to (or empty for all projects)
+        :param: query_preset: The query to use when searching for images
+        :param: message: Message to add to the body of emails sent
+        :param: properties_to_select: The list of properties to select and output from the found images
+        :param: email_params: See EmailParams
+        :return:
+        """
+        query_params = EmailQueryParams(
+            required_email_property="project_email",
+            valid_search_queries=OpenstackImage.SEARCH_QUERY_PRESETS,
+            valid_search_queries_no_project=OpenstackImage.SEARCH_QUERY_PRESETS_NO_PROJECT,
+            search_api=self,
+            object_type="image",
+        )
+
+        return self._query_api.email_users(
+            cloud_account=cloud_account,
+            smtp_account=smtp_account,
+            query_params=query_params,
+            project_identifier=project_identifier,
+            query_preset=query_preset,
+            message=message,
+            properties_to_select=properties_to_select,
+            email_params=email_params,
+            **kwargs,
         )
