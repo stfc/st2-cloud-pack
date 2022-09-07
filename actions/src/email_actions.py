@@ -8,6 +8,8 @@ from openstack_api.openstack_server import OpenstackServer
 
 from st2common.runners.base_action import Action
 
+from structs.smtp_account import SMTPAccount
+
 
 @dataclass
 class _EmailActionParams:
@@ -50,6 +52,24 @@ class EmailActions(Action):
         func: Callable = getattr(self, submodule)
         return func(**kwargs)
 
+    def load_smtp_account(self, smtp_account: str) -> SMTPAccount:
+        """
+        Loads and returns an SMTPAccount from the pack config
+        :param smtp_account: The account name to get from the config
+        :return: (Dictionary) SMTP account names and properties
+        """
+        smtp_accounts_config = self.config.get("smtp_accounts", None)
+
+        try:
+            key_value = {config["name"]: config for config in smtp_accounts_config}
+            account_data = key_value[smtp_account]
+        except KeyError as exc:
+            raise KeyError(
+                f"The account {smtp_account} does not appear in the configuration"
+            ) from exc
+
+        return SMTPAccount.from_dict(account_data)
+
     # pylint:disable=too-many-arguments
     def send_email(
         self,
@@ -78,7 +98,7 @@ class EmailActions(Action):
         :return: (Status (Bool), Output <*>): tuple of action status (succeeded(T)/failed(F)) and the output
         """
         return self._api.send_email(
-            smtp_accounts=self.config.get("smtp_accounts", None),
+            smtp_account=self.load_smtp_account(smtp_account),
             subject=subject,
             email_to=email_to,
             email_from=email_from,
@@ -87,7 +107,6 @@ class EmailActions(Action):
             footer=footer,
             body=body,
             attachment_filepaths=attachment_filepaths,
-            smtp_account=smtp_account,
             send_as_html=send_as_html,
         )
 
@@ -169,7 +188,7 @@ class EmailActions(Action):
             emails[key] = f"{message}{separator}{value}"
 
         return self._api.send_emails(
-            smtp_accounts=self.config.get("smtp_accounts", None),
+            smtp_account=self.load_smtp_account(smtp_account),
             emails=emails,
             subject=subject,
             email_from=email_from,
@@ -177,7 +196,6 @@ class EmailActions(Action):
             header=header,
             footer=footer,
             attachment_filepaths=attachment_filepaths,
-            smtp_account=smtp_account,
             test_override=test_override,
             test_override_email=test_override_email,
             send_as_html=send_as_html,
