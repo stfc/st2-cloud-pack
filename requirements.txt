@@ -3,6 +3,9 @@ openstacksdk
 # for various "side-effects" such as creating "default" security
 # groups....don't ask...
 python-openstackclient == 5.7.0
-tabulate
-requests
+tabulate~=0.8.10
+requests~=2.28.1
 dataclasses; python_version < '3.7'
+
+numpy~=1.23.2
+pytz~=2022.1
