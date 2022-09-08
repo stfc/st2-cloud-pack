@@ -362,7 +362,7 @@ class OpenstackServer(OpenstackWrapperBase):
         :param cloud_account: The associated clouds.yaml account
         :return: A dictionary containing the non-existent projects and a list of server ids that refer to them
         """
-        return self._query_api.find_non_existant_object_projects(
+        return self._query_api.find_non_existent_object_projects(
             cloud_account=cloud_account,
             check_params=NonExistentProjectCheckParams(
                 object_list_func=lambda conn: conn.list_servers(

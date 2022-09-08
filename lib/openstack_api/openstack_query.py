@@ -351,7 +351,7 @@ class OpenstackQuery(OpenstackWrapperBase):
                             selected_projects.update({project.id: [object_id]})
         return selected_projects
 
-    def find_non_existant_object_projects(
+    def find_non_existent_object_projects(
         self,
         cloud_account: str,
         check_params: NonExistentProjectCheckParams,
