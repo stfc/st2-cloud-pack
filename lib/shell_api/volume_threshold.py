@@ -2,6 +2,7 @@
 from typing import Optional, List
 
 from cinderclient.v3 import client
+from numpy import array
 
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
@@ -21,11 +22,12 @@ class OpenStackVolumeThreshold(OpenstackWrapperBase):
             cinder = self.CinderClient(version=3, session=conn.session)
             volumeList = cinder.volumes.list()
             print(volumeList)
+            volumeArray = array(volumeList)
             count = len(volumeList)
             volumesizes = []
             TCount = 0
             FCount = 0
-            for i in range(volumeList):
+            for i in range(volumeArray):
                 temp = volumeList.index(i).str().vol.id()
                 quota = temp.get_volume_quotas()
                 threshold = quota / temp.size * 100()
