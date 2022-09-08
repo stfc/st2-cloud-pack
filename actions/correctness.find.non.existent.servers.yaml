@@ -1,0 +1,23 @@
+---
+description: Find non-existent servers that are still listed in projects
+enabled: true
+entry_point: src/server_actions.py
+name: correctness.find.non.existent.servers
+parameters:
+  timeout:
+    default: 5400
+  submodule:
+    default: find_non_existent_servers
+    type: string
+    immutable: true
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    default: ""
+    required: true
+    type: string
+  project_identifier:
+    type: string
+    description: "Project (Name or ID) to search in - leave empty for all projects"
+    required: false
+    default: ""
+runner_type: python-script

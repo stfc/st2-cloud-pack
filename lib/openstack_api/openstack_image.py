@@ -1,6 +1,10 @@
-from typing import List
+from typing import List, Dict
 
 from openstack.image.v2.image import Image
+from openstack_api.dataclasses import (
+    NonExistentCheckParams,
+    NonExistentProjectCheckParams,
+)
 
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
@@ -58,7 +62,7 @@ class OpenstackImage(OpenstackWrapperBase):
         :param project_identifier: The project to get all associated images with, can be empty for all projects
         :return: A list of all images
         """
-        filters = {"limit": 10000}
+        filters = {}
         if project_identifier != "":
             # list_images can only take project ids in the filters, not names so workaround
             project = self._identity_api.find_mandatory_project(
@@ -249,4 +253,42 @@ class OpenstackImage(OpenstackWrapperBase):
 
         return self._query_api.apply_query(
             selected_images, self._query_non_existent_project(cloud_account)
+        )
+
+    def find_non_existent_images(
+        self, cloud_account: str, project_identifier: str
+    ) -> Dict[str, List[str]]:
+        """
+        Returns a dictionary containing the ids of projects along with a list of non-existent servers found within them
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: The project to get all associated servers with, can be empty for all projects
+        :return: A dictionary containing the non-existent server ids and their projects
+        """
+        return self._query_api.find_non_existent_objects(
+            cloud_account=cloud_account,
+            project_identifier=project_identifier,
+            check_params=NonExistentCheckParams(
+                object_list_func=lambda conn, project: conn.image.images(
+                    owner=project.id,
+                ),
+                object_get_func=lambda conn, object_id: conn.image.get_image(object_id),
+                object_id_param_name="id",
+                object_project_param_name="owner",
+            ),
+        )
+
+    def find_non_existent_projects(self, cloud_account: str) -> Dict[str, List[str]]:
+        """
+        Returns a dictionary containing the ids of non-existent projects along with a list of images that
+        refer to them
+        :param cloud_account: The associated clouds.yaml account
+        :return: A dictionary containing the non-existent projects and a list of images that refer to them
+        """
+        return self._query_api.find_non_existant_object_projects(
+            cloud_account=cloud_account,
+            check_params=NonExistentProjectCheckParams(
+                object_list_func=lambda conn: conn.list_images(),
+                object_id_param_name="id",
+                object_project_param_name="owner",
+            ),
         )
