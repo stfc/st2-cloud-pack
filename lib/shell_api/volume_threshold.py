@@ -25,7 +25,8 @@ class OpenStackVolumeThreshold(OpenstackWrapperBase):
             volumesizes = []
             TCount = 0
             FCount = 0
-            for i in volumeList:
+            for i in range(volumeList):
+                print(volumeList[i])
                 temp = volumeList[i].str().vol.id()
                 quota = temp.get_volume_quotas()
                 threshold = quota / temp.size * 100()
