@@ -1,7 +1,9 @@
+from dataclasses import dataclass
 import datetime
 import unittest
 from unittest import mock
 from unittest.mock import MagicMock, patch
+import openstack
 
 from openstack_api.openstack_floating_ip import OpenstackFloatingIP
 
@@ -63,11 +65,7 @@ class OpenstackFloatingIPTests(unittest.TestCase):
 
         self.mocked_connection.assert_called_once_with("test")
 
-        self.api.list_floating_ips.assert_called_once_with(
-            filters={
-                "limit": 10000,
-            }
-        )
+        self.api.list_floating_ips.assert_called_once_with(filters={})
 
     def test_search_all_fips(self):
         """
@@ -86,7 +84,6 @@ class OpenstackFloatingIPTests(unittest.TestCase):
         self.api.list_floating_ips.assert_called_once_with(
             filters={
                 "project_id": "ProjectID",
-                "limit": 10000,
             }
         )
 
@@ -299,3 +296,73 @@ class OpenstackFloatingIPTests(unittest.TestCase):
         )
 
         self.assertEqual(result, [self.mock_fip_list[0]])
+
+    def test_find_non_existent_fips(self):
+        """
+        Tests calling find_non_existent_fips
+        """
+
+        @dataclass
+        class _ObjectMock:
+            # pylint: disable=invalid-name
+            id: str
+            project_id: str
+
+            def __getitem__(self, item):
+                return getattr(self, item)
+
+        self.api.list_floating_ips.return_value = [
+            _ObjectMock("ObjectID1", "ProjectID1"),
+            _ObjectMock("ObjectID2", "ProjectID1"),
+            _ObjectMock("ObjectID3", "ProjectID1"),
+        ]
+
+        self.api.network.get_ip.side_effect = [
+            openstack.exceptions.ResourceNotFound(),
+            openstack.exceptions.ResourceNotFound(),
+            "",
+        ]
+
+        result = self.instance.find_non_existent_fips(
+            cloud_account="test", project_identifier="project"
+        )
+
+        self.assertEqual(
+            result,
+            {
+                self.api.identity.find_project.return_value.id: [
+                    "ObjectID1",
+                    "ObjectID2",
+                ]
+            },
+        )
+
+    def test_find_non_existent_projects(self):
+        """
+        Tests calling find_non_existent_projects
+        """
+
+        @dataclass
+        class _ObjectMock:
+            # pylint: disable=invalid-name
+            id: str
+            project_id: str
+
+            def __getitem__(self, item):
+                return getattr(self, item)
+
+        self.api.list_floating_ips.return_value = [
+            _ObjectMock("FipID1", "ProjectID1"),
+            _ObjectMock("FipID2", "ProjectID1"),
+            _ObjectMock("FipID3", "ProjectID2"),
+        ]
+
+        self.api.identity.get_project.side_effect = [
+            openstack.exceptions.ResourceNotFound(),
+            openstack.exceptions.ResourceNotFound(),
+            "",
+        ]
+
+        result = self.instance.find_non_existent_projects(cloud_account="test")
+
+        self.assertEqual(result, {"ProjectID1": ["FipID1", "FipID2"]})

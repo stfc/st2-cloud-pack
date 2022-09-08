@@ -1,7 +1,10 @@
+from dataclasses import dataclass
 import datetime
 import unittest
 from unittest import mock
 from unittest.mock import MagicMock, patch
+
+import openstack
 
 from openstack_api.openstack_image import OpenstackImage
 
@@ -27,7 +30,7 @@ class OpenstackImageTests(unittest.TestCase):
             self.instance = OpenstackImage(self.mocked_connection)
             self.identity_module = identity_mock.return_value
 
-        self.api = self.mocked_connection.return_value.__enter__.return_value.image
+        self.api = self.mocked_connection.return_value.__enter__.return_value
 
         self.mock_image_list = [
             {
@@ -61,9 +64,7 @@ class OpenstackImageTests(unittest.TestCase):
 
         self.mocked_connection.assert_called_once_with("test")
 
-        self.api.images.assert_called_once_with(
-            limit=10000,
-        )
+        self.api.image.images.assert_called_once_with()
 
     def test_search_all_images(self):
         """
@@ -79,9 +80,8 @@ class OpenstackImageTests(unittest.TestCase):
         self.identity_module.find_mandatory_project.assert_called_once_with(
             cloud_account="test", project_identifier="ProjectName"
         )
-        self.api.images.assert_called_once_with(
+        self.api.image.images.assert_called_once_with(
             owner="ProjectID",
-            limit=10000,
         )
 
     @mock.patch("openstack_api.openstack_query.datetime", wraps=datetime)
@@ -279,3 +279,73 @@ class OpenstackImageTests(unittest.TestCase):
         )
 
         self.assertEqual(result, [self.mock_image_list[0], self.mock_image_list[2]])
+
+    def test_find_non_existent_images(self):
+        """
+        Tests calling find_non_existent_images
+        """
+
+        @dataclass
+        class _ObjectMock:
+            # pylint: disable=invalid-name
+            id: str
+            owner: str
+
+            def __getitem__(self, item):
+                return getattr(self, item)
+
+        self.api.image.images.return_value = [
+            _ObjectMock("ObjectID1", "ProjectID1"),
+            _ObjectMock("ObjectID2", "ProjectID1"),
+            _ObjectMock("ObjectID3", "ProjectID1"),
+        ]
+
+        self.api.image.get_image.side_effect = [
+            openstack.exceptions.ResourceNotFound(),
+            openstack.exceptions.ResourceNotFound(),
+            "",
+        ]
+
+        result = self.instance.find_non_existent_images(
+            cloud_account="test", project_identifier="project"
+        )
+
+        self.assertEqual(
+            result,
+            {
+                self.api.identity.find_project.return_value.id: [
+                    "ObjectID1",
+                    "ObjectID2",
+                ]
+            },
+        )
+
+    def test_find_non_existent_projects(self):
+        """
+        Tests calling find_non_existent_projects
+        """
+
+        @dataclass
+        class _ObjectMock:
+            # pylint: disable=invalid-name
+            id: str
+            owner: str
+
+            def __getitem__(self, item):
+                return getattr(self, item)
+
+        self.api.list_images.return_value = [
+            _ObjectMock("ImageID1", "ProjectID1"),
+            _ObjectMock("ImageID2", "ProjectID1"),
+            _ObjectMock("ImageID3", "ProjectID2"),
+        ]
+
+        self.api.identity.get_project.side_effect = [
+            openstack.exceptions.ResourceNotFound(),
+            openstack.exceptions.ResourceNotFound(),
+            "",
+        ]
+
+        result = self.instance.find_non_existent_projects(cloud_account="test")
+
+        self.assertEqual(result, {"ProjectID1": ["ImageID1", "ImageID2"]})

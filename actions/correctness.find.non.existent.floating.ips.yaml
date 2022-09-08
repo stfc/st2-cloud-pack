@@ -1,0 +1,23 @@
+---
+description: Find non-existent floating ips that are still listed in projects
+enabled: true
+entry_point: src/floating_ip_actions.py
+name: correctness.find.non.existent.floating.ips
+parameters:
+  timeout:
+    default: 5400
+  submodule:
+    default: find_non_existent_floating_ips
+    type: string
+    immutable: true
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    default: ""
+    required: true
+    type: string
+  project_identifier:
+    type: string
+    description: "Project (Name or ID) to search in - leave empty for all projects"
+    required: false
+    default: ""
+runner_type: python-script
