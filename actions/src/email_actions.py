@@ -14,7 +14,7 @@ from structs.email_params import EmailParams
 class EmailActions(Action):
     def __init__(self, *args, config: Dict = None, **kwargs):
         super().__init__(*args, config=config, **kwargs)
-        self._api = config.get("email_api", EmailApi())
+        self._api: EmailApi = config.get("email_api", EmailApi())
         self._server_api: OpenstackServer = config.get(
             "openstack_server_api", OpenstackServer()
         )

@@ -411,7 +411,7 @@ class OpenstackQueryTests(unittest.TestCase):
         )
         self.instance.parse_and_output_table.assert_called_once_with(
             cloud_account="test",
-            items=query_params.search_api[f"search_query_preset"].return_value,
+            items=query_params.search_api["search_query_preset"].return_value,
             object_type=query_params.object_type,
             properties_to_select=properties_to_select,
             group_by=query_params.required_email_property,

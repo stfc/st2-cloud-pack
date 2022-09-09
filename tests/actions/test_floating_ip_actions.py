@@ -1,13 +1,9 @@
-from unittest.mock import create_autospec, NonCallableMock, MagicMock
-
-from nose.tools import raises
+from unittest.mock import create_autospec, NonCallableMock
 
 from openstack_api.openstack_floating_ip import OpenstackFloatingIP
-
 from openstack_api.openstack_network import OpenstackNetwork
 from openstack_api.openstack_query import OpenstackQuery
 from src.floating_ip_actions import FloatingIPActions
-from structs.email_params import EmailParams
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase
 
 
