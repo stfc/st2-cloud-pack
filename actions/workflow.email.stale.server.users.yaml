@@ -1,7 +1,7 @@
 description: Emails the users of VMs with an updated timestamp older than 3 months
 enabled: true
-entry_point: workflows/email.old.server.users.yaml
-name: workflow.email.old.server.users
+entry_point: workflows/email.stale.server.users.yaml
+name: workflow.email.stale.server.users
 parameters:
   cloud_account:
     description: "The clouds.yaml account to use whilst performing this action"
