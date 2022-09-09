@@ -271,7 +271,11 @@ class OpenstackQuery(OpenstackWrapperBase):
                 ),
             }
         if object_type == "hypervisor":
-            return {}
+            return {
+                "vcpu_usage": lambda a: f"{a['vcpus_used']}/{a['vcpus']}",
+                "memory_mb_usage": lambda a: f"{a['memory_mb_used']}/{a['memory_mb']}",
+                "local_gb_usage": lambda a: f"{a['local_gb_used']}/{a['local_gb']}",
+            }
         raise ValueError(f"Unsupported object type '{object_type}'")
 
     # pylint:disable=too-many-arguments
