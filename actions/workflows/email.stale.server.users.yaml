@@ -1,6 +1,6 @@
 version: 1.0
 
-description: Executes the email.server.users action for VMs with an updated timestamp older than 3 months
+description: Executes the email.server.users action for VMs with an updated timestamp older than 90 days
 
 input:
   - cloud_account
@@ -28,9 +28,9 @@ tasks:
       query_preset=<% 'servers_last_updated_before' %>
       properties_to_select=<% ['id', 'name', 'status', 'updated', 'user_name', 'user_email'] %>
       header=<% '/opt/stackstorm/packs/stackstorm_openstack/email_templates/header.html' %>
-      message=<% 'The following VMs are over 90 days old. Please ensure they are updated or delete them if they are no longer needed.' %>
+      message=<% 'The following VMs have not been restarted or shutdown in OpenStack for over 90 days. Please ensure they are updated or delete them if they are no longer needed.' %>
       footer=<% '/opt/stackstorm/packs/stackstorm_openstack/email_templates/footer.html' %>
-      subject=<% 'Old VMs' %>
+      subject=<% 'Stale VMs' %>
       send_as_html=<% true %>
       names=<% [] %>
       name_snippets=<% [] %>
