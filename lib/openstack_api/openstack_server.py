@@ -263,7 +263,7 @@ class OpenstackServer(OpenstackWrapperBase):
         self, cloud_account: str, project_identifier: str, **_
     ) -> List[Server]:
         """
-        Returns a list of servers with ids that aren't in the list given
+        Returns a list of servers that are in the error state
         :param cloud_account: The associated clouds.yaml account
         :param project_identifier: The project to get all associated servers with, can be empty for all projects
         :return: A list of servers matching the query
@@ -276,7 +276,7 @@ class OpenstackServer(OpenstackWrapperBase):
         self, cloud_account: str, project_identifier: str, **_
     ) -> List[Server]:
         """
-        Returns a list of servers with ids that aren't in the list given
+        Returns a list of servers that are shutoff
         :param cloud_account: The associated clouds.yaml account
         :param project_identifier: The project to get all associated servers with, can be empty for all projects
         :return: A list of servers matching the query
@@ -289,7 +289,7 @@ class OpenstackServer(OpenstackWrapperBase):
         self, cloud_account: str, project_identifier: str, **_
     ) -> List[Server]:
         """
-        Returns a list of servers with ids that aren't in the list given
+        Returns a list of servers that are both errored and shutoff
         :param cloud_account: The associated clouds.yaml account
         :param project_identifier: The project to get all associated servers with, can be empty for all projects
         :return: A list of servers matching the query
@@ -305,7 +305,7 @@ class OpenstackServer(OpenstackWrapperBase):
         self, cloud_account: str, project_identifier: str, days: int, **_
     ) -> List[Server]:
         """
-        Returns a list of servers with ids that aren't in the list given
+        Returns a list of servers that are shutoff and were last updated before a given number of days
         :param cloud_account: The associated clouds.yaml account
         :param project_identifier: The project to get all associated servers with, can be empty for all projects
         :param days: The number of days before which the servers should have last updated

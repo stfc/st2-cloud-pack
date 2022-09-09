@@ -1,38 +1,57 @@
 ---
-description: List Hypervisors/Hosts
+description: List hypervisors
 enabled: true
-entry_point: src/search_openstack.py
+entry_point: src/hypervisor_actions.py
 name: hypervisor.list
 parameters:
   timeout:
-    default: 99999
+    default: 5400
   submodule:
-    default: search_openstack
+    default: hypervisor_list
     type: string
     immutable: true
-  query_preset:
-    description: "name of a preset query"
-    default: "no_preset"
-    type: string
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    default: ""
     required: true
-  search_by:
-    default: host
     type: string
-    immutable: true
+  query_preset:
+    type: string
+    description: "Name of a preset query - e.g hvs_older_than: list all hvs older than"
+    default: hvs_up
+    enum:
+      - "all_hvs"
+      - "hvs_id_in"
+      - "hvs_id_not_in"
+      - "hvs_name_in"
+      - "hvs_name_not_in"
+      - "hvs_name_contains"
+      - "hvs_name_not_contains"
+      - "hvs_down"
+      - "hvs_up"
+      - "hvs_disabled"
+      - "hvs_enabled"
+    required: true
   properties_to_select:
     default:
-      - "host_id"
-      - "host_name"
-      - "host_status"
+      - "id"
+      - "hypervisor_hostname"
+      - "state"
+      - "running_vms"
+      - "vcpus"
+      - "vcpus_used"
+      - "memory_mb"
+      - "memory_mb_used"
+      - "local_gb"
+      - "local_gb_used"
+      - "uptime"
     type: array
-    description: properties to select
+    description: "Properties to display for the hvs that match the chosen query"
     required: true
-  search_criteria:
-    type: array
-    description: additional properties to select for
-  sort_by_criteria:
-    type: array
-    description: properties to sort list openstack_resource
+  group_by:
+    description: "Property to group the selected resources by e.g. vcpus. Leave empty for no grouping."
+    type: string
+    default: ""
     required: false
   get_html:
     default: false
@@ -40,21 +59,26 @@ parameters:
     required: true
     type: boolean
   names:
-    description: names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)
+    description: "Names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)"
     type: array
     default:
       - ""
     required: true
   ids:
-    description: id to search openstack_resource (ignored unless query_preset=id_in etc)
+    description: "ID to search openstack_resource (ignored unless query_preset=id_in etc)"
     type: array
     default:
       - ""
     required: true
   name_snippets:
-    description: name snippets to search openstack_resource (ignored unless query_preset=name_contains etc)
+    description: "Name snippets to search openstack_resource (ignored unless query_preset=name_contains etc)"
     type: array
     default:
       - ""
+    required: true
+  days:
+    description: "Number of days threshold for selecting hypervisors (ignored unless query_preset=hvs_older_than or hvs_last_updated_before etc)"
+    type: integer
+    default: 60
     required: true
 runner_type: python-script
