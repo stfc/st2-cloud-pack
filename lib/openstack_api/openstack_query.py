@@ -272,12 +272,10 @@ class OpenstackQuery(OpenstackWrapperBase):
             }
         if object_type == "hypervisor":
             return {
-                """
-                Note: These parameters are depreciated, currently the openstack sdk is using a max microversion
-                      2.88 meaning these will work but the 'uptime' parameter will not. Later on we will need
-                      to use the result of 'openstack host show' on the hvs to obtain these parameters but this
-                      does not appear to be implemented in the sdk yet.
-                """
+                # Note: These parameters are depreciated, currently the openstack sdk is using a max microversion
+                # 2.88 meaning these will work but the 'uptime' parameter will not. Later on we will need
+                # to use the result of 'openstack host show' on the hvs to obtain these parameters but this
+                # does not appear to be implemented in the sdk yet.
                 "vcpu_usage": lambda a: f"{a['vcpus_used']}/{a['vcpus']}",
                 "memory_mb_usage": lambda a: f"{a['memory_mb_used']}/{a['memory_mb']}",
                 "local_gb_usage": lambda a: f"{a['local_gb_used']}/{a['local_gb']}",

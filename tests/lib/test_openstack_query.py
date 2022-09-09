@@ -19,7 +19,7 @@ class OpenstackQueryTests(unittest.TestCase):
     Runs various tests to ensure OpenstackQuery functions in the expected way
     """
 
-    # pylint:disable=too-few-public-methods
+    # pylint:disable=too-few-public-methods,too-many-instance-attributes
     class ItemTest:
         def __init__(self, test1, test2):
             self.test1 = test1
@@ -28,6 +28,12 @@ class OpenstackQueryTests(unittest.TestCase):
             self.project_id = test1
             self.tags = [test2]
             self.owner = test1
+            self.vcpus_used = 4
+            self.vcpus = 128
+            self.memory_mb_used = 4096
+            self.memory_mb = 515530
+            self.local_gb_used = 10
+            self.local_gb = 1024
 
         def __getitem__(self, key):
             return getattr(self, key)
@@ -239,6 +245,15 @@ class OpenstackQueryTests(unittest.TestCase):
                 "properties_to_select": ["test2", "email"],
                 "group_by": "email",
             },
+            "hypervisor": {
+                "properties_to_select": [
+                    "test2",
+                    "vcpu_usage",
+                    "memory_mb_usage",
+                    "local_gb_usage",
+                ],
+                "group_by": "test2",
+            },
         }
         for key, value in types.items():
             self._test_parse_and_output_table_with_grouping(object_type=key, **value)
@@ -252,6 +267,7 @@ class OpenstackQueryTests(unittest.TestCase):
             "floating_ip": ["test2", "project_name", "project_email"],
             "image": ["test2", "project_name", "project_email"],
             "project": ["test2", "email"],
+            "hypervisor": ["test2", "vcpu_usage", "memory_mb_usage", "local_gb_usage"],
         }
         for key, value in object_types.items():
             self._test_parse_and_output_table_no_grouping(
