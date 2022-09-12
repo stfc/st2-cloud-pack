@@ -39,9 +39,7 @@ class OpenstackProject(OpenstackWrapperBase):
     def __getitem__(self, item):
         return getattr(self, item)
 
-    def _get_query_property_funcs(
-        self, cloud_account: str
-    ) -> Dict[str, Callable[[Any], Any]]:
+    def _get_query_property_funcs(self, _) -> Dict[str, Callable[[Any], Any]]:
         """
         Returns property functions for use with OpenstackQuery.parse_properties
         :param cloud_account: The associated clouds.yaml account
@@ -59,7 +57,7 @@ class OpenstackProject(OpenstackWrapperBase):
         return self._query_api.search_resource(
             cloud_account=cloud_account,
             search_api=self,
-            property_funcs=self._get_query_property_funcs(),
+            property_funcs=self._get_query_property_funcs(cloud_account),
             query_params=query_params,
             **kwargs,
         )
