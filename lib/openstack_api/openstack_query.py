@@ -270,6 +270,8 @@ class OpenstackQuery(OpenstackWrapperBase):
                     cloud_account, a["owner"]
                 ),
             }
+        if object_type == "user":
+            return {}
         raise ValueError(f"Unsupported object type '{object_type}'")
 
     # pylint:disable=too-many-arguments
