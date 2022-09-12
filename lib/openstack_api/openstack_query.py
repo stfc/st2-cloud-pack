@@ -270,6 +270,8 @@ class OpenstackQuery(OpenstackWrapperBase):
                     cloud_account, a["owner"]
                 ),
             }
+        if object_type == "user":
+            return {}
         if object_type == "hypervisor":
             return {
                 # Note: These parameters are depreciated, currently the openstack sdk is using a max microversion

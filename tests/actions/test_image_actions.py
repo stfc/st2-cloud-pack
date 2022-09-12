@@ -8,7 +8,7 @@ from tests.actions.openstack_action_test_base import OpenstackActionTestBase
 
 class TestImageActions(OpenstackActionTestBase):
     """
-    Unit tests for the Network.* actions
+    Unit tests for the User.* actions
     """
 
     action_cls = ImageActions

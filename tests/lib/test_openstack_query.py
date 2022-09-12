@@ -245,6 +245,10 @@ class OpenstackQueryTests(unittest.TestCase):
                 "properties_to_select": ["test2", "email"],
                 "group_by": "email",
             },
+            "user": {
+                "properties_to_select": ["test2", "email"],
+                "group_by": "email",
+            },
             "hypervisor": {
                 "properties_to_select": [
                     "test2",
@@ -267,6 +271,7 @@ class OpenstackQueryTests(unittest.TestCase):
             "floating_ip": ["test2", "project_name", "project_email"],
             "image": ["test2", "project_name", "project_email"],
             "project": ["test2", "email"],
+            "user": ["test2", "email"],
             "hypervisor": ["test2", "vcpu_usage", "memory_mb_usage", "local_gb_usage"],
         }
         for key, value in object_types.items():
