@@ -1,39 +1,51 @@
 ---
 description: List users
 enabled: true
-entry_point: src/search_openstack.py
+entry_point: src/user_actions.py
 name: user.list
 parameters:
   timeout:
-    default: 99999
+    default: 5400
   submodule:
-    default: search_openstack
+    default: user_list
     type: string
     immutable: true
-  query_preset:
-    description: "name of a preset query"
-    default: "no_preset"
-    type: string
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    default: ""
     required: true
-  search_by:
-    default: user
     type: string
-    immutable: true
+  user_domain:
+    type: string
+    description: "Domain (Name or ID) to search in"
+    required: true
+    default: "default"
+  query_preset:
+    type: string
+    description: "Name of a preset query - e.g users_name_contains: list all users with a name containing"
+    default: all_users
+    enum:
+      - "all_users"
+      - "users_id_in"
+      - "users_id_not_in"
+      - "users_name_in"
+      - "users_name_not_in"
+      - "users_name_contains"
+      - "users_name_not_contains"
+    required: true
   properties_to_select:
     default:
-      - "user_id"
-      - "user_name"
-      - "user_email"
+      - "id"
+      - "name"
+      - "email"
+      - "description"
     type: array
-    description: properties to select
+    description: "Properties to display for the users that match the chosen query"
     required: true
-  search_criteria:
-    type: array
-    description: additional properties to select for
-    required: false
-  sort_by_criteria:
-    type: array
-    description: properties to sort list openstack_resource
+  group_by:
+    description: "Property to group the selected resources by e.g. project_email. Leave empty for no grouping."
+    type: string
+    default: ""
     required: false
   get_html:
     default: false
@@ -41,19 +53,19 @@ parameters:
     required: true
     type: boolean
   names:
-    description: names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)
+    description: "Names to search openstack_resource (ignored unless query_preset=name_in, or name_contains etc)"
     type: array
     default:
       - ""
     required: true
   ids:
-    description: id to search openstack_resource (ignored unless query_preset=id_in etc)
+    description: "ID to search openstack_resource (ignored unless query_preset=id_in etc)"
     type: array
     default:
       - ""
     required: true
   name_snippets:
-    description: name snippets to search openstack_resource (ignored unless query_preset=name_contains etc)
+    description: "Name snippets to search openstack_resource (ignored unless query_preset=name_contains etc)"
     type: array
     default:
       - ""
