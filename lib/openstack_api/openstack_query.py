@@ -192,7 +192,7 @@ class OpenstackQuery(OpenstackWrapperBase):
         """
         user = self._identity_api.find_user_all_domains(cloud_account, user_id)
         if user:
-            return user[property]
+            return user[prop]
         return None
 
     def get_project_prop(self, cloud_account: str, project_id: str, prop: str):
@@ -279,6 +279,34 @@ class OpenstackQuery(OpenstackWrapperBase):
 
         return output
 
+    def search_resource(
+        self,
+        cloud_account: str,
+        search_api: Any,
+        property_funcs: Dict[str, Callable[[Any], Any]],
+        query_params: QueryParams,
+        **kwargs,
+    ):
+        """
+        Performs a search query on a given API wrapper and then outputs a table of results using the
+        parse_and_output_table function above
+        :param cloud_account: The associated clouds.yaml account
+        :param search_api: API wrapper that contains the search methods that can be used
+        :param property_funcs: Query functions that return properties requested in 'properties_to_list'
+        :param query_params: See QueryParams
+        """
+        resources = search_api[f"search_{query_params.query_preset}"](
+            cloud_account, **kwargs
+        )
+
+        return self.parse_and_output_table(
+            items=resources,
+            property_funcs=property_funcs,
+            properties_to_select=query_params.properties_to_select,
+            group_by=query_params.group_by,
+            get_html=query_params.get_html,
+        )
+
     def find_non_existent_objects(
         self,
         cloud_account: str,
@@ -343,31 +371,3 @@ class OpenstackQuery(OpenstackWrapperBase):
                     else:
                         selected_projects.update({project_id: [object_id]})
         return selected_projects
-
-    def search_resource(
-        self,
-        cloud_account: str,
-        search_api: Any,
-        property_funcs: Dict[str, Callable[[Any], Any]],
-        query_params: QueryParams,
-        **kwargs,
-    ):
-        """
-        Performs a search query on a given API wrapper and then outputs a table of results using the
-        parse_and_output_table function above
-        :param cloud_account: The associated clouds.yaml account
-        :param search_api: API wrapper that contains the search methods that can be used
-        :param property_funcs: Query functions that return properties requested in 'properties_to_list'
-        :param query_params: See QueryParams
-        """
-        resources = search_api[f"search_{query_params.query_preset}"](
-            cloud_account, **kwargs
-        )
-
-        return self.parse_and_output_table(
-            items=resources,
-            property_funcs=property_funcs,
-            properties_to_select=query_params.properties_to_select,
-            group_by=query_params.group_by,
-            get_html=query_params.get_html,
-        )

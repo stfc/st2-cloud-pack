@@ -49,7 +49,10 @@ class NonExistentProjectCheckParams(NonExistentCheckParamsBase):
 class QueryParams:
     """
     Contains the data needed for running OpenstackQuery.search_resource
-
+    :param query_preset: The query to use when searching
+    :param properties_to_select: The properties to select and display from the found resource
+    :param group_by: Property to group the results by - can be empty for no grouping
+    :param get_html: Whether the result should be in html format or not
     """
 
     query_preset: str
