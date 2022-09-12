@@ -1,6 +1,7 @@
 from typing import Dict, List, Callable
 
 from openstack_action import OpenstackAction
+from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_image import OpenstackImage
 from openstack_api.openstack_query import OpenstackQuery
 
@@ -27,7 +28,6 @@ class ImageActions(OpenstackAction):
     def image_list(
         self,
         cloud_account: str,
-        project_identifier: str,
         query_preset: str,
         properties_to_select: List[str],
         group_by: str,
@@ -37,7 +37,6 @@ class ImageActions(OpenstackAction):
         """
         Finds all images belonging to a project (or all images if project is empty)
         :param cloud_account: The account from the clouds configuration to use
-        :param project_identifier: The project this applies to (or empty for all images)
         :param query_preset: The query to use when searching for images
         :param properties_to_select: The list of properties to select and output from the found images
         :param group_by: Property to group returned results - can be empty for no grouping
@@ -45,15 +44,16 @@ class ImageActions(OpenstackAction):
         :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
         """
 
-        images = self._image_api[f"search_{query_preset}"](
-            cloud_account, project_identifier, **kwargs
+        return self._image_api.search(
+            cloud_account=cloud_account,
+            query_params=QueryParams(
+                query_preset=query_preset,
+                properties_to_select=properties_to_select,
+                group_by=group_by,
+                get_html=get_html,
+            ),
+            **kwargs,
         )
-
-        output = self._query_api.parse_and_output_table(
-            cloud_account, images, "image", properties_to_select, group_by, get_html
-        )
-
-        return output
 
     def find_non_existent_images(self, cloud_account: str, project_identifier: str):
         """

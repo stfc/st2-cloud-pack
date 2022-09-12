@@ -1,7 +1,8 @@
-from typing import List
+from typing import List, Callable, Any, Dict
 
 from openstack.identity.v3.user import User
 
+from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_query import OpenstackQuery
@@ -27,6 +28,29 @@ class OpenstackUser(OpenstackWrapperBase):
 
     def __getitem__(self, item):
         return getattr(self, item)
+
+    def _get_query_property_funcs(
+        self, cloud_account: str
+    ) -> Dict[str, Callable[[Any], Any]]:
+        """
+        Returns property functions for use with OpenstackQuery.parse_properties
+        :param cloud_account: The associated clouds.yaml account
+        """
+        return {}
+
+    def search(self, cloud_account: str, query_params: QueryParams, **kwargs):
+        """
+        Performs a search of users and returns table of results
+        :param cloud_account: The associated clouds.yaml account
+        :param query_params: See QueryParams
+        """
+        return self._query_api.search_resource(
+            cloud_account=cloud_account,
+            search_api=self,
+            property_funcs={},
+            query_params=query_params,
+            **kwargs,
+        )
 
     def search_all_users(self, cloud_account: str, user_domain: str, **_) -> List[User]:
         """

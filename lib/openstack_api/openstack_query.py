@@ -6,6 +6,7 @@ from tabulate import tabulate
 from openstack_api.dataclasses import (
     NonExistentCheckParams,
     NonExistentProjectCheckParams,
+    QueryParams,
 )
 from openstack_api.openstack_connection import OpenstackConnection
 
@@ -182,6 +183,30 @@ class OpenstackQuery(OpenstackWrapperBase):
             output.append(item_output)
         return output
 
+    def get_user_prop(self, cloud_account: str, user_id: str, prop: str):
+        """
+        Returns a user property or None if it doesn't exist (useful for property functions used in parse_properties)
+        :param cloud_account: The account from the clouds configuration to use
+        :param user_id: ID of the user to obtain the property from
+        :param prop: The property to get from the found user
+        """
+        user = self._identity_api.find_user_all_domains(cloud_account, user_id)
+        if user:
+            return user[property]
+        return None
+
+    def get_project_prop(self, cloud_account: str, project_id: str, prop: str):
+        """
+        Returns a project property or None if it doesn't exist (useful for property functions used in parse_properties)
+        :param cloud_account: The account from the clouds configuration to use
+        :param project_id: ID of the project to obtain the property from
+        :param prop: The property to get from the found user
+        """
+        project = self._identity_api.find_project(cloud_account, project_id)
+        if project:
+            return project[prop]
+        return None
+
     def generate_table(
         self, properties_dict: List[Dict[str, Any]], get_html: bool
     ) -> str:
@@ -224,78 +249,24 @@ class OpenstackQuery(OpenstackWrapperBase):
 
         return collated_dict
 
-    def get_default_property_funcs(
-        self, object_type: str, cloud_account: str
-    ) -> Dict[str, Callable[[Any], Any]]:
-        """
-        Returns a list of default property functions for use with 'parse_properties' above
-        :param object_type: type of openstack object the functions will be used for e.g. server
-        :param cloud_account: The account from the clouds configuration to use
-        :return: Dict[str, Callable[[Any], Any]] functions that return properties from openstack
-                 objects
-        """
-
-        def get_project_prop(project_id, prop):
-            project = self._identity_api.find_project(cloud_account, project_id)
-            if project:
-                return project[prop]
-            return None
-
-        def get_user_prop(user_id, prop):
-            user = self._identity_api.find_user_all_domains(cloud_account, user_id)
-            if user:
-                return user[prop]
-            return None
-
-        if object_type == "server":
-            return {
-                "user_email": lambda a: get_user_prop(a["user_id"], "email"),
-                "user_name": lambda a: get_user_prop(a["user_id"], "name"),
-            }
-        if object_type == "floating_ip":
-            return {
-                "project_name": lambda a: get_project_prop(a["project_id"], "name"),
-                "project_email": lambda a: self._identity_api.find_project_email(
-                    cloud_account, a["project_id"]
-                ),
-            }
-        if object_type == "project":
-            return {
-                "email": self._identity_api.get_project_email,
-            }
-        if object_type == "image":
-            return {
-                "project_name": lambda a: get_project_prop(a["owner"], "name"),
-                "project_email": lambda a: self._identity_api.find_project_email(
-                    cloud_account, a["owner"]
-                ),
-            }
-        if object_type == "user":
-            return {}
-        raise ValueError(f"Unsupported object type '{object_type}'")
-
     # pylint:disable=too-many-arguments
     def parse_and_output_table(
         self,
-        cloud_account: str,
         items: List,
-        object_type: str,
+        property_funcs: Dict[str, Callable[[Any], Any]],
         properties_to_select: List[str],
         group_by: str,
         get_html: bool,
     ):
         """
         Finds all servers belonging to a project (or all servers if project is empty)
-        :param cloud_account: The account from the clouds configuration to use
         :param items: List of items to obtain properties from
-        :param object_type: type of openstack object the functions will be used for e.g. server
+        :param property_funcs: Query functions that return properties requested in 'properties_to_list'
         :param properties_to_select: The list of properties to select and output from the found servers
         :param group_by: Property to group returned results - can be empty for no grouping
         :param get_html: When True tables returned are in html format
         :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
         """
-
-        property_funcs = self.get_default_property_funcs(object_type, cloud_account)
         output = self.parse_properties(items, properties_to_select, property_funcs)
 
         if len(output) == 0:
@@ -372,3 +343,31 @@ class OpenstackQuery(OpenstackWrapperBase):
                     else:
                         selected_projects.update({project_id: [object_id]})
         return selected_projects
+
+    def search_resource(
+        self,
+        cloud_account: str,
+        search_api: Any,
+        property_funcs: Dict[str, Callable[[Any], Any]],
+        query_params: QueryParams,
+        **kwargs,
+    ):
+        """
+        Performs a search query on a given API wrapper and then outputs a table of results using the
+        parse_and_output_table function above
+        :param cloud_account: The associated clouds.yaml account
+        :param search_api: API wrapper that contains the search methods that can be used
+        :param property_funcs: Query functions that return properties requested in 'properties_to_list'
+        :param query_params: See QueryParams
+        """
+        resources = search_api[f"search_{query_params.query_preset}"](
+            cloud_account, **kwargs
+        )
+
+        return self.parse_and_output_table(
+            items=resources,
+            property_funcs=property_funcs,
+            properties_to_select=query_params.properties_to_select,
+            group_by=query_params.group_by,
+            get_html=query_params.get_html,
+        )

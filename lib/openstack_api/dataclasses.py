@@ -43,3 +43,16 @@ class NonExistentProjectCheckParams(NonExistentCheckParamsBase):
     """
 
     object_list_func: Callable[[Connection], List]
+
+
+@dataclass
+class QueryParams:
+    """
+    Contains the data needed for running OpenstackQuery.search_resource
+
+    """
+
+    query_preset: str
+    properties_to_select: List[str]
+    group_by: str
+    get_html: bool

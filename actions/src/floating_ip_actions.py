@@ -3,6 +3,7 @@ from typing import Tuple, Union, Dict, List, Callable
 from openstack.network.v2.floating_ip import FloatingIP
 
 from openstack_action import OpenstackAction
+from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_floating_ip import OpenstackFloatingIP
 from openstack_api.openstack_network import OpenstackNetwork
 from openstack_api.openstack_query import OpenstackQuery
@@ -77,7 +78,6 @@ class FloatingIPActions(OpenstackAction):
     def floating_ip_list(
         self,
         cloud_account: str,
-        project_identifier: str,
         query_preset: str,
         properties_to_select: List[str],
         group_by: str,
@@ -87,7 +87,6 @@ class FloatingIPActions(OpenstackAction):
         """
         Finds all floating ips belonging to a project (or all floating ips if project is empty)
         :param cloud_account: The account from the clouds configuration to use
-        :param project_identifier: The project this applies to (or empty for all floating ips)
         :param query_preset: The query to use when searching for floating ips
         :param properties_to_select: The list of properties to select and output from the found floating ips
         :param group_by: Property to group returned results - can be empty for no grouping
@@ -95,15 +94,16 @@ class FloatingIPActions(OpenstackAction):
         :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
         """
 
-        fips = self._fip_api[f"search_{query_preset}"](
-            cloud_account, project_identifier, **kwargs
+        return self._fip_api.search(
+            cloud_account=cloud_account,
+            query_params=QueryParams(
+                query_preset=query_preset,
+                properties_to_select=properties_to_select,
+                group_by=group_by,
+                get_html=get_html,
+            ),
+            **kwargs,
         )
-
-        output = self._query_api.parse_and_output_table(
-            cloud_account, fips, "floating_ip", properties_to_select, group_by, get_html
-        )
-
-        return output
 
     def find_non_existent_floating_ips(
         self, cloud_account: str, project_identifier: str

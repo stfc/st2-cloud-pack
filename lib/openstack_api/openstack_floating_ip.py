@@ -1,9 +1,10 @@
-from typing import List, Dict
+from typing import List, Dict, Callable, Any
 
 from openstack.network.v2.floating_ip import FloatingIP
 from openstack_api.dataclasses import (
     NonExistentCheckParams,
     NonExistentProjectCheckParams,
+    QueryParams,
 )
 
 from openstack_api.openstack_connection import OpenstackConnection
@@ -52,6 +53,36 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
 
     def __getitem__(self, item):
         return getattr(self, item)
+
+    def _get_query_property_funcs(
+        self, cloud_account: str
+    ) -> Dict[str, Callable[[Any], Any]]:
+        """
+        Returns property functions for use with OpenstackQuery.parse_properties
+        :param cloud_account: The associated clouds.yaml account
+        """
+        return {
+            "project_name": lambda a: self._query_api.get_project_prop(
+                cloud_account, a["project_id"], "name"
+            ),
+            "project_email": lambda a: self._identity_api.find_project_email(
+                cloud_account, a["project_id"]
+            ),
+        }
+
+    def search(self, cloud_account: str, query_params: QueryParams, **kwargs):
+        """
+        Performs a search of floating ips and returns table of results
+        :param cloud_account: The associated clouds.yaml account
+        :param query_params: See QueryParams
+        """
+        return self._query_api.search_resource(
+            cloud_account=cloud_account,
+            search_api=self,
+            property_funcs=self._get_query_property_funcs(cloud_account),
+            query_params=query_params,
+            **kwargs,
+        )
 
     def search_all_fips(
         self, cloud_account: str, project_identifier: str, **_

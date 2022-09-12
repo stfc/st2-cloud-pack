@@ -2,6 +2,7 @@ from typing import Tuple, Optional, Dict, Callable, Union, List
 
 from openstack.identity.v3.project import Project
 
+from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_project import OpenstackProject
 from openstack_api.openstack_query import OpenstackQuery
@@ -111,13 +112,16 @@ class ProjectAction(Action):
         :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
         """
 
-        fips = self._project_api[f"search_{query_preset}"](cloud_account, **kwargs)
-
-        output = self._query_api.parse_and_output_table(
-            cloud_account, fips, "project", properties_to_select, group_by, get_html
+        return self._project_api.search(
+            cloud_account=cloud_account,
+            query_params=QueryParams(
+                query_preset=query_preset,
+                properties_to_select=properties_to_select,
+                group_by=group_by,
+                get_html=get_html,
+            ),
+            **kwargs,
         )
-
-        return output
 
     def project_update(
         self,

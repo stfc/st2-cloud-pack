@@ -1,6 +1,7 @@
 from typing import Dict, List, Callable
 
 from openstack_action import OpenstackAction
+from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_query import OpenstackQuery
 from openstack_api.openstack_user import OpenstackUser
 
@@ -43,10 +44,13 @@ class UserActions(OpenstackAction):
         :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
         """
 
-        images = self._user_api[f"search_{query_preset}"](cloud_account, **kwargs)
-
-        output = self._query_api.parse_and_output_table(
-            cloud_account, images, "user", properties_to_select, group_by, get_html
+        return self._user_api.search(
+            cloud_account=cloud_account,
+            query_params=QueryParams(
+                query_preset=query_preset,
+                properties_to_select=properties_to_select,
+                group_by=group_by,
+                get_html=get_html,
+            ),
+            **kwargs,
         )
-
-        return output
