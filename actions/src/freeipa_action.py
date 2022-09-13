@@ -34,5 +34,5 @@ class FreeIpaAction(Action):
         )
 
     def print_usernames(self, username: str, password: str) -> None:
-        with open("/tmp/usernames.txt", "w") as text_file:
+        with open("/tmp/usernames.txt", "a") as text_file:
             text_file.write(f"{username}, {password}")
