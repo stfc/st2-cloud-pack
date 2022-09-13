@@ -70,5 +70,6 @@ tasks:
 #    next:
 #      - publish: stdout=<% result().stdout %>
 
-#output:
-#  - stdout: <% ctx(stdout) %>
+output:
+  - stdout: <% ctx().stdout %>
+  - stderr: <% ctx().stderr %>
