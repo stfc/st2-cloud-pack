@@ -2,11 +2,12 @@ from dataclasses import dataclass
 import datetime
 import unittest
 from unittest import mock
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, NonCallableMock
 
 import openstack
 from openstack.exceptions import HttpException
 
+from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_server import OpenstackServer
 
 # pylint:disable=too-many-public-methods
@@ -48,6 +49,55 @@ class OpenstackServerTests(unittest.TestCase):
                 "status": ["SHUTOFF", "ERROR"],
             },
         ]
+
+    def test_property_funcs(self):
+        """
+        Tests calling _get_query_property_funcs
+        """
+
+        class _ServerMock:
+            user_id: str
+
+            def __init__(self, user_id: str):
+                self.user_id = user_id
+
+            def __getitem__(self, attr):
+                return getattr(self, attr)
+
+        item = _ServerMock("UserID")
+        property_funcs = self.instance._get_query_property_funcs("test")
+
+        # Test user_email
+        result = property_funcs["user_email"](item)
+        self.assertEqual(result, self.api.identity.find_user.return_value["user_email"])
+
+        # Test user_name
+        result = property_funcs["user_name"](item)
+        self.assertEqual(result, self.api.identity.find_user.return_value["user_name"])
+
+    def test_search(self):
+        """
+        Tests calling search
+        """
+        query_params = QueryParams(
+            query_preset="all_servers",
+            properties_to_select=NonCallableMock(),
+            group_by=NonCallableMock(),
+            get_html=NonCallableMock(),
+        )
+
+        self.instance.search_all_servers = MagicMock()
+
+        self.instance.search(
+            cloud_account="test",
+            query_params=query_params,
+            project_identifier="ProjectID",
+            test_param="TestParam",
+        )
+
+        self.instance.search_all_servers.assert_called_once_with(
+            "test", project_identifier="ProjectID", test_param="TestParam"
+        )
 
     def test_search_all_servers_no_project(self):
         """

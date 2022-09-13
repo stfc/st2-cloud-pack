@@ -1,6 +1,8 @@
 import unittest
-from unittest.mock import MagicMock
+from typing import List
+from unittest.mock import MagicMock, NonCallableMock
 
+from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_project import OpenstackProject
 
 
@@ -14,7 +16,6 @@ class OpenstackProjectTests(unittest.TestCase):
         super().setUp()
         self.mocked_connection = MagicMock()
         self.instance = OpenstackProject(self.mocked_connection)
-
         self.api = self.mocked_connection.return_value.__enter__.return_value
 
         self.mock_project_list = [
@@ -37,6 +38,51 @@ class OpenstackProjectTests(unittest.TestCase):
                 "tags": [],
             },
         ]
+
+    def test_property_funcs(self):
+        """
+        Tests calling _get_query_property_funcs
+        """
+
+        class _ProjectMock:
+            tags: str
+
+            def __init__(self, tags: List[str]):
+                self.tags = tags
+
+            def __getitem__(self, attr):
+                return getattr(self, attr)
+
+        item = _ProjectMock(["test@example.com"])
+        property_funcs = self.instance._get_query_property_funcs("test")
+
+        # Test project_email
+        result = property_funcs["email"](item)
+        self.assertEqual(result, "test@example.com")
+
+    def test_search(self):
+        """
+        Tests calling search
+        """
+        query_params = QueryParams(
+            query_preset="all_users",
+            properties_to_select=NonCallableMock(),
+            group_by=NonCallableMock(),
+            get_html=NonCallableMock(),
+        )
+
+        self.instance.search_all_users = MagicMock()
+
+        self.instance.search(
+            cloud_account="test",
+            query_params=query_params,
+            user_domain="UserDomain",
+            test_param="TestParam",
+        )
+
+        self.instance.search_all_users.assert_called_once_with(
+            "test", user_domain="UserDomain", test_param="TestParam"
+        )
 
     def test_search_project_id_in(self):
         """

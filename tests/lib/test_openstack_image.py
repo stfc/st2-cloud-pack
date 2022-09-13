@@ -2,10 +2,11 @@ from dataclasses import dataclass
 import datetime
 import unittest
 from unittest import mock
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, NonCallableMock
 
 import openstack
 
+from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_image import OpenstackImage
 
 
@@ -55,6 +56,55 @@ class OpenstackImageTests(unittest.TestCase):
                 "updated_at": "2021-06-28T14:00:00Z",
             },
         ]
+
+    def test_property_funcs(self):
+        """
+        Tests calling _get_query_property_funcs
+        """
+
+        class _ImageMock:
+            owner: str
+
+            def __init__(self, owner: str):
+                self.owner = owner
+
+            def __getitem__(self, attr):
+                return getattr(self, attr)
+
+        item = _ImageMock("Owner")
+        property_funcs = self.instance._get_query_property_funcs("test")
+
+        # Test project_name
+        result = property_funcs["project_name"](item)
+        self.assertEqual(result, self.api.identity.find_project.return_value["name"])
+
+        # Test project_email
+        result = property_funcs["project_email"](item)
+        self.assertEqual(result, self.identity_module.find_project_email.return_value)
+
+    def test_search(self):
+        """
+        Tests calling search
+        """
+        query_params = QueryParams(
+            query_preset="all_images",
+            properties_to_select=NonCallableMock(),
+            group_by=NonCallableMock(),
+            get_html=NonCallableMock(),
+        )
+
+        self.instance.search_all_images = MagicMock()
+
+        self.instance.search(
+            cloud_account="test",
+            query_params=query_params,
+            project_identifier="ProjectID",
+            test_param="TestParam",
+        )
+
+        self.instance.search_all_images.assert_called_once_with(
+            "test", project_identifier="ProjectID", test_param="TestParam"
+        )
 
     def test_search_all_images_no_project(self):
         """
