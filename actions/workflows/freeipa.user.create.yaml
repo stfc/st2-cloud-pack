@@ -12,7 +12,6 @@ vars:
   - usernames: null
   - passwords: null
   - stdout: null
-  - stderr: null
 
 tasks:
   generate_users:
@@ -58,19 +57,18 @@ tasks:
       uidnumber=<% random(1000000000, 1200000000) %>
       userpassword=<% item(password) %>
 
-  print_usernames:
-    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
-    action: stackstorm_openstack.freeipa.print.usernames
-      username=<% item(username) %>
-      password=<% item(password) %>
-
 #  print_usernames:
 #    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
-#    action: core.echo
+#    action: stackstorm_openstack.freeipa.print.usernames
+#      username=<% item(username) %>
+#      password=<% item(password) %>
+
+  print_usernames:
+    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
+    action: core.noop
 #      message="<% item(username) %>, <% item(password) %>"
 #    next:
 #      - publish: stdout=<% result().stdout %>
 
 output:
-  - stdout: <% ctx().stdout %>
-  - stderr: <% ctx().stderr %>
+  - stdout: <% ctx(stdout) %>
