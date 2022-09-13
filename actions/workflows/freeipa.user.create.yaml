@@ -36,7 +36,7 @@ tasks:
             - passwords: <% result().result %>
           do:
             - create_users
-#            - print_usernames
+            - print_usernames
 
   create_users:
     with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
@@ -56,6 +56,12 @@ tasks:
       uid=<% item(username) %>
       uidnumber=<% random(1000000000, 1200000000) %>
       userpassword=<% item(password) %>
+
+  print_usernames:
+    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
+    action: freeipa.print.usernames
+      username=<% item(username) %>
+      password=<% item(password) %>
 
 #  print_usernames:
 #    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>

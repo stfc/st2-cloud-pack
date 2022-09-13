@@ -32,3 +32,6 @@ class FreeIpaAction(Action):
         return self._freeipa_helpers.generate_password(
             num_of_passwords, password_length
         )
+
+    def print_usernames(self, username: str, password: str) -> None:
+        print(username, password)

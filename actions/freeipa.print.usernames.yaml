@@ -1,0 +1,20 @@
+name: freeipa.print.usernames
+description: Print a list of users and passwords
+
+enabled: true
+entry_point: src/freeipa_action.py
+runner_type: python-script
+
+parameters:
+  submodule:
+    default: print_usernames
+    immutable: true
+    type: string
+  username:
+    description: Username
+    required: true
+    type: string
+  password:
+    description: Password
+    required: true
+    type: string
