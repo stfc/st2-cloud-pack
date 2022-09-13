@@ -12,6 +12,7 @@ vars:
   - usernames: null
   - passwords: null
   - stdout: null
+  - stderr: null
 
 tasks:
   generate_users:
