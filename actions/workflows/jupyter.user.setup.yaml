@@ -36,31 +36,8 @@ tasks:
           publish:
             - passwords: <% result().result %>
           do:
-            - create_freeipa_users
             - print_usernames
-
-  create_freeipa_users:
-    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
-    action: freeipa.user_add
-      cn=<% item(username) %>
-      connection=<% ctx().server_env %>
-      displayname=<% item(username) %>
-      gecos=<% item(username) %>
-      gidnumber=957400012
-      givenname=<% item(username) %>
-      homedirectory="/home/<% item(username) %>"
-      initials=<% item(username) %>
-      krbprincipalname=["<% item(username) %>"]
-      no_members=True
-      noprivate=True
-      sn=<% item(username) %>
-      uid=<% item(username) %>
-      uidnumber=<% random(1000000000, 1200000000) %>
-      userpassword=<% item(password) %>
-    next:
-      - when: <% succeeded() %>
-        do:
-          - create_jupyter_users
+            - create_jupyter_users
 
   create_jupyter_users:
     action: stackstorm_openstack.jupyter.user.create
@@ -68,17 +45,17 @@ tasks:
       first_index=<% ctx(first_index) %>
       last_index=<% ctx(last_index) %>
       jupyter_env=<% ctx(jupyter_env) %>
-    next:
-      - when: <% succeeded() %>
-        do:
-          - start_jupyter_servers
-
-  start_jupyter_servers:
-    action: stackstorm_openstack.jupyter.server.start
-      user=<% ctx(user_base_name) %>
-      first_index=<% ctx(first_index) %>
-      last_index=<% ctx(last_index) %>
-      jupyter_env=<% ctx(jupyter_env) %>
+#    next:
+#      - when: <% succeeded() %>
+#        do:
+#          - start_jupyter_servers
+#
+#  start_jupyter_servers:
+#    action: stackstorm_openstack.jupyter.server.start
+#      user=<% ctx(user_base_name) %>
+#      first_index=<% ctx(first_index) %>
+#      last_index=<% ctx(last_index) %>
+#      jupyter_env=<% ctx(jupyter_env) %>
 
   print_usernames:
     with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
