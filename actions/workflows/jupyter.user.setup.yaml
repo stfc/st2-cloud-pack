@@ -36,7 +36,7 @@ tasks:
           publish:
             - passwords: <% result().result %>
           do:
-            - print_usernames
+#            - print_usernames
             - create_jupyter_users
 
   create_jupyter_users:
@@ -57,12 +57,12 @@ tasks:
 #      last_index=<% ctx(last_index) %>
 #      jupyter_env=<% ctx(jupyter_env) %>
 
-  print_usernames:
-    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
-    action: core.echo
-      message="<% item(username) %>, <% item(password) %>"
-    next:
-      - publish: stdout=<% result().stdout %>
-
-output:
-  - stdout: <% ctx(stdout) %>
+#  print_usernames:
+#    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
+#    action: core.echo
+#      message="<% item(username) %>, <% item(password) %>"
+#    next:
+#      - publish: stdout=<% result().stdout %>
+#
+#output:
+#  - stdout: <% ctx(stdout) %>
