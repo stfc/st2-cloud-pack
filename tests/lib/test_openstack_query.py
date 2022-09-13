@@ -279,6 +279,15 @@ class OpenstackQueryTests(unittest.TestCase):
                 object_type=key, properties_to_select=value
             )
 
+    @raises(NotImplementedError)
+    def test_parse_and_output_table_hv_uptime_error(self):
+        """
+        Tests parse_and_output_table raises a NotImplementedError when uptime is specified
+        """
+        self._test_parse_and_output_table_no_grouping(
+            object_type="hypervisor", properties_to_select=["uptime"]
+        )
+
     def test_find_non_existent_objects(self):
         """
         Tests calling find_non_existent_objects

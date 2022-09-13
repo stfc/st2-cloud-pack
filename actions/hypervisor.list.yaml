@@ -72,9 +72,4 @@ parameters:
     default:
       - ""
     required: true
-  days:
-    description: "Number of days threshold for selecting hypervisors (ignored unless query_preset=hvs_older_than or hvs_last_updated_before etc)"
-    type: integer
-    default: 60
-    required: true
 runner_type: python-script

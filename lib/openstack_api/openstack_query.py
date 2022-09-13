@@ -273,6 +273,10 @@ class OpenstackQuery(OpenstackWrapperBase):
         if object_type == "user":
             return {}
         if object_type == "hypervisor":
+
+            def _raise(ex):
+                raise ex
+
             return {
                 # Note: These parameters are depreciated, currently the openstack sdk is using a max microversion
                 # 2.88 meaning these will work but the 'uptime' parameter will not. Later on we will need
@@ -281,6 +285,11 @@ class OpenstackQuery(OpenstackWrapperBase):
                 "vcpu_usage": lambda a: f"{a['vcpus_used']}/{a['vcpus']}",
                 "memory_mb_usage": lambda a: f"{a['memory_mb_used']}/{a['memory_mb']}",
                 "local_gb_usage": lambda a: f"{a['local_gb_used']}/{a['local_gb']}",
+                "uptime": lambda _: _raise(
+                    NotImplementedError(
+                        "'uptime' is not available in the current OpenstackSDK version"
+                    )
+                ),
             }
         raise ValueError(f"Unsupported object type '{object_type}'")
 
