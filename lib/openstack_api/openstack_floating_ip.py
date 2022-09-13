@@ -10,6 +10,9 @@ from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_query import OpenstackQuery
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
+from openstack_api.dataclasses import EmailQueryParams
+from structs.email_params import EmailParams
+from structs.smtp_account import SMTPAccount
 
 
 class OpenstackFloatingIP(OpenstackWrapperBase):
@@ -304,11 +307,55 @@ class OpenstackFloatingIP(OpenstackWrapperBase):
         :param cloud_account: The associated clouds.yaml account
         :return: A dictionary containing the non-existent projects and a list of floating ips that refer to them
         """
-        return self._query_api.find_non_existant_object_projects(
+        return self._query_api.find_non_existent_object_projects(
             cloud_account=cloud_account,
             check_params=NonExistentProjectCheckParams(
                 object_list_func=lambda conn: conn.list_floating_ips(),
                 object_id_param_name="id",
                 object_project_param_name="project_id",
             ),
+        )
+
+    # pylint:disable=too-many-arguments
+    def email_users(
+        self,
+        cloud_account: str,
+        smtp_account: SMTPAccount,
+        project_identifier: str,
+        query_preset: str,
+        message: str,
+        properties_to_select: List[str],
+        email_params: EmailParams,
+        **kwargs,
+    ):
+        """
+        Finds all floating ips matching a query and then sends emails to their project's contact email
+        :param: smtp_account (SMTPAccount): SMTP config
+        :param: cloud_account: The account from the clouds configuration to use
+        :param: project_identifier: The project this applies to (or empty for all projects)
+        :param: query_preset: The query to use when searching for floating ips
+        :param: message: Message to add to the body of emails sent
+        :param: properties_to_select: The list of properties to select and output from the found floating ips
+        :param: email_params: See EmailParams
+        :param: kwargs: Additional parameters required for the query_preset chosen
+        :return:
+        """
+        query_params = EmailQueryParams(
+            required_email_property="project_email",
+            valid_search_queries=OpenstackFloatingIP.SEARCH_QUERY_PRESETS,
+            valid_search_queries_no_project=OpenstackFloatingIP.SEARCH_QUERY_PRESETS_NO_PROJECT,
+            search_api=self,
+            object_type="floating_ip",
+        )
+
+        return self._query_api.email_users(
+            cloud_account=cloud_account,
+            smtp_account=smtp_account,
+            query_params=query_params,
+            project_identifier=project_identifier,
+            query_preset=query_preset,
+            message=message,
+            properties_to_select=properties_to_select,
+            email_params=email_params,
+            **kwargs,
         )
