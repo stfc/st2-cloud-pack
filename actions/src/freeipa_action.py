@@ -33,6 +33,6 @@ class FreeIpaAction(Action):
             num_of_passwords, password_length
         )
 
-    def print_usernames(self, username: str, password: str) -> None:
+    def print_usernames(self, username: list, password: list) -> None:
         with open("/tmp/usernames.txt", "a") as text_file:
             text_file.write(f"{username}, {password}")
