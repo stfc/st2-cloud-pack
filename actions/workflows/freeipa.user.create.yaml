@@ -60,8 +60,8 @@ tasks:
   print_usernames:
 #    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
     action: stackstorm_openstack.freeipa.print.usernames
-      username=<% ctx(usernames) %>
-      password=<% ctx(passwords) %>
+      username=<% ctx().usernames.join("") %>
+      password=<% ctx().passwords.join("") %>
 
 #  print_usernames:
 #    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
