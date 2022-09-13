@@ -78,7 +78,7 @@ parameters:
       - ""
     required: true
   days:
-    description: "Number of days threshold for selecting floating ips (ignored unless query_preset=images_older_than or images_last_updated_before etc)"
+    description: "Number of days threshold for selecting images (ignored unless query_preset=images_older_than or images_last_updated_before etc)"
     type: integer
     default: 60
     required: true

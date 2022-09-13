@@ -2,16 +2,20 @@ from dataclasses import dataclass
 import datetime
 import unittest
 from unittest import mock
-from unittest.mock import MagicMock, NonCallableMock, Mock
+from unittest.mock import MagicMock, NonCallableMock, patch, ANY, NonCallableMock, Mock
 
 import openstack
+from nose.tools import raises
+
 from openstack_api.dataclasses import (
     NonExistentCheckParams,
     NonExistentProjectCheckParams,
+    EmailQueryParams,
     QueryParams,
 )
 
 from openstack_api.openstack_query import OpenstackQuery
+from structs.email_params import EmailParams
 
 
 class OpenstackQueryTests(unittest.TestCase):
@@ -19,7 +23,7 @@ class OpenstackQueryTests(unittest.TestCase):
     Runs various tests to ensure OpenstackQuery functions in the expected way
     """
 
-    # pylint:disable=too-few-public-methods
+    # pylint:disable=too-few-public-methods,too-many-instance-attributes
     class ItemTest:
         def __init__(self, test1, test2):
             self.test1 = test1
@@ -31,7 +35,9 @@ class OpenstackQueryTests(unittest.TestCase):
     def setUp(self) -> None:
         super().setUp()
         self.mocked_connection = MagicMock()
-        self.instance = OpenstackQuery(self.mocked_connection)
+        with patch("openstack_api.openstack_query.EmailApi") as email_mock:
+            self.instance = OpenstackQuery(self.mocked_connection)
+            self.email_mock = email_mock.return_value
         self.api = self.mocked_connection.return_value.__enter__.return_value
         self.identity_api = (
             self.mocked_connection.return_value.__enter__.return_value.identity
@@ -332,9 +338,9 @@ class OpenstackQueryTests(unittest.TestCase):
             },
         )
 
-    def test_find_non_existant_object_projects(self):
+    def test_find_non_existent_object_projects(self):
         """
-        Tests calling find_non_existant_object_projects
+        Tests calling find_non_existent_object_projects
         """
 
         @dataclass
@@ -364,7 +370,7 @@ class OpenstackQueryTests(unittest.TestCase):
 
         self.identity_api.find_project.return_value = _ObjectMock("ProjectID1", "")
 
-        result = self.instance.find_non_existant_object_projects(
+        result = self.instance.find_non_existent_object_projects(
             cloud_account="test", check_params=check_params
         )
 
@@ -378,4 +384,178 @@ class OpenstackQueryTests(unittest.TestCase):
                     "ObjectID2",
                 ],
             },
+        )
+
+    def test_email_users(
+        self,
+    ):
+        """
+        Tests calling email_users
+        """
+        smtp_account = NonCallableMock()
+        query_params = EmailQueryParams(
+            required_email_property="required_property",
+            valid_search_queries=[NonCallableMock(), "no_project"],
+            valid_search_queries_no_project=["no_project"],
+            search_api=MagicMock(),
+            object_type="server",
+        )
+        email_params = EmailParams(
+            subject=NonCallableMock(),
+            email_from=NonCallableMock(),
+            email_cc=NonCallableMock(),
+            header=NonCallableMock(),
+            footer=NonCallableMock(),
+            attachment_filepaths=NonCallableMock(),
+            test_override=NonCallableMock(),
+            test_override_email=NonCallableMock(),
+            send_as_html=NonCallableMock(),
+        )
+        properties_to_select = [NonCallableMock(), query_params.required_email_property]
+
+        self.instance.parse_and_output_table = MagicMock()
+
+        self.instance.email_users(
+            cloud_account="test",
+            smtp_account=smtp_account,
+            query_params=query_params,
+            project_identifier="",
+            query_preset=query_params.valid_search_queries_no_project[0],
+            message=NonCallableMock(),
+            properties_to_select=properties_to_select,
+            email_params=email_params,
+        )
+        self.instance.parse_and_output_table.assert_called_once_with(
+            cloud_account="test",
+            items=query_params.search_api["search_query_preset"].return_value,
+            object_type=query_params.object_type,
+            properties_to_select=properties_to_select,
+            group_by=query_params.required_email_property,
+            get_html=email_params.send_as_html,
+        )
+        self.email_mock.send_emails.assert_called_once_with(
+            smtp_account=smtp_account, emails=ANY, email_params=email_params
+        )
+
+    @raises(ValueError)
+    def test_email_users_missing_required_property(
+        self,
+    ):
+        """
+        Tests calling email_users raises an error when the required property is missing from the selected ones
+        """
+        smtp_account = NonCallableMock()
+        query_params = EmailQueryParams(
+            required_email_property="required_property",
+            valid_search_queries=[NonCallableMock(), "no_project"],
+            valid_search_queries_no_project=["no_project"],
+            search_api=MagicMock(),
+            object_type="server",
+        )
+        email_params = EmailParams(
+            subject=NonCallableMock(),
+            email_from=NonCallableMock(),
+            email_cc=NonCallableMock(),
+            header=NonCallableMock(),
+            footer=NonCallableMock(),
+            attachment_filepaths=NonCallableMock(),
+            test_override=NonCallableMock(),
+            test_override_email=NonCallableMock(),
+            send_as_html=NonCallableMock(),
+        )
+        properties_to_select = [NonCallableMock()]
+
+        self.instance.parse_and_output_table = MagicMock()
+
+        self.instance.email_users(
+            cloud_account="test",
+            smtp_account=smtp_account,
+            query_params=query_params,
+            project_identifier=NonCallableMock(),
+            query_preset=query_params.valid_search_queries[0],
+            message=NonCallableMock(),
+            properties_to_select=properties_to_select,
+            email_params=email_params,
+        )
+
+    @raises(ValueError)
+    def test_email_users_invalid_query(
+        self,
+    ):
+        """
+        Tests calling email_users raises an error when the query_preset is invalid
+        """
+        smtp_account = NonCallableMock()
+        query_params = EmailQueryParams(
+            required_email_property="required_property",
+            valid_search_queries=["query1", "no_project"],
+            valid_search_queries_no_project=["no_project"],
+            search_api=MagicMock(),
+            object_type="server",
+        )
+        email_params = EmailParams(
+            subject=NonCallableMock(),
+            email_from=NonCallableMock(),
+            email_cc=NonCallableMock(),
+            header=NonCallableMock(),
+            footer=NonCallableMock(),
+            attachment_filepaths=NonCallableMock(),
+            test_override=NonCallableMock(),
+            test_override_email=NonCallableMock(),
+            send_as_html=NonCallableMock(),
+        )
+        properties_to_select = [NonCallableMock(), query_params.required_email_property]
+
+        self.instance.parse_and_output_table = MagicMock()
+
+        self.instance.email_users(
+            cloud_account="test",
+            smtp_account=smtp_account,
+            query_params=query_params,
+            project_identifier=NonCallableMock(),
+            query_preset=NonCallableMock(),
+            message=NonCallableMock(),
+            properties_to_select=properties_to_select,
+            email_params=email_params,
+        )
+
+    @raises(ValueError)
+    def test_email_users_missing_project(
+        self,
+    ):
+        """
+        Tests calling email_users raises an error when the query requires a project but is not given one
+        """
+        smtp_account = NonCallableMock()
+        query_params = EmailQueryParams(
+            required_email_property="required_property",
+            valid_search_queries=[NonCallableMock(), "no_project"],
+            valid_search_queries_no_project=["no_project"],
+            search_api=MagicMock(),
+            object_type="server",
+        )
+        email_params = EmailParams(
+            subject=NonCallableMock(),
+            email_from=NonCallableMock(),
+            email_cc=NonCallableMock(),
+            header=NonCallableMock(),
+            footer=NonCallableMock(),
+            attachment_filepaths=NonCallableMock(),
+            test_override=NonCallableMock(),
+            test_override_email=NonCallableMock(),
+            send_as_html=NonCallableMock(),
+        )
+        properties_to_select = [NonCallableMock(), query_params.required_email_property]
+
+        self.instance.parse_and_output_table = MagicMock()
+
+        self.instance.email_users(
+            cloud_account="test",
+            smtp_account=smtp_account,
+            query_params=query_params,
+            project_identifier="",
+            query_preset=query_params.valid_search_queries[0],
+            message=NonCallableMock(),
+            properties_to_select=properties_to_select,
+            email_params=email_params,
         )
