@@ -2,14 +2,12 @@ from typing import List, Dict, Callable, Any
 
 from openstack.identity.v3.project import Project
 
-from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
-from openstack_api.openstack_query import OpenstackQuery
-from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
+from openstack_api.openstack_query_base import OpenstackQueryBase
 
 
-class OpenstackProject(OpenstackWrapperBase):
+class OpenstackProject(OpenstackQueryBase):
     # Lists all possible query presets for project.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_projects",
@@ -34,10 +32,6 @@ class OpenstackProject(OpenstackWrapperBase):
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)
         self._identity_api = OpenstackIdentity(self._connection_cls)
-        self._query_api = OpenstackQuery(self._connection_cls)
-
-    def __getitem__(self, item):
-        return getattr(self, item)
 
     def _get_query_property_funcs(self, _) -> Dict[str, Callable[[Any], Any]]:
         """
@@ -47,20 +41,6 @@ class OpenstackProject(OpenstackWrapperBase):
         return {
             "email": self._identity_api.get_project_email,
         }
-
-    def search(self, cloud_account: str, query_params: QueryParams, **kwargs):
-        """
-        Performs a search of projects and returns table of results
-        :param cloud_account: The associated clouds.yaml account
-        :param query_params: See QueryParams
-        """
-        return self._query_api.search_resource(
-            cloud_account=cloud_account,
-            search_api=self,
-            property_funcs=self._get_query_property_funcs(cloud_account),
-            query_params=query_params,
-            **kwargs,
-        )
 
     def search_all_projects(self, cloud_account: str, **_) -> List[Project]:
         """

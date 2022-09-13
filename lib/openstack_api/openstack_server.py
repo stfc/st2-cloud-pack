@@ -5,20 +5,18 @@ from openstack.exceptions import HttpException
 from openstack_api.dataclasses import (
     NonExistentCheckParams,
     NonExistentProjectCheckParams,
-    QueryParams,
 )
 
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
-from openstack_api.openstack_query import OpenstackQuery
-from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
+from openstack_api.openstack_query_base import OpenstackQueryBase
 from openstack_api.dataclasses import EmailQueryParams
 from structs.email_params import EmailParams
 
 from structs.smtp_account import SMTPAccount
 
 
-class OpenstackServer(OpenstackWrapperBase):
+class OpenstackServer(OpenstackQueryBase):
     # Lists all possible query presets for server.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_servers",
@@ -61,10 +59,6 @@ class OpenstackServer(OpenstackWrapperBase):
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)
         self._identity_api = OpenstackIdentity(self._connection_cls)
-        self._query_api = OpenstackQuery(self._connection_cls)
-
-    def __getitem__(self, item):
-        return getattr(self, item)
 
     def _get_query_property_funcs(
         self, cloud_account: str
@@ -81,20 +75,6 @@ class OpenstackServer(OpenstackWrapperBase):
                 cloud_account, a["user_id"], "name"
             ),
         }
-
-    def search(self, cloud_account: str, query_params: QueryParams, **kwargs):
-        """
-        Performs a search of servers and returns table of results
-        :param cloud_account: The associated clouds.yaml account
-        :param query_params: See QueryParams
-        """
-        return self._query_api.search_resource(
-            cloud_account=cloud_account,
-            search_api=self,
-            property_funcs=self._get_query_property_funcs(cloud_account),
-            query_params=query_params,
-            **kwargs,
-        )
 
     def search_all_servers(
         self, cloud_account: str, project_identifier: str, **_

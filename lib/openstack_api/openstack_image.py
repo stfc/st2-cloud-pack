@@ -4,19 +4,17 @@ from openstack.image.v2.image import Image
 from openstack_api.dataclasses import (
     NonExistentCheckParams,
     NonExistentProjectCheckParams,
-    QueryParams,
 )
 
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
-from openstack_api.openstack_query import OpenstackQuery
-from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
+from openstack_api.openstack_query_base import OpenstackQueryBase
 from openstack_api.dataclasses import EmailQueryParams
 from structs.email_params import EmailParams
 from structs.smtp_account import SMTPAccount
 
 
-class OpenstackImage(OpenstackWrapperBase):
+class OpenstackImage(OpenstackQueryBase):
     # Lists all possible query presets for image.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_images",
@@ -43,7 +41,6 @@ class OpenstackImage(OpenstackWrapperBase):
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)
         self._identity_api = OpenstackIdentity(self._connection_cls)
-        self._query_api = OpenstackQuery(self._connection_cls)
 
     # Queries to be used for OpenstackQuery
     def _query_non_existent_project(self, cloud_account: str):
@@ -53,9 +50,6 @@ class OpenstackImage(OpenstackWrapperBase):
         return (
             lambda a: self._identity_api.find_project(cloud_account, a["owner"]) is None
         )
-
-    def __getitem__(self, item):
-        return getattr(self, item)
 
     def _get_query_property_funcs(
         self, cloud_account: str
@@ -72,20 +66,6 @@ class OpenstackImage(OpenstackWrapperBase):
                 cloud_account, a["owner"]
             ),
         }
-
-    def search(self, cloud_account: str, query_params: QueryParams, **kwargs):
-        """
-        Performs a search of images and returns table of results
-        :param cloud_account: The associated clouds.yaml account
-        :param query_params: See QueryParams
-        """
-        return self._query_api.search_resource(
-            cloud_account=cloud_account,
-            search_api=self,
-            property_funcs=self._get_query_property_funcs(cloud_account),
-            query_params=query_params,
-            **kwargs,
-        )
 
     def search_all_images(
         self, cloud_account: str, project_identifier: str, **_

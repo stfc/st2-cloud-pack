@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import datetime
 import unittest
 from unittest import mock
-from unittest.mock import MagicMock, NonCallableMock, patch, ANY, NonCallableMock, Mock
+from unittest.mock import MagicMock, patch, ANY, NonCallableMock, Mock
 
 import openstack
 from nose.tools import raises
