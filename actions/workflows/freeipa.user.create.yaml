@@ -57,15 +57,15 @@ tasks:
       uidnumber=<% random(1000000000, 1200000000) %>
       userpassword=<% item(password) %>
 
+  print_usernames:
+#    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
+    action: stackstorm_openstack.freeipa.print.usernames
+      usernames=<% ctx(usernames) %>
+      passwords=<% ctx(passwords) %>
+
 #  print_usernames:
 #    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
-#    action: stackstorm_openstack.freeipa.print.usernames
-#      username=<% item(username) %>
-#      password=<% item(password) %>
-
-  print_usernames:
-    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
-    action: core.noop
+#    action: core.noop
 #      message="<% item(username) %>, <% item(password) %>"
 #    next:
 #      - publish: stdout=<% result().stdout %>
