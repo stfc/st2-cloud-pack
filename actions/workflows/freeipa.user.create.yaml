@@ -39,7 +39,9 @@ tasks:
 #            - print_usernames
 
   create_users:
-    with: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
+    with:
+      items: username, password in <% zip(ctx(usernames), ctx(passwords)) %>
+      concurrency: 1
     action: freeipa.user_add
       cn=<% item(username) %>
       connection=<% ctx().server_env %>
