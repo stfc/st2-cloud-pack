@@ -4,8 +4,10 @@ import unittest
 from unittest import mock
 from unittest.mock import MagicMock, patch
 import openstack
+from nose.tools import raises
 
 from openstack_api.openstack_floating_ip import OpenstackFloatingIP
+from structs.email_params import EmailParams
 
 
 class OpenstackFloatingIPTests(unittest.TestCase):
@@ -366,3 +368,94 @@ class OpenstackFloatingIPTests(unittest.TestCase):
         result = self.instance.find_non_existent_projects(cloud_account="test")
 
         self.assertEqual(result, {"ProjectID1": ["FipID1", "FipID2"]})
+
+    @raises(ValueError)
+    def test_email_users_no_email_error(self):
+        """
+        Tests the that email_users gives a value error when user_email is not present in the `properties_to_select`
+        """
+        smtp_account = MagicMock()
+        email_params = EmailParams(
+            subject="Subject",
+            email_from="testemail",
+            email_cc=[],
+            header="",
+            footer="",
+            attachment_filepaths=[],
+            test_override=False,
+            test_override_email=[""],
+            send_as_html=False,
+        )
+        return self.instance.email_users(
+            cloud_account="test_account",
+            smtp_account=smtp_account,
+            project_identifier="",
+            query_preset="servers_older_than",
+            message="Message",
+            properties_to_select=["name"],
+            email_params=email_params,
+            days=60,
+            ids=None,
+            names=None,
+            name_snippets=None,
+        )
+
+    def _email_users(self, query_preset: str):
+        """
+        Helper for checking email_users works correctly
+        """
+        smtp_account = MagicMock()
+        email_params = EmailParams(
+            subject="Subject",
+            email_from="testemail",
+            email_cc=[],
+            header="",
+            footer="",
+            attachment_filepaths=[],
+            test_override=False,
+            test_override_email=[""],
+            send_as_html=False,
+        )
+        return self.instance.email_users(
+            cloud_account="test_account",
+            smtp_account=smtp_account,
+            project_identifier="",
+            query_preset=query_preset,
+            message="Message",
+            properties_to_select=["project_email"],
+            email_params=email_params,
+            days=60,
+            ids=None,
+            names=None,
+            name_snippets=None,
+        )
+
+    def test_email_users_no_project(self):
+        """
+        Tests that email_users does not give a value error when a project is not required for the query type
+        """
+
+        for query_preset in OpenstackFloatingIP.SEARCH_QUERY_PRESETS_NO_PROJECT:
+            self._email_users(query_preset)
+
+    @raises(ValueError)
+    def _check_email_users_raises(self, query_preset):
+        """
+        Helper for checking email_users raises a ValueError when needed (needed to allow multiple to be checked
+        in the same test otherwise it stops after the first error)
+        """
+        self.assertRaises(ValueError, self._email_users(query_preset))
+
+    def test_email_users_no_project_raises(self):
+        """
+        Tests that email_users gives a value error when a project is not required for the query type
+        """
+
+        # Should raise an error for all but a few queries
+        should_pass = OpenstackFloatingIP.SEARCH_QUERY_PRESETS_NO_PROJECT
+        should_not_pass = [
+            x for x in OpenstackFloatingIP.SEARCH_QUERY_PRESETS if x not in should_pass
+        ]
+
+        for query_preset in should_not_pass:
+            self._check_email_users_raises(query_preset)

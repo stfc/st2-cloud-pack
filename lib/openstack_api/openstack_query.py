@@ -3,6 +3,8 @@ from typing import Any, Callable, Dict, List
 
 import openstack
 from tabulate import tabulate
+
+from email_api.email_api import EmailApi
 from openstack_api.dataclasses import (
     NonExistentCheckParams,
     NonExistentProjectCheckParams,
@@ -11,6 +13,9 @@ from openstack_api.openstack_connection import OpenstackConnection
 
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
+from openstack_api.dataclasses import EmailQueryParams
+from structs.email_params import EmailParams
+from structs.smtp_account import SMTPAccount
 
 
 class OpenstackQuery(OpenstackWrapperBase):
@@ -81,6 +86,7 @@ class OpenstackQuery(OpenstackWrapperBase):
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)
         self._identity_api = OpenstackIdentity(connection_cls)
+        self._email_api = EmailApi()
 
     def apply_query(self, items: List, query_func: Callable[[Any], bool]) -> List:
         """
@@ -272,6 +278,25 @@ class OpenstackQuery(OpenstackWrapperBase):
             }
         if object_type == "user":
             return {}
+        if object_type == "hypervisor":
+
+            def _raise(ex):
+                raise ex
+
+            return {
+                # Note: These parameters are depreciated, currently the openstack sdk is using a max microversion
+                # 2.88 meaning these will work but the 'uptime' parameter will not. Later on we will need
+                # to use the result of 'openstack host show' on the hvs to obtain these parameters but this
+                # does not appear to be implemented in the sdk yet.
+                "vcpu_usage": lambda a: f"{a['vcpus_used']}/{a['vcpus']}",
+                "memory_mb_usage": lambda a: f"{a['memory_mb_used']}/{a['memory_mb']}",
+                "local_gb_usage": lambda a: f"{a['local_gb_used']}/{a['local_gb']}",
+                "uptime": lambda _: _raise(
+                    NotImplementedError(
+                        "'uptime' is not available in the current OpenstackSDK version"
+                    )
+                ),
+            }
         raise ValueError(f"Unsupported object type '{object_type}'")
 
     # pylint:disable=too-many-arguments
@@ -285,7 +310,8 @@ class OpenstackQuery(OpenstackWrapperBase):
         get_html: bool,
     ):
         """
-        Finds all servers belonging to a project (or all servers if project is empty)
+        Finds selected properties of a list of OpenStack resources and then generates tables for them
+        grouping the results by a particular property if requested
         :param cloud_account: The account from the clouds configuration to use
         :param items: List of items to obtain properties from
         :param object_type: type of openstack object the functions will be used for e.g. server
@@ -346,7 +372,7 @@ class OpenstackQuery(OpenstackWrapperBase):
                             selected_projects.update({project.id: [object_id]})
         return selected_projects
 
-    def find_non_existant_object_projects(
+    def find_non_existent_object_projects(
         self,
         cloud_account: str,
         check_params: NonExistentProjectCheckParams,
@@ -372,3 +398,76 @@ class OpenstackQuery(OpenstackWrapperBase):
                     else:
                         selected_projects.update({project_id: [object_id]})
         return selected_projects
+
+    # pylint:disable=too-many-arguments,too-many-locals
+    def email_users(
+        self,
+        cloud_account: str,
+        smtp_account: SMTPAccount,
+        query_params: EmailQueryParams,
+        project_identifier: str,
+        query_preset: str,
+        message: str,
+        properties_to_select: List[str],
+        email_params: EmailParams,
+        **kwargs,
+    ):
+        """
+        Finds all OpenStack resources matching a query and then sends emails to their users
+        :param: cloud_account: The account from the clouds configuration to use
+        :param: smtp_account (SMTPAccount): SMTP config
+        :param: query_params: See EmailQueryParams
+        :param: project_identifier: The project this applies to (or empty for all projects)
+        :param: query_preset: The query to use when searching for OpenStack resources
+        :param: message: Message to add to the body of emails sent
+        :param: properties_to_select: The list of properties to select and output from the found resources
+        :param: email_params: See EmailParams
+        :param: kwargs: Additional parameters required for the query_preset chosen
+        :raises ValueError: If action_params.required_email_property is not present in properties_to_select
+        :raises ValueError: If project_identifier is empty and query_preset is not present in
+                            action_params.valid_search_queries_no_project
+        :return:
+        """
+        if query_params.required_email_property not in properties_to_select:
+            raise ValueError(
+                f"properties_to_select must contain '{query_params.required_email_property}'"
+            )
+
+        if query_preset not in query_params.valid_search_queries:
+            raise ValueError(
+                f"query_preset is invalid, must be one of {','.join(query_params.valid_search_queries)}"
+            )
+
+        # Ensure only a valid query preset is used when there is no project
+        # (try and prevent mistakenly emailing loads of people)
+        if project_identifier == "":
+            if query_preset not in query_params.valid_search_queries_no_project:
+                raise ValueError(
+                    f"project_identifier needed for the query type '{query_preset}'"
+                )
+
+        openstack_objects = query_params.search_api[f"search_{query_preset}"](
+            cloud_account, project_identifier, **kwargs
+        )
+
+        emails = self.parse_and_output_table(
+            cloud_account=cloud_account,
+            items=openstack_objects,
+            object_type=query_params.object_type,
+            properties_to_select=properties_to_select,
+            group_by=query_params.required_email_property,
+            get_html=email_params.send_as_html,
+        )
+
+        if emails is None:
+            return "No emails to send"
+
+        for key, value in emails.items():
+            separator = "<br><br>" if email_params.send_as_html else "\n\n"
+            emails[key] = f"{message}{separator}{value}"
+
+        return self._email_api.send_emails(
+            smtp_account=smtp_account,
+            email_params=email_params,
+            emails=emails,
+        )
