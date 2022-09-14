@@ -8,7 +8,7 @@ from openstack_api.dataclasses import (
 )
 
 from openstack_api.openstack_connection import OpenstackConnection
-from openstack_api.openstack_email_base import OpenstackQueryEmailBase
+from openstack_api.openstack_query_email_base import OpenstackQueryEmailBase
 from openstack_api.openstack_identity import OpenstackIdentity
 
 
