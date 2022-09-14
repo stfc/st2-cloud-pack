@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 import unittest
 from typing import List
-from unittest.mock import MagicMock, NonCallableMock
+from unittest.mock import MagicMock
 
-from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_project import OpenstackProject
+from tests.lib.test_openstack_query_base import OpenstackQueryBaseTests
 
 
-class OpenstackProjectTests(unittest.TestCase):
+class OpenstackProjectTests(unittest.TestCase, OpenstackQueryBaseTests):
     """
     Runs various tests to ensure we are using the Openstack
     identity module in the expected way
@@ -58,30 +58,6 @@ class OpenstackProjectTests(unittest.TestCase):
         # Test project_email
         result = property_funcs["email"](item)
         self.assertEqual(result, "test@example.com")
-
-    def test_search(self):
-        """
-        Tests calling search
-        """
-        query_params = QueryParams(
-            query_preset="all_users",
-            properties_to_select=NonCallableMock(),
-            group_by=NonCallableMock(),
-            get_html=NonCallableMock(),
-        )
-
-        self.instance.search_all_users = MagicMock()
-
-        self.instance.search(
-            cloud_account="test",
-            query_params=query_params,
-            user_domain="UserDomain",
-            test_param="TestParam",
-        )
-
-        self.instance.search_all_users.assert_called_once_with(
-            "test", user_domain="UserDomain", test_param="TestParam"
-        )
 
     def test_search_project_id_in(self):
         """

@@ -2,13 +2,12 @@ from typing import List, Dict, Callable, Any
 
 from openstack.compute.v2.hypervisor import Hypervisor
 
-from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_query import OpenstackQuery
-from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
+from openstack_api.openstack_query_base import OpenstackQueryBase
 
 
-class OpenstackHypervisor(OpenstackWrapperBase):
+class OpenstackHypervisor(OpenstackQueryBase):
     # Lists all possible query presets for hypervisor.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_hvs",
@@ -79,20 +78,6 @@ class OpenstackHypervisor(OpenstackWrapperBase):
                 )
             ),
         }
-
-    def search(self, cloud_account: str, query_params: QueryParams, **kwargs):
-        """
-        Performs a search of images and returns table of results
-        :param cloud_account: The associated clouds.yaml account
-        :param query_params: See QueryParams
-        """
-        return self._query_api.search_resource(
-            cloud_account=cloud_account,
-            search_api=self,
-            property_funcs=self.get_query_property_funcs(cloud_account),
-            query_params=query_params,
-            **kwargs,
-        )
 
     def search_all_hvs(self, cloud_account: str, **_) -> List[Hypervisor]:
         """

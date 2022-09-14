@@ -1,10 +1,12 @@
 import unittest
-from unittest.mock import MagicMock, NonCallableMock
+from unittest.mock import MagicMock
 
 from nose.tools import raises
 
-from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_hypervisor import OpenstackHypervisor
+
+from tests.lib.test_openstack_query_base import OpenstackQueryBaseTests
+
 
 # pylint:disable=too-few-public-methods
 class _HypervisorMock:
@@ -19,7 +21,7 @@ class _HypervisorMock:
         return getattr(self, attr)
 
 
-class OpenstackHypervisorTests(unittest.TestCase):
+class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
     """
     Runs various tests to ensure we are using the Openstack
     Hypervisor module works correctly
@@ -93,30 +95,6 @@ class OpenstackHypervisorTests(unittest.TestCase):
         property_funcs = self.instance.get_query_property_funcs("test")
 
         property_funcs["uptime"](item)
-
-    def test_search(self):
-        """
-        Tests calling search
-        """
-        query_params = QueryParams(
-            query_preset="all_images",
-            properties_to_select=NonCallableMock(),
-            group_by=NonCallableMock(),
-            get_html=NonCallableMock(),
-        )
-
-        self.instance.search_all_images = MagicMock()
-
-        self.instance.search(
-            cloud_account="test",
-            query_params=query_params,
-            project_identifier="ProjectID",
-            test_param="TestParam",
-        )
-
-        self.instance.search_all_images.assert_called_once_with(
-            "test", project_identifier="ProjectID", test_param="TestParam"
-        )
 
     def test_search_all_hvs(self):
         """

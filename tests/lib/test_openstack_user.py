@@ -1,11 +1,11 @@
 import unittest
-from unittest.mock import MagicMock, patch, NonCallableMock
+from unittest.mock import MagicMock, patch
 
-from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_user import OpenstackUser
+from tests.lib.test_openstack_query_base import OpenstackQueryBaseTests
 
 
-class OpenstackuserTests(unittest.TestCase):
+class OpenstackUserTests(unittest.TestCase, OpenstackQueryBaseTests):
     """
     Runs various tests to ensure we are using the Openstack
     user module in the expected way
@@ -43,29 +43,10 @@ class OpenstackuserTests(unittest.TestCase):
             },
         ]
 
-    def test_search(self):
+    def test_property_funcs(self):
         """
-        Tests calling search
+        Tests calling get_query_property_funcs (Nothing to test here yet)
         """
-        query_params = QueryParams(
-            query_preset="all_users",
-            properties_to_select=NonCallableMock(),
-            group_by=NonCallableMock(),
-            get_html=NonCallableMock(),
-        )
-
-        self.instance.search_all_users = MagicMock()
-
-        self.instance.search(
-            cloud_account="test",
-            query_params=query_params,
-            user_domain="UserDomain",
-            test_param="TestParam",
-        )
-
-        self.instance.search_all_users.assert_called_once_with(
-            "test", user_domain="UserDomain", test_param="TestParam"
-        )
 
     def test_search_all_users(self):
         """
