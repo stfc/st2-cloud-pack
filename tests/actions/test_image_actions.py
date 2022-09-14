@@ -1,4 +1,5 @@
-from unittest.mock import create_autospec, NonCallableMock
+from unittest.mock import call, create_autospec, NonCallableMock
+from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_image import OpenstackImage
 
 from openstack_api.openstack_query import OpenstackQuery
@@ -45,22 +46,41 @@ class TestImageActions(OpenstackActionTestBase):
 
     def test_list(self):
         """
-        Tests the action returns the found floating ips
+        Tests the action that lists images
         """
+        calls = []
         for query_preset in OpenstackImage.SEARCH_QUERY_PRESETS:
-            self.action.image_list(
-                cloud_account=NonCallableMock(),
-                project_identifier=NonCallableMock(),
+            project_identifier = NonCallableMock()
+            query_params = QueryParams(
                 query_preset=query_preset,
                 properties_to_select=NonCallableMock(),
                 group_by=NonCallableMock(),
                 get_html=NonCallableMock(),
-                days=60,
-                ids=None,
-                names=None,
-                name_snippets=None,
             )
-            self.image_mock[f"search_{query_preset}"].assert_called_once()
+            extra_args = {
+                "days": 60,
+                "ids": None,
+                "names": None,
+                "name_snippets": None,
+            }
+            self.action.image_list(
+                cloud_account="test",
+                project_identifier=project_identifier,
+                query_preset=query_preset,
+                properties_to_select=query_params.properties_to_select,
+                group_by=query_params.group_by,
+                get_html=query_params.get_html,
+                **extra_args
+            )
+            calls.append(
+                call(
+                    cloud_account="test",
+                    query_params=query_params,
+                    project_identifier=project_identifier,
+                    **extra_args
+                )
+            )
+        self.image_mock.search.assert_has_calls(calls)
 
     def test_find_non_existent_images(self):
         """

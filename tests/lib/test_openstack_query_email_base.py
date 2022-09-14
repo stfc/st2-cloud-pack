@@ -51,6 +51,37 @@ class OpenstackQueryEmailBaseTests(OpenstackQueryBaseTests):
             name_snippets=None,
         )
 
+    @raises(ValueError)
+    def test_email_users_invalid_query(self):
+        """
+        Tests the that email_users gives a value error when project_email is not present in the `properties_to_select`
+        """
+        smtp_account = MagicMock()
+        email_params = EmailParams(
+            subject="Subject",
+            email_from="testemail",
+            email_cc=[],
+            header="",
+            footer="",
+            attachment_filepaths=[],
+            test_override=False,
+            test_override_email=[""],
+            send_as_html=False,
+        )
+        return self.instance.query_and_email_users(
+            cloud_account="test_account",
+            smtp_account=smtp_account,
+            project_identifier="",
+            query_preset="invalid_query",
+            message="Message",
+            properties_to_select=["name"],
+            email_params=email_params,
+            days=60,
+            ids=None,
+            names=None,
+            name_snippets=None,
+        )
+
     def _email_users(self, query_preset: str):
         """
         Helper for checking email_users works correctly
