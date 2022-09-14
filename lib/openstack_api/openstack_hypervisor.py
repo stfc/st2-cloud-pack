@@ -56,9 +56,7 @@ class OpenstackHypervisor(OpenstackWrapperBase):
     def __getitem__(self, item):
         return getattr(self, item)
 
-    def _get_query_property_funcs(
-        self, cloud_account: str
-    ) -> Dict[str, Callable[[Any], Any]]:
+    def _get_query_property_funcs(self, _) -> Dict[str, Callable[[Any], Any]]:
         """
         Returns property functions for use with OpenstackQuery.parse_properties
         :param cloud_account: The associated clouds.yaml account

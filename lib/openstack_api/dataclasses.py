@@ -59,8 +59,6 @@ class EmailQueryParams:
     required_email_property: str
     valid_search_queries: List[str]
     valid_search_queries_no_project: List[str]
-    search_api: Any
-    object_type: str
 
 
 @dataclass

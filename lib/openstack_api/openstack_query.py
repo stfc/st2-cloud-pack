@@ -383,72 +383,29 @@ class OpenstackQuery(OpenstackWrapperBase):
     # pylint:disable=too-many-arguments,too-many-locals
     def email_users(
         self,
-        cloud_account: str,
         smtp_account: SMTPAccount,
-        query_params: EmailQueryParams,
-        project_identifier: str,
-        query_preset: str,
-        message: str,
-        properties_to_select: List[str],
         email_params: EmailParams,
-        **kwargs,
+        message: str,
+        result_tables: Dict[str, str],
     ):
         """
-        Finds all OpenStack resources matching a query and then sends emails to their users
-        :param: cloud_account: The account from the clouds configuration to use
+        Emails users given a list of search result tables and a message to put with it
         :param: smtp_account (SMTPAccount): SMTP config
-        :param: query_params: See EmailQueryParams
-        :param: project_identifier: The project this applies to (or empty for all projects)
-        :param: query_preset: The query to use when searching for OpenStack resources
-        :param: message: Message to add to the body of emails sent
-        :param: properties_to_select: The list of properties to select and output from the found resources
         :param: email_params: See EmailParams
-        :param: kwargs: Additional parameters required for the query_preset chosen
-        :raises ValueError: If action_params.required_email_property is not present in properties_to_select
-        :raises ValueError: If project_identifier is empty and query_preset is not present in
-                            action_params.valid_search_queries_no_project
+        :param: message: Message to add to the body of emails sent
+        :param: result_tables: The result tables (in a dict where the keys are the email addresses)
         :return:
         """
-        if query_params.required_email_property not in properties_to_select:
-            raise ValueError(
-                f"properties_to_select must contain '{query_params.required_email_property}'"
-            )
 
-        if query_preset not in query_params.valid_search_queries:
-            raise ValueError(
-                f"query_preset is invalid, must be one of {','.join(query_params.valid_search_queries)}"
-            )
-
-        # Ensure only a valid query preset is used when there is no project
-        # (try and prevent mistakenly emailing loads of people)
-        if project_identifier == "":
-            if query_preset not in query_params.valid_search_queries_no_project:
-                raise ValueError(
-                    f"project_identifier needed for the query type '{query_preset}'"
-                )
-
-        openstack_objects = query_params.search_api[f"search_{query_preset}"](
-            cloud_account, project_identifier, **kwargs
-        )
-
-        emails = self.parse_and_output_table(
-            cloud_account=cloud_account,
-            items=openstack_objects,
-            object_type=query_params.object_type,
-            properties_to_select=properties_to_select,
-            group_by=query_params.required_email_property,
-            get_html=email_params.send_as_html,
-        )
-
-        if emails is None:
+        if result_tables is None:
             return "No emails to send"
 
-        for key, value in emails.items():
+        for key, value in result_tables.items():
             separator = "<br><br>" if email_params.send_as_html else "\n\n"
-            emails[key] = f"{message}{separator}{value}"
+            result_tables[key] = f"{message}{separator}{value}"
 
         return self._email_api.send_emails(
             smtp_account=smtp_account,
             email_params=email_params,
-            emails=emails,
+            emails=result_tables,
         )
