@@ -2,7 +2,6 @@ from typing import List, Callable, Any, Dict
 
 from openstack.identity.v3.user import User
 
-from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_query import OpenstackQuery
@@ -26,7 +25,7 @@ class OpenstackUser(OpenstackQueryBase):
         self._identity_api = OpenstackIdentity(self._connection_cls)
         self._query_api = OpenstackQuery(self._connection_cls)
 
-    def _get_query_property_funcs(self, _) -> Dict[str, Callable[[Any], Any]]:
+    def get_query_property_funcs(self, _) -> Dict[str, Callable[[Any], Any]]:
         """
         Returns property functions for use with OpenstackQuery.parse_properties
         :param cloud_account: The associated clouds.yaml account

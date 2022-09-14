@@ -1,15 +1,12 @@
-from abc import abstractmethod
-from typing import Dict, Callable, Any, List
+from typing import List
 
 from openstack_api.dataclasses import QueryParams, EmailQueryParams
-from openstack_api.openstack_connection import OpenstackConnection
-from openstack_api.openstack_query import OpenstackQuery
 from openstack_api.openstack_query_base import OpenstackQueryBase
-from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from structs.email_params import EmailParams
 from structs.smtp_account import SMTPAccount
 
 
+# pylint:disable=too-few-public-methods
 class OpenstackQueryEmailBase(OpenstackQueryBase):
     """
     Base class for Openstack API wrappers to obtain query and email functionality
@@ -62,6 +59,7 @@ class OpenstackQueryEmailBase(OpenstackQueryBase):
                     f"project_identifier needed for the query type '{query_params.query_preset}'"
                 )
 
+    # pylint:disable=too-many-arguments
     def query_and_email_users(
         self,
         cloud_account: str,

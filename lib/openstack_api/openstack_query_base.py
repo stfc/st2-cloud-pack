@@ -25,7 +25,7 @@ class OpenstackQueryBase(OpenstackWrapperBase):
         return getattr(self, item)
 
     @abstractmethod
-    def _get_query_property_funcs(
+    def get_query_property_funcs(
         self, cloud_account: str
     ) -> Dict[str, Callable[[Any], Any]]:
         """
@@ -42,7 +42,7 @@ class OpenstackQueryBase(OpenstackWrapperBase):
         return self._query_api.search_resource(
             cloud_account=cloud_account,
             search_api=self,
-            property_funcs=self._get_query_property_funcs(cloud_account),
+            property_funcs=self.get_query_property_funcs(cloud_account),
             query_params=query_params,
             **kwargs,
         )

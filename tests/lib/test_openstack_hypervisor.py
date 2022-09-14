@@ -6,7 +6,7 @@ from nose.tools import raises
 from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_hypervisor import OpenstackHypervisor
 
-
+# pylint:disable=too-few-public-methods
 class _HypervisorMock:
     vcpus_used: int = 4
     vcpus: int = 16
@@ -67,10 +67,10 @@ class OpenstackHypervisorTests(unittest.TestCase):
 
     def test_property_funcs(self):
         """
-        Tests calling _get_query_property_funcs
+        Tests calling get_query_property_funcs
         """
         item = _HypervisorMock()
-        property_funcs = self.instance._get_query_property_funcs("test")
+        property_funcs = self.instance.get_query_property_funcs("test")
 
         # Test vcpu_usage
         result = property_funcs["vcpu_usage"](item)
@@ -87,10 +87,10 @@ class OpenstackHypervisorTests(unittest.TestCase):
     @raises(NotImplementedError)
     def test_property_func_uptime_raises(self):
         """
-        Tests the 'uptime' function returned by _get_query_property_funcs raises
+        Tests the 'uptime' function returned by get_query_property_funcs raises
         """
         item = _HypervisorMock()
-        property_funcs = self.instance._get_query_property_funcs("test")
+        property_funcs = self.instance.get_query_property_funcs("test")
 
         property_funcs["uptime"](item)
 

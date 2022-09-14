@@ -56,7 +56,7 @@ class OpenstackFloatingIP(OpenstackQueryEmailBase):
         )
         self._identity_api = OpenstackIdentity(self._connection_cls)
 
-    def _get_query_property_funcs(
+    def get_query_property_funcs(
         self, cloud_account: str
     ) -> Dict[str, Callable[[Any], Any]]:
         """

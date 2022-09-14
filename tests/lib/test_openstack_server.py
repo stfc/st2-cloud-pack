@@ -57,20 +57,18 @@ class OpenstackServerTests(unittest.TestCase):
 
     def test_property_funcs(self):
         """
-        Tests calling _get_query_property_funcs
+        Tests calling get_query_property_funcs
         """
 
+        @dataclass
         class _ServerMock:
             user_id: str
-
-            def __init__(self, user_id: str):
-                self.user_id = user_id
 
             def __getitem__(self, attr):
                 return getattr(self, attr)
 
         item = _ServerMock("UserID")
-        property_funcs = self.instance._get_query_property_funcs("test")
+        property_funcs = self.instance.get_query_property_funcs("test")
 
         # Test user_email
         result = property_funcs["user_email"](item)

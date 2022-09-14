@@ -56,7 +56,7 @@ class OpenstackImage(OpenstackQueryEmailBase):
             lambda a: self._identity_api.find_project(cloud_account, a["owner"]) is None
         )
 
-    def _get_query_property_funcs(
+    def get_query_property_funcs(
         self, cloud_account: str
     ) -> Dict[str, Callable[[Any], Any]]:
         """

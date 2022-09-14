@@ -33,7 +33,7 @@ class OpenstackProject(OpenstackQueryBase):
         super().__init__(connection_cls)
         self._identity_api = OpenstackIdentity(self._connection_cls)
 
-    def _get_query_property_funcs(self, _) -> Dict[str, Callable[[Any], Any]]:
+    def get_query_property_funcs(self, _) -> Dict[str, Callable[[Any], Any]]:
         """
         Returns property functions for use with OpenstackQuery.parse_properties
         :param cloud_account: The associated clouds.yaml account

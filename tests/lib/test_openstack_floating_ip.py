@@ -10,7 +10,7 @@ from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_floating_ip import OpenstackFloatingIP
 from structs.email_params import EmailParams
 
-
+# pylint:disable=too-many-public-methods
 class OpenstackFloatingIPTests(unittest.TestCase):
     """
     Runs various tests to ensure we are using the Openstack
@@ -62,7 +62,7 @@ class OpenstackFloatingIPTests(unittest.TestCase):
 
     def test_property_funcs(self):
         """
-        Tests calling _get_query_property_funcs
+        Tests calling get_query_property_funcs
         """
 
         class _FloatingIPMock:
@@ -75,7 +75,7 @@ class OpenstackFloatingIPTests(unittest.TestCase):
                 return getattr(self, attr)
 
         item = _FloatingIPMock("UserID")
-        property_funcs = self.instance._get_query_property_funcs("test")
+        property_funcs = self.instance.get_query_property_funcs("test")
 
         # Test project_name
         result = property_funcs["project_name"](item)

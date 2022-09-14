@@ -14,7 +14,6 @@ from openstack_api.openstack_connection import OpenstackConnection
 
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
-from openstack_api.dataclasses import EmailQueryParams
 from structs.email_params import EmailParams
 from structs.smtp_account import SMTPAccount
 
