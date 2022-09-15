@@ -104,23 +104,6 @@ class UserApiTests(unittest.TestCase):
         self.api.get_users.assert_called_once_with("dev", "token")
         assert not returned
 
-    @patch("jupyter_api.user_api.getLogger")
-    def test_get_inactive_users_handles_error(self, logger, _):
-        """
-        Tests the get_inactive_users method logs an error if the request fails
-        """
-        # Patch logger
-        self.api = UserApi()
-
-        err = "Failed to get users"
-        self.api.get_users = Mock(side_effect=RuntimeError(err))
-        returned = self.api.get_inactive_users("dev", "token", relativedelta(seconds=1))
-
-        logger.return_value.warning.assert_called_once_with(
-            f"Failed to get users on dev: {err}"
-        )
-        assert not returned
-
     def test_remove_users_single_user(self, requests):
         """
         Tests that the delete_users method calls the correct endpoint
