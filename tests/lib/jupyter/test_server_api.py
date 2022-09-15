@@ -73,6 +73,17 @@ class UserApiTests(unittest.TestCase):
         with assert_raises_regexp(RuntimeError, "must be less than"):
             self.api.start_servers("dev", "token", user_names)
 
+    def test_start_servers_handles_error(self, requests):
+        """
+        Tests that the start_servers method logs an error if the request fails
+        """
+        token = NonCallableMock()
+        user_names = JupyterUsers(name="test", start_index=None, end_index=None)
+        requests.post.return_value.status_code = 500
+
+        with self.assertRaisesRegex(RuntimeError, "Failed to request server"):
+            self.api.start_servers("dev", token, user_names)
+
     def test_stop_servers_single_user(self, requests):
         """
         Tests that the stop_servers method calls the correct endpoint
@@ -132,3 +143,14 @@ class UserApiTests(unittest.TestCase):
         user_names = JupyterUsers(name="test", start_index=2, end_index=1)
         with assert_raises_regexp(RuntimeError, "must be less than"):
             self.api.stop_servers("dev", "token", user_names)
+
+    def test_stop_servers_handles_error(self, requests):
+        """
+        Tests that the stop_servers method logs an error if the request fails
+        """
+        token = NonCallableMock()
+        user_names = JupyterUsers(name="test", start_index=None, end_index=None)
+        requests.delete.return_value.status_code = 500
+
+        with self.assertRaisesRegex(RuntimeError, "Failed to stop server"):
+            self.api.stop_servers("dev", token, user_names)
