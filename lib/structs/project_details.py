@@ -9,3 +9,4 @@ class ProjectDetails:
     description: str = ""
     is_enabled: Optional[bool] = None
     openstack_id: Optional[str] = None
+    immutable: Optional[bool] = None

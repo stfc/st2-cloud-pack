@@ -18,4 +18,9 @@ parameters:
     type: string
     default: ''
     required: true
+  delete:
+    description: Check this to actually delete instead of just returning the project
+    type: boolean
+    default: false
+    required: true
 runner_type: python-script

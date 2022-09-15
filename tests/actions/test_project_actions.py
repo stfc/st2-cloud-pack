@@ -48,7 +48,8 @@ class TestProjectAction(OpenstackActionTestBase):
         Tests that create project forwards the result when successful
         """
         expected_proj_params = {
-            i: NonCallableMock() for i in ["name", "description", "is_enabled"]
+            i: NonCallableMock()
+            for i in ["name", "description", "is_enabled", "immutable"]
         }
         expected_proj_params.update({"email": "Test@Test.com"})
 
@@ -73,7 +74,7 @@ class TestProjectAction(OpenstackActionTestBase):
         self.identity_mock.create_project.return_value = None
 
         returned_values = self.action.project_create(
-            *{NonCallableMock() for _ in range(5)}
+            *{NonCallableMock() for _ in range(6)}
         )
         assert returned_values[0] is False
         assert returned_values[1] is None
@@ -83,10 +84,67 @@ class TestProjectAction(OpenstackActionTestBase):
         Tests that on successful deletion it returns the correct status and string
         """
         self.identity_mock.delete_project.return_value = True
+        self.identity_mock.find_mandatory_project.return_value = NonCallableMock()
         returned_values = self.action.project_delete(
-            NonCallableMock(), NonCallableMock()
+            cloud_account="test",
+            project_identifier="ProjectID",
+            delete=True,
         )
-        assert returned_values == (True, "")
+        self.identity_mock.find_mandatory_project.assert_called_once_with(
+            cloud_account="test", project_identifier="ProjectID"
+        )
+        self.query_mock.parse_and_output_table.assert_called_once_with(
+            cloud_account="test",
+            items=[self.identity_mock.find_mandatory_project.return_value],
+            object_type="project",
+            properties_to_select=["id", "name", "description", "email"],
+            group_by="",
+            get_html=False,
+        )
+        self.identity_mock.delete_project.assert_called_once_with(
+            cloud_account="test", project_identifier="ProjectID"
+        )
+        self.assertEqual(
+            returned_values,
+            (
+                True,
+                f"The following project has been deleted:\n\n{self.query_mock.parse_and_output_table.return_value}",
+            ),
+        )
+
+    def test_project_delete_safeguard(self):
+        """
+        Tests that project_delete does not delete when delete is False
+        """
+        self.identity_mock.delete_project.return_value = True
+        self.identity_mock.find_mandatory_project.return_value = NonCallableMock()
+        returned_values = self.action.project_delete(
+            cloud_account="test",
+            project_identifier="ProjectID",
+            delete=False,
+        )
+        self.identity_mock.find_mandatory_project.assert_called_once_with(
+            cloud_account="test", project_identifier="ProjectID"
+        )
+        self.query_mock.parse_and_output_table.assert_called_once_with(
+            cloud_account="test",
+            items=[self.identity_mock.find_mandatory_project.return_value],
+            object_type="project",
+            properties_to_select=["id", "name", "description", "email"],
+            group_by="",
+            get_html=False,
+        )
+        self.identity_mock.delete_project.assert_not_called()
+        self.assertEqual(
+            returned_values,
+            (
+                False,
+                (
+                    f"Tick the delete checkbox to delete the project:"
+                    f"\n\n{self.query_mock.parse_and_output_table.return_value}"
+                ),
+            ),
+        )
 
     def test_project_find_success(self):
         """
@@ -111,7 +169,8 @@ class TestProjectAction(OpenstackActionTestBase):
         Tests that update project forwards the result when successful
         """
         expected_proj_params = {
-            i: NonCallableMock() for i in ["name", "description", "is_enabled"]
+            i: NonCallableMock()
+            for i in ["name", "description", "is_enabled", "immutable"]
         }
         expected_proj_params.update({"email": "Test@Test.com"})
 
@@ -121,7 +180,9 @@ class TestProjectAction(OpenstackActionTestBase):
         # Ensure is_enabled is assigned if specefied
         for value in ["unchanged", "true", "false"]:
             expected_proj_params["is_enabled"] = value
+            expected_proj_params["immutable"] = value
             packaged_proj.is_enabled = None if value == "unchanged" else value == "true"
+            packaged_proj.immutable = None if value == "unchanged" else value == "true"
 
             returned_values = self.action.project_update(
                 cloud_account="foo", project_identifier="bar", **expected_proj_params

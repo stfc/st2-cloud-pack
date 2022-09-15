@@ -8,6 +8,7 @@ input:
   - project_name
   - project_email
   - project_description
+  - project_immutable
   - admin_user_list
   - stfc_user_list
 
@@ -39,6 +40,7 @@ tasks:
       project_name=<% ctx().project_name %>
       project_email=<% ctx().project_email %>
       project_description=<% ctx().project_description %>
+      project_immutable=<% ctx().project_immutable %>
       admin_user_list=<% ctx().admin_user_list %>
       stfc_user_list=<% ctx().stfc_user_list %>
       network_name="External"

@@ -96,6 +96,34 @@ class OpenstackIdentityTests(unittest.TestCase):
             tags=[expected_details.email],
         )
 
+    def test_create_project_immutable(self):
+        """
+        Tests that the params and result are forwarded as-is to/from the
+        create_project API
+        """
+
+        expected_details = ProjectDetails(
+            name=NonCallableMock(),
+            email="Test@Test.com",
+            description=NonCallableMock(),
+            is_enabled=NonCallableMock(),
+            immutable=True,
+        )
+
+        found = self.instance.create_project(
+            cloud_account="test", project_details=expected_details
+        )
+
+        self.mocked_connection.assert_called_once_with("test")
+
+        assert found == self.identity_api.create_project.return_value
+        self.identity_api.create_project.assert_called_once_with(
+            name=expected_details.name,
+            description=expected_details.description,
+            is_enabled=expected_details.is_enabled,
+            tags=[expected_details.email, "immutable"],
+        )
+
     @raises(ConflictException)
     def test_create_project_forwards_conflict_exception(self):
         """
@@ -146,6 +174,7 @@ class OpenstackIdentityTests(unittest.TestCase):
         """
 
         self.instance.find_project = Mock()
+        self.instance.find_project.return_value = self.MockProject(tags=[])
         self.identity_api.delete_project.return_value = None
 
         identifier = NonCallableMock()
@@ -168,6 +197,19 @@ class OpenstackIdentityTests(unittest.TestCase):
         self.instance.find_project = Mock(return_value=None)
         result = self.instance.delete_project("", project_identifier="test")
         assert result is False
+
+    @raises(ValueError)
+    def test_delete_immutable_project_throws(self):
+        """
+        Tests that trying to deleting an immutable project raises an error
+        """
+        mock_project = self.MockProject(tags=["immutable"])
+        self.identity_api.find_project.return_value = mock_project
+
+        self.instance.delete_project(
+            cloud_account="test",
+            project_identifier="ProjectID",
+        )
 
     @raises(MissingMandatoryParamError)
     def test_find_project_raises_missing_project_identifier(self):
@@ -282,6 +324,20 @@ class OpenstackIdentityTests(unittest.TestCase):
 
         self.assertEqual(expected_email, email)
 
+    def test_is_project_immutable(self):
+        """
+        Checks that get_project_email functions correctly
+        """
+        mock_project = {"tags": ["Test", "Test@Test.com", "12123421"]}
+        immutable = self.instance.is_project_immutable(mock_project)
+
+        self.assertEqual(immutable, False)
+
+        mock_project = {"tags": ["Test", "Test@Test.com", "immutable", "12123421"]}
+        immutable = self.instance.is_project_immutable(mock_project)
+
+        self.assertEqual(immutable, True)
+
     def test_find_project_email(self):
         """
         Checks that find_project_email functions correctly
@@ -327,6 +383,7 @@ class OpenstackIdentityTests(unittest.TestCase):
             email="Test@Test.com",
             description=NonCallableMock(),
             is_enabled=NonCallableMock(),
+            immutable=None,
         )
 
         result = self.instance.update_project(
@@ -362,6 +419,7 @@ class OpenstackIdentityTests(unittest.TestCase):
             email="Test@Test.com",
             description=NonCallableMock(),
             is_enabled=NonCallableMock(),
+            immutable=NonCallableMock(),
         )
 
         result = self.instance.update_project(
@@ -372,7 +430,8 @@ class OpenstackIdentityTests(unittest.TestCase):
 
         self.mocked_connection.assert_called_with("test")
         mock_project.set_tags.assert_called_once_with(
-            self.identity_api, ["sometag", "anothertag", expected_details.email]
+            self.identity_api,
+            ["sometag", "anothertag", expected_details.email, "immutable"],
         )
 
         assert result == self.identity_api.update_project.return_value
@@ -381,7 +440,61 @@ class OpenstackIdentityTests(unittest.TestCase):
             name=expected_details.name,
             description=expected_details.description,
             is_enabled=expected_details.is_enabled,
-            tags=["sometag", "anothertag", expected_details.email],
+            tags=["sometag", "anothertag", expected_details.email, "immutable"],
+        )
+
+    def test_update_immutable_project(self):
+        """
+        Tests that the params and result are forwarded as-is to/from the
+        update_project API
+        """
+        mock_project = self.MockProject(tags=["immutable"])
+        self.identity_api.find_project.return_value = mock_project
+
+        expected_details = ProjectDetails(
+            name="",
+            email="",
+            description="",
+            is_enabled=None,
+            immutable=False,
+        )
+
+        result = self.instance.update_project(
+            cloud_account="test",
+            project_identifier="ProjectID",
+            project_details=expected_details,
+        )
+
+        self.mocked_connection.assert_called_with("test")
+        mock_project.set_tags.assert_called_once_with(
+            self.identity_api,
+            [],
+        )
+
+        assert result == self.identity_api.update_project.return_value
+        self.identity_api.update_project.assert_called_once_with(
+            project=mock_project,
+            tags=[],
+        )
+
+    @raises(ValueError)
+    def test_update_immutable_project_throws(self):
+        """
+        Tests that trying to update an immutable project raises an error
+        """
+        mock_project = self.MockProject(tags=["immutable"])
+        self.identity_api.find_project.return_value = mock_project
+
+        self.instance.update_project(
+            cloud_account="test",
+            project_identifier="ProjectID",
+            project_details=ProjectDetails(
+                name="",
+                email="Test",
+                description="",
+                is_enabled=None,
+                immutable=False,
+            ),
         )
 
     def test_update_project_email(self):
