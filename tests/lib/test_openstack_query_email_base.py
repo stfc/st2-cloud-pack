@@ -37,7 +37,7 @@ class OpenstackQueryEmailBaseTests(OpenstackQueryBaseTests):
             test_override_email=[""],
             send_as_html=False,
         )
-        return self.instance.query_and_email_users(
+        self.instance.query_and_email_users(
             cloud_account="test_account",
             smtp_account=smtp_account,
             project_identifier="",
@@ -54,7 +54,8 @@ class OpenstackQueryEmailBaseTests(OpenstackQueryBaseTests):
     @raises(ValueError)
     def test_email_users_invalid_query(self):
         """
-        Tests the that email_users gives a value error when project_email is not present in the `properties_to_select`
+        Tests the that email_users gives a value error when required_email_property is not present in the
+        `properties_to_select`
         """
         smtp_account = MagicMock()
         email_params = EmailParams(
@@ -68,13 +69,16 @@ class OpenstackQueryEmailBaseTests(OpenstackQueryBaseTests):
             test_override_email=[""],
             send_as_html=False,
         )
-        return self.instance.query_and_email_users(
+        self.instance.query_and_email_users(
             cloud_account="test_account",
             smtp_account=smtp_account,
             project_identifier="",
             query_preset="invalid_query",
             message="Message",
-            properties_to_select=["name"],
+            # pylint:disable=protected-access
+            properties_to_select=[
+                self.instance._email_query_params.required_email_property
+            ],
             email_params=email_params,
             days=60,
             ids=None,
