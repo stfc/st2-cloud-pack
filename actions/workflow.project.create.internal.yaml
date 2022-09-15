@@ -21,6 +21,10 @@ parameters:
     required: true
     type: string
     description: Project Description
+  project_immutable:
+    default: false
+    description: Project is immutable or not
+    type: boolean
   admin_user_list:
     required: true
     type: array

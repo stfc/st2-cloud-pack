@@ -35,20 +35,39 @@ class ProjectAction(Action):
         return func(**kwargs)
 
     def project_delete(
-        self, cloud_account: str, project_identifier: str
+        self, cloud_account: str, project_identifier: str, delete: bool
     ) -> Tuple[bool, str]:
         """
         Deletes a project
         :param cloud_account: The account from the clouds configuration to use
         :param project_identifier: (Either) The project name to delete
+        :param delete: When true will delete the project, when false will only return it to reduce
+                       chances of accidental deletion
         :return: The result of the operation
         """
-        delete_ok = self._identity_api.delete_project(
+        project = self._identity_api.find_mandatory_project(
             cloud_account=cloud_account, project_identifier=project_identifier
         )
-        # Currently, we only handle one error, other throws will propagate upwards
-        err = "" if delete_ok else "The specified project was not found"
-        return delete_ok, err
+        project_string = self._query_api.parse_and_output_table(
+            cloud_account=cloud_account,
+            items=[project],
+            object_type="project",
+            properties_to_select=["id", "name", "description", "email"],
+            group_by="",
+            get_html=False,
+        )
+
+        if delete:
+            delete_ok = self._identity_api.delete_project(
+                cloud_account=cloud_account, project_identifier=project_identifier
+            )
+            # Currently, we only handle one error, other throws will propagate upwards
+            message = f"The following project has been deleted:\n\n{project_string}"
+            return delete_ok, message
+        return (
+            False,
+            f"Tick the delete checkbox to delete the project:\n\n{project_string}",
+        )
 
     def project_find(
         self, cloud_account: str, project_identifier: str
@@ -73,6 +92,7 @@ class ProjectAction(Action):
         email: str,
         description: str,
         is_enabled: bool,
+        immutable: bool,
     ) -> Tuple[bool, Optional[Project]]:
         """
         Find and return a given project's properties. Expected
@@ -82,10 +102,15 @@ class ProjectAction(Action):
         :param email: Contact email of new project
         :param description: Description for new project
         :param is_enabled: Set if new project enabled or disabled
+        :param immutable: Set if new project is immutable or not
         :return: status, optional project
         """
         details = ProjectDetails(
-            name=name, email=email, description=description, is_enabled=is_enabled
+            name=name,
+            email=email,
+            description=description,
+            is_enabled=is_enabled,
+            immutable=immutable,
         )
         project = self._identity_api.create_project(
             cloud_account=cloud_account, project_details=details
@@ -131,6 +156,7 @@ class ProjectAction(Action):
         email: str,
         description: str,
         is_enabled: str,
+        immutable: str,
     ) -> Tuple[bool, Optional[Project]]:
         """
         Find and update a given project's properties.
@@ -140,16 +166,23 @@ class ProjectAction(Action):
         :param email: Contact email of the project
         :param description: Description of the project
         :param is_enabled: Enable or disable the project (takes values of unchanged, true or false)
+        :param immutable: Make the project immutable or not (takes values of unchanged, true or false)
         :return: status, optional project
         """
-        is_enabled_value = None
-        if is_enabled.casefold() == "true".casefold():
-            is_enabled_value = True
-        elif is_enabled.casefold() == "false".casefold():
-            is_enabled_value = False
+
+        def convert_to_optional_bool(value: str) -> Optional[bool]:
+            if value.casefold() == "true".casefold():
+                return True
+            if value.casefold() == "false".casefold():
+                return False
+            return None
 
         details = ProjectDetails(
-            name=name, email=email, description=description, is_enabled=is_enabled_value
+            name=name,
+            email=email,
+            description=description,
+            is_enabled=convert_to_optional_bool(is_enabled),
+            immutable=convert_to_optional_bool(immutable),
         )
         project = self._identity_api.update_project(
             cloud_account=cloud_account,

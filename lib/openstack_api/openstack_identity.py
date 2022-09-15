@@ -29,13 +29,17 @@ class OpenstackIdentity(OpenstackWrapperBase):
         if "@" not in project_details.email:
             raise ValueError("The project contact email is invalid")
 
+        tags = [project_details.email]
+        if project_details.immutable:
+            tags.append("immutable")
+
         with self._connection_cls(cloud_account) as conn:
             try:
                 return conn.identity.create_project(
                     name=project_details.name,
                     description=project_details.description,
                     is_enabled=project_details.is_enabled,
-                    tags=[project_details.email],
+                    tags=tags,
                 )
             except ConflictException as err:
                 # Strip out frames that are noise by rethrowing
@@ -53,6 +57,9 @@ class OpenstackIdentity(OpenstackWrapperBase):
         )
         if not project:
             return False
+
+        if self.is_project_immutable(project):
+            raise ValueError("Project is immutable and so can't be deleted")
 
         with self._connection_cls(cloud_account) as conn:
             result = conn.identity.delete_project(project=project, ignore_missing=False)
@@ -172,24 +179,30 @@ class OpenstackIdentity(OpenstackWrapperBase):
         self,
         project_tags: List[str],
         select_func: Callable[[str], bool],
-        new_value: str,
+        new_value: Optional[str],
     ) -> List[str]:
         """
         Returns an updated list of project tags after adding or updating one
         :param project_tags: The project tags
         :param select_func: Function that determines whether a tag should be selected
-        :param new_value: New value of the tag
+        :param new_value: New value of the tag, if None will remove the tag completely
         :return: The index of found tag or None
         """
         tag_index = self._find_project_tag_index(project_tags, select_func)
         if tag_index is not None:
-            project_tags[tag_index] = new_value
+            if new_value is not None:
+                project_tags[tag_index] = new_value
+            else:
+                del project_tags[tag_index]
         else:
             project_tags.append(new_value)
         return project_tags
 
-    def _select_project_email(self, tag):
+    def _select_project_email(self, tag) -> bool:
         return "@" in tag
+
+    def _select_project_immutable(self, tag) -> bool:
+        return tag == "immutable"
 
     def get_project_email(self, project: Project) -> Optional[str]:
         """
@@ -198,6 +211,17 @@ class OpenstackIdentity(OpenstackWrapperBase):
         :return: The found email or None
         """
         return self.find_project_tag(project["tags"], self._select_project_email)
+
+    def is_project_immutable(self, project: Project) -> bool:
+        """
+        Returns whether a given project is immutable or not
+        :param project: The project to check
+        :return: Whether the project is immutable
+        """
+        return (
+            self.find_project_tag(project["tags"], self._select_project_immutable)
+            == "immutable"
+        )
 
     def find_project_email(
         self, cloud_account: str, project_identifier: str
@@ -228,6 +252,8 @@ class OpenstackIdentity(OpenstackWrapperBase):
         :return: A clouds project, or None if it was unsuccessful
         """
         project = self.find_mandatory_project(cloud_account, project_identifier)
+        project_tags = project["tags"]
+        project_immutable = self.is_project_immutable(project)
 
         params_to_update = {}
         if project_details.name:
@@ -240,10 +266,24 @@ class OpenstackIdentity(OpenstackWrapperBase):
             if "@" not in project_details.email:
                 raise ValueError("The project contact email is invalid")
 
-            new_tags = self.update_project_tag(
-                project["tags"], self._select_project_email, project_details.email
+            project_tags = self.update_project_tag(
+                project_tags, self._select_project_email, project_details.email
             )
-            params_to_update.update({"tags": new_tags})
+            params_to_update.update({"tags": project_tags})
+        if project_details.immutable is not None:
+            project_tags = self.update_project_tag(
+                project_tags,
+                self._select_project_immutable,
+                "immutable" if project_details.immutable else None,
+            )
+            params_to_update.update({"tags": project_tags})
+
+        if project_immutable:
+            # Ensure only change is to the immutability
+            if params_to_update.keys() != {"tags"}:
+                raise ValueError(
+                    "The project is immutable and so only the immutability can be changed"
+                )
 
         with self._connection_cls(cloud_account) as conn:
             # This update_project does not currently update tags for some reason
