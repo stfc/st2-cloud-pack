@@ -47,3 +47,24 @@ class TestJupyterActions(OpenstackActionTestBase):
     @raises(KeyError)
     def test_user_delete_throws_unknown_env(self):
         self.action.user_delete("unknown", NonCallableMock())
+
+    @parameterized.expand(["prod", "dev", "training"])
+    def test_user_create_gets_correct_key(self, endpoint):
+        token = self.jupyter_keys[endpoint]
+
+        users, start_index, end_index = (
+            NonCallableMock(),
+            NonCallableMock(),
+            NonCallableMock(),
+        )
+        expected = JupyterUsers(users, start_index, end_index)
+        self.action.action_service.get_value = Mock()
+        self.action.user_create(endpoint, users, start_index, end_index)
+
+        self.user_mock.create_users.assert_called_once_with(
+            endpoint=endpoint, auth_token=token, users=expected
+        )
+
+    @raises(KeyError)
+    def test_user_create_throws_unknown_env(self):
+        self.action.user_create("unknown", NonCallableMock())

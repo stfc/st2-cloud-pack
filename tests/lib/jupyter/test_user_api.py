@@ -163,3 +163,63 @@ class UserApiTests(unittest.TestCase):
         user_names = JupyterUsers(name="test", start_index=2, end_index=1)
         with assert_raises_regexp(RuntimeError, "must be less than"):
             self.api.delete_users("dev", "token", user_names)
+
+    def test_create_users_single_user(self, requests):
+        """
+        Tests that the create_users method calls the correct endpoint
+        """
+        token = NonCallableMock()
+        user_names = JupyterUsers(name="test", start_index=None, end_index=None)
+        requests.post.return_value.status_code = 201
+
+        self.api.create_users("dev", token, user_names)
+        requests.post.assert_called_once_with(
+            url=API_ENDPOINTS["dev"] + "/hub/api/users/test",
+            headers={"Authorization": f"token {token}"},
+            timeout=60,
+        )
+
+    def test_create_users_multiple_users(self, requests):
+        """
+        Tests that the create_users method calls the correct endpoint
+        and usernames
+        """
+        token = NonCallableMock()
+        start_index, end_index = 1, 10
+        user_names = JupyterUsers(
+            name="test", start_index=start_index, end_index=end_index
+        )
+        requests.post.return_value.status_code = 201
+
+        self.api.create_users("dev", token, user_names)
+        for i, user_index in enumerate(range(start_index, end_index + 1)):
+            assert requests.post.call_args_list[i] == call(
+                url=API_ENDPOINTS["dev"] + f"/hub/api/users/test-{user_index}",
+                headers={"Authorization": f"token {token}"},
+                timeout=60,
+            )
+        assert requests.post.call_count == (end_index - start_index + 1)
+
+    @raises(RuntimeError)
+    def test_create_users_missing_start_index(self, _):
+        """
+        Tests that the create_users method raises an error if the start_index is not provided
+        """
+        user_names = JupyterUsers(name="test", start_index=None, end_index=1)
+        self.api.create_users("dev", "token", user_names)
+
+    @raises(RuntimeError)
+    def test_create_users_missing_end_index(self, _):
+        """
+        Tests that the create_users method raises an error if the end_index is not provided
+        """
+        user_names = JupyterUsers(name="test", start_index=1, end_index=None)
+        self.api.create_users("dev", "token", user_names)
+
+    def test_create_users_incorrect_order(self, _):
+        """
+        Tests that the create_users method raises an error if the end_index is greater than start
+        """
+        user_names = JupyterUsers(name="test", start_index=2, end_index=1)
+        with assert_raises_regexp(RuntimeError, "must be less than"):
+            self.api.create_users("dev", "token", user_names)
