@@ -44,14 +44,6 @@ class ProjectAction(Action):
                        chances of accidental deletion
         :return: The result of the operation
         """
-        if delete:
-            delete_ok = self._identity_api.delete_project(
-                cloud_account=cloud_account, project_identifier=project_identifier
-            )
-            # Currently, we only handle one error, other throws will propagate upwards
-            err = "" if delete_ok else "The specified project was not found"
-            return delete_ok, err
-
         project = self._identity_api.find_mandatory_project(
             cloud_account=cloud_account, project_identifier=project_identifier
         )
@@ -63,9 +55,17 @@ class ProjectAction(Action):
             group_by="",
             get_html=False,
         )
+
+        if delete:
+            delete_ok = self._identity_api.delete_project(
+                cloud_account=cloud_account, project_identifier=project_identifier
+            )
+            # Currently, we only handle one error, other throws will propagate upwards
+            message = f"The following project has been deleted:\n\n{project_string}"
+            return delete_ok, message
         return (
             False,
-            f"Tick the delete checkbox to delete the project: \n\n{project_string}",
+            f"Tick the delete checkbox to delete the project:\n\n{project_string}",
         )
 
     def project_find(
