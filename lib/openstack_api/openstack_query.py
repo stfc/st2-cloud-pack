@@ -269,7 +269,7 @@ class OpenstackQuery(OpenstackWrapperBase):
         :param cloud_account: The account from the clouds configuration to use
         :param items: List of items to obtain properties from
         :param property_funcs: Query functions that return properties requested in 'properties_to_list'
-        :param properties_to_select: The list of properties to select and output from the found servers
+        :param properties_to_select: The list of properties to select and output from the items
         :param group_by: Property to group returned results - can be empty for no grouping
         :param get_html: When True tables returned are in html format
         :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter

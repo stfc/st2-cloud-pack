@@ -95,9 +95,8 @@ class TestProjectAction(OpenstackActionTestBase):
             cloud_account="test", project_identifier="ProjectID"
         )
         self.query_mock.parse_and_output_table.assert_called_once_with(
-            cloud_account="test",
             items=[self.identity_mock.find_mandatory_project.return_value],
-            object_type="project",
+            property_funcs=self.project_mock.get_query_property_funcs.return_value,
             properties_to_select=["id", "name", "description", "email"],
             group_by="",
             get_html=False,
@@ -128,9 +127,8 @@ class TestProjectAction(OpenstackActionTestBase):
             cloud_account="test", project_identifier="ProjectID"
         )
         self.query_mock.parse_and_output_table.assert_called_once_with(
-            cloud_account="test",
             items=[self.identity_mock.find_mandatory_project.return_value],
-            object_type="project",
+            property_funcs=self.project_mock.get_query_property_funcs.return_value,
             properties_to_select=["id", "name", "description", "email"],
             group_by="",
             get_html=False,

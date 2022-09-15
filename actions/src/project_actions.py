@@ -49,9 +49,8 @@ class ProjectAction(Action):
             cloud_account=cloud_account, project_identifier=project_identifier
         )
         project_string = self._query_api.parse_and_output_table(
-            cloud_account=cloud_account,
             items=[project],
-            object_type="project",
+            property_funcs=self._project_api.get_query_property_funcs(cloud_account),
             properties_to_select=["id", "name", "description", "email"],
             group_by="",
             get_html=False,
