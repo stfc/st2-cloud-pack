@@ -1,4 +1,4 @@
-description: Emails users of shutoff VMs
+description: Emails users of errored VMs
 enabled: true
 entry_point: workflows/email.errored.server.users.yaml
 name: workflow.email.errored.server.users
