@@ -1,0 +1,27 @@
+version: 1.0
+description: Stops servers and deletes a list of JupyterHub users
+
+input:
+  - jupyter_env
+  - user_base_name
+  - first_index
+  - last_index
+
+tasks:
+  stop_jupyter_servers:
+    action: stackstorm_openstack.jupyter.server.stop
+      user=<% ctx(user_base_name) %>
+      first_index=<% ctx(first_index) %>
+      last_index=<% ctx(last_index) %>
+      jupyter_env=<% ctx(jupyter_env) %>
+    next:
+      - when: <% succeeded() %>
+        do:
+          - delete_jupyter_users
+
+  delete_jupyter_users:
+    action: stackstorm_openstack.jupyter.user.delete
+      user=<% ctx(user_base_name) %>
+      first_index=<% ctx(first_index) %>
+      last_index=<% ctx(last_index) %>
+      jupyter_env=<% ctx(jupyter_env) %>

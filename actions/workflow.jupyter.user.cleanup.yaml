@@ -1,0 +1,27 @@
+name: workflow.jupyter.user.cleanup
+description: Stops servers and deletes a given list of JupyterHub users
+enabled: true
+entry_point: workflows/jupyter.user.cleanup.yaml
+runner_type: orquesta
+
+parameters:
+  jupyter_env:
+    description: The Jupyter environment to clean up users on
+    required: true
+    type: string
+    enum:
+      - prod
+      - dev
+      - training
+  user_base_name:
+    description: The users to clean up, or base name of the users to clean up without the hyphen (e.g. "jupyter")
+    required: true
+    type: string
+  first_index:
+    description: The index of the first user to clean up
+    required: false
+    type: integer
+  last_index:
+    description: The index of the last user to clean up (inclusive).
+    required: false
+    type: integer
