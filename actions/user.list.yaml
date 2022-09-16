@@ -47,7 +47,7 @@ parameters:
     type: string
     default: ""
     required: false
-  get_html:
+  return_html:
     default: false
     description: "If True, get HTML"
     required: true

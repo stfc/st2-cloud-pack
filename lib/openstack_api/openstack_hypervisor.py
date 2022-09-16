@@ -5,9 +5,10 @@ from openstack.compute.v2.hypervisor import Hypervisor
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_query import OpenstackQuery
 from openstack_api.openstack_query_base import OpenstackQueryBase
+from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
-class OpenstackHypervisor(OpenstackQueryBase):
+class OpenstackHypervisor(OpenstackWrapperBase, OpenstackQueryBase):
     # Lists all possible query presets for hypervisor.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_hvs",
@@ -49,7 +50,8 @@ class OpenstackHypervisor(OpenstackQueryBase):
         return "enabled" in hypervisor["status"]
 
     def __init__(self, connection_cls=OpenstackConnection):
-        super().__init__(connection_cls)
+        OpenstackWrapperBase.__init__(self, connection_cls)
+        OpenstackQueryBase.__init__(self, connection_cls)
         self._query_api = OpenstackQuery(self._connection_cls)
 
     def __getitem__(self, item):

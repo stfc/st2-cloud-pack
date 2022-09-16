@@ -254,7 +254,7 @@ class OpenstackQueryTests(unittest.TestCase):
             query_preset="test_query",
             properties_to_select=NonCallableMock(),
             group_by=NonCallableMock(),
-            get_html=NonCallableMock(),
+            return_html=NonCallableMock(),
         )
 
         result = self.instance.search_resource(
@@ -273,7 +273,7 @@ class OpenstackQueryTests(unittest.TestCase):
             property_funcs=property_funcs,
             properties_to_select=query_params.properties_to_select,
             group_by=query_params.group_by,
-            get_html=query_params.get_html,
+            return_html=query_params.return_html,
         )
         self.assertEqual(result, self.instance.parse_and_output_table.return_value)
 

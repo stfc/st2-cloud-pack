@@ -10,9 +10,10 @@ from openstack_api.dataclasses import (
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_query_email_base import OpenstackQueryEmailBase
 from openstack_api.openstack_identity import OpenstackIdentity
+from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
-class OpenstackImage(OpenstackQueryEmailBase):
+class OpenstackImage(OpenstackWrapperBase, OpenstackQueryEmailBase):
     # Lists all possible query presets for image.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_images",
@@ -37,7 +38,9 @@ class OpenstackImage(OpenstackQueryEmailBase):
     ]
 
     def __init__(self, connection_cls=OpenstackConnection):
-        super().__init__(
+        OpenstackWrapperBase.__init__(self, connection_cls)
+        OpenstackQueryEmailBase.__init__(
+            self,
             connection_cls,
             EmailQueryParams(
                 required_email_property="project_email",

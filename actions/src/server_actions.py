@@ -33,7 +33,7 @@ class ServerActions(Action):
         query_preset: str,
         properties_to_select: List[str],
         group_by: str,
-        get_html: bool,
+        return_html: bool,
         **kwargs,
     ) -> List[Server]:
         """
@@ -42,7 +42,7 @@ class ServerActions(Action):
         :param query_preset: The query to use when searching for servers
         :param properties_to_select: The list of properties to select and output from the found servers
         :param group_by: Property to group returned results - can be empty for no grouping
-        :param get_html: When True tables returned are in html format
+        :param return_html: When True tables returned are in html format
         :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
         """
 
@@ -52,7 +52,7 @@ class ServerActions(Action):
                 query_preset=query_preset,
                 properties_to_select=properties_to_select,
                 group_by=group_by,
-                get_html=get_html,
+                return_html=return_html,
             ),
             **kwargs,
         )

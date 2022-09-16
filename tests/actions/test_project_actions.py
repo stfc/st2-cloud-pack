@@ -99,7 +99,7 @@ class TestProjectAction(OpenstackActionTestBase):
             property_funcs=self.project_mock.get_query_property_funcs.return_value,
             properties_to_select=["id", "name", "description", "email"],
             group_by="",
-            get_html=False,
+            return_html=False,
         )
         self.identity_mock.delete_project.assert_called_once_with(
             cloud_account="test", project_identifier="ProjectID"
@@ -131,7 +131,7 @@ class TestProjectAction(OpenstackActionTestBase):
             property_funcs=self.project_mock.get_query_property_funcs.return_value,
             properties_to_select=["id", "name", "description", "email"],
             group_by="",
-            get_html=False,
+            return_html=False,
         )
         self.identity_mock.delete_project.assert_not_called()
         self.assertEqual(
@@ -220,7 +220,7 @@ class TestProjectAction(OpenstackActionTestBase):
                 query_preset=query_preset,
                 properties_to_select=NonCallableMock(),
                 group_by=NonCallableMock(),
-                get_html=NonCallableMock(),
+                return_html=NonCallableMock(),
             )
             extra_args = {
                 "ids": None,
@@ -233,7 +233,7 @@ class TestProjectAction(OpenstackActionTestBase):
                 query_preset=query_preset,
                 properties_to_select=query_params.properties_to_select,
                 group_by=query_params.group_by,
-                get_html=query_params.get_html,
+                return_html=query_params.return_html,
                 **extra_args,
             )
             calls.append(

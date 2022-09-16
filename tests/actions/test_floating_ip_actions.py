@@ -108,7 +108,7 @@ class TestFloatingIPActions(OpenstackActionTestBase):
                 query_preset=query_preset,
                 properties_to_select=NonCallableMock(),
                 group_by=NonCallableMock(),
-                get_html=NonCallableMock(),
+                return_html=NonCallableMock(),
             )
             extra_args = {
                 "days": 60,
@@ -122,7 +122,7 @@ class TestFloatingIPActions(OpenstackActionTestBase):
                 query_preset=query_preset,
                 properties_to_select=query_params.properties_to_select,
                 group_by=query_params.group_by,
-                get_html=query_params.get_html,
+                return_html=query_params.return_html,
                 **extra_args
             )
             calls.append(

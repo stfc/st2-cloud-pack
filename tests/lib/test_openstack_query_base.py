@@ -29,7 +29,7 @@ class OpenstackQueryBaseTests(ABC):
             query_preset="all_method",
             properties_to_select=NonCallableMock(),
             group_by=NonCallableMock(),
-            get_html=NonCallableMock(),
+            return_html=NonCallableMock(),
         )
 
         self.instance.search_all_method = MagicMock()

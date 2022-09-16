@@ -68,10 +68,10 @@ class QueryParams:
     :param query_preset: The query to use when searching
     :param properties_to_select: The properties to select and display from the found resource
     :param group_by: Property to group the results by - can be empty for no grouping
-    :param get_html: Whether the result should be in html format or not
+    :param return_html: Whether the result should be in html format or not
     """
 
     query_preset: str
     properties_to_select: List[str]
     group_by: str
-    get_html: bool
+    return_html: bool

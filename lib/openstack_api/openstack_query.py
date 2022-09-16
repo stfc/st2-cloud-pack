@@ -213,27 +213,27 @@ class OpenstackQuery(OpenstackWrapperBase):
         return None
 
     def generate_table(
-        self, properties_dict: List[Dict[str, Any]], get_html: bool
+        self, properties_dict: List[Dict[str, Any]], return_html: bool
     ) -> str:
         """
         Returns a table from the result of 'parse_properties'
         :param properties_dict: dict of query results
-        :param get_html: True if output required in html table format else output plain text table
+        :param return_html: True if output required in html table format else output plain text table
         :return: String (html or plaintext table of results)
         """
         headers = properties_dict[0].keys()
         rows = [row.values() for row in properties_dict]
-        return tabulate(rows, headers, tablefmt="html" if get_html else "grid")
+        return tabulate(rows, headers, tablefmt="html" if return_html else "grid")
 
     def collate_results(
-        self, properties_dict: List[Dict[str, Any]], key: str, get_html: bool
+        self, properties_dict: List[Dict[str, Any]], key: str, return_html: bool
     ) -> Dict[str, str]:
         """
         Collates results from a dict based on a given property key and returns a dictionary of
         these keys with tables of the properties
         :param properties_dict: dict of query results
         :param key: key to collate by e.g. user_email
-        :param get_html: True if output required in html table format else output plain text table
+        :param return_html: True if output required in html table format else output plain text table
         :return: Dict[str, str] (each key containing html or plaintext table of results)
         """
         collated_dict = {}
@@ -250,7 +250,7 @@ class OpenstackQuery(OpenstackWrapperBase):
             del collated_dict[None]
 
         for key_value, items in collated_dict.items():
-            collated_dict[key_value] = self.generate_table(items, get_html)
+            collated_dict[key_value] = self.generate_table(items, return_html)
 
         return collated_dict
 
@@ -261,7 +261,7 @@ class OpenstackQuery(OpenstackWrapperBase):
         property_funcs: Dict[str, Callable[[Any], Any]],
         properties_to_select: List[str],
         group_by: str,
-        get_html: bool,
+        return_html: bool,
     ):
         """
         Finds selected properties of a list of OpenStack resources and then generates tables for them
@@ -271,7 +271,7 @@ class OpenstackQuery(OpenstackWrapperBase):
         :param property_funcs: Query functions that return properties requested in 'properties_to_list'
         :param properties_to_select: The list of properties to select and output from the items
         :param group_by: Property to group returned results - can be empty for no grouping
-        :param get_html: When True tables returned are in html format
+        :param return_html: When True tables returned are in html format
         :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
         """
         output = self.parse_properties(items, properties_to_select, property_funcs)
@@ -280,9 +280,9 @@ class OpenstackQuery(OpenstackWrapperBase):
             return None
 
         if group_by != "":
-            output = self.collate_results(output, group_by, get_html)
+            output = self.collate_results(output, group_by, return_html)
         else:
-            output = self.generate_table(output, get_html)
+            output = self.generate_table(output, return_html)
 
         return output
 
@@ -311,7 +311,7 @@ class OpenstackQuery(OpenstackWrapperBase):
             property_funcs=property_funcs,
             properties_to_select=query_params.properties_to_select,
             group_by=query_params.group_by,
-            get_html=query_params.get_html,
+            return_html=query_params.return_html,
         )
 
     def find_non_existent_objects(

@@ -6,9 +6,10 @@ from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_query import OpenstackQuery
 from openstack_api.openstack_query_base import OpenstackQueryBase
+from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
-class OpenstackUser(OpenstackQueryBase):
+class OpenstackUser(OpenstackWrapperBase, OpenstackQueryBase):
     # Lists all possible query presets for user.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_users",
@@ -21,7 +22,8 @@ class OpenstackUser(OpenstackQueryBase):
     ]
 
     def __init__(self, connection_cls=OpenstackConnection):
-        super().__init__(connection_cls)
+        OpenstackWrapperBase.__init__(self, connection_cls)
+        OpenstackQueryBase.__init__(self, connection_cls)
         self._identity_api = OpenstackIdentity(self._connection_cls)
         self._query_api = OpenstackQuery(self._connection_cls)
 

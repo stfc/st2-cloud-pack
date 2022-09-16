@@ -27,7 +27,7 @@ parameters:
     type: array
     description: properties to sort list openstack_resource
     required: false
-  get_html:
+  return_html:
     type: boolean
     description: get html output or plain text
     required: true

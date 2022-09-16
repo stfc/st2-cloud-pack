@@ -10,9 +10,10 @@ from openstack_api.dataclasses import (
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_query_email_base import OpenstackQueryEmailBase
 from openstack_api.openstack_identity import OpenstackIdentity
+from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
-class OpenstackFloatingIP(OpenstackQueryEmailBase):
+class OpenstackFloatingIP(OpenstackWrapperBase, OpenstackQueryEmailBase):
     # Lists all possible query presets for floating.ip.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_fips",
@@ -46,7 +47,9 @@ class OpenstackFloatingIP(OpenstackQueryEmailBase):
         return "DOWN" in floating_ip["status"]
 
     def __init__(self, connection_cls=OpenstackConnection):
-        super().__init__(
+        OpenstackWrapperBase.__init__(self, connection_cls)
+        OpenstackQueryEmailBase.__init__(
+            self,
             connection_cls,
             EmailQueryParams(
                 required_email_property="project_email",

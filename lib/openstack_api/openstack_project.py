@@ -5,9 +5,10 @@ from openstack.identity.v3.project import Project
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_query_base import OpenstackQueryBase
+from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
-class OpenstackProject(OpenstackQueryBase):
+class OpenstackProject(OpenstackWrapperBase, OpenstackQueryBase):
     # Lists all possible query presets for project.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_projects",
@@ -30,7 +31,8 @@ class OpenstackProject(OpenstackQueryBase):
         return self._identity_api.get_project_email(project) is None
 
     def __init__(self, connection_cls=OpenstackConnection):
-        super().__init__(connection_cls)
+        OpenstackWrapperBase.__init__(self, connection_cls)
+        OpenstackQueryBase.__init__(self, connection_cls)
         self._identity_api = OpenstackIdentity(self._connection_cls)
 
     def get_query_property_funcs(self, _) -> Dict[str, Callable[[Any], Any]]:

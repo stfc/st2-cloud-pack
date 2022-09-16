@@ -11,9 +11,10 @@ from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_query_email_base import OpenstackQueryEmailBase
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.dataclasses import EmailQueryParams
+from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
-class OpenstackServer(OpenstackQueryEmailBase):
+class OpenstackServer(OpenstackWrapperBase, OpenstackQueryEmailBase):
     # Lists all possible query presets for server.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_servers",
@@ -54,7 +55,9 @@ class OpenstackServer(OpenstackQueryEmailBase):
         return "SHUTOFF" in server["status"]
 
     def __init__(self, connection_cls=OpenstackConnection):
-        super().__init__(
+        OpenstackWrapperBase.__init__(self, connection_cls)
+        OpenstackQueryEmailBase.__init__(
+            self,
             connection_cls,
             EmailQueryParams(
                 required_email_property="user_email",

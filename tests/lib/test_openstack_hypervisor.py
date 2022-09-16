@@ -1,4 +1,5 @@
 import unittest
+from dataclasses import dataclass
 from unittest.mock import MagicMock
 
 from nose.tools import raises
@@ -8,7 +9,7 @@ from openstack_api.openstack_hypervisor import OpenstackHypervisor
 from tests.lib.test_openstack_query_base import OpenstackQueryBaseTests
 
 
-# pylint:disable=too-few-public-methods
+@dataclass
 class _HypervisorMock:
     vcpus_used: int = 4
     vcpus: int = 16

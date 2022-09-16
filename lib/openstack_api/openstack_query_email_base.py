@@ -85,7 +85,7 @@ class OpenstackQueryEmailBase(OpenstackQueryBase):
             query_preset=query_preset,
             properties_to_select=properties_to_select,
             group_by=self._email_query_params.required_email_property,
-            get_html=email_params.send_as_html,
+            return_html=email_params.send_as_html,
         )
 
         self._validate_query_params(
