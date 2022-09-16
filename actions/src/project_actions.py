@@ -2,6 +2,7 @@ from typing import Tuple, Optional, Dict, Callable, Union, List
 
 from openstack.identity.v3.project import Project
 
+from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_project import OpenstackProject
 from openstack_api.openstack_query import OpenstackQuery
@@ -48,12 +49,11 @@ class ProjectAction(Action):
             cloud_account=cloud_account, project_identifier=project_identifier
         )
         project_string = self._query_api.parse_and_output_table(
-            cloud_account=cloud_account,
             items=[project],
-            object_type="project",
+            property_funcs=self._project_api.get_query_property_funcs(cloud_account),
             properties_to_select=["id", "name", "description", "email"],
             group_by="",
-            get_html=False,
+            return_html=False,
         )
 
         if delete:
@@ -123,7 +123,7 @@ class ProjectAction(Action):
         query_preset: str,
         properties_to_select: List[str],
         group_by: str,
-        get_html: bool,
+        return_html: bool,
         **kwargs,
     ) -> str:
         """
@@ -132,17 +132,20 @@ class ProjectAction(Action):
         :param query_preset: The query to use when searching for projects
         :param properties_to_select: The list of properties to select and output from the found projects
         :param group_by: Property to group returned results - can be empty for no grouping
-        :param get_html: When True tables returned are in html format
+        :param return_html: When True tables returned are in html format
         :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
         """
 
-        projects = self._project_api[f"search_{query_preset}"](cloud_account, **kwargs)
-
-        output = self._query_api.parse_and_output_table(
-            cloud_account, projects, "project", properties_to_select, group_by, get_html
+        return self._project_api.search(
+            cloud_account=cloud_account,
+            query_params=QueryParams(
+                query_preset=query_preset,
+                properties_to_select=properties_to_select,
+                group_by=group_by,
+                return_html=return_html,
+            ),
+            **kwargs,
         )
-
-        return output
 
     def project_update(
         self,

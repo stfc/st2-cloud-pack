@@ -1,4 +1,5 @@
-from unittest.mock import create_autospec, NonCallableMock
+from unittest.mock import call, create_autospec, NonCallableMock
+from openstack_api.dataclasses import QueryParams
 
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_project import OpenstackProject
@@ -94,12 +95,11 @@ class TestProjectAction(OpenstackActionTestBase):
             cloud_account="test", project_identifier="ProjectID"
         )
         self.query_mock.parse_and_output_table.assert_called_once_with(
-            cloud_account="test",
             items=[self.identity_mock.find_mandatory_project.return_value],
-            object_type="project",
+            property_funcs=self.project_mock.get_query_property_funcs.return_value,
             properties_to_select=["id", "name", "description", "email"],
             group_by="",
-            get_html=False,
+            return_html=False,
         )
         self.identity_mock.delete_project.assert_called_once_with(
             cloud_account="test", project_identifier="ProjectID"
@@ -127,12 +127,11 @@ class TestProjectAction(OpenstackActionTestBase):
             cloud_account="test", project_identifier="ProjectID"
         )
         self.query_mock.parse_and_output_table.assert_called_once_with(
-            cloud_account="test",
             items=[self.identity_mock.find_mandatory_project.return_value],
-            object_type="project",
+            property_funcs=self.project_mock.get_query_property_funcs.return_value,
             properties_to_select=["id", "name", "description", "email"],
             group_by="",
-            get_html=False,
+            return_html=False,
         )
         self.identity_mock.delete_project.assert_not_called()
         self.assertEqual(
@@ -210,21 +209,39 @@ class TestProjectAction(OpenstackActionTestBase):
             ]
         )
 
-    def test_project_list(self):
+    def test_list(self):
         """
-        Tests the action returns the found projects
+        Tests the action that lists projects
         """
+        calls = []
         for query_preset in OpenstackProject.SEARCH_QUERY_PRESETS:
-            self.action.project_list(
-                cloud_account=NonCallableMock(),
+            project_identifier = NonCallableMock()
+            query_params = QueryParams(
                 query_preset=query_preset,
                 properties_to_select=NonCallableMock(),
                 group_by=NonCallableMock(),
-                get_html=NonCallableMock(),
-                days=60,
-                ids=NonCallableMock(),
-                names=NonCallableMock(),
-                name_snippets=NonCallableMock(),
-                description_snippets=NonCallableMock(),
+                return_html=NonCallableMock(),
             )
-            self.project_mock[f"search_{query_preset}"].assert_called_once()
+            extra_args = {
+                "ids": None,
+                "names": None,
+                "name_snippets": None,
+            }
+            self.action.project_list(
+                cloud_account="test",
+                project_identifier=project_identifier,
+                query_preset=query_preset,
+                properties_to_select=query_params.properties_to_select,
+                group_by=query_params.group_by,
+                return_html=query_params.return_html,
+                **extra_args,
+            )
+            calls.append(
+                call(
+                    cloud_account="test",
+                    query_params=query_params,
+                    project_identifier=project_identifier,
+                    **extra_args,
+                )
+            )
+        self.project_mock.search.assert_has_calls(calls)

@@ -2,9 +2,10 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from openstack_api.openstack_user import OpenstackUser
+from tests.lib.test_openstack_query_base import OpenstackQueryBaseTests
 
 
-class OpenstackuserTests(unittest.TestCase):
+class OpenstackUserTests(unittest.TestCase, OpenstackQueryBaseTests):
     """
     Runs various tests to ensure we are using the Openstack
     user module in the expected way
@@ -41,6 +42,11 @@ class OpenstackuserTests(unittest.TestCase):
                 "name": "username3",
             },
         ]
+
+    def test_property_funcs(self):
+        """
+        Tests calling get_query_property_funcs (Nothing to test here yet)
+        """
 
     def test_search_all_users(self):
         """

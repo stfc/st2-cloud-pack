@@ -1,15 +1,16 @@
 from dataclasses import dataclass
 import datetime
 import unittest
+from typing import Dict
 from unittest import mock
-from unittest.mock import MagicMock, NonCallableMock, patch, ANY
+from unittest.mock import MagicMock, patch, NonCallableMock, Mock
 
 import openstack
-from nose.tools import raises
+
 from openstack_api.dataclasses import (
     NonExistentCheckParams,
     NonExistentProjectCheckParams,
-    EmailQueryParams,
+    QueryParams,
 )
 
 from openstack_api.openstack_query import OpenstackQuery
@@ -26,16 +27,6 @@ class OpenstackQueryTests(unittest.TestCase):
         def __init__(self, test1, test2):
             self.test1 = test1
             self.test2 = test2
-            self.user_id = test1
-            self.project_id = test1
-            self.tags = [test2]
-            self.owner = test1
-            self.vcpus_used = 4
-            self.vcpus = 128
-            self.memory_mb_used = 4096
-            self.memory_mb = 515530
-            self.local_gb_used = 10
-            self.local_gb = 1024
 
         def __getitem__(self, key):
             return getattr(self, key)
@@ -131,6 +122,32 @@ class OpenstackQueryTests(unittest.TestCase):
             ],
         )
 
+    def test_get_user_prop(self):
+        """
+        Tests get_user_prop works as expected
+        """
+
+        self.identity_api.find_user.return_value = self.ItemTest("Value1", "Value2")
+        result = self.instance.get_user_prop("test", "userid", "test1")
+        self.assertEqual(result, "Value1")
+
+        self.identity_api.find_user.return_value = None
+        result = self.instance.get_user_prop("test", "userid", "test1")
+        self.assertEqual(result, None)
+
+    def test_get_project_prop(self):
+        """
+        Tests get_project_prop works as expected
+        """
+
+        self.identity_api.find_project.return_value = self.ItemTest("Value1", "Value2")
+        result = self.instance.get_project_prop("test", "projectid", "test1")
+        self.assertEqual(result, "Value1")
+
+        self.identity_api.find_project.return_value = None
+        result = self.instance.get_project_prop("test", "projectid", "test1")
+        self.assertEqual(result, None)
+
     def test_collate_results(self):
         """
         Tests collate_results works as expected
@@ -157,140 +174,108 @@ class OpenstackQueryTests(unittest.TestCase):
         assert "Item1" in result["Hello World"] and "Item2" in result["Hello World"]
         assert len(result["Test World"]) > 0
 
-    @raises(ValueError)
-    def test_get_default_property_funcs_error(self):
+    def test_parse_and_output_table_with_grouping(self):
         """
-        Tests get_default_property_funcs errors as expected
-        """
-        self.assertRaises(
-            ValueError, self.instance.get_default_property_funcs("cake", "test")
-        )
-
-    def _test_parse_and_output_table_with_grouping(
-        self, object_type, properties_to_select, group_by
-    ):
-        """
-        Tests parse_and_output_table works as expected when collating results
+        Tests parse_and_output_table works as expected when collating is required
         """
         items = [
             self.ItemTest("Item1", "Hello"),
             self.ItemTest("Item2", "Hello"),
             self.ItemTest("Item3", "Test"),
         ]
+        properties_to_select = ["test1", "new_property", "test2"]
+        property_funcs = {"new_property": lambda a: f"{a['test1']}_new"}
 
-        self.instance.collate_results = MagicMock()
-
-        self.instance.parse_and_output_table(
-            "test_account",
-            items,
-            object_type,
-            properties_to_select,
-            group_by,
-            False,
-        )
-
-        self.mocked_connection.assert_called_with("test_account")
-        self.identity_api.find_user.assert_has_calls(
-            [
-                mock.call("Item1", ignore_missing=True),
-                mock.call("Item2", ignore_missing=True),
-                mock.call("Item3", ignore_missing=True),
-            ],
-            any_order=True,
-        )
-
-        self.instance.collate_results.assert_called_once()
-
-    def _test_parse_and_output_table_no_grouping(
-        self, object_type, properties_to_select
-    ):
-        """
-        Tests parse_and_output_table works as expected when no collating is required
-        """
-        items = [
-            self.ItemTest("Item1", "Hello"),
-            self.ItemTest("Item2", "Hello"),
-            self.ItemTest("Item3", "Test"),
-        ]
-
+        self.instance.parse_properties = MagicMock()
+        self.instance.parse_properties.return_value = [{}]
         self.instance.collate_results = MagicMock()
         self.instance.generate_table = MagicMock()
 
-        self.instance.parse_and_output_table(
-            "test_account",
+        result = self.instance.parse_and_output_table(
             items,
-            object_type,
+            property_funcs,
             properties_to_select,
-            "",
+            "new_property",
             False,
         )
 
-        self.instance.collate_results.assert_not_called()
-        self.instance.generate_table.assert_called_once()
+        self.instance.parse_properties.assert_called_once_with(
+            items, properties_to_select, property_funcs
+        )
+        self.instance.collate_results.assert_called_once()
+        self.instance.generate_table.assert_not_called()
 
-    def test_parse_and_output_table_with_grouping(self):
-        """
-        Tests parse_and_output_table works as expected when collating results
-        """
-        types = {
-            "server": {
-                "properties_to_select": ["test2", "user_email"],
-                "group_by": "user_email",
-            },
-            "floating_ip": {
-                "properties_to_select": ["test2", "project_name", "project_email"],
-                "group_by": "project_id",
-            },
-            "image": {
-                "properties_to_select": ["test2", "project_name", "project_email"],
-                "group_by": "project_id",
-            },
-            "project": {
-                "properties_to_select": ["test2", "email"],
-                "group_by": "email",
-            },
-            "user": {
-                "properties_to_select": ["test2", "email"],
-                "group_by": "email",
-            },
-            "hypervisor": {
-                "properties_to_select": [
-                    "test2",
-                    "vcpu_usage",
-                    "memory_mb_usage",
-                    "local_gb_usage",
-                ],
-                "group_by": "test2",
-            },
-        }
-        for key, value in types.items():
-            self._test_parse_and_output_table_with_grouping(object_type=key, **value)
+        self.assertEqual(result, self.instance.collate_results.return_value)
 
     def test_parse_and_output_table_no_grouping(self):
         """
         Tests parse_and_output_table works as expected when no collating is required
         """
-        object_types = {
-            "server": ["test2", "user_email"],
-            "floating_ip": ["test2", "project_name", "project_email"],
-            "image": ["test2", "project_name", "project_email"],
-            "project": ["test2", "email"],
-            "user": ["test2", "email"],
-            "hypervisor": ["test2", "vcpu_usage", "memory_mb_usage", "local_gb_usage"],
-        }
-        for key, value in object_types.items():
-            self._test_parse_and_output_table_no_grouping(
-                object_type=key, properties_to_select=value
-            )
+        items = [
+            self.ItemTest("Item1", "Hello"),
+            self.ItemTest("Item2", "Hello"),
+            self.ItemTest("Item3", "Test"),
+        ]
+        properties_to_select = ["test1", "new_property", "test2"]
+        property_funcs = {"new_property": lambda a: f"{a['test1']}_new"}
 
-    @raises(NotImplementedError)
-    def test_parse_and_output_table_hv_uptime_error(self):
-        """
-        Tests parse_and_output_table raises a NotImplementedError when uptime is specified
-        """
-        self._test_parse_and_output_table_no_grouping(
-            object_type="hypervisor", properties_to_select=["uptime"]
+        self.instance.parse_properties = MagicMock()
+        self.instance.parse_properties.return_value = [{}]
+        self.instance.collate_results = MagicMock()
+        self.instance.generate_table = MagicMock()
+
+        result = self.instance.parse_and_output_table(
+            items,
+            property_funcs,
+            properties_to_select,
+            "",
+            False,
         )
+
+        self.instance.parse_properties.assert_called_once_with(
+            items, properties_to_select, property_funcs
+        )
+        self.instance.collate_results.assert_not_called()
+        self.instance.generate_table.assert_called_once()
+
+        self.assertEqual(result, self.instance.generate_table.return_value)
+
+    def test_search_resource(self):
+        """
+        Tests calling search_resource
+        """
+
+        search_api = MagicMock()
+        property_funcs = NonCallableMock()
+
+        self.instance.parse_and_output_table = Mock()
+
+        query_params = QueryParams(
+            query_preset="test_query",
+            properties_to_select=NonCallableMock(),
+            group_by=NonCallableMock(),
+            return_html=NonCallableMock(),
+        )
+
+        result = self.instance.search_resource(
+            "test",
+            search_api,
+            property_funcs,
+            query_params,
+            project_identifier="project_identifier",
+        )
+
+        search_api["search_test_query"].assert_called_once_with(
+            "test", project_identifier="project_identifier"
+        )
+        self.instance.parse_and_output_table.assert_called_once_with(
+            items=search_api["search_test_query"].return_value,
+            property_funcs=property_funcs,
+            properties_to_select=query_params.properties_to_select,
+            group_by=query_params.group_by,
+            return_html=query_params.return_html,
+        )
+        self.assertEqual(result, self.instance.parse_and_output_table.return_value)
 
     def test_find_non_existent_objects(self):
         """
@@ -400,113 +385,87 @@ class OpenstackQueryTests(unittest.TestCase):
             },
         )
 
+    def _email_users(
+        self,
+        message: str,
+        result_tables: Dict[str, str],
+        send_as_html: bool,
+        expected_emails: Dict[str, str],
+    ):
+        """
+        Helper that tests calling email_users
+        """
+        smtp_account = NonCallableMock()
+        email_params = EmailParams(
+            subject=NonCallableMock(),
+            email_from=NonCallableMock(),
+            email_cc=NonCallableMock(),
+            header=NonCallableMock(),
+            footer=NonCallableMock(),
+            attachment_filepaths=NonCallableMock(),
+            test_override=NonCallableMock(),
+            test_override_email=NonCallableMock(),
+            send_as_html=send_as_html,
+        )
+
+        self.instance.email_users(
+            smtp_account=smtp_account,
+            email_params=email_params,
+            message=message,
+            result_tables=result_tables,
+        )
+        self.email_mock.send_emails.assert_called_once_with(
+            smtp_account=smtp_account, emails=expected_emails, email_params=email_params
+        )
+
     def test_email_users(
         self,
     ):
         """
-        Tests calling email_users
+        Tests calling email_users with send_as_html=True
         """
-        smtp_account = NonCallableMock()
-        query_params = EmailQueryParams(
-            required_email_property="required_property",
-            valid_search_queries=[NonCallableMock(), "no_project"],
-            valid_search_queries_no_project=["no_project"],
-            search_api=MagicMock(),
-            object_type="server",
-        )
-        email_params = EmailParams(
-            subject=NonCallableMock(),
-            email_from=NonCallableMock(),
-            email_cc=NonCallableMock(),
-            header=NonCallableMock(),
-            footer=NonCallableMock(),
-            attachment_filepaths=NonCallableMock(),
-            test_override=NonCallableMock(),
-            test_override_email=NonCallableMock(),
-            send_as_html=NonCallableMock(),
-        )
-        properties_to_select = [NonCallableMock(), query_params.required_email_property]
 
-        self.instance.parse_and_output_table = MagicMock()
-
-        self.instance.email_users(
-            cloud_account="test",
-            smtp_account=smtp_account,
-            query_params=query_params,
-            project_identifier="",
-            query_preset=query_params.valid_search_queries_no_project[0],
-            message=NonCallableMock(),
-            properties_to_select=properties_to_select,
-            email_params=email_params,
-        )
-        self.instance.parse_and_output_table.assert_called_once_with(
-            cloud_account="test",
-            items=query_params.search_api["search_query_preset"].return_value,
-            object_type=query_params.object_type,
-            properties_to_select=properties_to_select,
-            group_by=query_params.required_email_property,
-            get_html=email_params.send_as_html,
-        )
-        self.email_mock.send_emails.assert_called_once_with(
-            smtp_account=smtp_account, emails=ANY, email_params=email_params
+        self._email_users(
+            message="Test message",
+            result_tables={
+                "user1@example.com": "TABLE OF RESULTS",
+                "user2@example.com": "TABLE OF RESULTS",
+            },
+            send_as_html=False,
+            expected_emails={
+                "user1@example.com": "Test message\n\nTABLE OF RESULTS",
+                "user2@example.com": "Test message\n\nTABLE OF RESULTS",
+            },
         )
 
-    @raises(ValueError)
-    def test_email_users_missing_required_property(
+    def test_email_users_html(
         self,
     ):
         """
-        Tests calling email_users raises an error when the required property is missing from the selected ones
+        Tests calling email_users with send_as_html=True
         """
-        smtp_account = NonCallableMock()
-        query_params = EmailQueryParams(
-            required_email_property="required_property",
-            valid_search_queries=[NonCallableMock(), "no_project"],
-            valid_search_queries_no_project=["no_project"],
-            search_api=MagicMock(),
-            object_type="server",
-        )
-        email_params = EmailParams(
-            subject=NonCallableMock(),
-            email_from=NonCallableMock(),
-            email_cc=NonCallableMock(),
-            header=NonCallableMock(),
-            footer=NonCallableMock(),
-            attachment_filepaths=NonCallableMock(),
-            test_override=NonCallableMock(),
-            test_override_email=NonCallableMock(),
-            send_as_html=NonCallableMock(),
-        )
-        properties_to_select = [NonCallableMock()]
 
-        self.instance.parse_and_output_table = MagicMock()
-
-        self.instance.email_users(
-            cloud_account="test",
-            smtp_account=smtp_account,
-            query_params=query_params,
-            project_identifier=NonCallableMock(),
-            query_preset=query_params.valid_search_queries[0],
-            message=NonCallableMock(),
-            properties_to_select=properties_to_select,
-            email_params=email_params,
+        self._email_users(
+            message="Test message",
+            result_tables={
+                "user1@example.com": "TABLE OF RESULTS",
+                "user2@example.com": "TABLE OF RESULTS",
+            },
+            send_as_html=True,
+            expected_emails={
+                "user1@example.com": "Test message<br><br>TABLE OF RESULTS",
+                "user2@example.com": "Test message<br><br>TABLE OF RESULTS",
+            },
         )
 
-    @raises(ValueError)
-    def test_email_users_invalid_query(
+    def test_email_users_with_no_results(
         self,
     ):
         """
-        Tests calling email_users raises an error when the query_preset is invalid
+        Tests calling email_users with no results
         """
+
         smtp_account = NonCallableMock()
-        query_params = EmailQueryParams(
-            required_email_property="required_property",
-            valid_search_queries=["query1", "no_project"],
-            valid_search_queries_no_project=["no_project"],
-            search_api=MagicMock(),
-            object_type="server",
-        )
         email_params = EmailParams(
             subject=NonCallableMock(),
             email_from=NonCallableMock(),
@@ -518,58 +477,11 @@ class OpenstackQueryTests(unittest.TestCase):
             test_override_email=NonCallableMock(),
             send_as_html=NonCallableMock(),
         )
-        properties_to_select = [NonCallableMock(), query_params.required_email_property]
-
-        self.instance.parse_and_output_table = MagicMock()
 
         self.instance.email_users(
-            cloud_account="test",
             smtp_account=smtp_account,
-            query_params=query_params,
-            project_identifier=NonCallableMock(),
-            query_preset=NonCallableMock(),
-            message=NonCallableMock(),
-            properties_to_select=properties_to_select,
             email_params=email_params,
-        )
-
-    @raises(ValueError)
-    def test_email_users_missing_project(
-        self,
-    ):
-        """
-        Tests calling email_users raises an error when the query requires a project but is not given one
-        """
-        smtp_account = NonCallableMock()
-        query_params = EmailQueryParams(
-            required_email_property="required_property",
-            valid_search_queries=[NonCallableMock(), "no_project"],
-            valid_search_queries_no_project=["no_project"],
-            search_api=MagicMock(),
-            object_type="server",
-        )
-        email_params = EmailParams(
-            subject=NonCallableMock(),
-            email_from=NonCallableMock(),
-            email_cc=NonCallableMock(),
-            header=NonCallableMock(),
-            footer=NonCallableMock(),
-            attachment_filepaths=NonCallableMock(),
-            test_override=NonCallableMock(),
-            test_override_email=NonCallableMock(),
-            send_as_html=NonCallableMock(),
-        )
-        properties_to_select = [NonCallableMock(), query_params.required_email_property]
-
-        self.instance.parse_and_output_table = MagicMock()
-
-        self.instance.email_users(
-            cloud_account="test",
-            smtp_account=smtp_account,
-            query_params=query_params,
-            project_identifier="",
-            query_preset=query_params.valid_search_queries[0],
             message=NonCallableMock(),
-            properties_to_select=properties_to_select,
-            email_params=email_params,
+            result_tables=None,
         )
+        self.email_mock.send_emails.assert_not_called()

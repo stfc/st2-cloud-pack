@@ -1,10 +1,13 @@
+from dataclasses import dataclass
 import unittest
+from typing import List
 from unittest.mock import MagicMock
 
 from openstack_api.openstack_project import OpenstackProject
+from tests.lib.test_openstack_query_base import OpenstackQueryBaseTests
 
 
-class OpenstackProjectTests(unittest.TestCase):
+class OpenstackProjectTests(unittest.TestCase, OpenstackQueryBaseTests):
     """
     Runs various tests to ensure we are using the Openstack
     identity module in the expected way
@@ -14,7 +17,6 @@ class OpenstackProjectTests(unittest.TestCase):
         super().setUp()
         self.mocked_connection = MagicMock()
         self.instance = OpenstackProject(self.mocked_connection)
-
         self.api = self.mocked_connection.return_value.__enter__.return_value
 
         self.mock_project_list = [
@@ -37,6 +39,25 @@ class OpenstackProjectTests(unittest.TestCase):
                 "tags": [],
             },
         ]
+
+    def test_property_funcs(self):
+        """
+        Tests calling get_query_property_funcs
+        """
+
+        @dataclass
+        class _ProjectMock:
+            tags: List[str]
+
+            def __getitem__(self, attr):
+                return getattr(self, attr)
+
+        item = _ProjectMock(["test@example.com"])
+        property_funcs = self.instance.get_query_property_funcs("test")
+
+        # Test project_email
+        result = property_funcs["email"](item)
+        self.assertEqual(result, "test@example.com")
 
     def test_search_project_id_in(self):
         """

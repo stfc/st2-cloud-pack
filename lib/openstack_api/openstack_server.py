@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Callable, Any
 
 from openstack.compute.v2.server import Server
 from openstack.exceptions import HttpException
@@ -8,16 +8,13 @@ from openstack_api.dataclasses import (
 )
 
 from openstack_api.openstack_connection import OpenstackConnection
+from openstack_api.openstack_query_email_base import OpenstackQueryEmailBase
 from openstack_api.openstack_identity import OpenstackIdentity
-from openstack_api.openstack_query import OpenstackQuery
-from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.dataclasses import EmailQueryParams
-from structs.email_params import EmailParams
-
-from structs.smtp_account import SMTPAccount
+from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
-class OpenstackServer(OpenstackWrapperBase):
+class OpenstackServer(OpenstackWrapperBase, OpenstackQueryEmailBase):
     # Lists all possible query presets for server.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_servers",
@@ -58,12 +55,33 @@ class OpenstackServer(OpenstackWrapperBase):
         return "SHUTOFF" in server["status"]
 
     def __init__(self, connection_cls=OpenstackConnection):
-        super().__init__(connection_cls)
+        OpenstackWrapperBase.__init__(self, connection_cls)
+        OpenstackQueryEmailBase.__init__(
+            self,
+            connection_cls,
+            EmailQueryParams(
+                required_email_property="user_email",
+                valid_search_queries=OpenstackServer.SEARCH_QUERY_PRESETS,
+                valid_search_queries_no_project=OpenstackServer.SEARCH_QUERY_PRESETS_NO_PROJECT,
+            ),
+        )
         self._identity_api = OpenstackIdentity(self._connection_cls)
-        self._query_api = OpenstackQuery(self._connection_cls)
 
-    def __getitem__(self, item):
-        return getattr(self, item)
+    def get_query_property_funcs(
+        self, cloud_account: str
+    ) -> Dict[str, Callable[[Any], Any]]:
+        """
+        Returns property functions for use with OpenstackQuery.parse_properties
+        :param cloud_account: The associated clouds.yaml account
+        """
+        return {
+            "user_email": lambda a: self._query_api.get_user_prop(
+                cloud_account, a["user_id"], "email"
+            ),
+            "user_name": lambda a: self._query_api.get_user_prop(
+                cloud_account, a["user_id"], "name"
+            ),
+        }
 
     def search_all_servers(
         self, cloud_account: str, project_identifier: str, **_
@@ -376,48 +394,4 @@ class OpenstackServer(OpenstackWrapperBase):
                 object_id_param_name="id",
                 object_project_param_name="project_id",
             ),
-        )
-
-    # pylint:disable=too-many-arguments
-    def email_users(
-        self,
-        cloud_account: str,
-        smtp_account: SMTPAccount,
-        project_identifier: str,
-        query_preset: str,
-        message: str,
-        properties_to_select: List[str],
-        email_params: EmailParams,
-        **kwargs,
-    ):
-        """
-        Finds all servers matching a query and then sends emails to their users
-        :param: smtp_account (SMTPAccount): SMTP config
-        :param: cloud_account: The account from the clouds configuration to use
-        :param: project_identifier: The project this applies to (or empty for all projects)
-        :param: query_preset: The query to use when searching for servers
-        :param: message: Message to add to the body of emails sent
-        :param: properties_to_select: The list of properties to select and output from the found servers
-        :param: email_params: See EmailParams
-        :param: kwargs: Additional parameters required for the query_preset chosen
-        :return:
-        """
-        query_params = EmailQueryParams(
-            required_email_property="user_email",
-            valid_search_queries=OpenstackServer.SEARCH_QUERY_PRESETS,
-            valid_search_queries_no_project=OpenstackServer.SEARCH_QUERY_PRESETS_NO_PROJECT,
-            search_api=self,
-            object_type="server",
-        )
-
-        return self._query_api.email_users(
-            cloud_account=cloud_account,
-            smtp_account=smtp_account,
-            query_params=query_params,
-            project_identifier=project_identifier,
-            query_preset=query_preset,
-            message=message,
-            properties_to_select=properties_to_select,
-            email_params=email_params,
-            **kwargs,
         )

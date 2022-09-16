@@ -4,17 +4,16 @@ import unittest
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
-from nose.tools import raises
-
 import openstack
 from openstack.exceptions import HttpException
+
 from openstack_api.openstack_server import OpenstackServer
 
-from structs.email_params import EmailParams
+from tests.lib.test_openstack_query_email_base import OpenstackQueryEmailBaseTests
 
 
 # pylint:disable=too-many-public-methods
-class OpenstackServerTests(unittest.TestCase):
+class OpenstackServerTests(unittest.TestCase, OpenstackQueryEmailBaseTests):
     """
     Runs various tests to ensure we are using the Openstack
     Servers module in the expected way
@@ -25,6 +24,11 @@ class OpenstackServerTests(unittest.TestCase):
         self.mocked_connection = MagicMock()
         with patch("openstack_api.openstack_server.OpenstackIdentity") as identity_mock:
             self.instance = OpenstackServer(self.mocked_connection)
+            self.search_query_presets = OpenstackServer.SEARCH_QUERY_PRESETS
+            self.search_query_presets_no_project = (
+                OpenstackServer.SEARCH_QUERY_PRESETS_NO_PROJECT
+            )
+
             self.identity_module = identity_mock.return_value
 
         self.api = self.mocked_connection.return_value.__enter__.return_value
@@ -52,6 +56,29 @@ class OpenstackServerTests(unittest.TestCase):
                 "status": ["SHUTOFF", "ERROR"],
             },
         ]
+
+    def test_property_funcs(self):
+        """
+        Tests calling get_query_property_funcs
+        """
+
+        @dataclass
+        class _ServerMock:
+            user_id: str
+
+            def __getitem__(self, attr):
+                return getattr(self, attr)
+
+        item = _ServerMock("UserID")
+        property_funcs = self.instance.get_query_property_funcs("test")
+
+        # Test user_email
+        result = property_funcs["user_email"](item)
+        self.assertEqual(result, self.api.identity.find_user.return_value["user_email"])
+
+        # Test user_name
+        result = property_funcs["user_name"](item)
+        self.assertEqual(result, self.api.identity.find_user.return_value["user_name"])
 
     def test_search_all_servers_no_project(self):
         """
@@ -431,94 +458,3 @@ class OpenstackServerTests(unittest.TestCase):
         result = self.instance.find_non_existent_projects(cloud_account="test")
 
         self.assertEqual(result, {"ProjectID1": ["ServerID1", "ServerID2"]})
-
-    @raises(ValueError)
-    def test_email_users_no_email_error(self):
-        """
-        Tests the that email_users gives a value error when project_email is not present in the `properties_to_select`
-        """
-        smtp_account = MagicMock()
-        email_params = EmailParams(
-            subject="Subject",
-            email_from="testemail",
-            email_cc=[],
-            header="",
-            footer="",
-            attachment_filepaths=[],
-            test_override=False,
-            test_override_email=[""],
-            send_as_html=False,
-        )
-        return self.instance.email_users(
-            cloud_account="test_account",
-            smtp_account=smtp_account,
-            project_identifier="",
-            query_preset="fips_older_than",
-            message="Message",
-            properties_to_select=["name"],
-            email_params=email_params,
-            days=60,
-            ids=None,
-            names=None,
-            name_snippets=None,
-        )
-
-    def _email_users(self, query_preset: str):
-        """
-        Helper for checking email_users works correctly
-        """
-        smtp_account = MagicMock()
-        email_params = EmailParams(
-            subject="Subject",
-            email_from="testemail",
-            email_cc=[],
-            header="",
-            footer="",
-            attachment_filepaths=[],
-            test_override=False,
-            test_override_email=[""],
-            send_as_html=False,
-        )
-        return self.instance.email_users(
-            cloud_account="test_account",
-            smtp_account=smtp_account,
-            project_identifier="",
-            query_preset=query_preset,
-            message="Message",
-            properties_to_select=["user_email"],
-            email_params=email_params,
-            days=60,
-            ids=None,
-            names=None,
-            name_snippets=None,
-        )
-
-    def test_email_users_no_project(self):
-        """
-        Tests that email_users does not give a value error when a project is not required for the query type
-        """
-
-        for query_preset in OpenstackServer.SEARCH_QUERY_PRESETS_NO_PROJECT:
-            self._email_users(query_preset)
-
-    @raises(ValueError)
-    def _check_email_users_raises(self, query_preset):
-        """
-        Helper for checking email_users raises a ValueError when needed (needed to allow multiple to be checked
-        in the same test otherwise it stops after the first error)
-        """
-        self.assertRaises(ValueError, self._email_users(query_preset))
-
-    def test_email_users_no_project_raises(self):
-        """
-        Tests that email_users gives a value error when a project is not required for the query type
-        """
-
-        # Should raise an error for all but servers_older_than and servers_last_updated_before
-        should_pass = OpenstackServer.SEARCH_QUERY_PRESETS_NO_PROJECT
-        should_not_pass = [
-            x for x in OpenstackServer.SEARCH_QUERY_PRESETS if x not in should_pass
-        ]
-
-        for query_preset in should_not_pass:
-            self._check_email_users_raises(query_preset)

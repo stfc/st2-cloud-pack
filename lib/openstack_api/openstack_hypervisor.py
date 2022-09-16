@@ -1,13 +1,14 @@
-from typing import List
+from typing import List, Dict, Callable, Any
 
 from openstack.compute.v2.hypervisor import Hypervisor
 
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_query import OpenstackQuery
+from openstack_api.openstack_query_base import OpenstackQueryBase
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
-class OpenstackHypervisor(OpenstackWrapperBase):
+class OpenstackHypervisor(OpenstackWrapperBase, OpenstackQueryBase):
     # Lists all possible query presets for hypervisor.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_hvs",
@@ -49,11 +50,36 @@ class OpenstackHypervisor(OpenstackWrapperBase):
         return "enabled" in hypervisor["status"]
 
     def __init__(self, connection_cls=OpenstackConnection):
-        super().__init__(connection_cls)
+        OpenstackWrapperBase.__init__(self, connection_cls)
+        OpenstackQueryBase.__init__(self, connection_cls)
         self._query_api = OpenstackQuery(self._connection_cls)
 
     def __getitem__(self, item):
         return getattr(self, item)
+
+    def get_query_property_funcs(self, _) -> Dict[str, Callable[[Any], Any]]:
+        """
+        Returns property functions for use with OpenstackQuery.parse_properties
+        :param cloud_account: The associated clouds.yaml account
+        """
+
+        def _raise(ex):
+            raise ex
+
+        return {
+            # Note: These parameters are depreciated, currently the openstack sdk is using a max microversion
+            # 2.88 meaning these will work but the 'uptime' parameter will not. Later on we will need
+            # to use the result of 'openstack host show' on the hvs to obtain these parameters but this
+            # does not appear to be implemented in the sdk yet.
+            "vcpu_usage": lambda a: f"{a['vcpus_used']}/{a['vcpus']}",
+            "memory_mb_usage": lambda a: f"{a['memory_mb_used']}/{a['memory_mb']}",
+            "local_gb_usage": lambda a: f"{a['local_gb_used']}/{a['local_gb']}",
+            "uptime": lambda _: _raise(
+                NotImplementedError(
+                    "'uptime' is not available in the current OpenstackSDK version"
+                )
+            ),
+        }
 
     def search_all_hvs(self, cloud_account: str, **_) -> List[Hypervisor]:
         """

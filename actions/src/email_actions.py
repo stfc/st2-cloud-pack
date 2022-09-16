@@ -133,14 +133,14 @@ class EmailActions(Action):
             send_as_html=send_as_html,
         )
 
-        self._server_api.email_users(
+        self._server_api.query_and_email_users(
             cloud_account=cloud_account,
             smtp_account=EmailHelpers.load_smtp_account(self.config, smtp_account),
-            project_identifier=project_identifier,
             query_preset=query_preset,
-            message=message,
             properties_to_select=properties_to_select,
+            message=message,
             email_params=email_params,
+            project_identifier=project_identifier,
             **kwargs,
         )
 
@@ -196,14 +196,14 @@ class EmailActions(Action):
             send_as_html=send_as_html,
         )
 
-        self._floating_ip_api.email_users(
+        self._floating_ip_api.query_and_email_users(
             cloud_account=cloud_account,
             smtp_account=EmailHelpers.load_smtp_account(self.config, smtp_account),
-            project_identifier=project_identifier,
             query_preset=query_preset,
-            message=message,
             properties_to_select=properties_to_select,
+            message=message,
             email_params=email_params,
+            project_identifier=project_identifier,
             **kwargs,
         )
 
@@ -259,13 +259,13 @@ class EmailActions(Action):
             send_as_html=send_as_html,
         )
 
-        self._image_api.email_users(
+        self._image_api.query_and_email_users(
             cloud_account=cloud_account,
             smtp_account=EmailHelpers.load_smtp_account(self.config, smtp_account),
-            project_identifier=project_identifier,
             query_preset=query_preset,
-            message=message,
             properties_to_select=properties_to_select,
+            message=message,
             email_params=email_params,
+            project_identifier=project_identifier,
             **kwargs,
         )
