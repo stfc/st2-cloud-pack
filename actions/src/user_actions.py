@@ -1,6 +1,7 @@
 from typing import Dict, List, Callable
 
 from openstack_action import OpenstackAction
+from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_query import OpenstackQuery
 from openstack_api.openstack_user import OpenstackUser
 
@@ -30,7 +31,7 @@ class UserActions(OpenstackAction):
         query_preset: str,
         properties_to_select: List[str],
         group_by: str,
-        get_html: bool,
+        return_html: bool,
         **kwargs,
     ) -> str:
         """
@@ -39,14 +40,17 @@ class UserActions(OpenstackAction):
         :param query_preset: The query to use when searching for images
         :param properties_to_select: The list of properties to select and output from the found images
         :param group_by: Property to group returned results - can be empty for no grouping
-        :param get_html: When True tables returned are in html format
+        :param return_html: When True tables returned are in html format
         :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
         """
 
-        images = self._user_api[f"search_{query_preset}"](cloud_account, **kwargs)
-
-        output = self._query_api.parse_and_output_table(
-            cloud_account, images, "user", properties_to_select, group_by, get_html
+        return self._user_api.search(
+            cloud_account=cloud_account,
+            query_params=QueryParams(
+                query_preset=query_preset,
+                properties_to_select=properties_to_select,
+                group_by=group_by,
+                return_html=return_html,
+            ),
+            **kwargs,
         )
-
-        return output

@@ -1,4 +1,5 @@
-from unittest.mock import create_autospec, NonCallableMock
+from unittest.mock import call, create_autospec, NonCallableMock
+from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_user import OpenstackUser
 
 from openstack_api.openstack_query import OpenstackQuery
@@ -43,18 +44,37 @@ class TestUserActions(OpenstackActionTestBase):
 
     def test_list(self):
         """
-        Tests the action returns the found floating ips
+        Tests the action that lists users
         """
+        calls = []
         for query_preset in OpenstackUser.SEARCH_QUERY_PRESETS:
-            self.action.user_list(
-                cloud_account=NonCallableMock(),
-                user_domain=NonCallableMock(),
+            project_identifier = NonCallableMock()
+            query_params = QueryParams(
                 query_preset=query_preset,
                 properties_to_select=NonCallableMock(),
                 group_by=NonCallableMock(),
-                get_html=NonCallableMock(),
-                ids=None,
-                names=None,
-                name_snippets=None,
+                return_html=NonCallableMock(),
             )
-            self.user_mock[f"search_{query_preset}"].assert_called_once()
+            extra_args = {
+                "ids": None,
+                "names": None,
+                "name_snippets": None,
+            }
+            self.action.user_list(
+                cloud_account="test",
+                project_identifier=project_identifier,
+                query_preset=query_preset,
+                properties_to_select=query_params.properties_to_select,
+                group_by=query_params.group_by,
+                return_html=query_params.return_html,
+                **extra_args
+            )
+            calls.append(
+                call(
+                    cloud_account="test",
+                    query_params=query_params,
+                    project_identifier=project_identifier,
+                    **extra_args
+                )
+            )
+        self.user_mock.search.assert_has_calls(calls)

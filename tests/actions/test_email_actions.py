@@ -127,7 +127,7 @@ class TestServerActions(OpenstackActionTestBase):
             test_override_email=arguments.pop("test_override_email"),
             send_as_html=arguments.pop("send_as_html"),
         )
-        search_api_mock.email_users.assert_called_once_with(
+        search_api_mock.query_and_email_users.assert_called_once_with(
             cloud_account=arguments.pop("cloud_account"),
             smtp_account=smtp_account,
             project_identifier=arguments.pop("project_identifier"),

@@ -59,5 +59,19 @@ class EmailQueryParams:
     required_email_property: str
     valid_search_queries: List[str]
     valid_search_queries_no_project: List[str]
-    search_api: Any
-    object_type: str
+
+
+@dataclass
+class QueryParams:
+    """
+    Contains the data needed for running OpenstackQuery.search_resource
+    :param query_preset: The query to use when searching
+    :param properties_to_select: The properties to select and display from the found resource
+    :param group_by: Property to group the results by - can be empty for no grouping
+    :param return_html: Whether the result should be in html format or not
+    """
+
+    query_preset: str
+    properties_to_select: List[str]
+    group_by: str
+    return_html: bool

@@ -1,10 +1,28 @@
 import unittest
+from dataclasses import dataclass
 from unittest.mock import MagicMock
+
+from nose.tools import raises
 
 from openstack_api.openstack_hypervisor import OpenstackHypervisor
 
+from tests.lib.test_openstack_query_base import OpenstackQueryBaseTests
 
-class OpenstackHypervisorTests(unittest.TestCase):
+
+@dataclass
+class _HypervisorMock:
+    vcpus_used: int = 4
+    vcpus: int = 16
+    memory_mb_used: int = 4096
+    memory_mb: int = 16384
+    local_gb_used: int = 10
+    local_gb: int = 80
+
+    def __getitem__(self, attr):
+        return getattr(self, attr)
+
+
+class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
     """
     Runs various tests to ensure we are using the Openstack
     Hypervisor module works correctly
@@ -49,6 +67,35 @@ class OpenstackHypervisorTests(unittest.TestCase):
                 "memory_mb": 515530,
             },
         ]
+
+    def test_property_funcs(self):
+        """
+        Tests calling get_query_property_funcs
+        """
+        item = _HypervisorMock()
+        property_funcs = self.instance.get_query_property_funcs("test")
+
+        # Test vcpu_usage
+        result = property_funcs["vcpu_usage"](item)
+        self.assertEqual(result, f"{item.vcpus_used}/{item.vcpus}")
+
+        # Test memory_mb_usage
+        result = property_funcs["memory_mb_usage"](item)
+        self.assertEqual(result, f"{item.memory_mb_used}/{item.memory_mb}")
+
+        # Test local_gb_usage
+        result = property_funcs["local_gb_usage"](item)
+        self.assertEqual(result, f"{item.local_gb_used}/{item.local_gb}")
+
+    @raises(NotImplementedError)
+    def test_property_func_uptime_raises(self):
+        """
+        Tests the 'uptime' function returned by get_query_property_funcs raises
+        """
+        item = _HypervisorMock()
+        property_funcs = self.instance.get_query_property_funcs("test")
+
+        property_funcs["uptime"](item)
 
     def test_search_all_hvs(self):
         """

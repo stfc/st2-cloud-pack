@@ -1,14 +1,14 @@
-from typing import List
+from typing import List, Dict, Callable, Any
 
 from openstack.identity.v3.project import Project
 
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
-from openstack_api.openstack_query import OpenstackQuery
+from openstack_api.openstack_query_base import OpenstackQueryBase
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
-class OpenstackProject(OpenstackWrapperBase):
+class OpenstackProject(OpenstackWrapperBase, OpenstackQueryBase):
     # Lists all possible query presets for project.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_projects",
@@ -31,12 +31,18 @@ class OpenstackProject(OpenstackWrapperBase):
         return self._identity_api.get_project_email(project) is None
 
     def __init__(self, connection_cls=OpenstackConnection):
-        super().__init__(connection_cls)
+        OpenstackWrapperBase.__init__(self, connection_cls)
+        OpenstackQueryBase.__init__(self, connection_cls)
         self._identity_api = OpenstackIdentity(self._connection_cls)
-        self._query_api = OpenstackQuery(self._connection_cls)
 
-    def __getitem__(self, item):
-        return getattr(self, item)
+    def get_query_property_funcs(self, _) -> Dict[str, Callable[[Any], Any]]:
+        """
+        Returns property functions for use with OpenstackQuery.parse_properties
+        :param cloud_account: The associated clouds.yaml account
+        """
+        return {
+            "email": self._identity_api.get_project_email,
+        }
 
     def search_all_projects(self, cloud_account: str, **_) -> List[Project]:
         """

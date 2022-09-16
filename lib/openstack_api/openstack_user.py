@@ -1,14 +1,15 @@
-from typing import List
+from typing import List, Callable, Any, Dict
 
 from openstack.identity.v3.user import User
 
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_query import OpenstackQuery
+from openstack_api.openstack_query_base import OpenstackQueryBase
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
-class OpenstackUser(OpenstackWrapperBase):
+class OpenstackUser(OpenstackWrapperBase, OpenstackQueryBase):
     # Lists all possible query presets for user.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_users",
@@ -21,12 +22,17 @@ class OpenstackUser(OpenstackWrapperBase):
     ]
 
     def __init__(self, connection_cls=OpenstackConnection):
-        super().__init__(connection_cls)
+        OpenstackWrapperBase.__init__(self, connection_cls)
+        OpenstackQueryBase.__init__(self, connection_cls)
         self._identity_api = OpenstackIdentity(self._connection_cls)
         self._query_api = OpenstackQuery(self._connection_cls)
 
-    def __getitem__(self, item):
-        return getattr(self, item)
+    def get_query_property_funcs(self, _) -> Dict[str, Callable[[Any], Any]]:
+        """
+        Returns property functions for use with OpenstackQuery.parse_properties
+        :param cloud_account: The associated clouds.yaml account
+        """
+        return {}
 
     def search_all_users(self, cloud_account: str, user_domain: str, **_) -> List[User]:
         """
