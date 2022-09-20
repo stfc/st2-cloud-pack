@@ -9,9 +9,12 @@ parameters:
     type: string
   cloud_account:
     description: The clouds.yaml account to use whilst performing this action
-    default: ""
     required: true
     type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
   ip_prefix:
     description: The IPs that are allowed to access the port range specified in max and min port. This should be given in a CIDR format e.g. 0.0.0.0/0 for all internet
     default: ""

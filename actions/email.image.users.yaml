@@ -13,8 +13,11 @@ parameters:
   cloud_account:
     description: "The clouds.yaml account to use whilst performing this action"
     type: string
-    default: ""
     required: true
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
   project_identifier:
     type: string
     description: "Project (Name or ID) to search in - leave empty for all projects"

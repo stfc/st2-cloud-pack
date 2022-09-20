@@ -10,9 +10,12 @@ parameters:
     type: string
   cloud_account:
     description: The clouds.yaml account to use whilst performing this action
-    default: ''
     required: true
     type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
   project_identifier:
     description: The project to which the RBAC policy will be enforced (name or ID)
     required: true

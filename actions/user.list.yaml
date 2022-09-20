@@ -11,10 +11,13 @@ parameters:
     type: string
     immutable: true
   cloud_account:
-    description: "The clouds.yaml account to use whilst performing this action"
-    default: ""
+    description: The clouds.yaml account to use whilst performing this action
     required: true
     type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
   user_domain:
     type: string
     description: "Domain (Name or ID) to search in"
