@@ -4,10 +4,13 @@ entry_point: workflows/email.stale.server.users.yaml
 name: workflow.email.stale.server.users
 parameters:
   cloud_account:
-    description: "The clouds.yaml account to use whilst performing this action"
-    default: ""
+    description: The clouds.yaml account to use whilst performing this action
     required: true
     type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
   project_id:
     description: "Project (Name or ID) to search in - leave empty for all projects"
     default: ""

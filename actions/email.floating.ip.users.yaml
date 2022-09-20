@@ -13,7 +13,6 @@ parameters:
   cloud_account:
     description: "The clouds.yaml account to use whilst performing this action"
     type: string
-    default: ""
     required: true
   project_identifier:
     type: string

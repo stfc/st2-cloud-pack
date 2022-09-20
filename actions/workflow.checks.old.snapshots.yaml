@@ -5,9 +5,12 @@ name: workflow.check.old.snapshots
 parameters:
   cloud_account:
     description: The clouds.yaml account to use whilst performing this action
-    default: ""
     required: true
     type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
   project_id:
     description: ID of the project to be scanned for the above security group details (*Requires one of)
     default: ""

@@ -12,7 +12,10 @@ parameters:
     immutable: true
   cloud_account:
     description: "The clouds.yaml account to use whilst performing this action"
-    default: ""
     required: true
     type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
 runner_type: python-script

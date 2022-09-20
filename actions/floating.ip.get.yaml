@@ -12,6 +12,10 @@ parameters:
     description: The clouds.yaml account to use whilst performing this action
     required: true
     type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
   ip:
     description: "Floating IP address to look-up"
     required: true

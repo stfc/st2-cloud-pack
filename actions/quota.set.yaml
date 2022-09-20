@@ -12,6 +12,10 @@ parameters:
     description: The clouds.yaml account to use whilst performing this action
     required: true
     type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
   project_identifier:
     description: Project (Name or ID)
     required: true

@@ -12,9 +12,12 @@ parameters:
     immutable: true
   cloud_account:
     description: "The clouds.yaml account to use whilst performing this action"
-    default: ""
     required: true
     type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
   query_preset:
     type: string
     description: "Name of a preset query - e.g hvs_older_than: list all hvs older than"
