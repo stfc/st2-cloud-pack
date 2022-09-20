@@ -1,5 +1,5 @@
 name: jupyter.user.delete
-description: Removes the given list of users
+description: Removes the given list of users. This implicitly deletes any running pods the user has started.
 
 enabled: true
 entry_point: src/jupyter.py
