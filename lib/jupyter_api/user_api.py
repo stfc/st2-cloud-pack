@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from typing import List, Dict
 
@@ -5,6 +6,7 @@ import httpx
 import pytz
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
+from httpx import AsyncClient
 
 from jupyter_api.api_endpoints import API_ENDPOINTS
 from structs.jupyter_last_used import JupyterLastUsed
@@ -42,22 +44,36 @@ class UserApi:
         raise RuntimeError(f"Failed to get users error was:\n{result.text}")
 
     def delete_users(self, endpoint: str, auth_token: str, users: JupyterUsers) -> None:
+        loop = asyncio.get_event_loop()
+        futures = loop.run_until_complete(
+            self._delete_users_async(endpoint, auth_token, users)
+        )
+        for f in futures:
+            print(f)
+
+    async def _delete_users_async(
+        self, endpoint: str, auth_token: str, users: JupyterUsers
+    ):
         """
         Removes the given user(s) from the JupyterHub API
         """
         user_list = self._get_user_list(users)
-        for user in user_list:
-            self._delete_single_user(endpoint, auth_token, user)
+        async with httpx.AsyncClient() as session:
+            futures = [
+                self._delete_single_user(session, endpoint, auth_token, user)
+                for user in user_list
+            ]
+            return await asyncio.gather(*futures)
 
-    def _delete_single_user(self, endpoint: str, auth_token: str, user: str):
-        result = httpx.delete(
+    @staticmethod
+    def _delete_single_user(
+        session: AsyncClient, endpoint: str, auth_token: str, user: str
+    ):
+        return session.delete(
             url=API_ENDPOINTS[endpoint] + f"/hub/api/users/{user}",
             headers={"Authorization": f"token {auth_token}"},
             timeout=300,
         )
-
-        if result.status_code != 204:
-            raise RuntimeError(f"Failed to remove user {user}: {result.text}")
 
     def create_users(self, endpoint: str, auth_token: str, users: JupyterUsers) -> None:
         """

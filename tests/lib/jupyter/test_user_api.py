@@ -110,10 +110,10 @@ class UserApiTests(unittest.TestCase):
         """
         token = NonCallableMock()
         user_names = JupyterUsers(name="test", start_index=None, end_index=None)
-        httpx.delete.return_value.status_code = 204
+        async_client = httpx.AsyncClient.return_value.__aenter__.return_value
 
         self.api.delete_users("dev", token, user_names)
-        httpx.delete.assert_called_once_with(
+        async_client.delete.assert_called_once_with(
             url=API_ENDPOINTS["dev"] + "/hub/api/users/test",
             headers={"Authorization": f"token {token}"},
             timeout=300,
@@ -129,16 +129,16 @@ class UserApiTests(unittest.TestCase):
         user_names = JupyterUsers(
             name="test", start_index=start_index, end_index=end_index
         )
-        httpx.delete.return_value.status_code = 204
+        async_client = httpx.AsyncClient.return_value.__aenter__.return_value
 
         self.api.delete_users("dev", token, user_names)
         for i, user_index in enumerate(range(start_index, end_index + 1)):
-            assert httpx.delete.call_args_list[i] == call(
+            assert async_client.delete.call_args_list[i] == call(
                 url=API_ENDPOINTS["dev"] + f"/hub/api/users/test-{user_index}",
                 headers={"Authorization": f"token {token}"},
                 timeout=300,
             )
-        assert httpx.delete.call_count == (end_index - start_index + 1)
+        assert async_client.delete.call_count == (end_index - start_index + 1)
 
     @raises(RuntimeError)
     def test_remove_users_missing_start_index(self, _):
