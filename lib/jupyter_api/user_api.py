@@ -48,8 +48,8 @@ class UserApi:
         futures = loop.run_until_complete(
             self._delete_users_async(endpoint, auth_token, users)
         )
-        for f in futures:
-            print(f)
+        for future in futures:
+            print(future)
 
     async def _delete_users_async(
         self, endpoint: str, auth_token: str, users: JupyterUsers
@@ -116,22 +116,36 @@ class UserApi:
             )
 
     def stop_servers(self, endpoint: str, auth_token: str, users: JupyterUsers) -> None:
+        loop = asyncio.get_event_loop()
+        futures = loop.run_until_complete(
+            self._stop_servers_async(endpoint, auth_token, users)
+        )
+        for future in futures:
+            print(future)
+
+    async def _stop_servers_async(
+        self, endpoint: str, auth_token: str, users: JupyterUsers
+    ):
         """
         Stops servers for the given user(s) from the JupyterHub API
         """
         user_list = self._get_user_list(users)
-        for user in user_list:
-            self._stop_single_server(endpoint, auth_token, user)
+        async with httpx.AsyncClient() as session:
+            futures = [
+                self._stop_single_server(session, endpoint, auth_token, user)
+                for user in user_list
+            ]
+            return await asyncio.gather(*futures)
 
-    def _stop_single_server(self, endpoint: str, auth_token: str, user: str):
-        result = httpx.delete(
+    @staticmethod
+    def _stop_single_server(
+        session: AsyncClient, endpoint: str, auth_token: str, user: str
+    ):
+        return session.delete(
             url=API_ENDPOINTS[endpoint] + f"/hub/api/users/{user}/server",
             headers={"Authorization": f"token {auth_token}"},
             timeout=60,
         )
-
-        if result.status_code not in (202, 204):
-            raise RuntimeError(f"Failed to stop server for user {user}: {result.text}")
 
     @staticmethod
     def _get_user_list(users: JupyterUsers) -> List[str]:

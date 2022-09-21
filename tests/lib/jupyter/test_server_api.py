@@ -90,10 +90,10 @@ class UserApiTests(unittest.TestCase):
         """
         token = NonCallableMock()
         user_names = JupyterUsers(name="test", start_index=None, end_index=None)
-        httpx.delete.return_value.status_code = 204
+        async_client = httpx.AsyncClient.return_value.__aenter__.return_value
 
         self.api.stop_servers("dev", token, user_names)
-        httpx.delete.assert_called_once_with(
+        async_client.delete.assert_called_once_with(
             url=API_ENDPOINTS["dev"] + "/hub/api/users/test/server",
             headers={"Authorization": f"token {token}"},
             timeout=60,
@@ -109,16 +109,16 @@ class UserApiTests(unittest.TestCase):
         user_names = JupyterUsers(
             name="test", start_index=start_index, end_index=end_index
         )
-        httpx.delete.return_value.status_code = 204
+        async_client = httpx.AsyncClient.return_value.__aenter__.return_value
 
         self.api.stop_servers("dev", token, user_names)
         for i, user_index in enumerate(range(start_index, end_index + 1)):
-            assert httpx.delete.call_args_list[i] == call(
+            assert async_client.delete.call_args_list[i] == call(
                 url=API_ENDPOINTS["dev"] + f"/hub/api/users/test-{user_index}/server",
                 headers={"Authorization": f"token {token}"},
                 timeout=60,
             )
-        assert httpx.delete.call_count == (end_index - start_index + 1)
+        assert async_client.delete.call_count == (end_index - start_index + 1)
 
     @raises(RuntimeError)
     def test_stop_servers_missing_start_index(self, _):
@@ -143,14 +143,3 @@ class UserApiTests(unittest.TestCase):
         user_names = JupyterUsers(name="test", start_index=2, end_index=1)
         with assert_raises_regexp(RuntimeError, "must be less than"):
             self.api.stop_servers("dev", "token", user_names)
-
-    def test_stop_servers_handles_error(self, httpx):
-        """
-        Tests that the stop_servers method logs an error if the request fails
-        """
-        token = NonCallableMock()
-        user_names = JupyterUsers(name="test", start_index=None, end_index=None)
-        httpx.delete.return_value.status_code = 500
-
-        with self.assertRaisesRegex(RuntimeError, "Failed to stop server"):
-            self.api.stop_servers("dev", token, user_names)
