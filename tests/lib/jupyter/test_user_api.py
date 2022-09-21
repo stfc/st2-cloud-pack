@@ -13,13 +13,13 @@ from jupyter_api.user_api import UserApi
 from structs.jupyter_users import JupyterUsers
 
 
-@patch("jupyter_api.user_api.requests")
+@patch("jupyter_api.user_api.httpx")
 class UserApiTests(unittest.TestCase):
     def setUp(self) -> None:
         self.api = UserApi()
 
     @parameterized.expand(["dev", "prod"])
-    def test_get_users(self, requests, endpoint):
+    def test_get_users(self, httpx, endpoint):
         """
         Tests that the get_users method calls the correct endpoint
         and serialises the JSON correctly
@@ -28,14 +28,14 @@ class UserApiTests(unittest.TestCase):
         expected_name = "test"
         expected_time = "2020-01-01T00:00:00Z"
 
-        requests.get.return_value.status_code = 200
-        requests.get.return_value.json.return_value = [
+        httpx.get.return_value.status_code = 200
+        httpx.get.return_value.json.return_value = [
             {"name": expected_name, "last_activity": expected_time}
         ]
 
         returned = self.api.get_users(endpoint, token)
 
-        requests.get.assert_called_once_with(
+        httpx.get.assert_called_once_with(
             url=API_ENDPOINTS[endpoint] + "/hub/api/users",
             headers={"Authorization": f"token {token}"},
             timeout=300,
@@ -45,30 +45,30 @@ class UserApiTests(unittest.TestCase):
         assert returned[0][1] == parser.parse(expected_time)
 
     @parameterized.expand(["dev", "prod"])
-    def test_get_users_no_users(self, requests, endpoint):
+    def test_get_users_no_users(self, httpx, endpoint):
         """
         Tests that the get_users method returns an empty list if no users are found
         """
         token = NonCallableMock()
 
-        requests.get.return_value.status_code = 204
-        requests.get.return_value.json.return_value = []
+        httpx.get.return_value.status_code = 204
+        httpx.get.return_value.json.return_value = []
 
         returned = self.api.get_users(endpoint, token)
 
-        requests.get.assert_called_once_with(
+        httpx.get.assert_called_once_with(
             url=API_ENDPOINTS[endpoint] + "/hub/api/users",
             headers={"Authorization": f"token {token}"},
             timeout=300,
         )
         assert len(returned) == 0
 
-    def test_get_users_handles_error(self, requests):
+    def test_get_users_handles_error(self, httpx):
         """
         Tests that the get_users method logs an error if the request fails
         """
-        requests.get.return_value.status_code = 500
-        requests.get.return_value.json.return_value = []
+        httpx.get.return_value.status_code = 500
+        httpx.get.return_value.json.return_value = []
 
         with self.assertRaisesRegex(RuntimeError, "Failed to get users"):
             self.api.get_users("dev", "token")
@@ -104,22 +104,22 @@ class UserApiTests(unittest.TestCase):
         self.api.get_users.assert_called_once_with("dev", "token")
         assert not returned
 
-    def test_remove_users_single_user(self, requests):
+    def test_remove_users_single_user(self, httpx):
         """
         Tests that the delete_users method calls the correct endpoint
         """
         token = NonCallableMock()
         user_names = JupyterUsers(name="test", start_index=None, end_index=None)
-        requests.delete.return_value.status_code = 204
+        httpx.delete.return_value.status_code = 204
 
         self.api.delete_users("dev", token, user_names)
-        requests.delete.assert_called_once_with(
+        httpx.delete.assert_called_once_with(
             url=API_ENDPOINTS["dev"] + "/hub/api/users/test",
             headers={"Authorization": f"token {token}"},
             timeout=300,
         )
 
-    def test_remove_users_multiple_users(self, requests):
+    def test_remove_users_multiple_users(self, httpx):
         """
         Tests that the delete_users method calls the correct endpoint
         and usernames
@@ -129,16 +129,16 @@ class UserApiTests(unittest.TestCase):
         user_names = JupyterUsers(
             name="test", start_index=start_index, end_index=end_index
         )
-        requests.delete.return_value.status_code = 204
+        httpx.delete.return_value.status_code = 204
 
         self.api.delete_users("dev", token, user_names)
         for i, user_index in enumerate(range(start_index, end_index + 1)):
-            assert requests.delete.call_args_list[i] == call(
+            assert httpx.delete.call_args_list[i] == call(
                 url=API_ENDPOINTS["dev"] + f"/hub/api/users/test-{user_index}",
                 headers={"Authorization": f"token {token}"},
                 timeout=300,
             )
-        assert requests.delete.call_count == (end_index - start_index + 1)
+        assert httpx.delete.call_count == (end_index - start_index + 1)
 
     @raises(RuntimeError)
     def test_remove_users_missing_start_index(self, _):
@@ -164,22 +164,22 @@ class UserApiTests(unittest.TestCase):
         with assert_raises_regexp(RuntimeError, "must be less than"):
             self.api.delete_users("dev", "token", user_names)
 
-    def test_create_users_single_user(self, requests):
+    def test_create_users_single_user(self, httpx):
         """
         Tests that the create_users method calls the correct endpoint
         """
         token = NonCallableMock()
         user_names = JupyterUsers(name="test", start_index=None, end_index=None)
-        requests.post.return_value.status_code = 201
+        httpx.post.return_value.status_code = 201
 
         self.api.create_users("dev", token, user_names)
-        requests.post.assert_called_once_with(
+        httpx.post.assert_called_once_with(
             url=API_ENDPOINTS["dev"] + "/hub/api/users/test",
             headers={"Authorization": f"token {token}"},
             timeout=60,
         )
 
-    def test_create_users_multiple_users(self, requests):
+    def test_create_users_multiple_users(self, httpx):
         """
         Tests that the create_users method calls the correct endpoint
         and usernames
@@ -189,16 +189,16 @@ class UserApiTests(unittest.TestCase):
         user_names = JupyterUsers(
             name="test", start_index=start_index, end_index=end_index
         )
-        requests.post.return_value.status_code = 201
+        httpx.post.return_value.status_code = 201
 
         self.api.create_users("dev", token, user_names)
         for i, user_index in enumerate(range(start_index, end_index + 1)):
-            assert requests.post.call_args_list[i] == call(
+            assert httpx.post.call_args_list[i] == call(
                 url=API_ENDPOINTS["dev"] + f"/hub/api/users/test-{user_index}",
                 headers={"Authorization": f"token {token}"},
                 timeout=60,
             )
-        assert requests.post.call_count == (end_index - start_index + 1)
+        assert httpx.post.call_count == (end_index - start_index + 1)
 
     @raises(RuntimeError)
     def test_create_users_missing_start_index(self, _):

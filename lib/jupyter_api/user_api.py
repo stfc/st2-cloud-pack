@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import List, Dict
 
+import httpx
 import pytz
-import requests
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
 
@@ -29,7 +29,7 @@ class UserApi:
         """
         Gets the list of all users from the JupyterHub API
         """
-        result = requests.get(
+        result = httpx.get(
             url=API_ENDPOINTS[endpoint] + "/hub/api/users",
             headers={"Authorization": f"token {auth_token}"},
             timeout=300,
@@ -50,7 +50,7 @@ class UserApi:
             self._delete_single_user(endpoint, auth_token, user)
 
     def _delete_single_user(self, endpoint: str, auth_token: str, user: str):
-        result = requests.delete(
+        result = httpx.delete(
             url=API_ENDPOINTS[endpoint] + f"/hub/api/users/{user}",
             headers={"Authorization": f"token {auth_token}"},
             timeout=300,
@@ -68,7 +68,7 @@ class UserApi:
             self._create_single_user(endpoint, auth_token, user)
 
     def _create_single_user(self, endpoint: str, auth_token: str, user: str):
-        result = requests.post(
+        result = httpx.post(
             url=API_ENDPOINTS[endpoint] + f"/hub/api/users/{user}",
             headers={"Authorization": f"token {auth_token}"},
             timeout=60,
@@ -88,7 +88,7 @@ class UserApi:
             self._start_single_server(endpoint, auth_token, user)
 
     def _start_single_server(self, endpoint: str, auth_token: str, user: str):
-        result = requests.post(
+        result = httpx.post(
             url=API_ENDPOINTS[endpoint] + f"/hub/api/users/{user}/server",
             headers={"Authorization": f"token {auth_token}"},
             timeout=60,
@@ -108,7 +108,7 @@ class UserApi:
             self._stop_single_server(endpoint, auth_token, user)
 
     def _stop_single_server(self, endpoint: str, auth_token: str, user: str):
-        result = requests.delete(
+        result = httpx.delete(
             url=API_ENDPOINTS[endpoint] + f"/hub/api/users/{user}/server",
             headers={"Authorization": f"token {auth_token}"},
             timeout=60,
