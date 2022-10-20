@@ -1,6 +1,7 @@
 from typing import List, Dict, Callable, Any
 
 from openstack.compute.v2.hypervisor import Hypervisor
+from pyparsing import empty
 
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_query import OpenstackQuery
@@ -81,15 +82,30 @@ class OpenstackHypervisor(OpenstackWrapperBase, OpenstackQueryBase):
             ),
         }
 
-    def search_all_hvs(self, cloud_account: str, **_) -> List[Hypervisor]:
+    def get_all_hypervisors(self, cloud_account: str) -> List[Hypervisor]:
         """
-        Returns a list of hvs matching a given query
+        Returns a list of all hypervisors
         :param cloud_account: The associated clouds.yaml account
-        :return: A list of all hvs
+        :return: A list of all hypervisors
         """
 
-        with self._connection_cls(cloud_account) as conn:
-            return conn.list_hypervisors(filters={})
+        with OpenstackConnection(cloud_name=cloud_account) as conn:
+            return conn.list_hypervisors()
+
+    def get_all_empty_hypervisors(self, cloud_account: str) -> List[str]:
+        """
+        Returns a list of empty hypervisors
+        :param cloud_account: The associated clouds.yaml account
+        :return: A list of all empty hypervisors
+        """
+        hvs = self.get_all_hypervisors(cloud_account)
+        empty_hvs = []
+        for hv in hvs:
+            hv = dict(hv)
+            if hv["vcpus_used"] == 0 and hv["running_vms"] == 0 and hv["status"] == "enabled":
+                empty_hvs.append(hv["name"])
+        
+        return empty_hvs
 
     def search_hvs_name_in(
         self, cloud_account: str, names: List[str], **_
