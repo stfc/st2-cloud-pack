@@ -4,6 +4,10 @@ jupyter:
     training_token:
     dev_token:
 
+automatedUpdater:
+  prod_cloud: ""
+  dev_cloud: "admin-openstack"
+
 smtp_accounts:
   - name: "default"
     password:

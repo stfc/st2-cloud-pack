@@ -12,7 +12,6 @@ def run(cloud_account: str = "admin-openstack"):
     updateable_hvs = instance.get_all_empty_hypervisors(cloud_account)
     table.add_column("Hypervisor Name", updateable_hvs)
     print(table)
-    print(len(updateable_hvs))
 
 if __name__ == '__main__':
     run()
