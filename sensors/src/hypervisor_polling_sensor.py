@@ -32,10 +32,10 @@ class HypervisorPollingSensor(PollingSensor):
         """
         Sets up the sensor
         """
-        self._credentials["prod"] = self.sensor_service.get_value(
+        self._cloud["prod"] = self.sensor_service.get_value(
             "automatedUpdater.prod_token", local=False, decrypt=True
         )
-        self._credentials["dev"] = self.sensor_service.get_value(
+        self._cloud["dev"] = self.sensor_service.get_value(
             "automatedUpdater.dev_token", local=False, decrypt=True
         )
 
