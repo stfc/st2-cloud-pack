@@ -42,4 +42,13 @@ class HypervisorPollingSensor(PollingSensor):
         Poll OpenStack for empty hypervisors and make list to pass to hypervisor_shutdown action
         """
         hvs_to_update = self.api.get_all_empty_hypervisors(self._cloud[self._environment])
-        self._log.info(hvs_to_update)
+        list_length = len(hvs_to_update)
+        self._log.info("Hypervisor to update: " + str(hvs_to_update))
+        self._log.info("Number of hypervisors possible to update: " + str(list_length))
+
+        # TODO - Check if the hypervisor needs updating
+
+        # Choose 75% to update
+        pc_hvs_to_update = hvs_to_update[0:round(list_length*0.75, 0)]
+        
+        self._log.info("Number of hypervisors to be updated: " + str(len(pc_hvs_to_update)))
