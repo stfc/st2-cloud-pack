@@ -33,16 +33,16 @@ class HypervisorPollingSensor(PollingSensor):
         Sets up the sensor
         """
         self._cloud["prod"] = self.sensor_service.get_value(
-            "automated_hypervisor_updater.prod_token", local=False, decrypt=True
+            "automated_hypervisor_updater.prod_cloud", local=False, decrypt=True
         )
         self._cloud["dev"] = self.sensor_service.get_value(
-            "automated_hypervisor_updater.dev_token", local=False, decrypt=True
+            "automated_hypervisor_updater.dev_cloud", local=False, decrypt=True
         )
 
         if self._cloud["prod"] != "not_set":
             self._environment = "prod"
         
-        self._log.info("Cloud to use" + self._cloud[self._environment])
+        self._log.info("Cloud to use" + str(self._cloud[self._environment]))
 
     def poll(self):
         """
