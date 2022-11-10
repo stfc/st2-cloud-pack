@@ -49,6 +49,6 @@ class HypervisorPollingSensor(PollingSensor):
         # TODO - Check if the hypervisor needs updating
 
         # Choose 75% to update
-        pc_hvs_to_update = hvs_to_update[0:round(list_length*0.75, 0)]
+        pc_hvs_to_update = hvs_to_update[0:int(list_length*0.75)]
         
         self._log.info("Number of hypervisors to be updated: " + str(len(pc_hvs_to_update)))
