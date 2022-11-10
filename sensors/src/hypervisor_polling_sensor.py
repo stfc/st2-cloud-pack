@@ -39,7 +39,7 @@ class HypervisorPollingSensor(PollingSensor):
             "automated_hypervisor_updater.dev_cloud", local=False, decrypt=True
         )
 
-        if self._cloud["prod"] != "not_set":
+        if self._cloud["prod"] != "not_set" and self._cloud["prod"] != None:
             self._environment = "prod"
         
         self._log.info("Environment: " + str(self._environment))
