@@ -1,0 +1,13 @@
+class_name: "HypervisorPollingSensor"
+entry_point: "src/hypervisor_polling_sensor.py"
+description: "Sensor that searches for empty hypervisors"
+poll_interval: 120  # Every 10 hours  #TODO
+trigger_types:
+  - name: "jupyter.inactiveusers"
+    description: "Trigger for JupyterHub inactive users that match are older than the given expiry"
+    payload_schema:
+      type: "object"
+      properties:
+        env:
+          type: "string"
+          description: "The environment to run the sensor in"
