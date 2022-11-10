@@ -42,7 +42,7 @@ class HypervisorPollingSensor(PollingSensor):
         if self._cloud["prod"] != "not_set":
             self._environment = "prod"
         
-        self._log.info(self._cloud[self._environment])
+        self._log.info("Cloud to use" + self._cloud[self._environment])
 
     def poll(self):
         """
