@@ -4,14 +4,14 @@ Polling Sensor to query OpenStack for empty hypervisors.
 
 from st2reactor.sensor.base import PollingSensor
 from st2reactor.container.sensor_wrapper import SensorService
-from lib.openstack_api.openstack_hypervisor import OpenstackHypervisor
+from openstack_api.openstack_hypervisor import OpenstackHypervisor
 class HypervisorPollingSensor(PollingSensor):
 
     def __init__(self, sensor_service, config=None, poll_interval=10):
         super().__init__(sensor_service, config, poll_interval)
         self.api = OpenstackHypervisor()
         self.sensor_service: SensorService = sensor_service
-        self._logger = self.sensor_service.get_logger(name=self.__class__.__name__)
+        self._log = self.sensor_service.get_logger(name=self.__class__.__name__)
         self._cloud = {"dev": None, "prod": None, "training": None}
         self._environment = "dev"
 
@@ -44,4 +44,4 @@ class HypervisorPollingSensor(PollingSensor):
         Poll OpenStack for empty hypervisors and make list to pass to hypervisor_shutdown action
         """
         hvs_to_update = self.api.get_all_empty_hypervisors(cloud_account)
-        self._logger.info(hvs_to_update)
+        self._log.info(hvs_to_update)

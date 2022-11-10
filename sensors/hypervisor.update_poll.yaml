@@ -3,7 +3,7 @@ entry_point: "src/hypervisor_polling_sensor.py"
 description: "Sensor that searches for empty hypervisors"
 poll_interval: 120  # Every 10 hours  #TODO
 trigger_types:
-  - name: "hypervisror.update_hypervisors"
+  - name: "hypervisor.update_hypervisors"
     description: "Trigger for hypervisor update poll"
     payload_schema:
       type: "object"
