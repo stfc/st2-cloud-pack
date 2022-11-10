@@ -33,15 +33,18 @@ class HypervisorPollingSensor(PollingSensor):
         Sets up the sensor
         """
         self._cloud["prod"] = self.sensor_service.get_value(
-            "automatedUpdater.prod_token", local=False, decrypt=True
+            "automated_hypervisor_updater.prod_token", local=False, decrypt=True
         )
         self._cloud["dev"] = self.sensor_service.get_value(
-            "automatedUpdater.dev_token", local=False, decrypt=True
+            "automated_hypervisor_updater.dev_token", local=False, decrypt=True
         )
 
-    def poll(self, cloud_account):
+        if self.cloud["prod"] != "not_set":
+            self._environment = "prod"
+
+    def poll(self):
         """
         Poll OpenStack for empty hypervisors and make list to pass to hypervisor_shutdown action
         """
-        hvs_to_update = self.api.get_all_empty_hypervisors(cloud_account)
+        hvs_to_update = self.api.get_all_empty_hypervisors(self.cloud[self._environment])
         self._log.info(hvs_to_update)
