@@ -17,19 +17,20 @@ jupyter:
       description: "Token for jupyter.stfc.ac.uk"
       required: false
 
-automatedUpdater:
+automated_hypervisor_updater:
   description: Automated Updater Settings and tokens
   type: "object"
   required: true
   properties:
-    dev_token:
+    dev_cloud:
       type: "string"
       description: "Cloud to use when running Automated Update Poll on Dev"
       required: false
-    prod_token:
+    prod_cloud:
       type: "string"
       description: "Cloud to use when running Automated Update Poll on Prod"
       required: false
+
 
 smtp_accounts:
   description: "SMTP accounts"
