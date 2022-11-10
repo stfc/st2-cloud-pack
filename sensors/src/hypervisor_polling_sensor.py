@@ -36,7 +36,7 @@ class HypervisorPollingSensor(PollingSensor):
             "automated_hypervisor_updater.prod_cloud", local=False, decrypt=False
         )
         self._cloud["dev"] = self.sensor_service.get_value(
-            "automated_hypervisor_updater.dev_cloud", local=False, decrypt=True
+            "automated_hypervisor_updater.dev_cloud", local=False, decrypt=False
         )
 
         if self._cloud["prod"] != "not_set" and self._cloud["prod"] != None:
