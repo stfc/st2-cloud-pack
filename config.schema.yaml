@@ -17,7 +17,7 @@ jupyter:
       description: "Token for jupyter.stfc.ac.uk"
       required: false
 
-automated_hypervisor_updater:
+cloud_names:
   description: Automated Updater Settings and tokens
   type: "object"
   required: true
@@ -30,6 +30,10 @@ automated_hypervisor_updater:
       type: "string"
       description: "Cloud to use when running Automated Update Poll on Prod"
       required: false
+    selected_env:
+      type: "string"
+      description: "Cloud to use when running Automated Update Poll on Dev"
+      required: true
 
 
 smtp_accounts:
