@@ -12,7 +12,7 @@ class HypervisorPollingSensor(PollingSensor):
         self.api = OpenstackHypervisor()
         self.sensor_service: SensorService = sensor_service
         self._log = self.sensor_service.get_logger(name=self.__class__.__name__)
-        self._cloud = {"dev": None, "prod": None, "training": None}
+        self._cloud = {"dev": None, "prod": None}
         self._environment = "dev"
 
     # pylint: disable=missing-function-docstring
@@ -33,7 +33,7 @@ class HypervisorPollingSensor(PollingSensor):
         Sets up the sensor
         """
         self._cloud["prod"] = self.sensor_service.get_value(
-            "automated_hypervisor_updater.prod_cloud", local=False, decrypt=True
+            "automated_hypervisor_updater.prod_cloud", local=False, decrypt=False
         )
         self._cloud["dev"] = self.sensor_service.get_value(
             "automated_hypervisor_updater.dev_cloud", local=False, decrypt=True

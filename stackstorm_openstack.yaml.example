@@ -4,8 +4,8 @@ jupyter:
     training_token:
     dev_token:
 
-automatedUpdater:
-  prod_cloud: ""
+automated_hypervisor_updater:
+  prod_cloud: "not_set"
   dev_cloud: "admin-openstack"
 
 smtp_accounts:
