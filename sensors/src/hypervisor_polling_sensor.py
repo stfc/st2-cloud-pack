@@ -13,7 +13,10 @@ class HypervisorPollingSensor(PollingSensor):
         super().__init__(sensor_service, config, poll_interval)
         self.api = OpenstackHypervisor()
         self._config = self._config.get("cloud_names")
-        self._cloud = {"dev": self._config.get("dev_cloud", None), "prod": self._config.get("prod_cloud", None)}
+        self._cloud = {
+            "dev": self._config.get("dev_cloud", None),
+            "prod": self._config.get("prod_cloud", None)
+        }
         self._log = self.sensor_service.get_logger(name=self.__class__.__name__)
         self._environment = self._config.get("selected_env")
 
@@ -54,8 +57,10 @@ class HypervisorPollingSensor(PollingSensor):
         # if (len(hvs_to_update)/list_length) > 0.75:
         #     hvs_to_update = hvs_to_update[0:int(list_length * (PERCENTAGE_TO_REBOOT / 100))]
 
-        hvs_to_update = empty_hvs[0:int(list_length * (PERCENTAGE_TO_REBOOT / 100))]
-        self._log.info("Number of hypervisors to be updated: " + str(len(hvs_to_update)))
+        hvs_to_update = empty_hvs[0 : int(list_length * (PERCENTAGE_TO_REBOOT / 100))]
+        self._log.info(
+            "Number of hypervisors to be updated: " + str(len(hvs_to_update))
+        )
 
         # Trigger for updating the hypervisors. Commented out until action is functional.
         # self.sensor_service.dispatch(
