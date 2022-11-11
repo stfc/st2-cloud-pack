@@ -131,7 +131,7 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
             cloud_account=self.cloud_account
         )
 
-        self.mocked_connection.assert_called_once_with(cloud_name=self.cloud_account)
+        self.instance.search_all_hvs.assert_called_once_with(self.cloud_account)
         self.assertEqual(result, [expected[0]["name"]])
 
     def test_search_hvs_name_in(self):
@@ -147,7 +147,7 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
             names=["hv123"],
         )
 
-        self.mocked_connection.assert_called_once_with(cloud_name=self.cloud_account)
+        self.instance.search_all_hvs.assert_called_once_with(self.cloud_account)
         self.assertEqual(result, [self.mock_hv_list[0]])
 
     def test_search_hvs_name_not_in(self):
@@ -163,7 +163,7 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
             names=["hv123", "hv124"],
         )
 
-        self.mocked_connection.assert_called_once_with(cloud_name=self.cloud_account)
+        self.instance.search_all_hvs.assert_called_once_with(self.cloud_account)
         self.assertEqual(result, [self.mock_hv_list[2]])
 
     def test_search_hvs_name_contains(self):
@@ -179,7 +179,7 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
             name_snippets=["hv", "12"],
         )
 
-        self.mocked_connection.assert_called_once_with(cloud_name=self.cloud_account)
+        self.instance.search_all_hvs.assert_called_once_with(self.cloud_account)
         self.assertEqual(result, [self.mock_hv_list[0], self.mock_hv_list[1]])
 
         result = self.instance.search_hvs_name_contains(
@@ -207,7 +207,7 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
             name_snippets=["hv", "12"],
         )
 
-        self.mocked_connection.assert_called_once_with(cloud_name=self.cloud_account)
+        self.instance.search_all_hvs.assert_called_once_with(self.cloud_account)
         self.assertEqual(result, [])
 
         result = self.instance.search_hvs_name_not_contains(
@@ -234,7 +234,7 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
             cloud_account=self.cloud_account, ids=["hypervisorid1", "hypervisorid2"]
         )
 
-        self.mocked_connection.assert_called_once_with(cloud_name=self.cloud_account)
+        self.instance.search_all_hvs.assert_called_once_with(self.cloud_account)
         self.assertEqual(result, [self.mock_hv_list[0], self.mock_hv_list[1]])
 
     def test_search_hvs_id_not_in(self):
@@ -249,7 +249,7 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
             cloud_account=self.cloud_account, ids=["hypervisorid1", "hypervisorid2"]
         )
 
-        self.mocked_connection.assert_called_once_with(cloud_name=self.cloud_account)
+        self.instance.search_all_hvs.assert_called_once_with(self.cloud_account)
         self.assertEqual(result, [self.mock_hv_list[2]])
 
     def test_search_hv_down(self):
@@ -262,7 +262,7 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
 
         result = self.instance.search_hvs_down(cloud_account=self.cloud_account)
 
-        self.mocked_connection.assert_called_once_with(cloud_name=self.cloud_account)
+        self.instance.search_all_hvs.assert_called_once_with(self.cloud_account)
         self.assertEqual(result, [self.mock_hv_list[2]])
 
     def test_search_hv_up(self):
@@ -275,7 +275,7 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
 
         result = self.instance.search_hvs_up(cloud_account=self.cloud_account)
 
-        self.mocked_connection.assert_called_once_with(cloud_name=self.cloud_account)
+        self.instance.search_all_hvs.assert_called_once_with(self.cloud_account)
         self.assertEqual(result, [self.mock_hv_list[0], self.mock_hv_list[1]])
 
     def test_search_hv_disabled(self):
@@ -288,7 +288,7 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
 
         result = self.instance.search_hvs_disabled(cloud_account=self.cloud_account)
 
-        self.mocked_connection.assert_called_once_with(cloud_name=self.cloud_account)
+        self.instance.search_all_hvs.assert_called_once_with(self.cloud_account)
         self.assertEqual(result, [self.mock_hv_list[1]])
 
     def test_search_hv_enabled(self):
@@ -301,5 +301,5 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
 
         result = self.instance.search_hvs_enabled(cloud_account=self.cloud_account)
 
-        self.mocked_connection.assert_called_once_with(cloud_name=self.cloud_account)
+        self.instance.search_all_hvs.assert_called_once_with(self.cloud_account)
         self.assertEqual(result, [self.mock_hv_list[0], self.mock_hv_list[2]])
