@@ -51,7 +51,12 @@ class HypervisorPollingSensor(PollingSensor):
         self._log.info("Number of hypervisors possible to update: " + str(list_length))
 
         # TODO - Check if the hypervisor needs updating (No point rebooting up to date hypervisors)
+        # hvs_to_update = self.api.check_hypervisor_version(self._cloud[self._environment], empty_hvs)
 
+        # Check compare the length of empty hvs list and the out of date hvs list
+        # if (len(hvs_to_update)/list_length) > 0.75:
+        #     hvs_to_update = hvs_to_update[0:int(list_length * (PERCENTAGE_TO_REBOOT / 100))]
+        
         hvs_to_update = empty_hvs[0:int(list_length * (PERCENTAGE_TO_REBOOT / 100))]
         self._log.info("Number of hypervisors to be updated: " + str(len(hvs_to_update)))
 
