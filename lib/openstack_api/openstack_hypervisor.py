@@ -105,8 +105,7 @@ class OpenstackHypervisor(OpenstackWrapperBase, OpenstackQueryBase):
                 and hpv["running_vms"] == 0
                 and hpv["status"] == "enabled"
             ):
-                empty_hvs.append(hpv["name"])
-            
+                empty_hvs.append(hpv["name"])      
 
         return empty_hvs
 

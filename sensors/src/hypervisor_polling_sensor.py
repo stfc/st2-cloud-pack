@@ -7,8 +7,8 @@ from openstack_api.openstack_hypervisor import OpenstackHypervisor
 
 PERCENTAGE_TO_REBOOT = 75
 
-class HypervisorPollingSensor(PollingSensor):
 
+class HypervisorPollingSensor(PollingSensor):
     def __init__(self, sensor_service, config=None, poll_interval=10):
         super().__init__(sensor_service, config, poll_interval)
         self.api = OpenstackHypervisor()
