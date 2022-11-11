@@ -1,5 +1,5 @@
 """
-Polling Sensor to query OpenStack for empty hypervisors.
+Polling Sensor to query OpenStack for empty hypervisors and trigger reboot of those hypervisors
 """
 
 from st2reactor.sensor.base import PollingSensor
@@ -8,6 +8,7 @@ from openstack_api.openstack_hypervisor import OpenstackHypervisor
 
 
 PERCENTAGE_TO_REBOOT = 75
+
 class HypervisorPollingSensor(PollingSensor):
 
     def __init__(self, sensor_service, config=None, poll_interval=10):
@@ -43,15 +44,19 @@ class HypervisorPollingSensor(PollingSensor):
         """
         Poll OpenStack for empty hypervisors and make list to pass to trigger action
         """
-        hvs_to_update = self.api.get_all_empty_hypervisors(self._cloud[self._environment])
-        list_length = len(hvs_to_update)
+        empty_hvs = self.api.get_all_empty_hypervisors(self._cloud[self._environment])
+        list_length = len(empty_hvs)
 
-        self._log.info("Hypervisor to update: " + str(hvs_to_update))
+        self._log.info("Hypervisor to update: " + str(empty_hvs))
         self._log.info("Number of hypervisors possible to update: " + str(list_length))
 
-        # TODO - Check if the hypervisor needs updating
+        # TODO - Check if the hypervisor needs updating (No point rebooting up to date hypervisors)
 
-        pc_hvs_to_update = hvs_to_update[0:int(list_length * (PERCENTAGE_TO_REBOOT / 100))]
-        self._log.info("Number of hypervisors to be updated: " + str(len(pc_hvs_to_update)))
+        hvs_to_update = empty_hvs[0:int(list_length * (PERCENTAGE_TO_REBOOT / 100))]
+        self._log.info("Number of hypervisors to be updated: " + str(len(hvs_to_update)))
 
-        # TODO - Trigger action to reboot hypervisors
+        # Trigger for updating the hypervisors. Commented out until action is functional.
+        # self.sensor_service.dispatch(
+        #         trigger = "openstack.reboot_hypervisor",
+        #         payload = {"cloud": self._environment, "hvs_reboot_list": hvs_to_update},
+        #     )
