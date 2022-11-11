@@ -100,7 +100,7 @@ class OpenstackHypervisor(OpenstackWrapperBase, OpenstackQueryBase):
         empty_hvs = []
         for hpv in hvs:
             hpv = dict(hpv)
-            if hpv["vcpus_used"] == 0 and hpv["running_vms"] == 0 and hv["status"] == "enabled":
+            if hpv["vcpus_used"] == 0 and hpv["running_vms"] == 0 and hpv["status"] == "enabled":
                 empty_hvs.append(hpv["name"])
 
         return empty_hvs
