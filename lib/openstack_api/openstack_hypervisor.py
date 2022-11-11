@@ -1,8 +1,6 @@
 from typing import List, Dict, Callable, Any
 
 from openstack.compute.v2.hypervisor import Hypervisor
-from pyparsing import empty
-
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_query import OpenstackQuery
 from openstack_api.openstack_query_base import OpenstackQueryBase
@@ -100,11 +98,11 @@ class OpenstackHypervisor(OpenstackWrapperBase, OpenstackQueryBase):
         """
         hvs = self.get_all_hypervisors(cloud_account)
         empty_hvs = []
-        for hv in hvs:
-            hv = dict(hv)
-            if hv["vcpus_used"] == 0 and hv["running_vms"] == 0 and hv["status"] == "enabled":
-                empty_hvs.append(hv["name"])
-        
+        for hpv in hvs:
+            hpv = dict(hpv)
+            if hpv["vcpus_used"] == 0 and hpv["running_vms"] == 0 and hv["status"] == "enabled":
+                empty_hvs.append(hpv["name"])
+
         return empty_hvs
 
     def search_hvs_name_in(

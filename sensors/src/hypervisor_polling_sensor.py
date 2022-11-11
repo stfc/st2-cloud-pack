@@ -3,9 +3,7 @@ Polling Sensor to query OpenStack for empty hypervisors and trigger reboot of th
 """
 
 from st2reactor.sensor.base import PollingSensor
-from st2reactor.container.sensor_wrapper import SensorService
 from openstack_api.openstack_hypervisor import OpenstackHypervisor
-
 
 PERCENTAGE_TO_REBOOT = 75
 
@@ -36,7 +34,6 @@ class HypervisorPollingSensor(PollingSensor):
         """
         Sets up the sensor
         """
-        
         self._log.info("Environment: " + str(self._environment))
         self._log.info("Cloud to use: " + str(self._cloud[self._environment]))
 
@@ -56,7 +53,7 @@ class HypervisorPollingSensor(PollingSensor):
         # Check compare the length of empty hvs list and the out of date hvs list
         # if (len(hvs_to_update)/list_length) > 0.75:
         #     hvs_to_update = hvs_to_update[0:int(list_length * (PERCENTAGE_TO_REBOOT / 100))]
-        
+
         hvs_to_update = empty_hvs[0:int(list_length * (PERCENTAGE_TO_REBOOT / 100))]
         self._log.info("Number of hypervisors to be updated: " + str(len(hvs_to_update)))
 
