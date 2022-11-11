@@ -1,6 +1,6 @@
 import unittest
 from dataclasses import dataclass
-from unittest.mock import MagicMock
+from unittest.mock import Mock, MagicMock, NonCallableMock
 
 from nose.tools import raises
 
@@ -31,6 +31,7 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
     def setUp(self) -> None:
         super().setUp()
         self.mocked_connection = MagicMock()
+        self.cloud_account = NonCallableMock()
 
         self.instance = OpenstackHypervisor(self.mocked_connection)
         self.api = self.mocked_connection.return_value.__enter__.return_value
@@ -64,26 +65,6 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
                 "vcpus_used": 2,
                 "vcpus": 128,
                 "memory_mb_used": 4096,
-                "memory_mb": 515530,
-            },
-            {
-                "id": "hypervisorid4",
-                "name": "hv226",
-                "state": "up",
-                "status": "enabled",
-                "vcpus_used": 0,
-                "vcpus": 0,
-                "memory_mb_used": 0,
-                "memory_mb": 515530,
-            },
-            {
-                "id": "hypervisorid5",
-                "name": "hv227",
-                "state": "up",
-                "status": "disabled",
-                "vcpus_used": 0,
-                "vcpus": 0,
-                "memory_mb_used": 0,
                 "memory_mb": 515530,
             },
         ]
@@ -121,24 +102,36 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
         """
         Tests calling search_all_hvs
         """
-        self.instance.search_all_hvs(cloud_account="test")
 
-        self.mocked_connection.assert_called_once_with("test")
+        result = self.instance.search_all_hvs(self.cloud_account)
 
-        self.api.list_hypervisors.assert_called_once_with(
-            filters={},
-        )
+        self.mocked_connection.assert_called_once_with(cloud_name=self.cloud_account)
+        self.assertEqual(result, self.api.list_hypervisors.return_value)
 
-    def test_get_all_empty_hvs(self):
+    def test_get_all_empty_hvs_without_disabled_hvs(self):
         """
         Tests calling get_all_empty_hvs
         """
-        self.instance.get_all_empty_hypervisors = MagicMock()
-        self.instance.get_all_empty_hypervisors.return_value = self.mock_hv_list
+        self.instance.search_all_hvs = Mock()
 
-        result = self.instance.get_all_empty_hypervisors(cloud_account="test")
+        expected = [
+            {"name": "hv1", "status": "enabled", "vcpus_used": 0, "running_vms": 0},
+            {
+                # Disabled hvs should be filtered out
+                "name": "hv2",
+                "status": "disabled",
+                "vcpus_used": 0,
+                "running_vms": 0,
+            },
+        ]
 
-        self.assertEqual(result, [self.mock_hv_list[4]])
+        self.instance.search_all_hvs.return_value = expected
+
+        result = self.instance.get_all_empty_hypervisors(
+            cloud_account=self.cloud_account
+        )
+
+        self.assertEqual(result, [expected[0]["name"]])
 
     def test_search_hvs_name_in(self):
         """
@@ -150,10 +143,10 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
 
         result = self.instance.search_hvs_name_in(
             cloud_account="test",
-            names=["hv126"],
+            names=["hv123"],
         )
 
-        self.assertEqual(result, [self.mock_hv_list[0], self.mock_hv_list[1]])
+        self.assertEqual(result, [self.mock_hv_list[0]])
 
     def test_search_hvs_name_not_in(self):
         """

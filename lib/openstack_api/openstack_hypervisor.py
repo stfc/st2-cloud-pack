@@ -80,14 +80,14 @@ class OpenstackHypervisor(OpenstackWrapperBase, OpenstackQueryBase):
             ),
         }
 
-    def get_all_hypervisors(self, cloud_account: str) -> List[Hypervisor]:
+    def search_all_hvs(self, cloud_account: str) -> List[Hypervisor]:
         """
         Returns a list of all hypervisors
         :param cloud_account: The associated clouds.yaml account
         :return: A list of all hypervisors
         """
 
-        with OpenstackConnection(cloud_name=cloud_account) as conn:
+        with self._connection_cls(cloud_name=cloud_account) as conn:
             return conn.list_hypervisors()
 
     def get_all_empty_hypervisors(self, cloud_account: str) -> List[str]:
@@ -96,7 +96,7 @@ class OpenstackHypervisor(OpenstackWrapperBase, OpenstackQueryBase):
         :param cloud_account: The associated clouds.yaml account
         :return: A list of all empty hypervisors
         """
-        hvs = self.get_all_hypervisors(cloud_account)
+        hvs = self.search_all_hvs(cloud_account)
         empty_hvs = []
         for hpv in hvs:
             hpv = dict(hpv)
