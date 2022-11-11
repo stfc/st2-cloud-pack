@@ -85,7 +85,7 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
                 "vcpus": 0,
                 "memory_mb_used": 0,
                 "memory_mb": 515530,
-            }
+            },
         ]
 
     def test_property_funcs(self):
@@ -136,9 +136,7 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
         self.instance.get_all_empty_hypervisors = MagicMock()
         self.instance.get_all_empty_hypervisors.return_value = self.mock_hv_list
 
-        result = self.instance.get_all_empty_hypervisors(
-            cloud_account="test"
-        )
+        result = self.instance.get_all_empty_hypervisors(cloud_account="test")
 
         self.assertEqual(result, [self.mock_hv_list[4]])
 
