@@ -15,7 +15,7 @@ class HypervisorPollingSensor(PollingSensor):
         self._config = self._config.get("cloud_names")
         self._cloud = {
             "dev": self._config.get("dev_cloud", None),
-            "prod": self._config.get("prod_cloud", None)
+            "prod": self._config.get("prod_cloud", None),
         }
         self._log = self.sensor_service.get_logger(name=self.__class__.__name__)
         self._environment = self._config.get("selected_env")
