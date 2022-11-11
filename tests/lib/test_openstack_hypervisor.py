@@ -66,6 +66,26 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
                 "memory_mb_used": 4096,
                 "memory_mb": 515530,
             },
+            {
+                "id": "hypervisorid4",
+                "name": "hv226",
+                "state": "up",
+                "status": "enabled",
+                "vcpus_used": 0,
+                "vcpus": 0,
+                "memory_mb_used": 0,
+                "memory_mb": 515530,
+            },
+            {
+                "id": "hypervisorid5",
+                "name": "hv227",
+                "state": "up",
+                "status": "disabled",
+                "vcpus_used": 0,
+                "vcpus": 0,
+                "memory_mb_used": 0,
+                "memory_mb": 515530,
+            }
         ]
 
     def test_property_funcs(self):
@@ -109,6 +129,19 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
             filters={},
         )
 
+    def test_get_all_empty_hvs(self):
+        """
+        Tests calling get_all_empty_hvs
+        """
+        self.instance.get_all_empty_hypervisors = MagicMock()
+        self.instance.get_all_empty_hypervisors.return_value = self.mock_hv_list
+
+        result = self.instance.get_all_empty_hypervisors(
+            cloud_account="test"
+        )
+
+        self.assertEqual(result, [self.mock_hv_list[4]])
+
     def test_search_hvs_name_in(self):
         """
         Tests calling search_hvs_name_in
@@ -119,7 +152,7 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
 
         result = self.instance.search_hvs_name_in(
             cloud_account="test",
-            names=["hv123", "hv124"],
+            names=["hv126"],
         )
 
         self.assertEqual(result, [self.mock_hv_list[0], self.mock_hv_list[1]])
