@@ -140,6 +140,7 @@ class OpenstackFlavorTests(unittest.TestCase):
             mocked_cloud_name, mocked_flavor
         )
 
+
     def test_set_specs(self):
         """
         Test setting the extra specs for a flavor
@@ -150,6 +151,7 @@ class OpenstackFlavorTests(unittest.TestCase):
 
         self.instance.set_flavor_specs(mocked_cloud_name, flavor_id, extra_specs)
         self.mocked_connection.assert_called_once_with(mocked_cloud_name)
+
         self.api.set_flavor_specs.assert_called_once_with(flavor_id, extra_specs)
 
     def test_empty_list_migrate_flavors(self):

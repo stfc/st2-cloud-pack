@@ -89,7 +89,6 @@ class OpenstackFlavor(OpenstackWrapperBase):
             extra_specs = flavor.extra_specs
         else:
             extra_specs = flavor_id.extra_specs
-
         return extra_specs
 
     def set_flavor_specs(self, cloud_account: str, flavor_id: str, extra_specs: dict):
@@ -114,6 +113,7 @@ class OpenstackFlavor(OpenstackWrapperBase):
         """
         missing_flavors = self.get_missing_flavors(source_cloud, dest_cloud)
         # if there are missing flavors in the list i.e. missing_flavors is not an empty list
+        print(missing_flavors)
         if not missing_flavors:
             return None
 
