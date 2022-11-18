@@ -115,13 +115,25 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
         self.instance.search_all_hvs = Mock()
 
         expected = [
-            {"name": "hv1", "status": "enabled", "vcpus_used": 0, "running_vms": 0},
+            {
+                "name": "hv1",
+                "status": "enabled",
+            },
             {
                 # Disabled hvs should be filtered out
                 "name": "hv2",
                 "status": "disabled",
-                "vcpus_used": 0,
-                "running_vms": 0,
+            },
+            {
+                # Hvs with servers on should be filtered out
+                "name": "hv3",
+                "status": "enabled",
+                "servers": [
+                    {
+                        "name": "test-server-1",
+                        "uuid": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                    }
+                ],
             },
         ]
 

@@ -18,21 +18,21 @@ jupyter:
       required: false
 
 cloud_names:
-  description: Automated Updater Settings and tokens
+  description: "Cloud name to use in automated jobs"
   type: "object"
   required: true
   properties:
     dev_cloud:
       type: "string"
-      description: "Cloud to use when running Automated Update Poll on Dev"
+      description: "Cloud to use when running Automated Jobs on Dev"
       required: false
     prod_cloud:
       type: "string"
-      description: "Cloud to use when running Automated Update Poll on Prod"
+      description: "Cloud to use when running Automated Jobs on Prod"
       required: false
     selected_env:
       type: "string"
-      description: "Cloud to use when running Automated Update Poll on Dev"
+      description: "Cloud to use when running Automated Jobs on Dev"
       required: true
 
 
