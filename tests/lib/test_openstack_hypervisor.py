@@ -115,25 +115,53 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
         self.instance.search_all_hvs = Mock()
 
         expected = [
-            {
-                "name": "hv1",
-                "status": "enabled",
-            },
+            {"name": "hv1", "status": "enabled", "vcpus_used": 0, "running_vms": 0},
             {
                 # Disabled hvs should be filtered out
                 "name": "hv2",
                 "status": "disabled",
+                "vcpus_used": 0,
+                "running_vms": 0,
+            },
+        ]
+
+        self.instance.search_all_hvs.return_value = expected
+
+        result = self.instance.get_all_empty_hypervisors(
+            cloud_account=self.cloud_account
+        )
+
+        self.instance.search_all_hvs.assert_called_once_with(self.cloud_account)
+        self.assertEqual(result, [expected[0]["name"]])
+
+    def test_get_all_empty_hvs(self):
+        """
+        Tests calling get_all_empty_hvs
+        """
+        self.instance.search_all_hvs = Mock()
+
+        expected = [
+            {"name": "hv1", "status": "enabled", "vcpus_used": 0, "running_vms": 0},
+            {
+                # Hvs with CPUs used and running VMs should be filtered out
+                "name": "hv2",
+                "status": "enabled",
+                "vcpus_used": 1,
+                "running_vms": 1,
             },
             {
-                # Hvs with servers on should be filtered out
+                # Hvs with running VMs should be filtered out
                 "name": "hv3",
                 "status": "enabled",
-                "servers": [
-                    {
-                        "name": "test-server-1",
-                        "uuid": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-                    }
-                ],
+                "vcpus_used": 0,
+                "running_vms": 1,
+            },
+            {
+                # Hvs with CPUs used should be filtered out
+                "name": "hv4",
+                "status": "enabled",
+                "vcpus_used": 1,
+                "running_vms": 0,
             },
         ]
 
