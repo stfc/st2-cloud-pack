@@ -90,14 +90,16 @@ class OpenstackHypervisor(OpenstackWrapperBase, OpenstackQueryBase):
         with self._connection_cls(cloud_name=cloud_account) as conn:
             return conn.list_hypervisors()
 
-    def get_all_empty_hypervisors(self, cloud_account: str, **_) -> List[str]:
+    def get_all_empty_hypervisors(self, cloud_account: str, log, **_) -> List[str]:
         """
         Returns a list of empty hypervisors
         :param cloud_account: The associated clouds.yaml account
         :return: A list of all empty hypervisors
         """
+        log.info("Searching for all Hvs")
         hvs = self.search_all_hvs(cloud_account)
         empty_hvs = []
+        log.info("Searching for empty Hvs in all")
         for hpv in hvs:
             hpv = dict(hpv)
             if (
@@ -106,6 +108,8 @@ class OpenstackHypervisor(OpenstackWrapperBase, OpenstackQueryBase):
                 and hpv["status"] == "enabled"
             ):
                 empty_hvs.append(hpv["name"])
+
+        log.info("Returning all empty Hvs")
 
         return empty_hvs
 

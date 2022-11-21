@@ -44,7 +44,9 @@ class HypervisorPollingSensor(PollingSensor):
         """
         Poll OpenStack for empty hypervisors and make list to pass to trigger action
         """
-        empty_hvs = self.api.get_all_empty_hypervisors(self._cloud[self._environment])
+        empty_hvs = self.api.get_all_empty_hypervisors(
+            self._cloud[self._environment], self._log
+        )
         list_length = len(empty_hvs)
 
         self._log.info("Hypervisor to update: " + str(empty_hvs))
