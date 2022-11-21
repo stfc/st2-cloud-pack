@@ -112,7 +112,7 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
         """
         Tests calling get_all_empty_hvs
         """
-        self.instance.search_all_hvs = Mock()
+        self.instance.get_all_empty_hvs = Mock()
 
         expected = [
             {"name": "hv1", "status": "enabled", "vcpus_used": 0, "running_vms": 0},
@@ -125,20 +125,20 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
             },
         ]
 
-        self.instance.search_all_hvs.return_value = expected
+        self.instance.get_all_empty_hvs.return_value = expected
 
         result = self.instance.get_all_empty_hypervisors(
             cloud_account=self.cloud_account
         )
 
-        self.instance.search_all_hvs.assert_called_once_with(self.cloud_account)
+        self.instance.get_all_empty_hvs.assert_called_once_with(self.cloud_account)
         self.assertEqual(result, [expected[0]["name"]])
 
     def test_get_all_empty_hvs(self):
         """
         Tests calling get_all_empty_hvs
         """
-        self.instance.search_all_hvs = Mock()
+        self.instance.get_all_empty_hvs = Mock()
 
         expected = [
             {"name": "hv1", "status": "enabled", "vcpus_used": 0, "running_vms": 0},
@@ -165,13 +165,13 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
             },
         ]
 
-        self.instance.search_all_hvs.return_value = expected
+        self.instance.get_all_empty_hvs.return_value = expected
 
         result = self.instance.get_all_empty_hypervisors(
             cloud_account=self.cloud_account
         )
 
-        self.instance.search_all_hvs.assert_called_once_with(self.cloud_account)
+        self.instance.get_all_empty_hvs.assert_called_once_with(self.cloud_account)
         self.assertEqual(result, [expected[0]["name"]])
 
     def test_search_hvs_name_in(self):
