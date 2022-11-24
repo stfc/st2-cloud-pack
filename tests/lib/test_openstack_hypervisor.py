@@ -106,75 +106,25 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
         result = self.instance.search_all_hvs(self.cloud_account)
 
         self.mocked_connection.assert_called_once_with(cloud_name=self.cloud_account)
-        self.assertEqual(result, self.api.list_hypervisors.return_value)
-
-    def test_get_all_empty_hvs_without_disabled_hvs(self):
-        """
-        Tests calling get_all_empty_hvs
-        """
-        self.instance.get_all_empty_hypervisors = Mock()
-
-        expected = [
-            {"name": "hv1", "status": "enabled", "vcpus_used": 0, "running_vms": 0},
-            {
-                # Disabled hvs should be filtered out
-                "name": "hv2",
-                "status": "disabled",
-                "vcpus_used": 0,
-                "running_vms": 0,
-            },
-        ]
-
-        self.instance.get_all_empty_hypervisors.return_value = expected
-
-        result = self.instance.get_all_empty_hypervisors(
-            cloud_account=self.cloud_account
-        )
-
-        self.instance.get_all_empty_hypervisors.assert_called_once_with(
-            self.cloud_account
-        )
-        self.assertEqual(result, [expected[0]["name"]])
+        self.api.compute.hypervisors.assert_called_once_with(details=True)
+        self.assertEqual(result, list(self.api.compute.hypervisors.return_value))
 
     def test_get_all_empty_hvs(self):
         """
         Tests calling get_all_empty_hvs
         """
-        self.instance.get_all_empty_hypervisors = Mock()
-
-        expected = [
-            {"name": "hv1", "status": "enabled", "vcpus_used": 0, "running_vms": 0},
-            {
-                # Hvs with CPUs used and running VMs should be filtered out
-                "name": "hv2",
-                "status": "enabled",
-                "vcpus_used": 1,
-                "running_vms": 1,
-            },
-            {
-                # Hvs with running VMs should be filtered out
-                "name": "hv3",
-                "status": "enabled",
-                "vcpus_used": 0,
-                "running_vms": 1,
-            },
-            {
-                # Hvs with CPUs used should be filtered out
-                "name": "hv4",
-                "status": "enabled",
-                "vcpus_used": 1,
-                "running_vms": 0,
-            },
-        ]
-
-        self.instance.get_all_empty_hypervisors.return_value = expected
-
         result = self.instance.get_all_empty_hypervisors(
             cloud_account=self.cloud_account
         )
 
-        self.instance.get_all_empty_hvs.assert_called_once_with(self.cloud_account)
-        self.assertEqual(result, [expected[0]["name"]])
+        self.mocked_connection.assert_called_once_with(cloud_name=self.cloud_account)
+        compute = self.api.compute
+        # When running_vms, vcpus_used are deprecated replace with servers = []
+        # servers = [] doesn't work with Openstack Train Backend
+        compute.hypervisors.assert_called_once_with(
+            running_vms=0, vcpus_used=0, status="enabled"
+        )
+        assert result == [i.name for i in compute.hypervisors.return_value]
 
     def test_search_hvs_name_in(self):
         """

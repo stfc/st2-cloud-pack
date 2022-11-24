@@ -88,7 +88,7 @@ class OpenstackHypervisor(OpenstackWrapperBase, OpenstackQueryBase):
         """
 
         with self._connection_cls(cloud_name=cloud_account) as conn:
-            return conn.list_hypervisors()
+            return list(conn.compute.hypervisors(details=True))
 
     def get_all_empty_hypervisors(self, cloud_account: str, **_) -> List[str]:
         """
@@ -98,7 +98,7 @@ class OpenstackHypervisor(OpenstackWrapperBase, OpenstackQueryBase):
         """
         with self._connection_cls(cloud_name=cloud_account) as conn:
             hvs = list(
-                conn.compute.hypervisors(details=True, running_vms=0, vcpus_used=0)
+                conn.compute.hypervisors(running_vms=0, vcpus_used=0, status="enabled")
             )
         return [i.name for i in hvs]
 
