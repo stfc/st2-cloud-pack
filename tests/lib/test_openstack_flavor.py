@@ -20,10 +20,13 @@ class OpenstackFlavorTests(unittest.TestCase):
         """
         Test that we can retrieve a list of flavors from a specific cloud
         """
-        mocked_name = NonCallableMock()
-        flavors = self.instance.list_flavor(mocked_name)
+        mocked_cloud_name = NonCallableMock()
+        flavors = self.instance.list_flavor(mocked_cloud_name)
+
         assert flavors == self.api.list_flavors.return_value
-        self.mocked_connection.assert_called_once_with(mocked_name)
+
+        self.api.list_flavors.assert_called_once_with()
+        self.mocked_connection.assert_called_once_with(mocked_cloud_name)
 
     def test_get_flavor(self):
         """
@@ -43,7 +46,6 @@ class OpenstackFlavorTests(unittest.TestCase):
         Test that we are passing the source and destination clouds in the correct order
         in order to list flavors from each cloud
         """
-
         source_cloud, dest_cloud = NonCallableMock(), NonCallableMock()
         self.instance.list_flavor = Mock(return_value=[])
         self.instance.get_missing_flavors(source_cloud, dest_cloud)
@@ -56,10 +58,11 @@ class OpenstackFlavorTests(unittest.TestCase):
         """
         Test getting the difference between list of flavor names
         """
+        # create set 1 = [0, 1, 2]
         mock_source_names = [NonCallableMock() for _ in range(3)]
         for i, obj in enumerate(mock_source_names):
             obj.name = i
-
+        # create set 2 = [2, 3, 4]
         mock_dest_names = [NonCallableMock() for _ in range(3)]
         for i, obj in enumerate(mock_dest_names):
             obj.name = i + 2
@@ -70,6 +73,7 @@ class OpenstackFlavorTests(unittest.TestCase):
         return_diff = self.instance.get_missing_flavors(
             NonCallableMock(), NonCallableMock()
         )
+        # expect [0,1] as elements are in set 1 but are missing from set 2
         assert [0, 1] == return_diff
 
     def test_create_flavor(self):
@@ -149,19 +153,19 @@ class OpenstackFlavorTests(unittest.TestCase):
         self.api.set_flavor_specs.assert_called_once_with(flavor_id, extra_specs)
 
     def test_empty_list_migrate_flavors(self):
-        # mock params
+        """
+        Test case when there is an empty list in migrate_flavors
+        """
         mocked_source_cloud = NonCallableMock()
         mocked_dest_cloud = NonCallableMock()
-        # mock return value
         missing_flavors = NonCallableMock()
-        # mock functions
+
         self.instance.get_missing_flavors = Mock()
         self.instance.get_flavor = Mock()
-        # prepare return value
+
         self.instance.get_missing_flavors.return_value = missing_flavors
-        # call method
+
         self.instance.get_missing_flavors(mocked_source_cloud, mocked_dest_cloud)
-        # assert at least one function that is called by method
         self.instance.get_missing_flavors.assert_called_once_with(
             mocked_source_cloud, mocked_dest_cloud
         )
