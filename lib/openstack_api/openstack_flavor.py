@@ -55,11 +55,11 @@ class OpenstackFlavor(OpenstackWrapperBase):
         """
 
         if (
-            flavor_data.swap == ""
+            flavor_data.swap
         ):  # openstack stores swap=0 as swap='' when getting flavor information
-            flavor_swap = 0
-        else:
             flavor_swap = flavor_data.swap
+        else:
+            flavor_swap = 0
 
         with self._connection_cls(cloud_account) as conn:
             return conn.create_flavor(
