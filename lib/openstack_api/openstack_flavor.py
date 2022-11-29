@@ -121,7 +121,7 @@ class OpenstackFlavor(OpenstackWrapperBase):
         missing_flavors = self.get_missing_flavors(source_cloud, dest_cloud)
         # if there are missing flavors in the list i.e. missing_flavors is not an empty list
         if not missing_flavors:
-            return
+            return None
 
         for flavor_name in missing_flavors:
             flavor_data = self.get_flavor(source_cloud, flavor_name)
