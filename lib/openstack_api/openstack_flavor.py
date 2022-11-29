@@ -31,24 +31,18 @@ class OpenstackFlavor(OpenstackWrapperBase):
         :param dest_cloud: Cloud account for destination cloud
         :return: List of names of missing flavors or empty list
         """
-        # list flavors from prod
+        # list flavors from source cloud
         source_flavors = self.list_flavor(source_cloud)
 
-        # list flavors from dev
+        # list flavors from destination cloud
         dest_flavors = self.list_flavor(dest_cloud)
 
-        # Prepare list of flavors that are in prod and dev
-        source_flavor_names = []
-        dest_flavor_names = []
+        # Prepare set of flavors in source and destination clouds
+        source_flavor_names = {source.name for source in source_flavors}
+        dest_flavor_names = {dest.name for dest in dest_flavors}
 
-        for source in source_flavors:
-            source_flavor_names.append(source.name)
-
-        for dest in dest_flavors:
-            dest_flavor_names.append(dest.name)
-
-        # Find set of flavor names which are in prod but are missing from dev
-        missing_flavors = set(source_flavor_names).difference(set(dest_flavor_names))
+        # Find set of flavor names which are in source cloud but missing in the destination cloud
+        missing_flavors = source_flavor_names.difference(dest_flavor_names)
 
         return list(missing_flavors)
 
