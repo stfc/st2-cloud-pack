@@ -1,0 +1,23 @@
+---
+description: List missing flavors
+enabled: true
+entry_point: src/flavor_actions.py
+name: flavor.list.missing.flavors
+parameters:
+  timeout:
+    default: 5400
+  submodule:
+    default: list_missing_flavors
+    type: string
+    immutable: true
+  source_cloud:
+    description: The clouds.yaml account for source Cloud to use whilst performing this action
+    required: true
+    type: string
+    default: "prod"
+  dest_cloud:
+    description: The clouds.yaml account for the destination Cloud to use while performing this action
+    required: true
+    type: string
+    default: "dev"
+runner_type: python-script

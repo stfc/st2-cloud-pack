@@ -89,7 +89,6 @@ class OpenstackFlavor(OpenstackWrapperBase):
             extra_specs = flavor.extra_specs
         else:
             extra_specs = flavor_id.extra_specs
-
         return extra_specs
 
     def set_flavor_specs(self, cloud_account: str, flavor_id: str, extra_specs: dict):
