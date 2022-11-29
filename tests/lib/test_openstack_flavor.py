@@ -140,7 +140,6 @@ class OpenstackFlavorTests(unittest.TestCase):
             mocked_cloud_name, mocked_flavor
         )
 
-
     def test_set_specs(self):
         """
         Test setting the extra specs for a flavor
