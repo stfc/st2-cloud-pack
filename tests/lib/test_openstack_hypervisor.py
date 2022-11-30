@@ -1,6 +1,6 @@
 import unittest
 from dataclasses import dataclass
-from unittest.mock import Mock, MagicMock, NonCallableMock
+from unittest.mock import MagicMock, NonCallableMock
 
 from nose.tools import raises
 
