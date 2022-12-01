@@ -32,7 +32,7 @@ cloud_names:
       required: false
     selected_env:
       type: "string"
-      description: "Cloud to use when running Automated Jobs on Dev"
+      description: "Environment stackstorm running in"
       required: true
 
 
