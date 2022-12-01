@@ -1,0 +1,16 @@
+class_name: "FlavorPollingSensor"
+entry_point: "src/flavor_sensor.py"
+description: "Sensor that searches for missing flavors"
+poll_interval:  86400 # Every 24 hours 60*60*24
+trigger_types:
+  - name: "flavor.list.missing.flavors"
+    description: "Trigger for missing flavor poll"
+    payload_schema:
+      type: "object"
+      properties:
+        source_cloud:
+          type: "string"
+          description: "Source Cloud account to use as source of truth for flavors"
+        destination_cloud:
+          type: "string"
+          description: "Destination Cloud Account that syncs flavors from source cloud account"
