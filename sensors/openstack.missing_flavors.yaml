@@ -6,11 +6,7 @@ trigger_types:
   - name: "flavor.list.missing.flavors"
     description: "Trigger for missing flavor poll"
     payload_schema:
-      type: "object"
-      properties:
-        source_cloud:
-          type: "string"
-          description: "Source Cloud account to use as source of truth for flavors"
-        destination_cloud:
-          type: "string"
-          description: "Destination Cloud Account that syncs flavors from source cloud account"
+      type: "array"
+      missing_flavors:
+        type: "array"
+        description: "List of flavors missing in destination cloud based on source cloud"

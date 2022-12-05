@@ -1,0 +1,16 @@
+---
+name: "openstack.list.missing.flavors"
+pack: "stackstorm_openstack"
+description: "Triggers the synchronization of flavors in a destination cloud based on flavors in a source cloud"
+enabled: true
+
+criteria:
+  trigger.no_missing:
+    type: "greaterthan"
+    pattern: 0
+
+trigger:
+  type: "stackstorm_openstack.openstack.missing_flavors"
+
+action:
+  ref: "stackstorm_openstack.flavor.list.missing.flavors"
