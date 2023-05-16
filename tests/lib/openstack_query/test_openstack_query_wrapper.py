@@ -59,3 +59,21 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
         Tests that sort_by function sorts results list appropriately
         """
         raise NotImplementedError
+
+    def test_to_list(self):
+        """
+        Tests that to_list function returns correct values
+        """
+        raise NotImplementedError
+
+    def test_to_html(self):
+        """
+        Tests that to_html function returns correct value
+        """
+        raise NotImplementedError
+
+    def test_to_string(self):
+        """
+        Tests that to_string function returns correct value
+        """
+        raise NotImplementedError

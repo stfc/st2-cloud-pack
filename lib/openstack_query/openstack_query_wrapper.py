@@ -71,3 +71,22 @@ class OpenstackQueryWrapper(OpenstackWrapperBase):
             This static method should be implemented in subclasses of OpenstackQueryWrapper to 
             run the appropriate openstack command(s)
         """)
+
+    def to_list(self, as_objects=False):
+        """
+        Public method to return results as a list
+        :param as_objects: whether to return a list of openstack objects, or a list of dictionaries containing selected properties
+        """
+        raise NotImplementedError
+
+    def to_string(self):
+        """
+        Public method to return results as a table
+        """
+        raise NotImplementedError
+
+    def to_html(self):
+        """
+        Public method to return results as html table
+        """
+        raise NotImplementedError
