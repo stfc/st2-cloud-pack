@@ -1,7 +1,11 @@
 from enum import Enum
-from typing import Tuple, Callable, Any, Dict
+from typing import Tuple, Callable, Any, Dict, Optional
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.openstack_connection import OpenstackConnection
+
+from openstack_query.utils import check_filter_func
+
+from exceptions.parse_query_error import ParseQueryError
 
 
 class OpenstackQueryWrapper(OpenstackWrapperBase):
@@ -10,6 +14,8 @@ class OpenstackQueryWrapper(OpenstackWrapperBase):
 
         OpenstackWrapperBase.__init__(self, connection_cls)
         self._query_props = dict()
+        self._filter_func = None
+        self._results = []
 
     def select(self, *props: Enum):
         """
@@ -60,13 +66,33 @@ class OpenstackQueryWrapper(OpenstackWrapperBase):
             tuple of 'property_name' and 'get_property' functions 
         """)
 
-    def where(self, preset: Enum, **kwargs):
+    def where(self, preset: Enum, filter_func_kwargs: Dict[str, Any]):
         """
         Public method used to set the preset that will be used to get the query filter function
         :param preset: Name of preset to use
-        :param kwargs: kwargs to pass to preset
+        :param filter_func_kwargs: kwargs to pass to filter function
         """
-        raise NotImplementedError
+        if self._filter_func:
+            raise ParseQueryError("Error: Already set a query preset")
+
+        filter_func = self._get_filter_func(preset)
+        try:
+            _ = check_filter_func(filter_func, filter_func_kwargs)
+        except TypeError as func_err:
+            raise ParseQueryError(f"Error parsing preset args: {func_err}")
+        self._filter_func = filter_func
+        return self
+
+    @staticmethod
+    def _get_filter_func(preset: Enum) -> Optional[Callable[[Any], bool]]:
+        """
+        static method that is used to return a filter function for given preset, if any
+        :param preset: A given preset that describes the query type
+        """
+        raise NotImplementedError("""
+            This static method should be implemented in subclasses of OpenstackQueryWrapper to return a filter_function 
+            for a given preset Enum 
+        """)
 
     def sort_by(self, sort_by: Enum, reverse=False):
         """

@@ -1,14 +1,17 @@
 import unittest
 from unittest.mock import patch, MagicMock, call
-from openstack_query.openstack_query_wrapper import OpenstackQueryWrapper
 from enum import Enum, auto
+from nose.tools import assert_raises
+
+from exceptions.parse_query_error import ParseQueryError
+from openstack_query.openstack_query_wrapper import OpenstackQueryWrapper
 
 
 class MockedEnum(Enum):
-    PROP_1 = auto()
-    PROP_2 = auto()
-    PROP_3 = auto()
-    PROP_4 = auto()
+    ITEM_1 = auto()
+    ITEM_2 = auto()
+    ITEM_3 = auto()
+    ITEM_4 = auto()
 
 
 class OpenstackQueryWrapperTests(unittest.TestCase):
@@ -35,14 +38,14 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
             ("property_2", 'val_2')
         ]
 
-        instance = self.instance.select(MockedEnum.PROP_1, MockedEnum.PROP_2)
+        instance = self.instance.select(MockedEnum.ITEM_1, MockedEnum.ITEM_2)
         expected_query_props = {
             "property_1": 'val_1',
             "property_2": 'val_2'
         }
 
         mock_get_prop.assert_has_calls([
-            call(MockedEnum.PROP_1), call(MockedEnum.PROP_2)
+            call(MockedEnum.ITEM_1), call(MockedEnum.ITEM_2)
         ])
         self.assertEqual(instance._query_props, expected_query_props)
         self.assertEqual(instance, self.instance)
@@ -69,17 +72,65 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
         self.assertEqual(instance._query_props, expected_query_props)
         self.assertEqual(instance, self.instance)
 
-    def test_where_valid_args(self):
+    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._get_filter_func")
+    @patch("openstack_query.openstack_query_wrapper.check_filter_func")
+    def test_where_valid_args(self, mock_check_filter_func, mock_get_filter_func):
         """
         Tests that where function accepts valid enum and args
         """
-        raise NotImplementedError
+        preset = MockedEnum.ITEM_1
+        filter_func_kwargs = MagicMock()
+        mock_filter_func = MagicMock()
 
-    def test_where_invalid_args(self):
+        expected_filter_func = mock_filter_func
+
+        mock_check_filter_func.return_value = True
+        mock_get_filter_func.return_value = mock_filter_func
+
+        instance = self.instance.where(preset, filter_func_kwargs)
+
+        mock_check_filter_func.assert_called_once_with(mock_filter_func, filter_func_kwargs)
+        mock_get_filter_func.assert_called_once_with(preset)
+
+        self.assertEqual(instance._filter_func, expected_filter_func)
+        self.assertEqual(instance, self.instance)
+
+    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._get_filter_func")
+    @patch("openstack_query.openstack_query_wrapper.check_filter_func")
+    def test_where_invalid_args(self, mock_check_filter_func, mock_get_filter_func):
         """
         Tests that where function rejects invalid args appropriately
         """
-        raise NotImplementedError
+        preset = MockedEnum.ITEM_1
+        filter_func_kwargs = MagicMock()
+        mock_filter_func = MagicMock()
+
+        def raise_error_side_effect(func, filter_func):
+            raise TypeError("some error here")
+
+        mock_get_filter_func.return_value = mock_filter_func
+        mock_check_filter_func.side_effect = raise_error_side_effect
+
+        with assert_raises(ParseQueryError) as err:
+            _ = self.instance.where(preset, filter_func_kwargs)
+
+        self.assertEqual(str(err.exception), "Error parsing preset args: some error here")
+
+    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._get_filter_func")
+    @patch("openstack_query.openstack_query_wrapper.check_filter_func")
+    def test_where_when_already_set(self, mock_check_filter_func, mock_get_filter_func):
+        filter_func_kwargs = MagicMock()
+        mock_filter_func = MagicMock()
+
+        mock_check_filter_func.return_value = True
+        mock_get_filter_func.return_value = mock_filter_func
+
+        _ = self.instance.where(MockedEnum.ITEM_1, filter_func_kwargs)
+
+        with assert_raises(ParseQueryError) as err:
+            _ = self.instance.where(MockedEnum.ITEM_2, filter_func_kwargs)
+
+        self.assertEqual(str(err.exception), "Error: Already set a query preset")
 
     def test_run_valid(self):
         """
