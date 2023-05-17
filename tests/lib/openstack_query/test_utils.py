@@ -25,3 +25,5 @@ def test_check_filter_func_valid(func, args):
 @raises(TypeError)
 def test_check_filter_func_mapping_invalid(func, args):
     assert utils.check_filter_func(func, args)
+
+

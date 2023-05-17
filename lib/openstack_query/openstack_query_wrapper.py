@@ -1,11 +1,12 @@
 from enum import Enum
-from typing import Tuple, Callable, Any, Dict, Optional
+from typing import Tuple, Callable, Any, Dict, Optional, List
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.openstack_connection import OpenstackConnection
 
 from openstack_query.utils import check_filter_func
 
 from exceptions.parse_query_error import ParseQueryError
+from tabulate import tabulate
 
 
 class OpenstackQueryWrapper(OpenstackWrapperBase):
@@ -15,6 +16,7 @@ class OpenstackQueryWrapper(OpenstackWrapperBase):
         OpenstackWrapperBase.__init__(self, connection_cls)
         self._query_props = dict()
         self._filter_func = None
+        self._results_resource_objects = []
         self._results = []
 
     def select(self, *props: Enum):
@@ -133,16 +135,35 @@ class OpenstackQueryWrapper(OpenstackWrapperBase):
         Public method to return results as a list
         :param as_objects: whether to return a list of openstack objects, or a list of dictionaries containing selected properties
         """
-        raise NotImplementedError
+        return self._results_resource_objects if as_objects else self._results
 
-    def to_string(self):
+    def to_string(self, **kwargs):
         """
         Public method to return results as a table
+        :param kwargs: kwargs to pass to generate table
         """
-        raise NotImplementedError
+        return self._generate_table(self._results, return_html=False, **kwargs)
 
-    def to_html(self):
+    def to_html(self, **kwargs):
         """
         Public method to return results as html table
+        :param kwargs: kwargs to pass to generate table
         """
-        raise NotImplementedError
+        return self._generate_table(self._results, return_html=True, **kwargs)
+
+    @staticmethod
+    def _generate_table(
+            properties_dict: List[Dict[str, Any]],
+            return_html: bool,
+            **kwargs
+    ) -> str:
+        """
+        Returns a table from the result of 'self._parse_properties'
+        :param properties_dict: dict of query results
+        :param return_html: True if output required in html table format else output plain text table
+        :param kwargs: kwargs to pass to tabulate
+        :return: String (html or plaintext table of results)
+        """
+        headers = properties_dict[0].keys()
+        rows = [row.values() for row in properties_dict]
+        return tabulate(rows, list(headers), tablefmt="html" if return_html else "grid", **kwargs)

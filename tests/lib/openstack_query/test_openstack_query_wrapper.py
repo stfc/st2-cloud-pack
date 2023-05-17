@@ -160,16 +160,57 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
         """
         Tests that to_list function returns correct values
         """
-        raise NotImplementedError
+        expected_resource_objects = ['obj1', 'obj2', 'obj3']
+        expected_results = ['res1', 'res2', 'res3']
 
-    def test_to_html(self):
+        self.instance._results_resource_object = ['obj1', 'obj2', 'obj3']
+        self.instance._results = ['res1', 'res2', 'res3']
+
+        # with as_object false
+        res = self.instance.to_list(as_objects=False)
+        self.assertEqual(res, expected_results)
+
+        # with as_object true
+        res = self.instance.to_list(as_objects=True)
+        self.assertEqual(res, expected_resource_objects)
+
+    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._generate_table")
+    def test_to_html(self, mock_generate_table):
         """
         Tests that to_html function returns correct value
         """
-        raise NotImplementedError
+        mocked_results = 'some_result'
+        expected_out = 'some_output_string'
+        mock_generate_table.return_value = 'some_output_string'
 
-    def test_to_string(self):
+        self.instance._results = mocked_results
+        res = self.instance.to_html()
+
+        mock_generate_table.assert_called_once_with(
+            mocked_results,
+            return_html=True
+        )
+
+        self.assertEqual(expected_out, res)
+
+    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._generate_table")
+    def test_to_string(self, mock_generate_table):
         """
         Tests that to_string function returns correct value
         """
-        raise NotImplementedError
+        """
+        Tests that to_html function returns correct value
+        """
+        mocked_results = 'some_result'
+        expected_out = 'some_output_string'
+        mock_generate_table.return_value = 'some_output_string'
+
+        self.instance._results = mocked_results
+        res = self.instance.to_string()
+
+        mock_generate_table.assert_called_once_with(
+            mocked_results,
+            return_html=False
+        )
+
+        self.assertEqual(expected_out, res)
