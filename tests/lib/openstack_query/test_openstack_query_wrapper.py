@@ -1,7 +1,7 @@
 import unittest
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import patch, MagicMock, call, NonCallableMock
 from enum import Enum, auto
-from nose.tools import assert_raises
+from nose.tools import assert_raises, raises
 
 from exceptions.parse_query_error import ParseQueryError
 from openstack_query.openstack_query_wrapper import OpenstackQueryWrapper
@@ -119,6 +119,9 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
     @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._get_filter_func")
     @patch("openstack_query.openstack_query_wrapper.check_filter_func")
     def test_where_when_already_set(self, mock_check_filter_func, mock_get_filter_func):
+        """
+        Tests that where function fails noisily when re-instantiated
+        """
         filter_func_kwargs = MagicMock()
         mock_filter_func = MagicMock()
 
@@ -132,17 +135,118 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
 
         self.assertEqual(str(err.exception), "Error: Already set a query preset")
 
-    def test_run_valid(self):
+    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._run_query")
+    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._apply_filter_func")
+    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._parse_properties")
+    def test_run_valid(self, mock_parse_properties, mock_apply_filter_func, mock_run_query):
         """
         Tests that run function sets up query and calls _run_query appropriately
         """
-        raise NotImplementedError
+        query_props = {
+            'prop1': 'prop_func1', 'prop2': 'prop_func2', 'prop3': 'prop_func3'
+        }
+        filter_func = MagicMock()
+        res_out = ['obj1', 'obj2', 'obj3']
+        filter_out = ['obj1', 'obj2']
+        parse_out = ['parse_out1', 'parse_out2']
 
+        self.instance._query_props = query_props
+        self.instance._filter_func = filter_func
+
+        mock_run_query.return_value = res_out
+        mock_apply_filter_func.return_value = filter_out
+        mock_parse_properties.return_value = parse_out
+
+        instance = self.instance.run(cloud_account="test")
+        self.mocked_connection.assert_called_once_with("test")
+
+        mock_run_query.assert_called_once_with(self.conn)
+        mock_apply_filter_func.assert_called_once_with(res_out, filter_func)
+        mock_parse_properties.assert_called_once_with(filter_out, query_props)
+
+        self.assertEqual(parse_out, instance._results)
+        self.assertEqual(instance, self.instance)
+
+    @raises(RuntimeError)
     def test_run_incomplete_conf(self):
         """
         Tests that run function catches when config is incomplete
         """
-        raise NotImplementedError
+        self.instance._query_props = []
+        _ = self.instance.run(cloud_account="test")
+
+    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._parse_property")
+    def test_parse_properties(self, mock_parse_property):
+        """
+        Tests that parse_properties function works expectedly with 0, 1 and 2 items
+        """
+        item_1 = 'openstack-resource-1'
+        item_2 = 'openstack-resource-2'
+        property_funcs = MagicMock()
+
+        # 0 items
+        assert not self.instance._parse_properties([], property_funcs)
+
+        # 1 item
+        _ = self.instance._parse_properties([item_1], property_funcs)
+        mock_parse_property.assert_called_once_with(item_1, property_funcs)
+
+        # 2 items
+        _ = self.instance._parse_properties([item_1, item_2], property_funcs)
+        mock_parse_property.assert_has_calls([
+            call(item_1, property_funcs), call(item_2, property_funcs)
+        ])
+
+    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._run_prop_func")
+    def test_parse_property(self, mock_run_prop_func):
+        """
+        Tests that parse_property function works expectedly with 0, 1 and 2 prop_funcs
+        """
+        prop_dict_1 = {'prop_name_1': 'prop_func_1'}
+        prop_dict_2 = {'prop_name_1': 'prop_func_1', 'prop_name_2': 'prop_func_2'}
+
+        item = 'example-openstack-resource'
+
+        # 0 items
+        assert not self.instance._parse_property(item, {})
+
+        # 1 item
+        _ = self.instance._parse_property(item, prop_dict_1)
+        mock_run_prop_func.assert_called_once_with(
+            item,
+            'prop_func_1',
+            default_out="Not Found"
+        )
+
+        # 2 items
+        _ = self.instance._parse_property(item, prop_dict_2)
+        mock_run_prop_func.assert_has_calls([
+            call('example-openstack-resource', 'prop_func_1', default_out="Not Found"),
+            call('example-openstack-resource', 'prop_func_2', default_out="Not Found")
+        ])
+
+    def test_run_prop_func_valid(self):
+        """
+        Test that run_prop_func function works expectedly with valid prop_func
+        """
+        item = 'some-openstack-resource'
+        prop_func = MagicMock()
+        prop_func.return_value = 'some_property_value'
+        res = self.instance._run_prop_func(item, prop_func)
+
+        prop_func.assert_called_once_with(item)
+        self.assertEqual(res, prop_func.return_value)
+
+    def test_run_prop_func_invalid(self):
+        """
+        Test that run_prop_func function works expectedly when prop_func raises an Attribute Error
+        found for that object
+        """
+        item = 'some-openstack-resource'
+        prop_func = MagicMock()
+        prop_func.side_effect = AttributeError("some error here")
+        res = self.instance._run_prop_func(item, prop_func, default_out='default_val')
+        self.assertEqual(res, 'default_val')
 
     def test_group_by(self):
         """
@@ -163,7 +267,7 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
         expected_resource_objects = ['obj1', 'obj2', 'obj3']
         expected_results = ['res1', 'res2', 'res3']
 
-        self.instance._results_resource_object = ['obj1', 'obj2', 'obj3']
+        self.instance._results_resource_objects = ['obj1', 'obj2', 'obj3']
         self.instance._results = ['res1', 'res2', 'res3']
 
         # with as_object false

@@ -118,7 +118,77 @@ class OpenstackQueryWrapper(OpenstackWrapperBase):
         :param kwargs: keyword args that can be used to configure details of how query is run
             - valid kwargs specific to resource
         """
-        raise NotImplementedError
+
+        if len(self._query_props) == 0:
+            raise RuntimeError("""
+                query ran but no properties selected use select() method to 
+                set properties or select_all() to select all available properties
+            """)
+
+        with self._connection_cls(cloud_account) as conn:
+            self._results_resource_objects = self._run_query(conn, **kwargs)
+
+        self._results_resource_objects = self._apply_filter_func(
+            self._results_resource_objects,
+            self._filter_func,
+        )
+
+        # TODO: sort by and group by here
+        self._results = self._parse_properties(
+            self._results_resource_objects,
+            self._query_props
+        )
+
+        return self
+
+    @staticmethod
+    def _parse_properties(
+            items: List[Any],
+            property_funcs: Dict[str, Callable[[Any], Any]],
+    ) -> List[Dict]:
+        """
+        Generates a dictionary of queried properties from a list of openstack objects e.g. servers
+        :param items: List of items to obtain properties from
+        :param property_funcs: property_functions that return properties requested
+        :return: List containing dictionaries of the requested properties obtained from the items
+        """
+        return [OpenstackQueryWrapper._parse_property(item, property_funcs) for item in items]
+
+    @staticmethod
+    def _parse_property(item: Any, property_funcs: Dict[str, Callable[[Any], Any]]):
+        """
+        Generates a dictionary of queried properties from a single openstack object
+        :param item: openstack resource item to obtain properties from
+        :param property_funcs: Dict of 'property_name' 'property_function' key value pairs
+        """
+        return {
+            prop_key: OpenstackQueryWrapper._run_prop_func(item, prop_func, default_out="Not Found") for prop_key, prop_func in property_funcs.items()
+        }
+
+    @staticmethod
+    def _run_prop_func(item: Any, prop_func: Callable[[Any], Any], default_out="Not Found"):
+        """
+        Runs a function to get a property for a given openstack resource
+        :param item: openstack resource item to obtain property from
+        :param prop_func: A 'property_function' to return the property of an openstack resource
+        :param default_out: A default to set if the property cannot be found on the resource
+        """
+        try:
+            return str(prop_func(item))
+        except AttributeError:
+            return default_out
+
+    @staticmethod
+    def _apply_filter_func(items: List[Any], query_func: Callable[[Any], bool]) -> List[Any]:
+        """
+        Removes items from a list by running a given query function
+        :param items: List of items to query e.g. list of servers
+        :param query_func: Query function that determines whether a given item
+                           matches the query - should return true if it passes
+                           the query
+        :return: List of items that match the given query
+        """
+        return [item for item in items if query_func(item)]
 
     @staticmethod
     def _run_query(self, conn: OpenstackConnection, **kwargs):
