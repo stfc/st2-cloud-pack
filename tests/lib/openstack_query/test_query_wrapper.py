@@ -4,7 +4,7 @@ from enum import Enum, auto
 from nose.tools import assert_raises, raises
 
 from exceptions.parse_query_error import ParseQueryError
-from openstack_query.openstack_query_wrapper import OpenstackQueryWrapper
+from openstack_query.query_wrapper import QueryWrapper
 
 
 class MockedEnum(Enum):
@@ -14,9 +14,9 @@ class MockedEnum(Enum):
     ITEM_4 = auto()
 
 
-class OpenstackQueryWrapperTests(unittest.TestCase):
+class QueryWrapperTests(unittest.TestCase):
     """
-    Runs various tests to ensure that OpenstackQueryWrapper functions expectedly.
+    Runs various tests to ensure that QueryWrapper functions expectedly.
     """
 
     def setUp(self):
@@ -25,10 +25,10 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
         """
         super().setUp()
         self.mocked_connection = MagicMock()
-        self.instance = OpenstackQueryWrapper(connection_cls=self.mocked_connection)
+        self.instance = QueryWrapper(connection_cls=self.mocked_connection)
         self.conn = self.mocked_connection.return_value.__enter__.return_value
 
-    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._get_prop")
+    @patch("openstack_query.query_wrapper.QueryWrapper._get_prop")
     def test_select(self, mock_get_prop):
         """
         Tests that select function accepts all valid property Enums and sets attribute appropriately
@@ -50,7 +50,7 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
         self.assertEqual(instance._query_props, expected_query_props)
         self.assertEqual(instance, self.instance)
 
-    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._get_all_props")
+    @patch("openstack;_query.query_wrapper.QueryWrapper._get_all_props")
     def test_select_all(self, mock_get_all_props):
         """
         Tests that select_all function sets attribute to use all valid properties
@@ -72,8 +72,8 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
         self.assertEqual(instance._query_props, expected_query_props)
         self.assertEqual(instance, self.instance)
 
-    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._get_filter_func")
-    @patch("openstack_query.openstack_query_wrapper.check_filter_func")
+    @patch("openstack_query.query_wrapper.QueryWrapper._get_filter_func")
+    @patch("openstack_query.query_wrapper.check_filter_func")
     def test_where_valid_args(self, mock_check_filter_func, mock_get_filter_func):
         """
         Tests that where function accepts valid enum and args
@@ -95,8 +95,8 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
         self.assertEqual(instance._filter_func, expected_filter_func)
         self.assertEqual(instance, self.instance)
 
-    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._get_filter_func")
-    @patch("openstack_query.openstack_query_wrapper.check_filter_func")
+    @patch("openstack_query.query_wrapper.QueryWrapper._get_filter_func")
+    @patch("openstack_query.query_wrapper.check_filter_func")
     def test_where_invalid_args(self, mock_check_filter_func, mock_get_filter_func):
         """
         Tests that where function rejects invalid args appropriately
@@ -116,8 +116,8 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
 
         self.assertEqual(str(err.exception), "Error parsing preset args: some error here")
 
-    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._get_filter_func")
-    @patch("openstack_query.openstack_query_wrapper.check_filter_func")
+    @patch("openstack_query.query_wrapper.QueryWrapper._get_filter_func")
+    @patch("openstack_query.query_wrapper.check_filter_func")
     def test_where_when_already_set(self, mock_check_filter_func, mock_get_filter_func):
         """
         Tests that where function fails noisily when re-instantiated
@@ -135,9 +135,9 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
 
         self.assertEqual(str(err.exception), "Error: Already set a query preset")
 
-    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._run_query")
-    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._apply_filter_func")
-    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._parse_properties")
+    @patch("openstack_query.query_wrapper.QueryWrapper._run_query")
+    @patch("openstack_query.query_wrapper.QueryWrapper._apply_filter_func")
+    @patch("openstack_query.query_wrapper.QueryWrapper._parse_properties")
     def test_run_valid(self, mock_parse_properties, mock_apply_filter_func, mock_run_query):
         """
         Tests that run function sets up query and calls _run_query appropriately
@@ -175,7 +175,7 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
         self.instance._query_props = []
         _ = self.instance.run(cloud_account="test")
 
-    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._parse_property")
+    @patch("openstack_query.query_wrapper.QueryWrapper._parse_property")
     def test_parse_properties(self, mock_parse_property):
         """
         Tests that parse_properties function works expectedly with 0, 1 and 2 items
@@ -197,7 +197,7 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
             call(item_1, property_funcs), call(item_2, property_funcs)
         ])
 
-    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._run_prop_func")
+    @patch("openstack_query.query_wrapper.QueryWrapper._run_prop_func")
     def test_parse_property(self, mock_run_prop_func):
         """
         Tests that parse_property function works expectedly with 0, 1 and 2 prop_funcs
@@ -278,7 +278,7 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
         res = self.instance.to_list(as_objects=True)
         self.assertEqual(res, expected_resource_objects)
 
-    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._generate_table")
+    @patch("openstack_query.query_wrapper.QueryWrapper._generate_table")
     def test_to_html(self, mock_generate_table):
         """
         Tests that to_html function returns correct value
@@ -297,7 +297,7 @@ class OpenstackQueryWrapperTests(unittest.TestCase):
 
         self.assertEqual(expected_out, res)
 
-    @patch("openstack_query.openstack_query_wrapper.OpenstackQueryWrapper._generate_table")
+    @patch("openstack_query.query_wrapper.QueryWrapper._generate_table")
     def test_to_string(self, mock_generate_table):
         """
         Tests that to_string function returns correct value

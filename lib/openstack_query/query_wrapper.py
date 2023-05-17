@@ -9,7 +9,7 @@ from exceptions.parse_query_error import ParseQueryError
 from tabulate import tabulate
 
 
-class OpenstackQueryWrapper(OpenstackWrapperBase):
+class QueryWrapper(OpenstackWrapperBase):
 
     def __init__(self, connection_cls=OpenstackConnection):
 
@@ -28,7 +28,6 @@ class OpenstackQueryWrapper(OpenstackWrapperBase):
 
         # should be a idempotent function
         # calling multiple times with should aggregate properties to select
-
         for prop in props:
             prop_name, prop_func = self._get_prop(prop)
             self._query_props[prop_name] = prop_func
@@ -92,7 +91,7 @@ class OpenstackQueryWrapper(OpenstackWrapperBase):
         :param preset: A given preset that describes the query type
         """
         raise NotImplementedError("""
-            This static method should be implemented in subclasses of OpenstackQueryWrapper to return a filter_function 
+            This static method should be implemented in subclasses of QueryWrapper to return a filter_function 
             for a given preset Enum 
         """)
 
@@ -152,7 +151,7 @@ class OpenstackQueryWrapper(OpenstackWrapperBase):
         :param property_funcs: property_functions that return properties requested
         :return: List containing dictionaries of the requested properties obtained from the items
         """
-        return [OpenstackQueryWrapper._parse_property(item, property_funcs) for item in items]
+        return [QueryWrapper._parse_property(item, property_funcs) for item in items]
 
     @staticmethod
     def _parse_property(item: Any, property_funcs: Dict[str, Callable[[Any], Any]]):
@@ -162,7 +161,7 @@ class OpenstackQueryWrapper(OpenstackWrapperBase):
         :param property_funcs: Dict of 'property_name' 'property_function' key value pairs
         """
         return {
-            prop_key: OpenstackQueryWrapper._run_prop_func(item, prop_func, default_out="Not Found") for prop_key, prop_func in property_funcs.items()
+            prop_key: QueryWrapper._run_prop_func(item, prop_func, default_out="Not Found") for prop_key, prop_func in property_funcs.items()
         }
 
     @staticmethod
@@ -196,7 +195,7 @@ class OpenstackQueryWrapper(OpenstackWrapperBase):
         This method is to be instantiated in subclasses of this class to run openstack query command
         """
         raise NotImplementedError("""
-            This static method should be implemented in subclasses of OpenstackQueryWrapper to 
+            This static method should be implemented in subclasses of QueryWrapper to 
             run the appropriate openstack command(s)
         """)
 
