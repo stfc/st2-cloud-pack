@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Tuple, Callable, Any, Dict, Optional, List
+from typing import Tuple, Callable, Any, Dict, Optional, List, Union
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.openstack_connection import OpenstackConnection
 
@@ -144,7 +144,7 @@ class QueryWrapper(OpenstackWrapperBase):
     def _parse_properties(
             items: List[Any],
             property_funcs: Dict[str, Callable[[Any], Any]],
-    ) -> List[Dict]:
+    ) -> List[Dict[str, str]]:
         """
         Generates a dictionary of queried properties from a list of openstack objects e.g. servers
         :param items: List of items to obtain properties from
@@ -154,7 +154,7 @@ class QueryWrapper(OpenstackWrapperBase):
         return [QueryWrapper._parse_property(item, property_funcs) for item in items]
 
     @staticmethod
-    def _parse_property(item: Any, property_funcs: Dict[str, Callable[[Any], Any]]):
+    def _parse_property(item: Any, property_funcs: Dict[str, Callable[[Any], Any]]) -> Dict[str, str]:
         """
         Generates a dictionary of queried properties from a single openstack object
         :param item: openstack resource item to obtain properties from
@@ -165,7 +165,7 @@ class QueryWrapper(OpenstackWrapperBase):
         }
 
     @staticmethod
-    def _run_prop_func(item: Any, prop_func: Callable[[Any], Any], default_out="Not Found"):
+    def _run_prop_func(item: Any, prop_func: Callable[[Any], Any], default_out="Not Found") -> str:
         """
         Runs a function to get a property for a given openstack resource
         :param item: openstack resource item to obtain property from
@@ -190,7 +190,7 @@ class QueryWrapper(OpenstackWrapperBase):
         return [item for item in items if query_func(item)]
 
     @staticmethod
-    def _run_query(self, conn: OpenstackConnection, **kwargs):
+    def _run_query(self, conn: OpenstackConnection, **kwargs) -> List[Any]:
         """
         This method is to be instantiated in subclasses of this class to run openstack query command
         """
@@ -199,21 +199,21 @@ class QueryWrapper(OpenstackWrapperBase):
             run the appropriate openstack command(s)
         """)
 
-    def to_list(self, as_objects=False):
+    def to_list(self, as_objects=False) -> Union[List[Any], List[Dict[str, str]]]:
         """
         Public method to return results as a list
         :param as_objects: whether to return a list of openstack objects, or a list of dictionaries containing selected properties
         """
         return self._results_resource_objects if as_objects else self._results
 
-    def to_string(self, **kwargs):
+    def to_string(self, **kwargs) -> str:
         """
         Public method to return results as a table
         :param kwargs: kwargs to pass to generate table
         """
         return self._generate_table(self._results, return_html=False, **kwargs)
 
-    def to_html(self, **kwargs):
+    def to_html(self, **kwargs) -> str:
         """
         Public method to return results as html table
         :param kwargs: kwargs to pass to generate table
