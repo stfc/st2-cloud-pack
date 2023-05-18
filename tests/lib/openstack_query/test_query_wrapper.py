@@ -318,3 +318,24 @@ class QueryWrapperTests(unittest.TestCase):
         )
 
         self.assertEqual(expected_out, res)
+
+    @patch("openstack_query.query_wrapper.tabulate")
+    def test_generate_table(self, mock_tabulate):
+        results_dict_1 = [
+            {'prop1': 'val1'},
+            {'prop1': 'val2'}
+        ]
+
+        results_dict_2 = [
+            {'prop1': 'val1', 'prop2': 'val2'}
+        ]
+
+        _ = self.instance._generate_table(results_dict_1, return_html=False)
+
+        _ = self.instance._generate_table(results_dict_2, return_html=True)
+
+        mock_tabulate.assert_has_calls([
+            call([['val1'], ['val2']], ['prop1'], tablefmt='grid'),
+            call([['val1', 'val2']], ['prop1', 'prop2'], tablefmt='html')
+        ])
+

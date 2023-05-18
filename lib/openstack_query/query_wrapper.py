@@ -233,6 +233,6 @@ class QueryWrapper(OpenstackWrapperBase):
         :param kwargs: kwargs to pass to tabulate
         :return: String (html or plaintext table of results)
         """
-        headers = properties_dict[0].keys()
-        rows = [row.values() for row in properties_dict]
-        return tabulate(rows, list(headers), tablefmt="html" if return_html else "grid", **kwargs)
+        headers = list(properties_dict[0].keys())
+        rows = [list(row.values()) for row in properties_dict]
+        return tabulate(rows, headers, tablefmt="html" if return_html else "grid", **kwargs)
