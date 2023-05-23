@@ -6,10 +6,14 @@ from openstack_api.openstack_connection import OpenstackConnection
 from openstack_query.utils import check_filter_func
 
 from exceptions.parse_query_error import ParseQueryError
+from exceptions.query_mapping_error import QueryMappingError
+
 from tabulate import tabulate
 
 
 class QueryWrapper(OpenstackWrapperBase):
+
+    _PROPERTY_MAPPINGS = {}
 
     def __init__(self, connection_cls=OpenstackConnection):
 
@@ -33,17 +37,19 @@ class QueryWrapper(OpenstackWrapperBase):
             self._query_props[prop_name] = prop_func
         return self
 
-    @staticmethod
-    def _get_prop(prop: Enum) -> Tuple[str, Callable[[Any], Any]]:
+    def _get_prop(self, prop: Enum) -> Tuple[str, Callable[[Any], Any]]:
         """
         static method which returns a property name and 'get_property' function for a given property enum.
         This 'get_property' function takes a Openstack resource object and returns a value which
         corresponds to the property given of that object
         """
-        raise NotImplementedError("""
-            This static method should be implemented in subclasses of OpenstackQueryWrapper to 
-            return a tuple of 'property_name' and 'get_property' function for a given Enum representing a property
-        """)
+        if prop not in self._PROPERTY_MAPPINGS.keys():
+            raise QueryMappingError("""
+                Error: failed to get property mapping, the property is valid 
+                but does not contain an entry in PROPERTY_MAPPINGS. 
+                Please raise an issue with repo maintainer
+            """)
+        return prop.name.lower(), self._PROPERTY_MAPPINGS[prop]
 
     def select_all(self):
         """
@@ -56,16 +62,12 @@ class QueryWrapper(OpenstackWrapperBase):
         self._query_props = self._get_all_props()
         return self
 
-    @staticmethod
-    def _get_all_props() -> Dict[str, Callable[[Any], Any]]:
+    def _get_all_props(self) -> Dict[str, Callable[[Any], Any]]:
         """
         static method which returns all available 'property_name':'get_property' function key value pairs
         available.
         """
-        raise NotImplementedError("""
-            This static method should be implemented in subclasses of OpenstackQueryWrapper to return all available 
-            tuple of 'property_name' and 'get_property' functions 
-        """)
+        return {k.name.lower(): v for k, v in self._PROPERTY_MAPPINGS.items()}
 
     def where(self, preset: Enum, filter_func_kwargs: Dict[str, Any]):
         """

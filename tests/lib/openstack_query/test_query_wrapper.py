@@ -50,7 +50,21 @@ class QueryWrapperTests(unittest.TestCase):
         self.assertEqual(instance._query_props, expected_query_props)
         self.assertEqual(instance, self.instance)
 
-    @patch("openstack;_query.query_wrapper.QueryWrapper._get_all_props")
+    @patch("openstack_query.query_wrapper.QueryWrapper._PROPERTY_MAPPINGS")
+    def test_get_prop(self, mocked_property_mappings):
+        """
+        Tests that get_prop function functions expectedly
+        """
+        prop_mappings = {MockedEnum.ITEM_1: 'some_func'}
+        mocked_property_mappings.keys.return_value = [MockedEnum.ITEM_1]
+        mocked_property_mappings.__getitem__.side_effect = prop_mappings.__getitem__
+
+        res = self.instance._get_prop(MockedEnum.ITEM_1)
+        mocked_property_mappings.keys.assert_called_once()
+        mocked_property_mappings.__getitem__.assert_called_once_with(MockedEnum.ITEM_1)
+        self.assertEqual(res, ('item_1', 'some_func'))
+
+    @patch("openstack_query.query_wrapper.QueryWrapper._get_all_props")
     def test_select_all(self, mock_get_all_props):
         """
         Tests that select_all function sets attribute to use all valid properties
@@ -71,6 +85,24 @@ class QueryWrapperTests(unittest.TestCase):
         mock_get_all_props.assert_called_once()
         self.assertEqual(instance._query_props, expected_query_props)
         self.assertEqual(instance, self.instance)
+
+    @patch("openstack_query.query_wrapper.QueryWrapper._PROPERTY_MAPPINGS")
+    def test_get_all_props(self, mocked_property_mappings):
+        mocked_property_mappings.items.return_value = [
+            (MockedEnum.ITEM_1, 'some_func_1'),
+            (MockedEnum.ITEM_2, 'some_func_2'),
+            (MockedEnum.ITEM_3, 'some_func_3'),
+            (MockedEnum.ITEM_4, 'some_func_4')
+        ]
+
+        res = self.instance._get_all_props()
+        mocked_property_mappings.items.assert_called_once()
+        self.assertEqual(res, {
+            'item_1': 'some_func_1',
+            'item_2': 'some_func_2',
+            'item_3': 'some_func_3',
+            'item_4': 'some_func_4'
+        })
 
     @patch("openstack_query.query_wrapper.QueryWrapper._get_filter_func")
     @patch("openstack_query.query_wrapper.check_filter_func")
