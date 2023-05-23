@@ -1,8 +1,24 @@
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_query.query_wrapper import QueryWrapper
+from enums.query.server_properties import ServerProperties
 
 
 class QueryServer(QueryWrapper):
+
+    _PROPERTY_MAPPINGS = {
+        ServerProperties.USER_ID: lambda a: a["user_id"],
+        ServerProperties.HYPERVISOR_ID: lambda a: a["host_id"],
+        ServerProperties.SERVER_ID: lambda a: a["id"],
+        ServerProperties.SERVER_NAME: lambda a: a["name"],
+        ServerProperties.SERVER_DESCRIPTION: lambda a: a["description"],
+        ServerProperties.SERVER_STATUS: lambda a: a["status"],
+        ServerProperties.SERVER_CREATION_DATE: lambda a: a["created_at"],
+        ServerProperties.SERVER_LAST_UPDATED_DATE: lambda a: a["updated_at"],
+        ServerProperties.FLAVOR_ID: lambda a: ['flavor_id'],
+        ServerProperties.IMAGE_ID: lambda a: ['image_id'],
+        ServerProperties.PROJECT_ID: lambda a: a["location"]["project"]["id"],
+    }
+
     def __init__(self, connection_cls=OpenstackConnection):
         QueryWrapper.__init__(self, connection_cls)
 

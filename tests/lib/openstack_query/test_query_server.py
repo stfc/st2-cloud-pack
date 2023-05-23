@@ -1,13 +1,13 @@
 import unittest
-from unittest.mock import patch, MagicMock, call, NonCallableMock
-from enum import Enum, auto
-from nose.tools import assert_raises, raises
+from unittest.mock import MagicMock, call
+from parameterized import parameterized
 
-from exceptions.parse_query_error import ParseQueryError
 from openstack_query.query_server import QueryServer
+from enums.query.server_properties import ServerProperties
 
+from tests.lib.openstack_query.test_query_mappings import QueryMappingTests
 
-class QueryServerTests(unittest.TestCase):
+class QueryServerTests(QueryMappingTests, unittest.TestCase):
     """
     Runs various tests to ensure that QueryServerTests functions expectedly.
     """
@@ -20,6 +20,15 @@ class QueryServerTests(unittest.TestCase):
         self.mocked_connection = MagicMock()
         self.instance = QueryServer(connection_cls=self.mocked_connection)
         self.conn = self.mocked_connection.return_value.__enter__.return_value
+
+    @parameterized.expand(
+        [(f'test {prop.name.lower()}', prop) for prop in ServerProperties]
+    )
+    def test_property_mapping(self, name, prop):
+        """
+        Tests that all openstack properties can be retrieved properly
+        """
+        assert self.instance._get_prop(prop)
 
     def test_run_query(self):
         """
