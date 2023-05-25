@@ -5,6 +5,7 @@ from openstack_api.openstack_connection import OpenstackConnection
 
 from openstack_query.utils import (
     check_filter_func,
+    check_kwarg_mapping,
     prop_equal_to,
     prop_not_equal_to,
     prop_greater_than,
@@ -29,6 +30,7 @@ from tabulate import tabulate
 class QueryWrapper(OpenstackWrapperBase):
 
     _PROPERTY_MAPPINGS = {}
+    _KWARG_MAPPINGS ={}
     _NON_DEFAULT_FILTER_FUNCTION_MAPPINGS = {}
     _DEFAULT_FILTER_FUNCTION_MAPPINGS = {}
     _DEFAULT_FILTER_FUNCTIONS = {
@@ -50,6 +52,7 @@ class QueryWrapper(OpenstackWrapperBase):
         OpenstackWrapperBase.__init__(self, connection_cls)
         self._query_props = dict()
         self._filter_func = None
+        self._filter_kwargs = None
         self._results_resource_objects = []
         self._results = []
 
@@ -99,24 +102,48 @@ class QueryWrapper(OpenstackWrapperBase):
         """
         return {k.name.lower(): v for k, v in self._PROPERTY_MAPPINGS.items()}
 
-    def where(self, preset: QueryPresets, prop: Enum, filter_func_kwargs: Dict[str, Any]):
+    def where(self, preset: QueryPresets, prop: Enum, preset_args: Dict[str, Any]):
         """
         Public method used to set the preset that will be used to get the query filter function
         :param preset: Name of query preset to use
         :param prop: Property that the query preset will be used on
-        :param filter_func_kwargs: kwargs to pass to filter function
+        :param preset_args: kwargs to pass to filter function
         """
         if self._filter_func:
             raise ParseQueryError("Error: Already set a query preset")
 
+        self._filter_kwargs = self._parse_kwargs(preset, prop, preset_args)
+        self._filter_func = self._parse_filter_func(preset, prop, preset_args)
+
+        return self
+
+    def _parse_kwargs(self, preset: QueryPresets, prop: Enum, preset_args: Dict[str, Any]):
+        kwarg_mapping = self._get_kwarg(preset, prop)
+        if kwarg_mapping:
+            check_kwarg_mapping(kwarg_mapping, preset_args)
+            return kwarg_mapping(**preset_args)
+        return None
+
+    def _parse_filter_func(self, preset: QueryPresets, prop: Enum, preset_args: Dict[str, Any]):
         filter_func = self._get_filter_func(preset, prop)
         try:
-            filter_func_kwargs.update({'prop': prop})
-            _ = check_filter_func(filter_func, filter_func_kwargs)
+            preset_args.update({'prop': prop})
+            _ = check_filter_func(filter_func, preset_args)
         except TypeError as func_err:
             raise ParseQueryError(f"Error parsing preset args: {func_err}")
-        self._filter_func = filter_func
-        return self
+        return filter_func
+
+    def _get_kwarg(self, preset: QueryPresets, prop: Enum) -> Optional[Callable[[Any], str]]:
+        """
+        returns a dict containing filter kwargs to pass to openstack command to get all resources if mapping exists for
+        a given preset, property pair
+        :param preset: A given preset that describes the query type
+        :param prop: A given prop that we want base the query on
+        """
+
+        if preset in self._KWARG_MAPPINGS.keys():
+            return self._KWARG_MAPPINGS[preset].get(prop, None)
+        return None
 
     def _get_filter_func(self, preset: QueryPresets, prop: Enum) -> Optional[Callable[[Any], bool]]:
         """

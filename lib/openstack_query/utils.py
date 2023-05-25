@@ -32,6 +32,18 @@ def check_filter_func(func: Callable[[Any], bool], arg_names: List[str]) -> bool
     return True
 
 
+def check_kwarg_mapping(
+        kwarg_mapping: Callable[[Any], Dict[str, Any]],
+        args: Dict[str, Any]
+):
+    try:
+        _ = kwarg_mapping(**args)
+    except KeyError as e:
+        raise TypeError(f"expected arg '{e.args[0]}' but not found")
+
+    return True
+
+
 def prop_equal_to(prop: Any, value: Any) -> bool:
     if isinstance(prop, type(value)):
         if isinstance(prop, object) and hasattr(prop, '__eq__'):
@@ -51,6 +63,19 @@ def prop_less_than(prop: Union[int, float], value: Union[int, float]) -> bool:
 
 def prop_greater_than(prop: Union[int, float], value: Union[int, float]) -> bool:
     return prop > value
+
+
+def convert_to_timestamp(
+        days: int = 0,
+        hours: int = 0,
+        minutes: int = 0,
+        seconds: float = 0,
+        timestamp_fmt: str = "%Y-%m-%dT%H:%M:%SZ"
+):
+    delta = get_timestamp_in_seconds(
+        days, hours, minutes, seconds
+    )
+    return (datetime(1970, 1, 1) + timedelta(seconds=delta)).strftime(timestamp_fmt)
 
 
 def get_current_time():
