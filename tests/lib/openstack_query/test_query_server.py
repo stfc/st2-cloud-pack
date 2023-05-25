@@ -4,6 +4,8 @@ from parameterized import parameterized
 
 from openstack_query.query_server import QueryServer
 from enums.query.server_properties import ServerProperties
+from enums.query.query_presets import QueryPresets
+
 
 from tests.lib.openstack_query.test_query_mappings import QueryMappingTests
 
@@ -24,11 +26,20 @@ class QueryServerTests(QueryMappingTests, unittest.TestCase):
     @parameterized.expand(
         [(f'test {prop.name.lower()}', prop) for prop in ServerProperties]
     )
-    def test_property_mapping(self, name, prop):
+    def test_property_to_property_func_mapping(self, name, prop):
         """
-        Tests that all openstack properties can be retrieved properly
+        Tests that all openstack properties have a property function mapping
         """
         assert self.instance._get_prop(prop)
+
+    @parameterized.expand(
+        [(f'test {preset.name.lower()}', preset) for preset in QueryPresets]
+    )
+    def test_preset_to_filter_func_mapping(self, name, preset):
+        """
+        Tests that all query presets have a default filter function mapping
+        """
+        assert self.instance._get_default_filter_func(preset)
 
     def test_run_query(self):
         """

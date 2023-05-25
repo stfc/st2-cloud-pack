@@ -8,7 +8,13 @@ class QueryMappingTests(ABC):
     """
 
     @abstractmethod
-    def test_property_mapping(self, prop):
+    def test_property_to_property_func_mapping(self, prop):
         """
-        Should test that all openstack properties can be retrieved properly
+        Should test that all openstack properties have a corresponding property function
+        """
+
+    @abstractmethod
+    def test_preset_to_filter_func_mapping(self, preset):
+        """
+        Should test that all query presets have a corresponding filter function mapping
         """

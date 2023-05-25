@@ -1,6 +1,8 @@
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_query.query_wrapper import QueryWrapper
+
 from enums.query.server_properties import ServerProperties
+from enums.query.query_presets import QueryPresets
 
 
 class QueryServer(QueryWrapper):
@@ -18,6 +20,33 @@ class QueryServer(QueryWrapper):
         ServerProperties.IMAGE_ID: lambda a: ['image_id'],
         ServerProperties.PROJECT_ID: lambda a: a["location"]["project"]["id"],
     }
+    
+    _DEFAULT_FILTER_FUNCTION_MAPPINGS = {
+        QueryPresets.EQUAL_TO: ['*'],
+        QueryPresets.NOT_EQUAL_TO: ['*'],
+        QueryPresets.OLDER_THAN: [
+            ServerProperties.SERVER_CREATION_DATE,
+            ServerProperties.SERVER_LAST_UPDATED_DATE
+        ],
+        QueryPresets.YOUNGER_THAN: [
+            ServerProperties.SERVER_CREATION_DATE,
+            ServerProperties.SERVER_LAST_UPDATED_DATE
+        ],
+        QueryPresets.YOUNGER_THAN_OR_EQUAL_TO: [
+            ServerProperties.SERVER_CREATION_DATE,
+            ServerProperties.SERVER_LAST_UPDATED_DATE
+        ],
+        QueryPresets.OLDER_THAN_OR_EQUAL_TO: [
+            ServerProperties.SERVER_CREATION_DATE,
+            ServerProperties.SERVER_LAST_UPDATED_DATE
+        ],
+        QueryPresets.MATCHES_REGEX: [
+            ServerProperties.SERVER_NAME
+        ]
+    }
+
+    _NON_DEFAULT_FILTER_FUNCTION_MAPPINGS = {}
+
 
     def __init__(self, connection_cls=OpenstackConnection):
         QueryWrapper.__init__(self, connection_cls)
