@@ -1,3 +1,4 @@
+from typing import Optional, Dict
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_query.query_wrapper import QueryWrapper
 from openstack_query.utils import convert_to_timestamp
@@ -24,16 +25,15 @@ class QueryServer(QueryWrapper):
 
     _KWARG_MAPPINGS = {
         QueryPresets.EQUAL_TO: {
-            ServerProperties.SERVER_USER_ID: lambda **kwargs: {'user_id': kwargs['value']},
-            ServerProperties.SERVER_HYPERVISOR_NAME: lambda **kwargs: {'host': kwargs['value']},
+            ServerProperties.USER_ID: lambda **kwargs: {'user_id': kwargs['value']},
             ServerProperties.SERVER_ID: lambda **kwargs: {'uuid': kwargs['value']},
             ServerProperties.SERVER_NAME: lambda **kwargs: {'hostname': kwargs['value']},
             ServerProperties.SERVER_DESCRIPTION: lambda **kwargs: {'description': kwargs['value']},
             ServerProperties.SERVER_STATUS: lambda **kwargs: {'vm_state': kwargs['value']},
             ServerProperties.SERVER_CREATION_DATE: lambda **kwargs: {'created_at': kwargs['value']},
-            ServerProperties.SERVER_FLAVOR_ID: lambda **kwargs: {'flavor': kwargs['value']},
-            ServerProperties.SERVER_IMAGE_ID: lambda **kwargs: {'image': kwargs['value']},
-            ServerProperties.SERVER_PROJECT_ID: lambda **kwargs: {'project_id': kwargs['value']},
+            ServerProperties.FLAVOR_ID: lambda **kwargs: {'flavor': kwargs['value']},
+            ServerProperties.IMAGE_ID: lambda **kwargs: {'image': kwargs['value']},
+            ServerProperties.PROJECT_ID: lambda **kwargs: {'project_id': kwargs['value']},
         },
         QueryPresets.OLDER_THAN_OR_EQUAL_TO: {
             ServerProperties.SERVER_LAST_UPDATED_DATE: lambda **kwargs: {
@@ -77,12 +77,13 @@ class QueryServer(QueryWrapper):
         QueryWrapper.__init__(self, connection_cls)
 
     @staticmethod
-    def _run_query(conn: OpenstackConnection, **kwargs):
+    def _run_query(conn: OpenstackConnection, filter_kwargs: Optional[Dict[str, str]] = None, **kwargs):
         """
         This method runs the query by running openstacksdk commands
         For QueryServer, this command gets all projects available and iteratively finds servers in that project
         :param conn: An OpenstackConnection object
-        :param kwargs: a set of extra params to pass into conn.compute.servers
+        :param filter_kwargs: An Optional set of kwargs to pass to conn.compute.servers
+        :param kwargs: a set of extra meta params (not implemented yet)
         """
         servers = []
         for project in conn.identity.projects():
@@ -90,7 +91,7 @@ class QueryServer(QueryWrapper):
                 "project_id": project['id'],
                 "all_tenants": True
             }
-            server_filters.update(kwargs)
+            server_filters.update(filter_kwargs if filter_kwargs else {})
             servers.extend(list(conn.compute.servers(filters=server_filters)))
 
         return servers

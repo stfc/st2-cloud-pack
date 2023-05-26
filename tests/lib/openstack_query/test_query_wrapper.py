@@ -220,35 +220,55 @@ class QueryWrapperTests(unittest.TestCase):
         self.assertEqual(res, 'some_kwarg_func')
 
     @patch("openstack_query.query_wrapper.QueryWrapper._run_query")
-    @patch("openstack_query.query_wrapper.QueryWrapper._apply_filter_func")
     @patch("openstack_query.query_wrapper.QueryWrapper._parse_properties")
-    def test_run_valid(self, mock_parse_properties, mock_apply_filter_func, mock_run_query):
-        """
-        Tests that run function sets up query and calls _run_query appropriately
-        """
-        query_props = {
-            'prop1': 'prop_func1', 'prop2': 'prop_func2', 'prop3': 'prop_func3'
-        }
-        filter_func = MagicMock()
-        res_out = ['obj1', 'obj2', 'obj3']
-        filter_out = ['obj1', 'obj2']
-        parse_out = ['parse_out1', 'parse_out2']
-
-        self.instance._query_props = query_props
-        self.instance._filter_func = filter_func
-
-        mock_run_query.return_value = res_out
-        mock_apply_filter_func.return_value = filter_out
-        mock_parse_properties.return_value = parse_out
+    def test_run_filter_kwargs(self, mock_parse_properties, mock_run_query):
+        self.instance._query_props = 'some_props'
+        self.instance._filter_kwargs = 'some_filter_kwargs'
+        mock_run_query.return_value = 'some_openstack_resources'
+        mock_parse_properties.return_value = 'some_query_results'
 
         instance = self.instance.run(cloud_account="test")
         self.mocked_connection.assert_called_once_with("test")
 
-        mock_run_query.assert_called_once_with(self.conn)
-        mock_apply_filter_func.assert_called_once_with(res_out, filter_func)
-        mock_parse_properties.assert_called_once_with(filter_out, query_props)
+        mock_run_query.assert_called_once_with(
+            self.conn, 'some_filter_kwargs'
+        )
+        mock_parse_properties.assert_called_once_with(
+            'some_openstack_resources', 'some_props'
+        )
 
-        self.assertEqual(parse_out, instance._results)
+        self.assertEqual('some_query_results', instance._results)
+        self.assertEqual(instance, self.instance)
+
+    @patch("openstack_query.query_wrapper.QueryWrapper._run_query")
+    @patch("openstack_query.query_wrapper.QueryWrapper._apply_filter_func")
+    @patch("openstack_query.query_wrapper.QueryWrapper._parse_properties")
+    def test_run_filter_func(self, mock_parse_properties, mock_apply_filter_func, mock_run_query):
+        """
+        Tests that run function sets up query and calls _run_query appropriately
+        """
+        self.instance._query_props = 'some_props'
+        self.instance._filter_kwargs = None
+        self.instance._filter_func = 'some_filter_func'
+
+        mock_run_query.return_value = 'some_openstack_resources'
+        mock_apply_filter_func.return_value = 'some_filtered_resources'
+        mock_parse_properties.return_value = 'some_query_results'
+        instance = self.instance.run(cloud_account="test")
+
+        self.mocked_connection.assert_called_once_with("test")
+
+        mock_run_query.assert_called_once_with(
+            self.conn, None
+        )
+        mock_apply_filter_func.assert_called_once_with(
+            'some_openstack_resources', 'some_filter_func'
+        )
+        mock_parse_properties.assert_called_once_with(
+            'some_filtered_resources', 'some_props'
+        )
+
+        self.assertEqual('some_query_results', instance._results)
         self.assertEqual(instance, self.instance)
 
     @raises(RuntimeError)

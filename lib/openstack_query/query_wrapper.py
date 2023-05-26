@@ -200,12 +200,13 @@ class QueryWrapper(OpenstackWrapperBase):
             """)
 
         with self._connection_cls(cloud_account) as conn:
-            self._results_resource_objects = self._run_query(conn, **kwargs)
+            self._results_resource_objects = self._run_query(conn, self._filter_kwargs, **kwargs)
 
-        self._results_resource_objects = self._apply_filter_func(
-            self._results_resource_objects,
-            self._filter_func,
-        )
+        if self._filter_kwargs is None:
+            self._results_resource_objects = self._apply_filter_func(
+                self._results_resource_objects,
+                self._filter_func,
+            )
 
         # TODO: sort by and group by here
         self._results = self._parse_properties(
@@ -265,7 +266,7 @@ class QueryWrapper(OpenstackWrapperBase):
         return [item for item in items if query_func(item)]
 
     @staticmethod
-    def _run_query(self, conn: OpenstackConnection, **kwargs) -> List[Any]:
+    def _run_query(self, conn: OpenstackConnection, filter_kwargs: Optional[Dict[str, str]] = None, **kwargs) -> List[Any]:
         """
         This method is to be instantiated in subclasses of this class to run openstack query command
         """
