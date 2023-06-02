@@ -1,10 +1,15 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, Any
+
+from openstack.compute.v2.server import Server
+from openstack.compute.v2.identity import Project
+
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_query.query_wrapper import QueryWrapper
 from openstack_query.utils import convert_to_timestamp
 
 from enums.query.server_properties import ServerProperties
 from enums.query.query_presets import QueryPresets
+from exceptions.parse_query_error import ParseQueryError
 
 
 class QueryServer(QueryWrapper):
@@ -83,18 +88,48 @@ class QueryServer(QueryWrapper):
         For QueryServer, this command gets all projects available and iteratively finds servers in that project
         :param conn: An OpenstackConnection object
         :param filter_kwargs: An Optional set of kwargs to pass to conn.compute.servers
-        :param kwargs: a set of extra meta params (not implemented yet)
+        :param kwargs: a set of extra meta params that override openstacksdk commands or change which commands are run
+
+        kwargs: For QueryServer:
+            'from_projects' - set which projects to search by providing a list of openstack projects to search in
         """
         servers = []
-        for project in conn.identity.projects():
-            server_filters = {
-                "project_id": project['id'],
-                "all_tenants": True
-            }
-            server_filters.update(filter_kwargs if filter_kwargs else {})
-            servers.extend(list(conn.compute.servers(filters=server_filters)))
+        if "from_projects" in kwargs:
+            projects = kwargs["from_projects"]
+        else:
+            projects = []
+            for project in conn.identity.projects():
+                projects.append(project)
+
+        for project in projects:
+            servers.extend(QueryServer._run_query_on_project(conn, project, filter_kwargs))
+        return servers
+
+    @staticmethod
+    def _run_query_on_project(conn: OpenstackConnection, project: Project, filter_kwargs: Optional[Dict[str, str]] = None):
+        servers = []
+
+        server_filters = {
+            "project_id": project['id'],
+            "all_tenants": True
+        }
+
+        server_filters.update(filter_kwargs if filter_kwargs else {})
+        servers.extend(list(conn.compute.servers(filters=server_filters)))
 
         return servers
+
+    @staticmethod
+    def _parse_subset(conn: OpenstackConnection, server_identifiers: Server):
+        query_from = []
+        for server_instance in server_identifiers:
+            server_obj = server_instance
+            if not isinstance(Server, server_instance):
+                server_obj = conn.compute.find_server(server_instance)
+            query_from.append(server_obj)
+        return query_from
+
+
 
 
 

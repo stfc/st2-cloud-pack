@@ -199,16 +199,20 @@ class QueryWrapper(OpenstackWrapperBase):
                 set properties or select_all() to select all available properties
             """)
 
+        force_filter_func_usage = False
         with self._connection_cls(cloud_account) as conn:
-            self._results_resource_objects = self._run_query(conn, self._filter_kwargs, **kwargs)
+            if "from_subset" in kwargs:
+                self._results_resource_objects = self._parse_subset(conn, kwargs['from_subset'])
+                force_filter_func_usage = True
+            else:
+                self._results_resource_objects = self._run_query(conn, self._filter_kwargs, **kwargs)
 
-        if self._filter_kwargs is None:
+        if self._filter_kwargs is None or force_filter_func_usage:
             self._results_resource_objects = self._apply_filter_func(
                 self._results_resource_objects,
                 self._filter_func,
             )
 
-        # TODO: sort by and group by here
         self._results = self._parse_properties(
             self._results_resource_objects,
             self._query_props
