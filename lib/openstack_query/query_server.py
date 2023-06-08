@@ -18,6 +18,10 @@ from exceptions.parse_query_error import ParseQueryError
 
 
 class QueryServer(QueryWrapper):
+
+    # PROPERTY_MAPPINGS set how to get properties of a openstack server object
+    # possible properties are documented here:
+    # https://docs.openstack.org/openstacksdk/latest/user/resources/compute/v2/server.html#openstack.compute.v2.server.Server
     _PROPERTY_MAPPINGS = {
         ServerProperties.USER_ID: lambda a: a["user_id"],
         ServerProperties.HYPERVISOR_ID: lambda a: a["host_id"],
@@ -32,6 +36,10 @@ class QueryServer(QueryWrapper):
         ServerProperties.PROJECT_ID: lambda a: a["location"]["project"]["id"],
     }
 
+    # KWARG_MAPPINGS - 'filter' keyword arguments that openstack command conn.compute.servers() takes
+    # - documented here https://docs.openstack.org/openstacksdk/latest/user/proxies/compute.html
+    # - all filters are documented here
+    # https://docs.openstack.org/api-ref/compute/?expanded=list-servers-detail#list-server-request
     _KWARG_MAPPINGS = {
         QueryPresetsGeneric.EQUAL_TO: {
             ServerProperties.USER_ID: lambda **kwargs: {"user_id": kwargs["value"]},
@@ -101,13 +109,20 @@ class QueryServer(QueryWrapper):
     ):
         """
         This method runs the query by running openstacksdk commands
-        For QueryServer, this command gets all projects available and iteratively finds servers in that project
-        :param conn: An OpenstackConnection object
-        :param filter_kwargs: An Optional set of kwargs to pass to conn.compute.servers
-        :param kwargs: a set of extra meta params that override openstacksdk commands or change which commands are run
 
-        kwargs: For QueryServer:
-            'from_projects' - set which projects to search by providing a list of openstack projects to search in
+        For QueryServer, this command gets all projects available and iteratively finds servers that belong to that project
+        :param conn: An OpenstackConnection object - used to connect to openstacksdk
+        :param filter_kwargs: An Optional set of filter kwargs to pass to conn.compute.servers()
+            to limit the servers being returned. - see https://docs.openstack.org/api-ref/compute/#list-servers
+
+        :param kwargs: a set of extra meta params that override default openstacksdk command. Current valid kwargs are:
+
+            'from_projects': Union[List[str], List[Project]] - takes a list of projects or project ids/names
+                    to run the query on
+
+            'from_subset': Union[List[str], List[Server]] - takes a list of servers or server ids/names
+                    to run the query on (forces use of filter functions)
+
         """
         servers = []
         if "from_projects" in kwargs:
