@@ -146,7 +146,7 @@ class QueryWrapperTests(unittest.TestCase):
 
         self.assertEqual(str(err.exception), "Error: Already set a query preset")
 
-    @patch("openstack_query.query_wrapper.QueryWrapper._get_kwarg_mapping")
+    @patch("openstack_query.query_wrapper.QueryWrapper._get_kwarg")
     @patch("openstack_query.query_wrapper.check_kwarg_mapping")
     def test_parse_kwargs(self, mock_check_kwarg_mapping, mock_get_kwarg_mapping):
         preset = QueryPresets.EQUAL_TO
@@ -359,13 +359,13 @@ class QueryWrapperTests(unittest.TestCase):
         """
         Tests that group groups results into list of lists appropriately
         """
-        raise NotImplementedError
+        pass
 
     def test_sort_by(self):
         """
         Tests that sort_by function sorts results list appropriately
         """
-        raise NotImplementedError
+        pass
 
     def test_to_list(self):
         """

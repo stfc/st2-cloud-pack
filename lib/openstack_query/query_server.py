@@ -1,7 +1,7 @@
-from typing import Optional, Dict, Any
+from typing import Optional, Dict
 
 from openstack.compute.v2.server import Server
-from openstack.compute.v2.identity import Project
+from openstack.identity.v3.project import Project
 
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_query.query_wrapper import QueryWrapper
