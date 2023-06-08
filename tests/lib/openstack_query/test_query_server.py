@@ -3,9 +3,15 @@ from unittest.mock import MagicMock, call
 from parameterized import parameterized
 
 from openstack_query.query_server import QueryServer
-from enums.query.server_properties import ServerProperties
-from enums.query.query_presets import QueryPresets
 
+
+from enums.query.server_properties import ServerProperties
+from enums.query.query_presets import (
+    QueryPresetsGeneric,
+    QueryPresetsInteger,
+    QueryPresetsDateTime,
+    QueryPresetsString,
+)
 
 from tests.lib.openstack_query.test_query_mappings import QueryMappingTests
 
@@ -34,7 +40,15 @@ class QueryServerTests(QueryMappingTests, unittest.TestCase):
         assert self.instance._get_prop(prop)
 
     @parameterized.expand(
-        [(f"test {preset.name.lower()}", preset) for preset in QueryPresets]
+        [
+            (f"test {preset.name.lower()}", preset)
+            for preset in [
+                *QueryPresetsGeneric,
+                *QueryPresetsInteger,
+                *QueryPresetsDateTime,
+                *QueryPresetsString,
+            ]
+        ]
     )
     def test_preset_to_filter_func_mapping(self, name, preset):
         """

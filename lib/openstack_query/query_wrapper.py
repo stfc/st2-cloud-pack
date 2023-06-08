@@ -23,7 +23,12 @@ from openstack_query.utils import (
 from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_mapping_error import QueryMappingError
 
-from enums.query.query_presets import QueryPresets
+from enums.query.query_presets import (
+    QueryPresetsGeneric,
+    QueryPresetsInteger,
+    QueryPresetsDateTime,
+    QueryPresetsString,
+)
 from tabulate import tabulate
 
 
@@ -33,17 +38,17 @@ class QueryWrapper(OpenstackWrapperBase):
     _NON_DEFAULT_FILTER_FUNCTION_MAPPINGS = {}
     _DEFAULT_FILTER_FUNCTION_MAPPINGS = {}
     _DEFAULT_FILTER_FUNCTIONS = {
-        QueryPresets.EQUAL_TO: prop_equal_to,
-        QueryPresets.NOT_EQUAL_TO: prop_not_equal_to,
-        QueryPresets.GREATER_THAN: prop_greater_than,
-        QueryPresets.LESS_THAN: prop_less_than,
-        QueryPresets.YOUNGER_THAN: prop_younger_than,
-        QueryPresets.YOUNGER_THAN_OR_EQUAL_TO: prop_younger_than_or_equal_to,
-        QueryPresets.OLDER_THAN_OR_EQUAL_TO: prop_older_than_or_equal_to,
-        QueryPresets.OLDER_THAN: prop_older_than,
-        QueryPresets.ANY_IN: prop_any_in,
-        QueryPresets.NOT_ANY_IN: prop_not_any_in,
-        QueryPresets.MATCHES_REGEX: prop_matches_regex,
+        QueryPresetsGeneric.EQUAL_TO: prop_equal_to,
+        QueryPresetsGeneric.NOT_EQUAL_TO: prop_not_equal_to,
+        QueryPresetsInteger.GREATER_THAN: prop_greater_than,
+        QueryPresetsInteger.LESS_THAN: prop_less_than,
+        QueryPresetsDateTime.YOUNGER_THAN: prop_younger_than,
+        QueryPresetsDateTime.YOUNGER_THAN_OR_EQUAL_TO: prop_younger_than_or_equal_to,
+        QueryPresetsDateTime.OLDER_THAN_OR_EQUAL_TO: prop_older_than_or_equal_to,
+        QueryPresetsDateTime.OLDER_THAN: prop_older_than,
+        QueryPresetsString.ANY_IN: prop_any_in,
+        QueryPresetsString.NOT_ANY_IN: prop_not_any_in,
+        QueryPresetsString.MATCHES_REGEX: prop_matches_regex,
     }
 
     def __init__(self, connection_cls=OpenstackConnection):
@@ -102,7 +107,7 @@ class QueryWrapper(OpenstackWrapperBase):
         """
         return {k.name.lower(): v for k, v in self._PROPERTY_MAPPINGS.items()}
 
-    def where(self, preset: QueryPresets, prop: Enum, preset_args: Dict[str, Any]):
+    def where(self, preset: Enum, prop: Enum, preset_args: Dict[str, Any]):
         """
         Public method used to set the preset that will be used to get the query filter function
         :param preset: Name of query preset to use
@@ -117,18 +122,14 @@ class QueryWrapper(OpenstackWrapperBase):
 
         return self
 
-    def _parse_kwargs(
-        self, preset: QueryPresets, prop: Enum, preset_args: Dict[str, Any]
-    ):
+    def _parse_kwargs(self, preset: Enum, prop: Enum, preset_args: Dict[str, Any]):
         kwarg_mapping = self._get_kwarg(preset, prop)
         if kwarg_mapping:
             check_kwarg_mapping(kwarg_mapping, preset_args)
             return kwarg_mapping(**preset_args)
         return None
 
-    def _parse_filter_func(
-        self, preset: QueryPresets, prop: Enum, preset_args: Dict[str, Any]
-    ):
+    def _parse_filter_func(self, preset: Enum, prop: Enum, preset_args: Dict[str, Any]):
         filter_func = self._get_filter_func(preset, prop)
         try:
             preset_args.update({"prop": prop})
@@ -137,9 +138,7 @@ class QueryWrapper(OpenstackWrapperBase):
             raise ParseQueryError(f"Error parsing preset args: {func_err}")
         return filter_func
 
-    def _get_kwarg(
-        self, preset: QueryPresets, prop: Enum
-    ) -> Optional[Callable[[Any], str]]:
+    def _get_kwarg(self, preset: Enum, prop: Enum) -> Optional[Callable[[Any], str]]:
         """
         returns a dict containing filter kwargs to pass to openstack command to get all resources if mapping exists for
         a given preset, property pair
@@ -152,7 +151,7 @@ class QueryWrapper(OpenstackWrapperBase):
         return None
 
     def _get_filter_func(
-        self, preset: QueryPresets, prop: Enum
+        self, preset: Enum, prop: Enum
     ) -> Optional[Callable[[Any], bool]]:
         """
         Method that is used to return a filter function for given preset, if any
@@ -175,9 +174,7 @@ class QueryWrapper(OpenstackWrapperBase):
         """
         )
 
-    def _get_default_filter_func(
-        self, preset: QueryPresets
-    ) -> Optional[Callable[[Any], bool]]:
+    def _get_default_filter_func(self, preset: Enum) -> Optional[Callable[[Any], bool]]:
         """
         Returns a default filter function for preset, if any
         :param preset: preset to get default filter function for

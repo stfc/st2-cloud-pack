@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock, call, NonCallableMock
 from enum import Enum, auto
 from nose.tools import assert_raises, raises
 
-from enums.query.query_presets import QueryPresets
+from enums.query.query_presets import QueryPresetsGeneric, QueryPresetsString
 
 from exceptions.parse_query_error import ParseQueryError
 from openstack_query.query_wrapper import QueryWrapper
@@ -109,7 +109,7 @@ class QueryWrapperTests(unittest.TestCase):
         """
         Tests that where function accepts valid enum and args
         """
-        preset = QueryPresets.EQUAL_TO
+        preset = QueryPresetsGeneric.EQUAL_TO
         prop = MockedEnum.ITEM_2
         args = {"arg1": "val1"}
         mock_parse_kwargs.return_value = "some_set_of_kwargs"
@@ -149,7 +149,7 @@ class QueryWrapperTests(unittest.TestCase):
     @patch("openstack_query.query_wrapper.QueryWrapper._get_kwarg")
     @patch("openstack_query.query_wrapper.check_kwarg_mapping")
     def test_parse_kwargs(self, mock_check_kwarg_mapping, mock_get_kwarg_mapping):
-        preset = QueryPresets.EQUAL_TO
+        preset = QueryPresetsGeneric.EQUAL_TO
         prop = MockedEnum.ITEM_1
         preset_args = {"arg1": "val1"}
 
@@ -166,7 +166,7 @@ class QueryWrapperTests(unittest.TestCase):
     @patch("openstack_query.query_wrapper.QueryWrapper._get_filter_func")
     @patch("openstack_query.query_wrapper.check_filter_func")
     def test_parse_filter_func(self, mock_check_filter_func, mock_get_filter_func):
-        preset = QueryPresets.EQUAL_TO
+        preset = QueryPresetsGeneric.EQUAL_TO
         prop = MockedEnum.ITEM_2
         args = {"arg1": "val1"}
 
@@ -191,7 +191,7 @@ class QueryWrapperTests(unittest.TestCase):
         """
         Tests that where function rejects invalid args appropriately
         """
-        preset = QueryPresets.EQUAL_TO
+        preset = QueryPresetsGeneric.EQUAL_TO
         prop = MockedEnum.ITEM_2
         args = {"arg1": "val1"}
 
@@ -210,14 +210,18 @@ class QueryWrapperTests(unittest.TestCase):
 
     @patch("openstack_query.query_wrapper.QueryWrapper._KWARG_MAPPINGS")
     def test_get_kwarg(self, mock_kwarg_mappings):
-        kwarg_map = {QueryPresets.EQUAL_TO: {MockedEnum.ITEM_1: "some_kwarg_func"}}
+        kwarg_map = {
+            QueryPresetsGeneric.EQUAL_TO: {MockedEnum.ITEM_1: "some_kwarg_func"}
+        }
 
-        mock_kwarg_mappings.keys.return_value = [QueryPresets.EQUAL_TO]
+        mock_kwarg_mappings.keys.return_value = [QueryPresetsGeneric.EQUAL_TO]
         mock_kwarg_mappings.__getitem__.side_effect = kwarg_map.__getitem__
 
-        res = self.instance._get_kwarg(QueryPresets.EQUAL_TO, MockedEnum.ITEM_1)
+        res = self.instance._get_kwarg(QueryPresetsGeneric.EQUAL_TO, MockedEnum.ITEM_1)
         mock_kwarg_mappings.keys.assert_called_once()
-        mock_kwarg_mappings.__getitem__.assert_called_once_with(QueryPresets.EQUAL_TO)
+        mock_kwarg_mappings.__getitem__.assert_called_once_with(
+            QueryPresetsGeneric.EQUAL_TO
+        )
         self.assertEqual(res, "some_kwarg_func")
 
     @patch("openstack_query.query_wrapper.QueryWrapper._run_query")
@@ -448,40 +452,48 @@ class QueryWrapperTests(unittest.TestCase):
         self, mock_get_default_ffn, mock_non_def_ffn_map, mock_def_ffn_map
     ):
         # check when non def ffn has entry
-        mock_non_def_ffn_map.keys.return_value = [QueryPresets.EQUAL_TO]
+        mock_non_def_ffn_map.keys.return_value = [QueryPresetsGeneric.EQUAL_TO]
         mock_non_def_ffn_map.__getitem__.return_value = {
             MockedEnum.ITEM_2: "ffn_1",
             MockedEnum.ITEM_3: "ffn_2",
         }
         mock_get_default_ffn.return_value = "def_ffn"
 
-        res = self.instance._get_filter_func(QueryPresets.EQUAL_TO, MockedEnum.ITEM_2)
+        res = self.instance._get_filter_func(
+            QueryPresetsGeneric.EQUAL_TO, MockedEnum.ITEM_2
+        )
         self.assertEqual(res, "ffn_1")
 
         # check when def ffn has entry
-        mock_def_ffn_map.keys.return_value = [QueryPresets.ANY_IN]
+        mock_def_ffn_map.keys.return_value = [QueryPresetsString.ANY_IN]
         mock_def_ffn_map.__getitem__.return_value = [MockedEnum.ITEM_4]
-        res = self.instance._get_filter_func(QueryPresets.ANY_IN, MockedEnum.ITEM_4)
+        res = self.instance._get_filter_func(
+            QueryPresetsString.ANY_IN, MockedEnum.ITEM_4
+        )
         self.assertEqual(res, "def_ffn")
 
         # check when def ffn has entry '*'
-        mock_def_ffn_map.keys.return_value = [QueryPresets.NOT_ANY_IN]
+        mock_def_ffn_map.keys.return_value = [QueryPresetsString.NOT_ANY_IN]
         mock_def_ffn_map.__getitem__.return_value = ["*"]
-        res = self.instance._get_filter_func(QueryPresets.NOT_ANY_IN, MockedEnum.ITEM_1)
+        res = self.instance._get_filter_func(
+            QueryPresetsString.NOT_ANY_IN, MockedEnum.ITEM_1
+        )
         self.assertEqual(res, "def_ffn")
 
         mock_get_default_ffn.has_calls(
             [
                 # second check
-                call(QueryPresets.ANY_IN),
-                call(QueryPresets.NOT_ANY_IN),
+                call(QueryPresetsString.ANY_IN),
+                call(QueryPresetsString.NOT_ANY_IN),
             ]
         )
 
     @patch("openstack_query.query_wrapper.QueryWrapper._DEFAULT_FILTER_FUNCTIONS")
     def test_get_default_filter_func(self, mock_def_filter_funcs):
         mock_def_filter_funcs.get.return_value = "some_filter_func"
-        res = self.instance._get_default_filter_func(QueryPresets.EQUAL_TO)
+        res = self.instance._get_default_filter_func(QueryPresetsGeneric.EQUAL_TO)
 
-        mock_def_filter_funcs.get.assert_called_once_with(QueryPresets.EQUAL_TO, None)
+        mock_def_filter_funcs.get.assert_called_once_with(
+            QueryPresetsGeneric.EQUAL_TO, None
+        )
         self.assertEqual(res, "some_filter_func")

@@ -8,7 +8,12 @@ from openstack_query.query_wrapper import QueryWrapper
 from openstack_query.utils import convert_to_timestamp
 
 from enums.query.server_properties import ServerProperties
-from enums.query.query_presets import QueryPresets
+from enums.query.query_presets import (
+    QueryPresetsGeneric,
+    QueryPresetsInteger,
+    QueryPresetsDateTime,
+    QueryPresetsString,
+)
 from exceptions.parse_query_error import ParseQueryError
 
 
@@ -28,7 +33,7 @@ class QueryServer(QueryWrapper):
     }
 
     _KWARG_MAPPINGS = {
-        QueryPresets.EQUAL_TO: {
+        QueryPresetsGeneric.EQUAL_TO: {
             ServerProperties.USER_ID: lambda **kwargs: {"user_id": kwargs["value"]},
             ServerProperties.SERVER_ID: lambda **kwargs: {"uuid": kwargs["value"]},
             ServerProperties.SERVER_NAME: lambda **kwargs: {
@@ -49,12 +54,12 @@ class QueryServer(QueryWrapper):
                 "project_id": kwargs["value"]
             },
         },
-        QueryPresets.OLDER_THAN_OR_EQUAL_TO: {
+        QueryPresetsDateTime.OLDER_THAN_OR_EQUAL_TO: {
             ServerProperties.SERVER_LAST_UPDATED_DATE: lambda **kwargs: {
                 "changes-before": convert_to_timestamp(**kwargs)
             }
         },
-        QueryPresets.YOUNGER_THAN_OR_EQUAL_TO: {
+        QueryPresetsDateTime.YOUNGER_THAN_OR_EQUAL_TO: {
             ServerProperties.SERVER_LAST_UPDATED_DATE: lambda **kwargs: {
                 "changes-since": convert_to_timestamp(**kwargs)
             }
@@ -62,25 +67,25 @@ class QueryServer(QueryWrapper):
     }
 
     _DEFAULT_FILTER_FUNCTION_MAPPINGS = {
-        QueryPresets.EQUAL_TO: ["*"],
-        QueryPresets.NOT_EQUAL_TO: ["*"],
-        QueryPresets.OLDER_THAN: [
+        QueryPresetsGeneric.EQUAL_TO: ["*"],
+        QueryPresetsGeneric.NOT_EQUAL_TO: ["*"],
+        QueryPresetsDateTime.OLDER_THAN: [
             ServerProperties.SERVER_CREATION_DATE,
             ServerProperties.SERVER_LAST_UPDATED_DATE,
         ],
-        QueryPresets.YOUNGER_THAN: [
+        QueryPresetsDateTime.YOUNGER_THAN: [
             ServerProperties.SERVER_CREATION_DATE,
             ServerProperties.SERVER_LAST_UPDATED_DATE,
         ],
-        QueryPresets.YOUNGER_THAN_OR_EQUAL_TO: [
+        QueryPresetsDateTime.YOUNGER_THAN_OR_EQUAL_TO: [
             ServerProperties.SERVER_CREATION_DATE,
             ServerProperties.SERVER_LAST_UPDATED_DATE,
         ],
-        QueryPresets.OLDER_THAN_OR_EQUAL_TO: [
+        QueryPresetsDateTime.OLDER_THAN_OR_EQUAL_TO: [
             ServerProperties.SERVER_CREATION_DATE,
             ServerProperties.SERVER_LAST_UPDATED_DATE,
         ],
-        QueryPresets.MATCHES_REGEX: [ServerProperties.SERVER_NAME],
+        QueryPresetsString.MATCHES_REGEX: [ServerProperties.SERVER_NAME],
     }
 
     _NON_DEFAULT_FILTER_FUNCTION_MAPPINGS = {}
