@@ -9,6 +9,7 @@ from enums.query.query_presets import QueryPresets
 
 from tests.lib.openstack_query.test_query_mappings import QueryMappingTests
 
+
 class QueryServerTests(QueryMappingTests, unittest.TestCase):
     """
     Runs various tests to ensure that QueryServerTests functions expectedly.
@@ -24,7 +25,7 @@ class QueryServerTests(QueryMappingTests, unittest.TestCase):
         self.conn = self.mocked_connection.return_value.__enter__.return_value
 
     @parameterized.expand(
-        [(f'test {prop.name.lower()}', prop) for prop in ServerProperties]
+        [(f"test {prop.name.lower()}", prop) for prop in ServerProperties]
     )
     def test_property_to_property_func_mapping(self, name, prop):
         """
@@ -33,7 +34,7 @@ class QueryServerTests(QueryMappingTests, unittest.TestCase):
         assert self.instance._get_prop(prop)
 
     @parameterized.expand(
-        [(f'test {preset.name.lower()}', preset) for preset in QueryPresets]
+        [(f"test {preset.name.lower()}", preset) for preset in QueryPresets]
     )
     def test_preset_to_filter_func_mapping(self, name, preset):
         """
@@ -45,24 +46,19 @@ class QueryServerTests(QueryMappingTests, unittest.TestCase):
         """
         Tests _run_query method works expectedly
         """
-        self.conn.identity.projects.return_value = [
-            {'id': 'proj1'},
-            {'id': 'proj2'}
-        ]
+        self.conn.identity.projects.return_value = [{"id": "proj1"}, {"id": "proj2"}]
 
         self.conn.compute.servers.side_effect = [
-            ['server1', 'server2'],
-            ['server3', 'server4']
+            ["server1", "server2"],
+            ["server3", "server4"],
         ]
 
         res = self.instance._run_query(self.conn)
         self.conn.identity.projects.assert_called_once()
-        self.conn.compute.servers.assert_has_calls([
-            call(
-                filters={'all_tenants': True, 'project_id': 'proj1'}
-            ),
-            call(
-                filters={'all_tenants': True, 'project_id': 'proj2'}
-            )
-        ])
-        self.assertEqual(res, ['server1', 'server2', 'server3', 'server4'])
+        self.conn.compute.servers.assert_has_calls(
+            [
+                call(filters={"all_tenants": True, "project_id": "proj1"}),
+                call(filters={"all_tenants": True, "project_id": "proj2"}),
+            ]
+        )
+        self.assertEqual(res, ["server1", "server2", "server3", "server4"])

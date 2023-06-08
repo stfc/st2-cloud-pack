@@ -2,7 +2,6 @@ from enum import Enum, auto
 
 
 class QueryPresets(Enum):
-
     # generic type comparison operators
     EQUAL_TO = auto()
     NOT_EQUAL_TO = auto()

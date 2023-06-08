@@ -13,7 +13,6 @@ from exceptions.parse_query_error import ParseQueryError
 
 
 class QueryServer(QueryWrapper):
-
     _PROPERTY_MAPPINGS = {
         ServerProperties.USER_ID: lambda a: a["user_id"],
         ServerProperties.HYPERVISOR_ID: lambda a: a["host_id"],
@@ -23,57 +22,65 @@ class QueryServer(QueryWrapper):
         ServerProperties.SERVER_STATUS: lambda a: a["status"],
         ServerProperties.SERVER_CREATION_DATE: lambda a: a["created_at"],
         ServerProperties.SERVER_LAST_UPDATED_DATE: lambda a: a["updated_at"],
-        ServerProperties.FLAVOR_ID: lambda a: ['flavor_id'],
-        ServerProperties.IMAGE_ID: lambda a: ['image_id'],
+        ServerProperties.FLAVOR_ID: lambda a: ["flavor_id"],
+        ServerProperties.IMAGE_ID: lambda a: ["image_id"],
         ServerProperties.PROJECT_ID: lambda a: a["location"]["project"]["id"],
     }
 
     _KWARG_MAPPINGS = {
         QueryPresets.EQUAL_TO: {
-            ServerProperties.USER_ID: lambda **kwargs: {'user_id': kwargs['value']},
-            ServerProperties.SERVER_ID: lambda **kwargs: {'uuid': kwargs['value']},
-            ServerProperties.SERVER_NAME: lambda **kwargs: {'hostname': kwargs['value']},
-            ServerProperties.SERVER_DESCRIPTION: lambda **kwargs: {'description': kwargs['value']},
-            ServerProperties.SERVER_STATUS: lambda **kwargs: {'vm_state': kwargs['value']},
-            ServerProperties.SERVER_CREATION_DATE: lambda **kwargs: {'created_at': kwargs['value']},
-            ServerProperties.FLAVOR_ID: lambda **kwargs: {'flavor': kwargs['value']},
-            ServerProperties.IMAGE_ID: lambda **kwargs: {'image': kwargs['value']},
-            ServerProperties.PROJECT_ID: lambda **kwargs: {'project_id': kwargs['value']},
+            ServerProperties.USER_ID: lambda **kwargs: {"user_id": kwargs["value"]},
+            ServerProperties.SERVER_ID: lambda **kwargs: {"uuid": kwargs["value"]},
+            ServerProperties.SERVER_NAME: lambda **kwargs: {
+                "hostname": kwargs["value"]
+            },
+            ServerProperties.SERVER_DESCRIPTION: lambda **kwargs: {
+                "description": kwargs["value"]
+            },
+            ServerProperties.SERVER_STATUS: lambda **kwargs: {
+                "vm_state": kwargs["value"]
+            },
+            ServerProperties.SERVER_CREATION_DATE: lambda **kwargs: {
+                "created_at": kwargs["value"]
+            },
+            ServerProperties.FLAVOR_ID: lambda **kwargs: {"flavor": kwargs["value"]},
+            ServerProperties.IMAGE_ID: lambda **kwargs: {"image": kwargs["value"]},
+            ServerProperties.PROJECT_ID: lambda **kwargs: {
+                "project_id": kwargs["value"]
+            },
         },
         QueryPresets.OLDER_THAN_OR_EQUAL_TO: {
             ServerProperties.SERVER_LAST_UPDATED_DATE: lambda **kwargs: {
-                'changes-before': convert_to_timestamp(**kwargs)
+                "changes-before": convert_to_timestamp(**kwargs)
             }
         },
         QueryPresets.YOUNGER_THAN_OR_EQUAL_TO: {
             ServerProperties.SERVER_LAST_UPDATED_DATE: lambda **kwargs: {
-                'changes-since': convert_to_timestamp(**kwargs)
+                "changes-since": convert_to_timestamp(**kwargs)
             }
-        }
+        },
     }
-    
+
     _DEFAULT_FILTER_FUNCTION_MAPPINGS = {
-        QueryPresets.EQUAL_TO: ['*'],
-        QueryPresets.NOT_EQUAL_TO: ['*'],
+        QueryPresets.EQUAL_TO: ["*"],
+        QueryPresets.NOT_EQUAL_TO: ["*"],
         QueryPresets.OLDER_THAN: [
             ServerProperties.SERVER_CREATION_DATE,
-            ServerProperties.SERVER_LAST_UPDATED_DATE
+            ServerProperties.SERVER_LAST_UPDATED_DATE,
         ],
         QueryPresets.YOUNGER_THAN: [
             ServerProperties.SERVER_CREATION_DATE,
-            ServerProperties.SERVER_LAST_UPDATED_DATE
+            ServerProperties.SERVER_LAST_UPDATED_DATE,
         ],
         QueryPresets.YOUNGER_THAN_OR_EQUAL_TO: [
             ServerProperties.SERVER_CREATION_DATE,
-            ServerProperties.SERVER_LAST_UPDATED_DATE
+            ServerProperties.SERVER_LAST_UPDATED_DATE,
         ],
         QueryPresets.OLDER_THAN_OR_EQUAL_TO: [
             ServerProperties.SERVER_CREATION_DATE,
-            ServerProperties.SERVER_LAST_UPDATED_DATE
+            ServerProperties.SERVER_LAST_UPDATED_DATE,
         ],
-        QueryPresets.MATCHES_REGEX: [
-            ServerProperties.SERVER_NAME
-        ]
+        QueryPresets.MATCHES_REGEX: [ServerProperties.SERVER_NAME],
     }
 
     _NON_DEFAULT_FILTER_FUNCTION_MAPPINGS = {}
@@ -82,7 +89,11 @@ class QueryServer(QueryWrapper):
         QueryWrapper.__init__(self, connection_cls)
 
     @staticmethod
-    def _run_query(conn: OpenstackConnection, filter_kwargs: Optional[Dict[str, str]] = None, **kwargs):
+    def _run_query(
+        conn: OpenstackConnection,
+        filter_kwargs: Optional[Dict[str, str]] = None,
+        **kwargs
+    ):
         """
         This method runs the query by running openstacksdk commands
         For QueryServer, this command gets all projects available and iteratively finds servers in that project
@@ -102,17 +113,20 @@ class QueryServer(QueryWrapper):
                 projects.append(project)
 
         for project in projects:
-            servers.extend(QueryServer._run_query_on_project(conn, project, filter_kwargs))
+            servers.extend(
+                QueryServer._run_query_on_project(conn, project, filter_kwargs)
+            )
         return servers
 
     @staticmethod
-    def _run_query_on_project(conn: OpenstackConnection, project: Project, filter_kwargs: Optional[Dict[str, str]] = None):
+    def _run_query_on_project(
+        conn: OpenstackConnection,
+        project: Project,
+        filter_kwargs: Optional[Dict[str, str]] = None,
+    ):
         servers = []
 
-        server_filters = {
-            "project_id": project['id'],
-            "all_tenants": True
-        }
+        server_filters = {"project_id": project["id"], "all_tenants": True}
 
         server_filters.update(filter_kwargs if filter_kwargs else {})
         servers.extend(list(conn.compute.servers(filters=server_filters)))
@@ -128,8 +142,3 @@ class QueryServer(QueryWrapper):
                 server_obj = conn.compute.find_server(server_instance)
             query_from.append(server_obj)
         return query_from
-
-
-
-
-

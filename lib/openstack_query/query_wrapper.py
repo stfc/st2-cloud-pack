@@ -16,7 +16,7 @@ from openstack_query.utils import (
     prop_younger_than_or_equal_to,
     prop_any_in,
     prop_not_any_in,
-    prop_matches_regex
+    prop_matches_regex,
 )
 
 
@@ -28,9 +28,8 @@ from tabulate import tabulate
 
 
 class QueryWrapper(OpenstackWrapperBase):
-
     _PROPERTY_MAPPINGS = {}
-    _KWARG_MAPPINGS ={}
+    _KWARG_MAPPINGS = {}
     _NON_DEFAULT_FILTER_FUNCTION_MAPPINGS = {}
     _DEFAULT_FILTER_FUNCTION_MAPPINGS = {}
     _DEFAULT_FILTER_FUNCTIONS = {
@@ -44,11 +43,10 @@ class QueryWrapper(OpenstackWrapperBase):
         QueryPresets.OLDER_THAN: prop_older_than,
         QueryPresets.ANY_IN: prop_any_in,
         QueryPresets.NOT_ANY_IN: prop_not_any_in,
-        QueryPresets.MATCHES_REGEX: prop_matches_regex
+        QueryPresets.MATCHES_REGEX: prop_matches_regex,
     }
 
     def __init__(self, connection_cls=OpenstackConnection):
-
         OpenstackWrapperBase.__init__(self, connection_cls)
         self._query_props = dict()
         self._filter_func = None
@@ -77,11 +75,13 @@ class QueryWrapper(OpenstackWrapperBase):
         corresponds to the property given of that object
         """
         if prop not in self._PROPERTY_MAPPINGS.keys():
-            raise QueryMappingError("""
-                Error: failed to get property mapping, the property is valid 
-                but does not contain an entry in PROPERTY_MAPPINGS. 
+            raise QueryMappingError(
+                """
+                Error: failed to get property mapping, the property is valid
+                but does not contain an entry in PROPERTY_MAPPINGS.
                 Please raise an issue with repo maintainer
-            """)
+            """
+            )
         return prop.name.lower(), self._PROPERTY_MAPPINGS[prop]
 
     def select_all(self):
@@ -117,23 +117,29 @@ class QueryWrapper(OpenstackWrapperBase):
 
         return self
 
-    def _parse_kwargs(self, preset: QueryPresets, prop: Enum, preset_args: Dict[str, Any]):
+    def _parse_kwargs(
+        self, preset: QueryPresets, prop: Enum, preset_args: Dict[str, Any]
+    ):
         kwarg_mapping = self._get_kwarg(preset, prop)
         if kwarg_mapping:
             check_kwarg_mapping(kwarg_mapping, preset_args)
             return kwarg_mapping(**preset_args)
         return None
 
-    def _parse_filter_func(self, preset: QueryPresets, prop: Enum, preset_args: Dict[str, Any]):
+    def _parse_filter_func(
+        self, preset: QueryPresets, prop: Enum, preset_args: Dict[str, Any]
+    ):
         filter_func = self._get_filter_func(preset, prop)
         try:
-            preset_args.update({'prop': prop})
+            preset_args.update({"prop": prop})
             _ = check_filter_func(filter_func, preset_args)
         except TypeError as func_err:
             raise ParseQueryError(f"Error parsing preset args: {func_err}")
         return filter_func
 
-    def _get_kwarg(self, preset: QueryPresets, prop: Enum) -> Optional[Callable[[Any], str]]:
+    def _get_kwarg(
+        self, preset: QueryPresets, prop: Enum
+    ) -> Optional[Callable[[Any], str]]:
         """
         returns a dict containing filter kwargs to pass to openstack command to get all resources if mapping exists for
         a given preset, property pair
@@ -145,7 +151,9 @@ class QueryWrapper(OpenstackWrapperBase):
             return self._KWARG_MAPPINGS[preset].get(prop, None)
         return None
 
-    def _get_filter_func(self, preset: QueryPresets, prop: Enum) -> Optional[Callable[[Any], bool]]:
+    def _get_filter_func(
+        self, preset: QueryPresets, prop: Enum
+    ) -> Optional[Callable[[Any], bool]]:
         """
         Method that is used to return a filter function for given preset, if any
         :param preset: A given preset that describes the query type
@@ -154,16 +162,22 @@ class QueryWrapper(OpenstackWrapperBase):
             return self._NON_DEFAULT_FILTER_FUNCTION_MAPPINGS[preset].get(prop, None)
 
         if preset in self._DEFAULT_FILTER_FUNCTION_MAPPINGS.keys():
-            if any(k in self._DEFAULT_FILTER_FUNCTION_MAPPINGS[preset] for k in ('*', prop)):
+            if any(
+                k in self._DEFAULT_FILTER_FUNCTION_MAPPINGS[preset] for k in ("*", prop)
+            ):
                 return self._get_default_filter_func(preset)
 
-        raise QueryMappingError("""
-            Error: failed to get filter_function mapping, the property is valid 
-            but does not contain an entry in DEFAULT_FILTER_FUNCTION_MAPPINGS 
+        raise QueryMappingError(
+            """
+            Error: failed to get filter_function mapping, the property is valid
+            but does not contain an entry in DEFAULT_FILTER_FUNCTION_MAPPINGS
             or NON_DEFAULT_FILTER_FUNCTION_MAPPINGS. Please raise an issue with repo maintainer
-        """)
+        """
+        )
 
-    def _get_default_filter_func(self, preset: QueryPresets) -> Optional[Callable[[Any], bool]]:
+    def _get_default_filter_func(
+        self, preset: QueryPresets
+    ) -> Optional[Callable[[Any], bool]]:
         """
         Returns a default filter function for preset, if any
         :param preset: preset to get default filter function for
@@ -194,18 +208,24 @@ class QueryWrapper(OpenstackWrapperBase):
         """
 
         if len(self._query_props) == 0:
-            raise RuntimeError("""
-                query ran but no properties selected use select() method to 
+            raise RuntimeError(
+                """
+                query ran but no properties selected use select() method to
                 set properties or select_all() to select all available properties
-            """)
+            """
+            )
 
         force_filter_func_usage = False
         with self._connection_cls(cloud_account) as conn:
             if "from_subset" in kwargs:
-                self._results_resource_objects = self._parse_subset(conn, kwargs['from_subset'])
+                self._results_resource_objects = self._parse_subset(
+                    conn, kwargs["from_subset"]
+                )
                 force_filter_func_usage = True
             else:
-                self._results_resource_objects = self._run_query(conn, self._filter_kwargs, **kwargs)
+                self._results_resource_objects = self._run_query(
+                    conn, self._filter_kwargs, **kwargs
+                )
 
         if self._filter_kwargs is None or force_filter_func_usage:
             self._results_resource_objects = self._apply_filter_func(
@@ -214,16 +234,15 @@ class QueryWrapper(OpenstackWrapperBase):
             )
 
         self._results = self._parse_properties(
-            self._results_resource_objects,
-            self._query_props
+            self._results_resource_objects, self._query_props
         )
 
         return self
 
     @staticmethod
     def _parse_properties(
-            items: List[Any],
-            property_funcs: Dict[str, Callable[[Any], Any]],
+        items: List[Any],
+        property_funcs: Dict[str, Callable[[Any], Any]],
     ) -> List[Dict[str, str]]:
         """
         Generates a dictionary of queried properties from a list of openstack objects e.g. servers
@@ -234,18 +253,25 @@ class QueryWrapper(OpenstackWrapperBase):
         return [QueryWrapper._parse_property(item, property_funcs) for item in items]
 
     @staticmethod
-    def _parse_property(item: Any, property_funcs: Dict[str, Callable[[Any], Any]]) -> Dict[str, str]:
+    def _parse_property(
+        item: Any, property_funcs: Dict[str, Callable[[Any], Any]]
+    ) -> Dict[str, str]:
         """
         Generates a dictionary of queried properties from a single openstack object
         :param item: openstack resource item to obtain properties from
         :param property_funcs: Dict of 'property_name' 'property_function' key value pairs
         """
         return {
-            prop_key: QueryWrapper._run_prop_func(item, prop_func, default_out="Not Found") for prop_key, prop_func in property_funcs.items()
+            prop_key: QueryWrapper._run_prop_func(
+                item, prop_func, default_out="Not Found"
+            )
+            for prop_key, prop_func in property_funcs.items()
         }
 
     @staticmethod
-    def _run_prop_func(item: Any, prop_func: Callable[[Any], Any], default_out="Not Found") -> str:
+    def _run_prop_func(
+        item: Any, prop_func: Callable[[Any], Any], default_out="Not Found"
+    ) -> str:
         """
         Runs a function to get a property for a given openstack resource
         :param item: openstack resource item to obtain property from
@@ -258,7 +284,9 @@ class QueryWrapper(OpenstackWrapperBase):
             return default_out
 
     @staticmethod
-    def _apply_filter_func(items: List[Any], query_func: Callable[[Any], bool]) -> List[Any]:
+    def _apply_filter_func(
+        items: List[Any], query_func: Callable[[Any], bool]
+    ) -> List[Any]:
         """
         Removes items from a list by running a given query function
         :param items: List of items to query e.g. list of servers
@@ -270,14 +298,21 @@ class QueryWrapper(OpenstackWrapperBase):
         return [item for item in items if query_func(item)]
 
     @staticmethod
-    def _run_query(self, conn: OpenstackConnection, filter_kwargs: Optional[Dict[str, str]] = None, **kwargs) -> List[Any]:
+    def _run_query(
+        self,
+        conn: OpenstackConnection,
+        filter_kwargs: Optional[Dict[str, str]] = None,
+        **kwargs,
+    ) -> List[Any]:
         """
         This method is to be instantiated in subclasses of this class to run openstack query command
         """
-        raise NotImplementedError("""
-            This static method should be implemented in subclasses of QueryWrapper to 
+        raise NotImplementedError(
+            """
+            This static method should be implemented in subclasses of QueryWrapper to
             run the appropriate openstack command(s)
-        """)
+        """
+        )
 
     def to_list(self, as_objects=False) -> Union[List[Any], List[Dict[str, str]]]:
         """
@@ -302,9 +337,7 @@ class QueryWrapper(OpenstackWrapperBase):
 
     @staticmethod
     def _generate_table(
-            properties_dict: List[Dict[str, Any]],
-            return_html: bool,
-            **kwargs
+        properties_dict: List[Dict[str, Any]], return_html: bool, **kwargs
     ) -> str:
         """
         Returns a table from the result of 'self._parse_properties'
@@ -315,4 +348,6 @@ class QueryWrapper(OpenstackWrapperBase):
         """
         headers = list(properties_dict[0].keys())
         rows = [list(row.values()) for row in properties_dict]
-        return tabulate(rows, headers, tablefmt="html" if return_html else "grid", **kwargs)
+        return tabulate(
+            rows, headers, tablefmt="html" if return_html else "grid", **kwargs
+        )
