@@ -1,5 +1,5 @@
 ---
-description: List missing flavors
+description: Migrate missing flavors from source cloud to destination cloud
 enabled: true
 entry_point: src/flavor_actions.py
 name: flavor.migrate.missing.flavors
