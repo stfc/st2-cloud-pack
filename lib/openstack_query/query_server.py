@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 from openstack.compute.v2.server import Server
 from openstack.identity.v3.project import Project
@@ -101,8 +101,8 @@ class QueryServer(QueryWrapper):
     def __init__(self, connection_cls=OpenstackConnection):
         QueryWrapper.__init__(self, connection_cls)
 
-    @staticmethod
     def _run_query(
+        self,
         conn: OpenstackConnection,
         filter_kwargs: Optional[Dict[str, str]] = None,
         **kwargs
@@ -117,26 +117,47 @@ class QueryServer(QueryWrapper):
 
         :param kwargs: a set of extra meta params that override default openstacksdk command. Current valid kwargs are:
 
-            'from_projects': Union[List[str], List[Project]] - takes a list of projects or project ids/names
-                    to run the query on
+            'from_projects': Union[List[str], List[Project]] - takes a list of projects to run the query on
 
-            'from_subset': Union[List[str], List[Server]] - takes a list of servers or server ids/names
-                    to run the query on (forces use of filter functions)
+            'from_subset': Union[List[str], List[Server]] - takes a list of servers to run the query on
+            (forces use of filter functions)
 
         """
-        servers = []
+        projects = []
         if "from_projects" in kwargs:
-            projects = kwargs["from_projects"]
+            if len(kwargs["from_projects"]) == 0:
+                raise ParseQueryError(
+                    "'from_project' meta kwarg given but no projects given to search in"
+                )
+            if isinstance(kwargs["from_projects"], Project):
+                projects = kwargs["from_projects"]
+            else:
+                raise ParseQueryError(
+                    "'from_project' only accepts Openstack 'Project' objects"
+                )
         else:
-            projects = []
             for project in conn.identity.projects():
                 projects.append(project)
 
-        for project in projects:
-            servers.extend(
-                QueryServer._run_query_on_project(conn, project, filter_kwargs)
-            )
-        return servers
+        return self._run_query_on_projects(conn, projects, filter_kwargs)
+
+    def _run_query_on_projects(
+        self,
+        conn: OpenstackConnection,
+        projects: List[Project],
+        filter_kwargs: Optional[Dict[str, str]] = None,
+    ):
+        """
+        This method is a helper function that will run the query on a list of openstack projects given
+        :param conn: An OpenstackConnection object - used to connect to openstacksdk
+        :param projects: A list of openstacksdk projects to run query on
+        :param filter_kwargs: An Optional set of filter kwargs to pass to conn.compute.servers()
+        """
+        return [
+            server
+            for project in projects
+            for server in self._run_query_on_project(conn, project, filter_kwargs)
+        ]
 
     @staticmethod
     def _run_query_on_project(
@@ -144,21 +165,25 @@ class QueryServer(QueryWrapper):
         project: Project,
         filter_kwargs: Optional[Dict[str, str]] = None,
     ):
-        servers = []
-
+        """
+        This method is a helper function that will list all servers that belong to a given openstack projects
+        :param conn: An OpenstackConnection object - used to connect to openstacksdk
+        :param project: An openstacksdk project to run query on
+        :param filter_kwargs: An Optional set of filter kwargs to pass to conn.compute.servers()
+        """
         server_filters = {"project_id": project["id"], "all_tenants": True}
-
         server_filters.update(filter_kwargs if filter_kwargs else {})
-        servers.extend(list(conn.compute.servers(filters=server_filters)))
-
-        return servers
+        return list(conn.compute.servers(filters=server_filters))
 
     @staticmethod
-    def _parse_subset(conn: OpenstackConnection, server_identifiers: Server):
-        query_from = []
-        for server_instance in server_identifiers:
-            server_obj = server_instance
-            if not isinstance(Server, server_instance):
-                server_obj = conn.compute.find_server(server_instance)
-            query_from.append(server_obj)
-        return query_from
+    def _parse_subset(servers: List[Server]):
+        """
+        This method is a helper function that will check a list of servers to ensure that they are valid Server objects
+        :param servers: A list of openstack Server objects
+        """
+        for server in servers:
+            if not isinstance(server, Server):
+                raise ParseQueryError(
+                    "'from_subset' only accepts Server openstack objects"
+                )
+        return servers
