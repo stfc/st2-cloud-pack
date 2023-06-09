@@ -40,23 +40,6 @@ class QueryServerTests(QueryMappingTests, unittest.TestCase):
         """
         assert self.instance._get_prop(prop)
 
-    @parameterized.expand(
-        [
-            (f"test {preset.name.lower()}", preset)
-            for preset in [
-                *QueryPresetsGeneric,
-                *QueryPresetsInteger,
-                *QueryPresetsDateTime,
-                *QueryPresetsString,
-            ]
-        ]
-    )
-    def test_preset_to_filter_func_mapping(self, name, preset):
-        """
-        Tests that all query presets have a default filter function mapping
-        """
-        assert self.instance._get_default_filter_func(preset)
-
     @patch("openstack_query.query_server.QueryServer._run_query_on_projects")
     def test_run_query(self, mocked_run_query_on_projects):
         """

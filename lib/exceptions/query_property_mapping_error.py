@@ -1,0 +1,2 @@
+class QueryPropertyMappingError(RuntimeError):
+    pass

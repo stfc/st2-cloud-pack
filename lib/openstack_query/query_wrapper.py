@@ -3,32 +3,16 @@ from typing import Tuple, Callable, Any, Dict, Optional, List, Union
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.openstack_connection import OpenstackConnection
 
-from openstack_query.utils import (
-    check_filter_func,
-    check_kwarg_mapping,
-    prop_equal_to,
-    prop_not_equal_to,
-    prop_greater_than,
-    prop_less_than,
-    prop_younger_than,
-    prop_older_than,
-    prop_older_than_or_equal_to,
-    prop_younger_than_or_equal_to,
-    prop_any_in,
-    prop_not_any_in,
-    prop_matches_regex,
+from openstack_query.preset_handlers.preset_handler_datetime import (
+    PresetHandlerDateTime,
 )
-
+from openstack_query.preset_handlers.preset_handler_generic import PresetHandlerGeneric
+from openstack_query.preset_handlers.preset_handler_integer import PresetHandlerInteger
+from openstack_query.preset_handlers.preset_handler_string import PresetHandlerString
 
 from exceptions.parse_query_error import ParseQueryError
-from exceptions.query_mapping_error import QueryMappingError
+from exceptions.query_property_mapping_error import QueryPropertyMappingError
 
-from enums.query.query_presets import (
-    QueryPresetsGeneric,
-    QueryPresetsInteger,
-    QueryPresetsDateTime,
-    QueryPresetsString,
-)
 from tabulate import tabulate
 
 
@@ -37,27 +21,24 @@ class QueryWrapper(OpenstackWrapperBase):
     _KWARG_MAPPINGS = {}
     _NON_DEFAULT_FILTER_FUNCTION_MAPPINGS = {}
     _DEFAULT_FILTER_FUNCTION_MAPPINGS = {}
-    _DEFAULT_FILTER_FUNCTIONS = {
-        QueryPresetsGeneric.EQUAL_TO: prop_equal_to,
-        QueryPresetsGeneric.NOT_EQUAL_TO: prop_not_equal_to,
-        QueryPresetsInteger.GREATER_THAN: prop_greater_than,
-        QueryPresetsInteger.LESS_THAN: prop_less_than,
-        QueryPresetsDateTime.YOUNGER_THAN: prop_younger_than,
-        QueryPresetsDateTime.YOUNGER_THAN_OR_EQUAL_TO: prop_younger_than_or_equal_to,
-        QueryPresetsDateTime.OLDER_THAN_OR_EQUAL_TO: prop_older_than_or_equal_to,
-        QueryPresetsDateTime.OLDER_THAN: prop_older_than,
-        QueryPresetsString.ANY_IN: prop_any_in,
-        QueryPresetsString.NOT_ANY_IN: prop_not_any_in,
-        QueryPresetsString.MATCHES_REGEX: prop_matches_regex,
-    }
 
     def __init__(self, connection_cls=OpenstackConnection):
         OpenstackWrapperBase.__init__(self, connection_cls)
+
+        self._preset_handlers = [
+            PresetHandlerDateTime(),
+            PresetHandlerGeneric(),
+            PresetHandlerInteger(),
+            PresetHandlerString(),
+        ]
+
         self._query_props = dict()
         self._filter_func = None
         self._filter_kwargs = None
         self._results_resource_objects = []
         self._results = []
+
+        self._set_non_default_mappings()
 
     def select(self, *props: Enum):
         """
@@ -80,7 +61,7 @@ class QueryWrapper(OpenstackWrapperBase):
         corresponds to the property given of that object
         """
         if prop not in self._PROPERTY_MAPPINGS.keys():
-            raise QueryMappingError(
+            raise QueryPropertyMappingError(
                 """
                 Error: failed to get property mapping, the property is valid
                 but does not contain an entry in PROPERTY_MAPPINGS.
@@ -107,36 +88,31 @@ class QueryWrapper(OpenstackWrapperBase):
         """
         return {k.name.lower(): v for k, v in self._PROPERTY_MAPPINGS.items()}
 
-    def where(self, preset: Enum, prop: Enum, preset_args: Dict[str, Any]):
+    def where(self, preset: Enum, prop: Enum, preset_kwargs: Dict[str, Any]):
         """
         Public method used to set the preset that will be used to get the query filter function
         :param preset: Name of query preset to use
         :param prop: Property that the query preset will be used on
-        :param preset_args: kwargs to pass to filter function
+        :param preset_kwargs: kwargs to pass to filter function
         """
         if self._filter_func:
             raise ParseQueryError("Error: Already set a query preset")
 
-        self._filter_kwargs = self._parse_kwargs(preset, prop, preset_args)
-        self._filter_func = self._parse_filter_func(preset, prop, preset_args)
+        self._filter_kwargs = self._parse_kwargs(preset, prop, preset_kwargs)
+        self._filter_func = self._get_handler(preset).get_filter_func(
+            preset, self._get_prop(prop), preset_kwargs
+        )
 
         return self
 
     def _parse_kwargs(self, preset: Enum, prop: Enum, preset_args: Dict[str, Any]):
         kwarg_mapping = self._get_kwarg(preset, prop)
         if kwarg_mapping:
-            check_kwarg_mapping(kwarg_mapping, preset_args)
-            return kwarg_mapping(**preset_args)
+            try:
+                return kwarg_mapping(**preset_args)
+            except KeyError as e:
+                raise TypeError(f"expected arg '{e.args[0]}' but not found")
         return None
-
-    def _parse_filter_func(self, preset: Enum, prop: Enum, preset_args: Dict[str, Any]):
-        filter_func = self._get_filter_func(preset, prop)
-        try:
-            preset_args.update({"prop": prop})
-            _ = check_filter_func(filter_func, preset_args)
-        except TypeError as func_err:
-            raise ParseQueryError(f"Error parsing preset args: {func_err}")
-        return filter_func
 
     def _get_kwarg(self, preset: Enum, prop: Enum) -> Optional[Callable[[Any], str]]:
         """
@@ -150,36 +126,16 @@ class QueryWrapper(OpenstackWrapperBase):
             return self._KWARG_MAPPINGS[preset].get(prop, None)
         return None
 
-    def _get_filter_func(
-        self, preset: Enum, prop: Enum
-    ) -> Optional[Callable[[Any], bool]]:
-        """
-        Method that is used to return a filter function for given preset, if any
-        :param preset: A given preset that describes the query type
-        """
-        if preset in self._NON_DEFAULT_FILTER_FUNCTION_MAPPINGS.keys():
-            return self._NON_DEFAULT_FILTER_FUNCTION_MAPPINGS[preset].get(prop, None)
+    def _get_handler(self, preset):
+        for i in self._prop_handlers:
+            if i.check_preset_supported(preset):
+                return i
 
-        if preset in self._DEFAULT_FILTER_FUNCTION_MAPPINGS.keys():
-            if any(
-                k in self._DEFAULT_FILTER_FUNCTION_MAPPINGS[preset] for k in ("*", prop)
-            ):
-                return self._get_default_filter_func(preset)
-
-        raise QueryMappingError(
-            """
-            Error: failed to get filter_function mapping, the property is valid
-            but does not contain an entry in DEFAULT_FILTER_FUNCTION_MAPPINGS
-            or NON_DEFAULT_FILTER_FUNCTION_MAPPINGS. Please raise an issue with repo maintainer
-        """
-        )
-
-    def _get_default_filter_func(self, preset: Enum) -> Optional[Callable[[Any], bool]]:
-        """
-        Returns a default filter function for preset, if any
-        :param preset: preset to get default filter function for
-        """
-        return self._DEFAULT_FILTER_FUNCTIONS.get(preset, None)
+    def _set_non_default_mappings(self):
+        for k, v in self._NON_DEFAULT_FILTER_FUNCTION_MAPPINGS.items():
+            for handler in self._preset_handlers:
+                if handler.check_preset_supported(k):
+                    handler.override_mapping_if_exists(k, v)
 
     def sort_by(self, sort_by: Enum, reverse=False):
         """

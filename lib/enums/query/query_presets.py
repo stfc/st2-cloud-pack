@@ -1,19 +1,25 @@
 from enum import Enum, auto
 
 
-class QueryPresetsGeneric(Enum):
+class QueryPresets(Enum):
+    pass
+
+
+class QueryPresetsGeneric(QueryPresets):
     # generic type comparison operators
     EQUAL_TO = auto()
     NOT_EQUAL_TO = auto()
 
 
-class QueryPresetsInteger(Enum):
+class QueryPresetsInteger(QueryPresets):
     # integer/float comparison operators
     GREATER_THAN = auto()
+    GREATER_THAN_OR_EQUAL_TO = auto()
     LESS_THAN = auto()
+    LESS_THAN_OR_EQUAL_TO = auto()
 
 
-class QueryPresetsDateTime(Enum):
+class QueryPresetsDateTime(QueryPresets):
     # datetime comparison operators
     OLDER_THAN = auto()
     OLDER_THAN_OR_EQUAL_TO = auto()
@@ -21,7 +27,7 @@ class QueryPresetsDateTime(Enum):
     YOUNGER_THAN_OR_EQUAL_TO = auto()
 
 
-class QueryPresetsString(Enum):
+class QueryPresetsString(QueryPresets):
     # string comparison operators
     ANY_IN = auto()
     MATCHES_REGEX = auto()

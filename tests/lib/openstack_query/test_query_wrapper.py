@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, MagicMock, call, NonCallableMock
+from unittest.mock import patch, MagicMock, call
 from enum import Enum, auto
 from nose.tools import assert_raises, raises
 
@@ -104,51 +104,47 @@ class QueryWrapperTests(unittest.TestCase):
         )
 
     @patch("openstack_query.query_wrapper.QueryWrapper._parse_kwargs")
-    @patch("openstack_query.query_wrapper.QueryWrapper._parse_filter_func")
-    def test_where_valid(self, mock_parse_filter_func, mock_parse_kwargs):
+    @patch("openstack_query.query_wrapper.QueryWrapper._get_handler")
+    @patch("openstack_query.query_wrapper.QueryWrapper._get_prop")
+    def test_where_valid(self, mock_get_prop, mock_get_handler, mock_parse_kwargs):
         """
         Tests that where function accepts valid enum and args
         """
         preset = QueryPresetsGeneric.EQUAL_TO
         prop = MockedEnum.ITEM_2
-        args = {"arg1": "val1"}
+        preset_kwargs = {"arg1": "val1"}
+
         mock_parse_kwargs.return_value = "some_set_of_kwargs"
-        mock_parse_filter_func.return_value = "some_filter_func"
+        mock_get_handler.return_value.get_filter_func.return_value = "some_filter_func"
+        mock_get_prop.return_value = "some_prop_func"
 
-        instance = self.instance.where(preset, prop, args)
+        instance = self.instance.where(preset, prop, preset_kwargs)
 
-        mock_parse_kwargs.assert_called_once_with(preset, prop, args)
-        mock_parse_filter_func.assert_called_once_with(preset, prop, args)
+        mock_parse_kwargs.assert_called_once_with(preset, prop, preset_kwargs)
+        mock_get_handler.assert_called_once_with(preset)
+        mock_get_handler.return_value.get_filter_func.assert_called_once_with(
+            preset, "some_prop_func", preset_kwargs
+        )
+        mock_get_prop.assert_called_once_with(prop)
+
         self.assertEqual(instance._filter_kwargs, "some_set_of_kwargs")
         self.assertEqual(instance._filter_func, "some_filter_func")
         self.assertEqual(self.instance, instance)
 
-    @patch("openstack_query.query_wrapper.QueryWrapper._get_filter_func")
-    @patch("openstack_query.query_wrapper.check_filter_func")
-    def test_where_when_already_set(self, mock_get_filter_func, mock_check_filter_func):
+    @raises(ParseQueryError)
+    def test_where_when_already_set(self):
         """
         Tests that where function fails noisily when re-instantiated
         """
-        filter_func_kwargs = MagicMock()
-        mock_filter_func = MagicMock()
+        preset = QueryPresetsGeneric.EQUAL_TO
+        prop = MockedEnum.ITEM_2
+        preset_kwargs = {"arg1": "val1"}
 
-        mock_check_filter_func.return_value = True
-        mock_get_filter_func.return_value = mock_filter_func
-
-        _ = self.instance.where(
-            MockedEnum.ITEM_1, MockedEnum.ITEM_2, filter_func_kwargs
-        )
-
-        with assert_raises(ParseQueryError) as err:
-            _ = self.instance.where(
-                MockedEnum.ITEM_3, MockedEnum.ITEM_4, filter_func_kwargs
-            )
-
-        self.assertEqual(str(err.exception), "Error: Already set a query preset")
+        self.instance._filter_func = "some_filter_func"
+        self.instance.where(preset, prop, preset_kwargs)
 
     @patch("openstack_query.query_wrapper.QueryWrapper._get_kwarg")
-    @patch("openstack_query.query_wrapper.check_kwarg_mapping")
-    def test_parse_kwargs(self, mock_check_kwarg_mapping, mock_get_kwarg_mapping):
+    def test_parse_kwargs(self, mock_get_kwarg):
         preset = QueryPresetsGeneric.EQUAL_TO
         prop = MockedEnum.ITEM_1
         preset_args = {"arg1": "val1"}
@@ -156,57 +152,25 @@ class QueryWrapperTests(unittest.TestCase):
         kwarg_mapping = MagicMock()
         kwarg_mapping.return_value = "some_set_of_kwargs"
 
-        mock_get_kwarg_mapping.return_value = kwarg_mapping
+        mock_get_kwarg.return_value = kwarg_mapping
         val = self.instance._parse_kwargs(preset, prop, preset_args)
 
-        mock_get_kwarg_mapping.assert_called_once_with(preset, prop)
-        mock_check_kwarg_mapping.assert_called_once_with(kwarg_mapping, preset_args)
+        mock_get_kwarg.assert_called_once_with(preset, prop)
+        kwarg_mapping.assert_called_once_with(**preset_args)
         self.assertEqual(val, "some_set_of_kwargs")
 
-    @patch("openstack_query.query_wrapper.QueryWrapper._get_filter_func")
-    @patch("openstack_query.query_wrapper.check_filter_func")
-    def test_parse_filter_func(self, mock_check_filter_func, mock_get_filter_func):
+    @raises(TypeError)
+    @patch("openstack_query.query_wrapper.QueryWrapper._get_kwarg")
+    def test_parse_kwargs_invalid(self, mock_get_kwarg):
         preset = QueryPresetsGeneric.EQUAL_TO
-        prop = MockedEnum.ITEM_2
-        args = {"arg1": "val1"}
+        prop = MockedEnum.ITEM_1
+        preset_args = {"arg1": "val1"}
 
-        mock_check_filter_func.return_value = True
-        mock_get_filter_func.return_value = "some_filter_func"
+        kwarg_mapping = MagicMock()
+        kwarg_mapping.side_effect = KeyError("some key error")
+        mock_get_kwarg.return_value = kwarg_mapping
 
-        instance = self.instance.where(preset, prop, args)
-
-        mock_get_filter_func.assert_called_once_with(preset, prop)
-        mock_check_filter_func.assert_called_once_with(
-            "some_filter_func", {"arg1": "val1", "prop": prop}
-        )
-
-        self.assertEqual(instance._filter_func, "some_filter_func")
-        self.assertEqual(instance, self.instance)
-
-    @patch("openstack_query.query_wrapper.QueryWrapper._get_filter_func")
-    @patch("openstack_query.query_wrapper.check_filter_func")
-    def test_parse_filter_func_invalid(
-        self, mock_check_filter_func, mock_get_filter_func
-    ):
-        """
-        Tests that where function rejects invalid args appropriately
-        """
-        preset = QueryPresetsGeneric.EQUAL_TO
-        prop = MockedEnum.ITEM_2
-        args = {"arg1": "val1"}
-
-        def raise_error_side_effect(func, filter_func):
-            raise TypeError("some error here")
-
-        mock_get_filter_func.return_value = MagicMock()
-        mock_check_filter_func.side_effect = raise_error_side_effect
-
-        with assert_raises(ParseQueryError) as err:
-            _ = self.instance.where(preset, prop, args)
-
-        self.assertEqual(
-            str(err.exception), "Error parsing preset args: some error here"
-        )
+        self.instance._parse_kwargs(preset, prop, preset_args)
 
     @patch("openstack_query.query_wrapper.QueryWrapper._KWARG_MAPPINGS")
     def test_get_kwarg(self, mock_kwarg_mappings):
@@ -440,60 +404,3 @@ class QueryWrapperTests(unittest.TestCase):
                 call([["val1", "val2"]], ["prop1", "prop2"], tablefmt="html"),
             ]
         )
-
-    @patch(
-        "openstack_query.query_wrapper.QueryWrapper._DEFAULT_FILTER_FUNCTION_MAPPINGS"
-    )
-    @patch(
-        "openstack_query.query_wrapper.QueryWrapper._NON_DEFAULT_FILTER_FUNCTION_MAPPINGS"
-    )
-    @patch("openstack_query.query_wrapper.QueryWrapper._get_default_filter_func")
-    def test_get_filter_func(
-        self, mock_get_default_ffn, mock_non_def_ffn_map, mock_def_ffn_map
-    ):
-        # check when non def ffn has entry
-        mock_non_def_ffn_map.keys.return_value = [QueryPresetsGeneric.EQUAL_TO]
-        mock_non_def_ffn_map.__getitem__.return_value = {
-            MockedEnum.ITEM_2: "ffn_1",
-            MockedEnum.ITEM_3: "ffn_2",
-        }
-        mock_get_default_ffn.return_value = "def_ffn"
-
-        res = self.instance._get_filter_func(
-            QueryPresetsGeneric.EQUAL_TO, MockedEnum.ITEM_2
-        )
-        self.assertEqual(res, "ffn_1")
-
-        # check when def ffn has entry
-        mock_def_ffn_map.keys.return_value = [QueryPresetsString.ANY_IN]
-        mock_def_ffn_map.__getitem__.return_value = [MockedEnum.ITEM_4]
-        res = self.instance._get_filter_func(
-            QueryPresetsString.ANY_IN, MockedEnum.ITEM_4
-        )
-        self.assertEqual(res, "def_ffn")
-
-        # check when def ffn has entry '*'
-        mock_def_ffn_map.keys.return_value = [QueryPresetsString.NOT_ANY_IN]
-        mock_def_ffn_map.__getitem__.return_value = ["*"]
-        res = self.instance._get_filter_func(
-            QueryPresetsString.NOT_ANY_IN, MockedEnum.ITEM_1
-        )
-        self.assertEqual(res, "def_ffn")
-
-        mock_get_default_ffn.has_calls(
-            [
-                # second check
-                call(QueryPresetsString.ANY_IN),
-                call(QueryPresetsString.NOT_ANY_IN),
-            ]
-        )
-
-    @patch("openstack_query.query_wrapper.QueryWrapper._DEFAULT_FILTER_FUNCTIONS")
-    def test_get_default_filter_func(self, mock_def_filter_funcs):
-        mock_def_filter_funcs.get.return_value = "some_filter_func"
-        res = self.instance._get_default_filter_func(QueryPresetsGeneric.EQUAL_TO)
-
-        mock_def_filter_funcs.get.assert_called_once_with(
-            QueryPresetsGeneric.EQUAL_TO, None
-        )
-        self.assertEqual(res, "some_filter_func")

@@ -1,0 +1,2 @@
+class QueryPresetMappingError(RuntimeError):
+    pass
