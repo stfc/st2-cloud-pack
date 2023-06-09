@@ -2,12 +2,12 @@
 description: List missing flavors
 enabled: true
 entry_point: src/flavor_actions.py
-name: flavor.list.missing.flavors
+name: flavor.migrate.missing.flavors
 parameters:
   timeout:
     default: 5400
   submodule:
-    default: list_missing_flavors
+    default: migrate_missing_flavors
     type: string
     immutable: true
   source_cloud:

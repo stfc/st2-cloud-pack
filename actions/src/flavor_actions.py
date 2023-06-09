@@ -18,14 +18,14 @@ class FlavorActions(Action):
         func: Callable = getattr(self, submodule)
         return func(**kwargs)
 
-    def list_missing_flavors(
+    def migrate_missing_flavors(
         self,
         source_cloud: str,
         dest_cloud: str,
     ) -> List[str]:
         """
         Calls missing_flavors from _flavor_api to get a list of flavors that are
-        in the source cloud but are missing from the destination cloud.
+        in the source cloud but are missing from the destination cloud and migrates them.
         :param source_cloud: Cloud account for source cloud
         :param dest_cloud: Cloud account for destination cloud
         :returns: List of the names of missing flavors or empty List if no flavors are missing
