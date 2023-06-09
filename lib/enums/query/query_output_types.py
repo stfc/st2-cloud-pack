@@ -8,5 +8,5 @@ class QueryOutputTypes(Enum):
     """
 
     TO_HTML = auto()
-    TO_STR = auto()
     TO_LIST = auto()
+    TO_STR = auto()
