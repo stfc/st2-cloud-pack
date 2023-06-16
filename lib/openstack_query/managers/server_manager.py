@@ -1,12 +1,12 @@
-from typing import List, Dict, Any, Union
+from typing import List, Any, Union
 from structs.query.query_details import QueryDetails
 from structs.query.preset_details import PresetDetails
 
 from enums.query.query_presets import QueryPresets
 from enums.query.server.server_properties import ServerProperties
 
-from openstack_query.query_server import QueryServer
-import openstack_query.manager_utils as manager_utils
+from openstack_query.runners.query_server import QueryServer
+import openstack_query.managers.manager_utils as manager_utils
 
 
 def search_all_servers(

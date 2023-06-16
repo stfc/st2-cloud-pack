@@ -7,8 +7,7 @@ from enums.query.query_output_types import QueryOutputTypes
 from structs.query.query_details import QueryDetails
 from structs.query.preset_details import PresetDetails
 
-from openstack_query.server.query_server import QueryServer
-from openstack_query.query_wrapper import QueryWrapper
+from openstack_query.queries.query_wrapper import QueryWrapper
 
 QueryReturn = Union[str, List[Any]]
 
@@ -49,7 +48,7 @@ def populate_query(
     query_obj: QueryWrapper,
     preset_details: Optional[PresetDetails] = None,
     properties_to_select: Optional[Set[ServerProperties]] = None,
-) -> QueryServer:
+) -> QueryWrapper:
     if properties_to_select:
         query_obj.select(properties_to_select)
     else:

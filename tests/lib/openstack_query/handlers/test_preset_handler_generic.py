@@ -4,7 +4,9 @@ from parameterized import parameterized
 
 from nose.tools import raises
 
-from openstack_query.preset_handlers.preset_handler_generic import PresetHandlerGeneric
+from openstack_query.handlers.presets.preset_handler_generic import PresetHandlerGeneric
+from tests.lib.openstack_query.mocks.mocked_props import MockProperties
+
 from enums.query.query_presets import QueryPresetsGeneric
 
 
@@ -18,16 +20,20 @@ class PresetHandlerGenericTests(unittest.TestCase):
         Setup for tests
         """
         super().setUp()
-        self.instance = PresetHandlerGeneric()
+        # sets filter function mappings so that PROP_1 is valid for all presets
+        _FILTER_FUNCTION_MAPPINGS = {
+            preset: [MockProperties.PROP_1] for preset in QueryPresetsGeneric
+        }
+        self.instance = PresetHandlerGeneric(_FILTER_FUNCTION_MAPPINGS)
 
     @parameterized.expand(
         [(f"test {preset.name}", preset) for preset in QueryPresetsGeneric]
     )
-    def test_check_preset_supported_all_presets(self, name, preset):
+    def test_check_supported_all_presets(self, name, preset):
         """
         Tests that handler supports all generic query presets
         """
-        self.assertTrue(self.instance.check_preset_supported(preset))
+        self.assertTrue(self.instance.check_supported(preset, MockProperties.PROP_1))
 
     @parameterized.expand(
         [(f"test {preset.name}", preset) for preset in QueryPresetsGeneric]
@@ -36,7 +42,7 @@ class PresetHandlerGenericTests(unittest.TestCase):
         """
         Tests that handler supports all generic query presets
         """
-        self.assertIsNotNone(self.instance._get_mapping(preset))
+        self.assertIsNotNone(self.instance._get_mapping(preset, MockProperties.PROP_1))
 
     @parameterized.expand(
         [
