@@ -6,10 +6,10 @@ from typing import Any, Dict
 
 
 @dataclass
-class PresetDetails:
+class QueryPresetDetails:
     """
-    Structured data passed to a Query<Resource> object - describes how to filter for the query.
-    One or more are needed when calling the where() function.
+    Structured data passed to a Query<Resource> object when calling the where() function
+    describes how to filter for the query.
     """
 
     preset: QueryPresets
