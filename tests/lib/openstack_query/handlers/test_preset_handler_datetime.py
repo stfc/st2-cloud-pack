@@ -161,6 +161,88 @@ class PresetHandlerGenericTests(unittest.TestCase):
     @parameterized.expand(
         [
             (
+                "prop timestamp is older by 1 day",
+                1,
+                0,
+                0,
+                0,
+                "2023-06-04 10:30:00",
+                "%Y-%m-%d %H:%M:%S",
+                True,
+            ),
+            (
+                "prop timestamp is older by 12 hours",
+                0,
+                12,
+                0,
+                0,
+                "2023-06-04 10:30:00 AM",
+                "%Y-%m-%d %I:%M:%S %p",
+                True,
+            ),
+            (
+                "prop timestamp is younger by 1 day",
+                1,
+                0,
+                0,
+                0,
+                "2023-06-02",
+                "%Y-%m-%d",
+                False,
+            ),
+            (
+                "prop timestamp is equal",
+                0,
+                0,
+                30,
+                0,
+                "2023-06-04 10:00:00",
+                "%Y-%m-%d %H:%M:%S",
+                True,
+            ),
+            (
+                "prop timestamp is older by 0.5 seconds",
+                0,
+                0,
+                0,
+                0.5,
+                "2023-06-04 10:30:00",
+                "%Y-%m-%d %H:%M:%S",
+                True,
+            ),
+        ]
+    )
+    @patch(
+        "openstack_query.handlers.presets.preset_handler_datetime.PresetHandlerDateTime._get_current_time"
+    )
+    def test_prop_older_than_or_equal_to(
+        self,
+        name,
+        days,
+        hours,
+        minutes,
+        seconds,
+        string_timestamp,
+        timestamp_format,
+        expected_out,
+        mock_current_datetime,
+    ):
+        # sets a consistent specific datetime
+        mock_current_datetime.return_value = datetime(2023, 6, 4, 10, 30, 0)
+
+        out = self.instance._prop_older_than_or_equal_to(
+            prop=string_timestamp,
+            days=days,
+            hours=hours,
+            minutes=minutes,
+            seconds=seconds,
+            prop_timestamp_fmt=timestamp_format,
+        )
+        assert out == expected_out
+
+    @parameterized.expand(
+        [
+            (
                 "prop timestamp is younger by 1 day",
                 1,
                 0,
@@ -231,6 +313,88 @@ class PresetHandlerGenericTests(unittest.TestCase):
         mock_current_time.return_value = datetime(2023, 6, 4, 10, 30, 0)
 
         out = self.instance._prop_younger_than(
+            prop=string_timestamp,
+            days=days,
+            hours=hours,
+            minutes=minutes,
+            seconds=seconds,
+            prop_timestamp_fmt=timestamp_format,
+        )
+        assert out == expected_out
+
+    @parameterized.expand(
+        [
+            (
+                "prop timestamp is younger by 1 day",
+                1,
+                0,
+                0,
+                0,
+                "2023-06-02 10:30:00",
+                "%Y-%m-%d %H:%M:%S",
+                True,
+            ),
+            (
+                "prop timestamp is younger by 12 hours",
+                0,
+                12,
+                0,
+                0,
+                "2023-06-03 10:30:00 AM",
+                "%Y-%m-%d %I:%M:%S %p",
+                True,
+            ),
+            (
+                "prop timestamp is older by 1 day",
+                1,
+                0,
+                0,
+                0,
+                "2023-06-04",
+                "%Y-%m-%d",
+                False,
+            ),
+            (
+                "prop timestamp is equal",
+                0,
+                0,
+                30,
+                0,
+                "2023-06-04 10:00:00",
+                "%Y-%m-%d %H:%M:%S",
+                True,
+            ),
+            (
+                "prop timestamp is younger by .5 seconds",
+                0,
+                0,
+                0,
+                0.5,
+                "2023-06-03 10:29:59",
+                "%Y-%m-%d %H:%M:%S",
+                True,
+            ),
+        ]
+    )
+    @patch(
+        "openstack_query.handlers.presets.preset_handler_datetime.PresetHandlerDateTime._get_current_time"
+    )
+    def test_prop_younger_than_or_equal_to(
+        self,
+        name,
+        days,
+        hours,
+        minutes,
+        seconds,
+        string_timestamp,
+        timestamp_format,
+        expected_out,
+        mock_current_time,
+    ):
+        # sets a consistent specific datetime
+        mock_current_time.return_value = datetime(2023, 6, 4, 10, 30, 0)
+
+        out = self.instance._prop_younger_than_or_equal_to(
             prop=string_timestamp,
             days=days,
             hours=hours,

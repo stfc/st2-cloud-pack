@@ -65,3 +65,10 @@ class PropHandlerTests(unittest.TestCase):
         res = self.instance.get_prop(item, MockProperties.PROP_1, default_out)
         mock_prop_func.assert_called_once_with("some-openstack-resource")
         self.assertEqual(res, "some-default")
+
+    def test_get_prop_invalid(self):
+        item = "some-openstack-resource"
+        default_out = "some-default"
+
+        res = self.instance.get_prop(item, MockProperties.PROP_3, default_out)
+        self.assertEqual(res, "some-default")

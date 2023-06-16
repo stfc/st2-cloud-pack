@@ -50,6 +50,9 @@ class PresetHandlerGenericTests(unittest.TestCase):
             ("test string equal", "some-string", "some-string", True),
             ("test integer not equal", 10, 8, False),
             ("test string not equal", "some-string", "some-other-string", False),
+            ("test dict equal", {"a": 10}, {"a": 10}, True),
+            ("test dict val not equal", {"a": 12}, {"a": 10}, False),
+            ("test dict keys not equal", {"a": 12, "b": 12}, {"a": 12}, False),
         ]
     )
     def test_prop_equal_to(self, name, prop, value, expected_out):

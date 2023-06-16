@@ -164,7 +164,7 @@ class PresetHandlerBaseTests(unittest.TestCase):
         )
         self.assertFalse(res)
 
-        # when prop_func is valid
+        # when prop_func is valid and filter_kwargs given
         mock_prop_func.return_value = "some-prop-val"
         mock_prop_func.side_effect = None
         res = self.instance._filter_func_wrapper(
@@ -174,6 +174,17 @@ class PresetHandlerBaseTests(unittest.TestCase):
         mock_filter_func.assert_called_once_with(
             "some-prop-val", **mock_filter_func_kwargs
         )
+
+        # when prop_func is valid and filter_kwargs not given
+        mock_prop_func.reset_mock()
+        mock_filter_func.reset_mock()
+        mock_prop_func.return_value = "some-prop-val"
+        mock_prop_func.side_effect = None
+        res = self.instance._filter_func_wrapper(
+            mock_item, mock_filter_func, mock_prop_func
+        )
+        self.assertEqual(res, "a-boolean-value")
+        mock_filter_func.assert_called_once_with("some-prop-val")
 
     @parameterized.expand(
         [
@@ -190,12 +201,29 @@ class PresetHandlerBaseTests(unittest.TestCase):
             ),
         ]
     )
-    def test_check_filter_func_valid(self, name, valid_kwargs_to_test):
+    def test_check_filter_func(self, name, valid_kwargs_to_test):
         def mock_filter_func(prop, arg1: int, arg2: str = "some-default", **kwargs):
             return None
 
         self.assertTrue(
             self.instance._check_filter_func(
                 mock_filter_func, func_kwargs=valid_kwargs_to_test
+            )
+        )
+
+    @parameterized.expand(
+        [
+            ("no required", {}),
+            ("required wrong type", {"arg1": "non-default"}),
+            ("optional wrong type", {"arg1": 12, "arg2": 12}),
+        ]
+    )
+    def test_check_filter_func(self, name, invalid_kwargs_to_test):
+        def mock_filter_func(prop, arg1: int, arg2: str = "some-default", **kwargs):
+            return None
+
+        self.assertFalse(
+            self.instance._check_filter_func(
+                mock_filter_func, func_kwargs=invalid_kwargs_to_test
             )
         )

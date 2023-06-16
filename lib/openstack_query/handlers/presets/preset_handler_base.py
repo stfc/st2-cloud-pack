@@ -100,8 +100,7 @@ class PresetHandlerBase(HandlerBase):
             return False
         if filter_func_kwargs:
             return filter_func(item_prop, **filter_func_kwargs)
-        else:
-            return filter_func(item_prop)
+        return filter_func(item_prop)
 
     @staticmethod
     def _check_filter_func(
