@@ -93,7 +93,6 @@ class PresetHandlerBaseTests(unittest.TestCase):
     def test_get_filter_func_valid(
         self, mock_filter_func_wrapper, mock_check_filter_func
     ):
-
         # define inputs
         mock_prop_func = MagicMock()
         mock_kwargs = {"arg1": "val1", "arg2": "val2"}
@@ -120,7 +119,6 @@ class PresetHandlerBaseTests(unittest.TestCase):
         "openstack_query.handlers.presets.preset_handler_base.PresetHandlerBase._check_filter_func"
     )
     def test_get_filter_func_invalid(self, mock_check_filter_func):
-
         mock_prop_func = MagicMock()
         mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 

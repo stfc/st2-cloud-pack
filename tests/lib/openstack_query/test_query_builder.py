@@ -71,7 +71,6 @@ class QueryBuilderTests(unittest.TestCase):
             self.instance.parse_where(MockQueryPresets.ITEM_1, MockProperties.PROP_1)
 
     def test_get_preset_handler(self):
-
         mock_preset1 = MagicMock()
         mock_preset1.check_supported.return_value = False
 

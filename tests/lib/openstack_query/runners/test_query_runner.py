@@ -18,7 +18,6 @@ class QueryRunnerTests(unittest.TestCase):
     @patch("openstack_query.runners.query_runner.QueryRunner._apply_filter_func")
     @patch("openstack_query.runners.query_runner.QueryRunner._run_query")
     def test_run_only_filter_func(self, mock_run_query, mock_apply_filter_func):
-
         mock_run_query.return_value = ["openstack-resource-1", "openstack-resource-2"]
         mock_apply_filter_func.return_value = ["filtered-openstack-resource"]
 
@@ -39,7 +38,6 @@ class QueryRunnerTests(unittest.TestCase):
 
     @patch("openstack_query.runners.query_runner.QueryRunner._run_query")
     def test_run_with_filter_kwargs(self, mock_run_query):
-
         mock_run_query.return_value = ["kwarg-filtered-openstack-resource"]
         self.instance._run_query = mock_run_query
 

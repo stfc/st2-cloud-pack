@@ -22,7 +22,6 @@ from openstack_query.handlers.prop_handler import PropHandler
 
 
 class QueryServer(QueryWrapper):
-
     # PROPERTY_MAPPINGS set how to get properties of a openstack server object
     # possible properties are documented here:
     # https://docs.openstack.org/openstacksdk/latest/user/resources/compute/v2/server.html#openstack.compute.v2.server.Server
@@ -107,7 +106,6 @@ class QueryServer(QueryWrapper):
     }
 
     def __init__(self):
-
         preset_handlers = [
             PresetHandlerGeneric(self.FILTER_FUNCTION_MAPPING_GENERIC),
             PresetHandlerDateTime(self.FILTER_FUNCTION_MAPPING_DATETIME),
