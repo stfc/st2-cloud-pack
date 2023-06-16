@@ -29,7 +29,7 @@ class ServerManager(QueryManager):
         """
         return self._build_and_run_query(
             preset_details=None,
-            output_details=query_output_details,
+            output_details=output_details,
         )
 
     def search_servers_older_than_relative_to_now(

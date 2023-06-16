@@ -123,19 +123,23 @@ class QueryOutputTests(unittest.TestCase):
         Tests that parse_property function works expectedly with 0, 1 and 2 prop_funcs
         """
 
+        # mock get_prop_func to return a func string appropriate for that prop
+        def mock_get_prop_func(item, value, default_out):
+            return f"{value.name.lower()}-func"
+
+        self.mock_prop_handler.get_prop = mock_get_prop_func
+
         # 0 items
         self.instance._props = set()
         self.assertEqual(self.instance._parse_property("openstack-item"), {})
 
         # 1 item
         self.instance._props = {MockProperties.PROP_1}
-        self.mock_prop_handler.get_prop.return_value = "prop1-func"
         res = self.instance._parse_property("openstack-item")
-        self.assertEqual(res, {"prop_1": "prop1-func"})
+        self.assertEqual(res, {"prop_1": "prop_1-func"})
 
         # 2 items
         self.mock_prop_handler.reset_mock()
         self.instance._props = {MockProperties.PROP_1, MockProperties.PROP_2}
-        self.mock_prop_handler.get_prop.side_effect = ["prop1-func", "prop2-func"]
         res = self.instance._parse_property("openstack-item")
-        self.assertEqual(res, {"prop_1": "prop1-func", "prop_2": "prop2-func"})
+        self.assertEqual(res, {"prop_1": "prop_1-func", "prop_2": "prop_2-func"})
