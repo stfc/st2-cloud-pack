@@ -12,6 +12,11 @@ from exceptions.parse_query_error import ParseQueryError
 
 
 class QueryWrapper:
+    """
+    Base class for Query classes. This class exposes all public methods for query api.
+    QueryWrapper instantiates QueryBuilder, QueryOutput, and QueryRunner objects and uses them to perform logic
+    """
+
     def __init__(
         self,
         prop_handler: PropHandler,

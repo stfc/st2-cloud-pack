@@ -12,6 +12,11 @@ QueryReturn = Union[str, List[Any]]
 
 
 class QueryManager:
+    """
+    This class is the base class for all managers.
+    Managers hold a query object and several methods which build and run specific queries
+    """
+
     def __init__(self, query: QueryWrapper, cloud_account: str):
         self._query = query
         self._cloud_account = cloud_account

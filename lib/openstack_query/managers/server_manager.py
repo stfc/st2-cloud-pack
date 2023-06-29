@@ -17,6 +17,10 @@ from structs.query.query_preset_details import QueryPresetDetails
 
 
 class ServerManager(QueryManager):
+    """
+    Manager for querying Openstack Server objects.
+    """
+
     def __init__(self, cloud_account: str):
         QueryManager.__init__(self, query=QueryServer(), cloud_account=cloud_account)
 

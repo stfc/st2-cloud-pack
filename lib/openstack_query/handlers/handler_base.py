@@ -5,6 +5,12 @@ from enums.query.query_presets import QueryPresets
 
 
 class HandlerBase(ABC):
+    """
+    Abstract Base class for handlers.
+    This class is an abstract class for a generic handler
+    A handler stores a mapping between a preset and a function.
+    """
+
     @abstractmethod
     def _get_mapping(self, preset: QueryPresets, prop: Enum) -> Callable:
         """

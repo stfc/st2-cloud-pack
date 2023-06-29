@@ -10,6 +10,11 @@ from exceptions.parse_query_error import ParseQueryError
 
 
 class ServerRunner(QueryRunner):
+    """
+    Runner class for openstack Server resource.
+    ServerRunner encapsulates running any openstacksdk Server commands
+    """
+
     def _run_query(
         self,
         conn: OpenstackConnection,

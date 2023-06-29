@@ -14,6 +14,11 @@ from openstack_query.handlers.kwarg_handler import KwargHandler
 
 
 class QueryBuilder:
+    """
+    Helper class to handle setting and validating query parameters - primarily parsing 'where()' arguments to get
+    filter function or kwarg params to use when running query
+    """
+
     def __init__(
         self,
         prop_handler: PropHandler,

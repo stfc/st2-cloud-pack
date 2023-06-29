@@ -7,6 +7,13 @@ from openstack_query.handlers.prop_handler import PropHandler
 
 
 class QueryOutput:
+    """
+    Helper class for generating output for the query as a formatted table or selected properties - either as
+    html or string
+
+    TODO: Class should also handle grouping and sorting results
+    """
+
     def __init__(self, prop_handler: PropHandler):
         self._prop_handler = prop_handler
         self._props = set()

@@ -8,6 +8,11 @@ from custom_types.openstack_query.aliases import OpenstackFilterKwargs, ParsedFi
 
 
 class QueryRunner(OpenstackWrapperBase):
+    """
+    Base class for Runner classes.
+    Runner classes encapsulate running any openstacksdk commands
+    """
+
     def __init__(self, connection_cls=OpenstackConnection):
         OpenstackWrapperBase.__init__(self, connection_cls)
 

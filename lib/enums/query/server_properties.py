@@ -2,6 +2,10 @@ from enum import Enum, auto
 
 
 class ServerProperties(Enum):
+    """
+    An enum class for all server properties
+    """
+
     FLAVOR_ID = auto()
     HYPERVISOR_ID = auto()
     IMAGE_ID = auto()

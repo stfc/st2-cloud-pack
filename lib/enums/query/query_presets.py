@@ -6,13 +6,19 @@ class QueryPresets(Enum):
 
 
 class QueryPresetsGeneric(QueryPresets):
-    # generic type comparison operators
+    """
+    Enum class which holds generic query comparison operators
+    """
+
     EQUAL_TO = auto()
     NOT_EQUAL_TO = auto()
 
 
 class QueryPresetsInteger(QueryPresets):
-    # integer/float comparison operators
+    """
+    Enum class which holds integer/float comparison operators
+    """
+
     GREATER_THAN = auto()
     GREATER_THAN_OR_EQUAL_TO = auto()
     LESS_THAN = auto()
@@ -20,7 +26,10 @@ class QueryPresetsInteger(QueryPresets):
 
 
 class QueryPresetsDateTime(QueryPresets):
-    # datetime comparison operators
+    """
+    Enum class which holds datetime comparison operators
+    """
+
     OLDER_THAN = auto()
     OLDER_THAN_OR_EQUAL_TO = auto()
     YOUNGER_THAN = auto()
@@ -28,7 +37,10 @@ class QueryPresetsDateTime(QueryPresets):
 
 
 class QueryPresetsString(QueryPresets):
-    # string comparison operators
+    """
+    Enum class which holds string comparison operators
+    """
+
     ANY_IN = auto()
     MATCHES_REGEX = auto()
     NOT_ANY_IN = auto()

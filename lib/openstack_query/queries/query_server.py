@@ -22,6 +22,11 @@ from openstack_query.handlers.prop_handler import PropHandler
 
 
 class QueryServer(QueryWrapper):
+    """
+    Query class for querying Openstack Server objects.
+    Define property mappings, kwarg mappings and filter function mappings related to servers here
+    """
+
     # PROPERTY_MAPPINGS set how to get properties of a openstack server object
     # possible properties are documented here:
     # https://docs.openstack.org/openstacksdk/latest/user/resources/compute/v2/server.html#openstack.compute.v2.server.Server

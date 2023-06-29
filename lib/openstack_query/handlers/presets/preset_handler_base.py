@@ -16,10 +16,24 @@ from exceptions.query_preset_mapping_error import QueryPresetMappingError
 
 
 class PresetHandlerBase(HandlerBase):
+    """
+    Base class for preset handlers.
+    This class stores a dictionary which maps a preset to a filter function called FILTER_FUNCTIONS, and a dictionary
+    which maps a preset to a list of supported properties called FILTER_FUNCTION_MAPPINGS.
+
+    This class supports a set of methods to check and return a filter function for a given preset and property pair
+    """
+
     def __init__(self, filter_func_mappings: PresetToValidPropsMap):
         self._FILTER_FUNCTION_MAPPINGS = filter_func_mappings
 
     def check_supported(self, preset: QueryPresets, prop: Enum):
+        """
+        Method that returns True if this class supports a preset-property pair - i.e. a filter function exists for the
+        preset and that the preset supports the given property
+        :param preset: A QueryPreset Enum for which a filter function mapping may exist for
+        :param prop: A property Enum for which a filter function mapping may exist for
+        """
         if preset not in self._FILTER_FUNCTIONS.keys():
             return False
 
