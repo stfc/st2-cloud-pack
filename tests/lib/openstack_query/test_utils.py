@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import patch
 from parameterized import parameterized
 from nose.tools import raises
 
@@ -56,7 +56,7 @@ class UtilsTests(unittest.TestCase):
                 2,
                 30,
                 45,
-                datetime(2023, 6, 3, 6, 59, 15).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                datetime(2023, 6, 3, 7, 59, 15).strftime("%Y-%m-%dT%H:%M:%SZ"),
             ),
         ]
     )

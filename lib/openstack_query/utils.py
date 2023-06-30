@@ -44,8 +44,10 @@ def convert_to_timestamp(
     :param seconds: (Optional) relative number of seconds since current time
     :param timestamp_fmt: (Optional) timestamp format of result (default: yyyy-MM-ddTHH:mm:ssZ)
     """
-    try:
-        delta = get_timestamp_in_seconds(days, hours, minutes, seconds)
-    except MissingMandatoryParamError:
-        return get_current_time().strftime("%Y-%m-%dT%H:%M:%SZ")
-    return (datetime(1970, 1, 1) + timedelta(seconds=delta)).strftime(timestamp_fmt)
+
+    time_in_seconds = timedelta(
+        days=days, hours=hours, minutes=minutes, seconds=seconds
+    ).total_seconds()
+    return datetime.fromtimestamp(
+        get_current_time().timestamp() - time_in_seconds
+    ).strftime(timestamp_fmt)
