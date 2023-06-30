@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, Tuple
 from enums.query.query_presets import QueryPresets
 
 from custom_types.openstack_query.aliases import (
@@ -63,26 +63,26 @@ class KwargHandler(HandlerBase):
         kwarg_func = self._get_mapping(preset, prop)
         if not kwarg_func:
             return None
-        try:
-            _ = self._check_kwarg_mapping(kwarg_func, kwarg_params)
-        except TypeError as err:
+        res, reason = self._check_kwarg_mapping(kwarg_func, kwarg_params)
+        if not res:
             raise QueryPresetMappingError(
                 "Preset Argument Error: failed to build openstack filter kwargs for preset:prop"
                 f"'{preset.name}', '{prop.name}'"
-            ) from err
+                f"reason: {reason}"
+            )
         return kwarg_func(**kwarg_params)
 
     @staticmethod
     def _check_kwarg_mapping(
         kwarg_func: OpenstackFKwargFunc, kwarg_params: PresetKwargs
-    ) -> bool:
+    ) -> Tuple[bool, str]:
         """
         Method that checks if optional parameters are valid for the kwarg mapping function
         :param kwarg_func: kwarg lambda func to check
         :param kwarg_params: a dictionary of params to check if valid
         """
         try:
-            _ = kwarg_func(**kwarg_params)
+            kwarg_func(**kwarg_params)
         except KeyError as err:
-            raise TypeError(f"expected arg '{err.args[0]}' but not found") from err
-        return True
+            return False, f"expected arg '{err.args[0]}' but not found"
+        return True, ""

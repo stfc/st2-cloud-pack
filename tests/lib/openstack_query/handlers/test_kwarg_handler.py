@@ -78,7 +78,7 @@ class KwargHandlerTests(unittest.TestCase):
         mock_kwarg_func = MagicMock()
         mock_kwarg_func.return_value = "a-kwarg-mapping"
 
-        mock_check_kwarg_mapping.return_value = True
+        mock_check_kwarg_mapping.return_value = True, ""
         mock_get_mapping.return_value = mock_kwarg_func
 
         res = self.instance.get_kwargs(
@@ -103,7 +103,7 @@ class KwargHandlerTests(unittest.TestCase):
         self.assertIsNone(res)
 
         # when preset/prop are supported, but wrong kwarg_params
-        mock_check_kwarg_mapping.side_effect = TypeError()
+        mock_check_kwarg_mapping.return_value = False, "some-reason"
         with self.assertRaises(QueryPresetMappingError):
             self.instance.get_kwargs(
                 MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_kwarg_params
