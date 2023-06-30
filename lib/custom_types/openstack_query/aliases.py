@@ -19,3 +19,5 @@ ServerSideFilterFunc = Callable[[Any], ServerSideFilters]
 
 PropToServerSideFilterFunc = Dict[Enum, ServerSideFilterFunc]
 ServerSideFilterMappings = Dict[QueryPresets, PropToServerSideFilterFunc]
+
+OpenstackResourceObj = Any

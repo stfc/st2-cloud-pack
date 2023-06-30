@@ -9,6 +9,7 @@ from custom_types.openstack_query.aliases import (
     ParsedFilterFunc,
     PropFunc,
     PresetKwargs,
+    OpenstackResourceObj,
 )
 
 from enums.query.query_presets import QueryPresets
@@ -90,7 +91,7 @@ class ClientSideHandler(HandlerBase):
 
     @staticmethod
     def _filter_func_wrapper(
-        item: Any,
+        item: OpenstackResourceObj,
         selected_filter_func: FilterFunc,
         selected_prop_func: PropFunc,
         filter_func_kwargs: Optional[PresetKwargs] = None,

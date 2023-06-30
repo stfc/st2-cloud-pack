@@ -1,6 +1,10 @@
 from enum import Enum
 from typing import Any, Optional, Set
-from custom_types.openstack_query.aliases import PropToPropFuncMap, PropFunc
+from custom_types.openstack_query.aliases import (
+    PropToPropFuncMap,
+    PropFunc,
+    OpenstackResourceObj,
+)
 
 
 class PropHandler:
@@ -33,7 +37,9 @@ class PropHandler:
         """
         return set(self._PROPERTY_MAPPINGS.keys())
 
-    def get_prop(self, item: Any, prop: Enum, default_out: str = "Not Found") -> str:
+    def get_prop(
+        self, item: OpenstackResourceObj, prop: Enum, default_out: str = "Not Found"
+    ) -> str:
         """
         Method that returns property value for a given openstack object which corresponds to a prop Enum.
         If the prop doesn't exist for the given openstack object, then the default value will be returned

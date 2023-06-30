@@ -4,7 +4,11 @@ from typing import Optional, List, Any, Callable
 
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.openstack_connection import OpenstackConnection
-from custom_types.openstack_query.aliases import ServerSideFilters, ParsedFilterFunc
+from custom_types.openstack_query.aliases import (
+    ServerSideFilters,
+    ParsedFilterFunc,
+    OpenstackResourceObj,
+)
 
 
 class QueryRunner(OpenstackWrapperBase):
@@ -23,7 +27,7 @@ class QueryRunner(OpenstackWrapperBase):
         filter_kwargs: Optional[ServerSideFilters] = None,
         from_subset: Optional[List[Any]] = None,
         **kwargs
-    ) -> List[Any]:
+    ) -> List[OpenstackResourceObj]:
         """
         Public method that runs the query by querying openstacksdk and then applying a filter function.
         :param cloud_account: The account from the clouds configuration to use
@@ -55,8 +59,8 @@ class QueryRunner(OpenstackWrapperBase):
 
     @staticmethod
     def _apply_filter_func(
-        items: List[Any], filter_func: Callable[[Any], bool]
-    ) -> List[Any]:
+        items: List[OpenstackResourceObj], filter_func: Callable[[Any], bool]
+    ) -> List[OpenstackResourceObj]:
         """
         Removes items from a list by running a given query function
         :param items: List of items to query e.g. list of servers
@@ -72,7 +76,7 @@ class QueryRunner(OpenstackWrapperBase):
         conn: OpenstackConnection,
         filter_kwargs: Optional[ServerSideFilters] = None,
         **kwargs
-    ) -> List[Any]:
+    ) -> List[OpenstackResourceObj]:
         """
         This method runs the query by utilising openstacksdk commands. It will set get a list of all available
         resources in question and returns them
@@ -83,7 +87,9 @@ class QueryRunner(OpenstackWrapperBase):
         """
 
     @abstractmethod
-    def _parse_subset(self, conn: OpenstackConnection, subset: List[Any]) -> List[Any]:
+    def _parse_subset(
+        self, conn: OpenstackConnection, subset: List[OpenstackResourceObj]
+    ) -> List[OpenstackResourceObj]:
         """
         This method is a helper function that will check a subset of openstack objects and check their validity
         :param conn: An OpenstackConnection object - used to connect to openstacksdk

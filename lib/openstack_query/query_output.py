@@ -4,6 +4,7 @@ from tabulate import tabulate
 
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 from openstack_query.handlers.prop_handler import PropHandler
+from custom_types.openstack_query.aliases import OpenstackResourceObj
 
 
 class QueryOutput:
@@ -78,7 +79,9 @@ class QueryOutput:
             )
         return True
 
-    def generate_output(self, items: List[Any]) -> List[Dict[str, str]]:
+    def generate_output(
+        self, items: List[OpenstackResourceObj]
+    ) -> List[Dict[str, str]]:
         """
         Generates a dictionary of queried properties from a list of openstack objects e.g. servers
         :param items: List of items to obtain properties from
@@ -87,7 +90,7 @@ class QueryOutput:
         self._results = [self._parse_property(item) for item in items]
         return self._results
 
-    def _parse_property(self, item: Any) -> Dict[str, str]:
+    def _parse_property(self, item: OpenstackResourceObj) -> Dict[str, str]:
         """
         Generates a dictionary of queried properties from a single openstack object
         :param item: openstack resource item to obtain properties from
