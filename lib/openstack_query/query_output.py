@@ -1,4 +1,4 @@
-from typing import Any, List, Dict, Set
+from typing import Any, List, Dict
 from enum import Enum
 from tabulate import tabulate
 
@@ -17,7 +17,7 @@ class QueryOutput:
     def __init__(self, prop_handler: PropHandler):
         self._prop_handler = prop_handler
         self._props = set()
-        self._results = list()
+        self._results = []
 
     @property
     def results(self):

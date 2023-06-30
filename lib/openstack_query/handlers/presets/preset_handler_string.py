@@ -3,7 +3,7 @@ import re
 from typing import List, Any, Pattern
 from custom_types.openstack_query.aliases import PresetToValidPropsMap
 
-from enums.query.query_presets import QueryPresets, QueryPresetsString
+from enums.query.query_presets import QueryPresetsString
 from openstack_query.handlers.presets.preset_handler_base import PresetHandlerBase
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 
@@ -36,7 +36,7 @@ class PresetHandlerString(PresetHandlerBase):
         :param prop: prop value to check against
         :param regex_string: a regex pattern to run
         """
-        return True if re.match(regex_string, prop) else False
+        return bool(re.match(regex_string, prop))
 
     @staticmethod
     def _prop_any_in(prop: Any, values: List[str]) -> bool:

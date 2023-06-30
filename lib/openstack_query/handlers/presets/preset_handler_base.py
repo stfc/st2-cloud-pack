@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 from enum import Enum
 
 from openstack_query.handlers.handler_base import HandlerBase
@@ -43,7 +43,7 @@ class PresetHandlerBase(HandlerBase):
                 return True
 
             # '*' represents that all props are valid for preset
-            elif ["*"] == self._FILTER_FUNCTION_MAPPINGS[preset]:
+            if ["*"] == self._FILTER_FUNCTION_MAPPINGS[preset]:
                 return True
         return False
 

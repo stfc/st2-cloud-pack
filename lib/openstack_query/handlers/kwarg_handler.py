@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, Optional
+from typing import Optional
 from enums.query.query_presets import QueryPresets
 
 from custom_types.openstack_query.aliases import (
@@ -83,6 +83,6 @@ class KwargHandler(HandlerBase):
         """
         try:
             _ = kwarg_func(**kwarg_params)
-        except KeyError as e:
-            raise TypeError(f"expected arg '{e.args[0]}' but not found")
+        except KeyError as err:
+            raise TypeError(f"expected arg '{err.args[0]}' but not found") from err
         return True

@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from typing import Optional, Dict, List, Any, Callable
+from typing import Optional, List, Any, Callable
 
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.openstack_connection import OpenstackConnection

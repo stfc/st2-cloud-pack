@@ -2,8 +2,6 @@ from typing import List, Any, Union
 
 
 from enums.query.query_presets import (
-    QueryPresetsGeneric,
-    QueryPresetsInteger,
     QueryPresetsDateTime,
     QueryPresetsString,
 )

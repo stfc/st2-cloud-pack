@@ -2,15 +2,14 @@ from typing import Optional, Dict, Any, List
 from enum import Enum
 
 from openstack_query.handlers.presets.preset_handler_base import PresetHandlerBase
-
-from enums.query.query_presets import QueryPresets
-from exceptions.parse_query_error import ParseQueryError
-
-from exceptions.query_preset_mapping_error import QueryPresetMappingError
-from exceptions.query_property_mapping_error import QueryPropertyMappingError
-
 from openstack_query.handlers.prop_handler import PropHandler
 from openstack_query.handlers.kwarg_handler import KwargHandler
+
+from enums.query.query_presets import QueryPresets
+
+from exceptions.parse_query_error import ParseQueryError
+from exceptions.query_preset_mapping_error import QueryPresetMappingError
+from exceptions.query_property_mapping_error import QueryPropertyMappingError
 
 
 class QueryBuilder:

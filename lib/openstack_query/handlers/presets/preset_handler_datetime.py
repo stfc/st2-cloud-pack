@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from enums.query.query_presets import QueryPresets, QueryPresetsDateTime
+from enums.query.query_presets import QueryPresetsDateTime
 
 from custom_types.openstack_query.aliases import PresetToValidPropsMap
 

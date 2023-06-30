@@ -1,7 +1,6 @@
 from enum import Enum
 from typing import Any, Optional, Set
 from custom_types.openstack_query.aliases import PropToPropFuncMap, PropFunc
-from openstack_query.handlers.handler_base import HandlerBase
 
 
 class PropHandler:

@@ -1,24 +1,22 @@
-from openstack_query.queries.query_wrapper import QueryWrapper
 from enums.query.server_properties import ServerProperties
-from openstack_query.runners.server_runner import ServerRunner
-
-from openstack_query.utils import convert_to_timestamp
-
 from enums.query.query_presets import (
     QueryPresetsGeneric,
-    QueryPresetsInteger,
     QueryPresetsDateTime,
     QueryPresetsString,
 )
+
+from openstack_query.queries.query_wrapper import QueryWrapper
+from openstack_query.runners.server_runner import ServerRunner
 
 from openstack_query.handlers.presets.preset_handler_generic import PresetHandlerGeneric
 from openstack_query.handlers.presets.preset_handler_string import PresetHandlerString
 from openstack_query.handlers.presets.preset_handler_datetime import (
     PresetHandlerDateTime,
 )
-
 from openstack_query.handlers.kwarg_handler import KwargHandler
 from openstack_query.handlers.prop_handler import PropHandler
+
+from openstack_query.utils import convert_to_timestamp
 
 
 class QueryServer(QueryWrapper):

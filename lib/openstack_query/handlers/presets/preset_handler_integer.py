@@ -1,7 +1,7 @@
 from typing import Union
 from custom_types.openstack_query.aliases import PresetToValidPropsMap
 
-from enums.query.query_presets import QueryPresets, QueryPresetsInteger
+from enums.query.query_presets import QueryPresetsInteger
 from openstack_query.handlers.presets.preset_handler_base import PresetHandlerBase
 
 

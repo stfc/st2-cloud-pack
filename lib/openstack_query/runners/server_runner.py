@@ -90,7 +90,7 @@ class ServerRunner(QueryRunner):
         return list(conn.compute.servers(filters=server_filters))
 
     def _parse_subset(
-        self, conn: OpenstackConnection, subset: List[Server]
+        self, _: OpenstackConnection, subset: List[Server]
     ) -> List[Server]:
         """
         This method is a helper function that will check a list of servers to ensure that they are valid Server objects

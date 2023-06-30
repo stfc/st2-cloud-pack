@@ -23,7 +23,7 @@ class QueryWrapper:
         preset_handlers: List[PresetHandlerBase],
         kwarg_handler: Optional[KwargHandler] = None,
     ):
-        self._query_results = list()
+        self._query_results = []
 
         self.runner = None
         self.output = QueryOutput(prop_handler)

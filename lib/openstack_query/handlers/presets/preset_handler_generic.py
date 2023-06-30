@@ -1,7 +1,7 @@
 from typing import Any
 from custom_types.openstack_query.aliases import PresetToValidPropsMap
 
-from enums.query.query_presets import QueryPresets, QueryPresetsGeneric
+from enums.query.query_presets import QueryPresetsGeneric
 from openstack_query.handlers.presets.preset_handler_base import PresetHandlerBase
 
 
@@ -42,7 +42,7 @@ class PresetHandlerGeneric(PresetHandlerBase):
         """
         if isinstance(prop, type(value)):
             if isinstance(prop, object) and hasattr(prop, "__eq__"):
-                return prop.__eq__(value)
+                return prop == value
         else:
             return False
         return prop == value
