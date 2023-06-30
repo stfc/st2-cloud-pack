@@ -14,8 +14,8 @@ PresetToValidPropsMap = Dict[QueryPresets, List[Enum]]
 
 ParsedFilterFunc = Callable[[Any], bool]
 
-OpenstackFilterKwargs = Dict[str, Any]
-OpenstackFKwargFunc = Callable[[Any], OpenstackFilterKwargs]
+ServerSideFilters = Dict[str, Any]
+ServerSideFilterFunc = Callable[[Any], ServerSideFilters]
 
-PropToFKwargFuncMap = Dict[Enum, OpenstackFKwargFunc]
-KwargMappings = Dict[QueryPresets, PropToFKwargFuncMap]
+PropToServerSideFilterFunc = Dict[Enum, ServerSideFilterFunc]
+ServerSideFilterMappings = Dict[QueryPresets, PropToServerSideFilterFunc]

@@ -3,7 +3,7 @@ from enum import Enum
 
 from openstack_query.handlers.presets.preset_handler_base import PresetHandlerBase
 from openstack_query.handlers.prop_handler import PropHandler
-from openstack_query.handlers.kwarg_handler import KwargHandler
+from openstack_query.handlers.server_side_handler import ServerSideHandler
 
 from enums.query.query_presets import QueryPresets
 
@@ -22,22 +22,22 @@ class QueryBuilder:
         self,
         prop_handler: PropHandler,
         preset_handlers: List[PresetHandlerBase],
-        kwarg_handler: Optional[KwargHandler],
+        server_side_handler: Optional[ServerSideHandler],
     ):
         self._preset_handlers = preset_handlers
         self._prop_handler = prop_handler
-        self._kwarg_handler = kwarg_handler
+        self._server_side_handler = server_side_handler
 
         self._filter_func = None
-        self._filter_kwargs = None
+        self._server_side_filters = None
 
     @property
     def filter_func(self):
         return self._filter_func
 
     @property
-    def filter_kwargs(self):
-        return self._filter_kwargs
+    def server_side_filters(self):
+        return self._server_side_filters
 
     def parse_where(
         self,
@@ -69,7 +69,7 @@ class QueryBuilder:
         self._filter_func = preset_handler.get_filter_func(
             preset, prop, prop_func, preset_kwargs
         )
-        self._filter_kwargs = self._kwarg_handler.get_kwargs(
+        self._server_side_filters = self._server_side_handler.get_filters(
             preset, prop, prop_func, preset_kwargs
         )
 

@@ -22,9 +22,11 @@ class QueryBuilderTests(unittest.TestCase):
         super().setUp()
         self.mock_prop_handler = MagicMock()
         self.mock_preset_handlers = ["mock_preset_handler1", "mock_preset_handler2"]
-        self.mock_kwarg_handler = MagicMock()
+        self.mock_server_side_handler = MagicMock()
         self.instance = QueryBuilder(
-            self.mock_prop_handler, self.mock_preset_handlers, self.mock_kwarg_handler
+            self.mock_prop_handler,
+            self.mock_preset_handlers,
+            self.mock_server_side_handler,
         )
 
     @patch("openstack_query.query_builder.QueryBuilder._get_preset_handler")
@@ -37,7 +39,7 @@ class QueryBuilderTests(unittest.TestCase):
         mock_preset_handler.get_filter_func.return_value = "some-filter-func"
         mock_get_preset_handler.return_value = mock_preset_handler
 
-        self.mock_kwarg_handler.get_kwargs.return_value = "some-kwargs"
+        self.mock_server_side_handler.get_filters.return_value = "some-kwargs"
         self.mock_prop_handler.get_prop_mapping.return_value = "some-func"
 
         mock_kwargs = {"arg1": "val1", "arg2": "val2"}
@@ -51,12 +53,12 @@ class QueryBuilderTests(unittest.TestCase):
         mock_preset_handler.get_filter_func.assert_called_once_with(
             MockQueryPresets.ITEM_1, MockProperties.PROP_1, "some-func", mock_kwargs
         )
-        self.mock_kwarg_handler.get_kwargs.assert_called_once_with(
+        self.mock_server_side_handler.get_filters.assert_called_once_with(
             MockQueryPresets.ITEM_1, MockProperties.PROP_1, "some-func", mock_kwargs
         )
 
         self.assertEqual(self.instance._filter_func, "some-filter-func")
-        self.assertEqual(self.instance._filter_kwargs, "some-kwargs")
+        self.assertEqual(self.instance._server_side_filters, "some-kwargs")
 
     def test_parse_where_invalid(self):
         # test if already set a query preset

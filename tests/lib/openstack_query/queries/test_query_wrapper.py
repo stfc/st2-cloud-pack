@@ -16,9 +16,11 @@ class QueryWrapperTests(unittest.TestCase):
         super().setUp()
         self.mock_prop_handler = MagicMock()
         self.mock_preset_handlers = ["mock_preset_handler1", "mock_preset_handler2"]
-        self.mock_kwarg_handler = MagicMock()
+        self.mock_server_side_handler = MagicMock()
         self.instance = QueryWrapper(
-            self.mock_prop_handler, self.mock_preset_handlers, self.mock_kwarg_handler
+            self.mock_prop_handler,
+            self.mock_preset_handlers,
+            self.mock_server_side_handler,
         )
 
     def test_select(self):
@@ -94,12 +96,12 @@ class QueryWrapperTests(unittest.TestCase):
         self.instance.output = mock_query_output
 
         mock_query_builder.filter_func.return_value = "some-filter-func"
-        mock_query_builder.filter_kwargs.return_value = "some-filter-kwargs"
+        mock_query_builder.server_side_filters.return_value = "some-filter-kwargs"
         mock_query_runner.run.return_value = "some-runner-output"
 
         res = self.instance.run("test-account")
         mock_query_builder.filter_func.assert_called_once()
-        mock_query_builder.filter_kwargs.assert_called_once()
+        mock_query_builder.server_side_filters.assert_called_once()
         mock_query_runner.run.assert_called_once_with(
             "test-account", "some-filter-func", "some-filter-kwargs", None
         )

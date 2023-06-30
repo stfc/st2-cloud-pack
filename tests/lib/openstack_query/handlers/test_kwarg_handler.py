@@ -2,16 +2,16 @@ import unittest
 from unittest.mock import MagicMock, patch
 from parameterized import parameterized
 
-from openstack_query.handlers.kwarg_handler import KwargHandler
+from openstack_query.handlers.server_side_handler import ServerSideHandler
 from exceptions.query_preset_mapping_error import QueryPresetMappingError
 
 from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 
-class KwargHandlerTests(unittest.TestCase):
+class ServerSideHandlerTests(unittest.TestCase):
     """
-    Runs various tests to ensure that KwargHandler class methods function expectedly
+    Runs various tests to ensure that ServerSideHandler class methods function expectedly
     """
 
     def setUp(self):
@@ -20,7 +20,7 @@ class KwargHandlerTests(unittest.TestCase):
         """
         super().setUp()
 
-        _KWARG_FUNCTION_MAPPINGS = {
+        _SERVER_SIDE_FUNCTION_MAPPINGS = {
             MockQueryPresets.ITEM_1: {
                 MockProperties.PROP_1: "item1-prop1-kwarg",
                 MockProperties.PROP_2: "item2-prop2-kwarg",
@@ -30,7 +30,7 @@ class KwargHandlerTests(unittest.TestCase):
                 MockProperties.PROP_4: "item2-prop4-kwarg",
             },
         }
-        self.instance = KwargHandler(_KWARG_FUNCTION_MAPPINGS)
+        self.instance = ServerSideHandler(_SERVER_SIDE_FUNCTION_MAPPINGS)
 
     def test_check_supported_true(self):
         self.assertTrue(
@@ -71,42 +71,46 @@ class KwargHandlerTests(unittest.TestCase):
             self.instance._get_mapping(MockQueryPresets.ITEM_1, MockProperties.PROP_3)
         )
 
-    @patch("openstack_query.handlers.kwarg_handler.KwargHandler._check_kwarg_mapping")
-    @patch("openstack_query.handlers.kwarg_handler.KwargHandler._get_mapping")
-    def test_get_kwargs_valid(self, mock_get_mapping, mock_check_kwarg_mapping):
-        mock_kwarg_params = {"arg1": "val1", "arg2": "val2"}
-        mock_kwarg_func = MagicMock()
-        mock_kwarg_func.return_value = "a-kwarg-mapping"
+    @patch(
+        "openstack_query.handlers.server_side_handler.ServerSideHandler._check_filter_mapping"
+    )
+    @patch(
+        "openstack_query.handlers.server_side_handler.ServerSideHandler._get_mapping"
+    )
+    def test_get_filters_valid(self, mock_get_mapping, mock_check_filter_mapping):
+        mock_params = {"arg1": "val1", "arg2": "val2"}
+        mock_filter_func = MagicMock()
+        mock_filter_func.return_value = "a-kwarg-mapping"
 
-        mock_check_kwarg_mapping.return_value = True, ""
-        mock_get_mapping.return_value = mock_kwarg_func
+        mock_check_filter_mapping.return_value = True, ""
+        mock_get_mapping.return_value = mock_filter_func
 
-        res = self.instance.get_kwargs(
-            MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_kwarg_params
+        res = self.instance.get_filters(
+            MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_params
         )
 
-        mock_check_kwarg_mapping.assert_called_once_with(
-            mock_kwarg_func, mock_kwarg_params
-        )
-        mock_kwarg_func.assert_called_once_with(**mock_kwarg_params)
+        mock_check_filter_mapping.assert_called_once_with(mock_filter_func, mock_params)
+        mock_filter_func.assert_called_once_with(**mock_params)
         self.assertEqual(res, "a-kwarg-mapping")
 
-    @patch("openstack_query.handlers.kwarg_handler.KwargHandler._check_kwarg_mapping")
-    def test_get_kwargs_invalid(self, mock_check_kwarg_mapping):
-        mock_kwarg_params = {"arg1": "val1", "arg2": "val2"}
+    @patch(
+        "openstack_query.handlers.server_side_handler.ServerSideHandler._check_filter_mapping"
+    )
+    def test_get_filters_invalid(self, mock_check_filter_mapping):
+        mock_params = {"arg1": "val1", "arg2": "val2"}
         mock_kwarg_func = MagicMock()
 
         # when preset/prop not supported
-        res = self.instance.get_kwargs(
-            MockQueryPresets.ITEM_3, MockProperties.PROP_1, mock_kwarg_params
+        res = self.instance.get_filters(
+            MockQueryPresets.ITEM_3, MockProperties.PROP_1, mock_params
         )
         self.assertIsNone(res)
 
         # when preset/prop are supported, but wrong kwarg_params
-        mock_check_kwarg_mapping.return_value = False, "some-reason"
+        mock_check_filter_mapping.return_value = False, "some-reason"
         with self.assertRaises(QueryPresetMappingError):
-            self.instance.get_kwargs(
-                MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_kwarg_params
+            self.instance.get_filters(
+                MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_params
             )
 
     @parameterized.expand(
@@ -124,12 +128,12 @@ class KwargHandlerTests(unittest.TestCase):
             ),
         ]
     )
-    def test_check_kwargs(self, name, valid_kwargs_to_test):
-        mock_kwarg_mapping = lambda arg1, arg2="some-default", **kwargs: {
+    def test_check_filter_mapping(self, name, valid_params_to_test):
+        mock_server_side_mapping = lambda arg1, arg2="some-default", **kwargs: {
             "kwarg1": "val1"
         }
         self.assertTrue(
-            self.instance._check_kwarg_mapping(
-                mock_kwarg_mapping, kwarg_params=valid_kwargs_to_test
+            self.instance._check_filter_mapping(
+                mock_server_side_mapping, filter_params=valid_params_to_test
             )
         )

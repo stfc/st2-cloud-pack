@@ -6,7 +6,7 @@ from openstack_query.query_builder import QueryBuilder
 
 from openstack_query.handlers.prop_handler import PropHandler
 from openstack_query.handlers.presets.preset_handler_base import PresetHandlerBase
-from openstack_query.handlers.kwarg_handler import KwargHandler
+from openstack_query.handlers.server_side_handler import ServerSideHandler
 
 from exceptions.parse_query_error import ParseQueryError
 
@@ -21,7 +21,7 @@ class QueryWrapper:
         self,
         prop_handler: PropHandler,
         preset_handlers: List[PresetHandlerBase],
-        kwarg_handler: Optional[KwargHandler] = None,
+        kwarg_handler: Optional[ServerSideHandler] = None,
     ):
         self._query_results = []
 
@@ -96,7 +96,7 @@ class QueryWrapper:
             - valid kwargs specific to resource
         """
         filter_func = self.builder.filter_func()
-        filter_kwargs = self.builder.filter_kwargs()
+        filter_kwargs = self.builder.server_side_filters()
 
         self._query_results = self.runner.run(
             cloud_account, filter_func, filter_kwargs, from_subset, **kwargs

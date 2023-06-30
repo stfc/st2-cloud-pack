@@ -13,7 +13,7 @@ from openstack_query.handlers.presets.preset_handler_string import PresetHandler
 from openstack_query.handlers.presets.preset_handler_datetime import (
     PresetHandlerDateTime,
 )
-from openstack_query.handlers.kwarg_handler import KwargHandler
+from openstack_query.handlers.server_side_handler import ServerSideHandler
 from openstack_query.handlers.prop_handler import PropHandler
 
 from openstack_query.utils import convert_to_timestamp
@@ -42,11 +42,11 @@ class QueryServer(QueryWrapper):
         ServerProperties.PROJECT_ID: lambda a: a["location"]["project"]["id"],
     }
 
-    # KWARG_MAPPINGS - 'filter' keyword arguments that openstack command conn.compute.servers() takes
+    # SERVER_SIDE_FILTER_MAPPINGS - 'filter' keyword arguments that openstack command conn.compute.servers() takes
     # - documented here https://docs.openstack.org/openstacksdk/latest/user/proxies/compute.html
     # - all filters are documented here
     # https://docs.openstack.org/api-ref/compute/?expanded=list-servers-detail#list-server-request
-    _KWARG_MAPPINGS = {
+    _SERVER_SIDE_FILTER_MAPPINGS = {
         QueryPresetsGeneric.EQUAL_TO: {
             ServerProperties.USER_ID: lambda **kwargs: {"user_id": kwargs["value"]},
             ServerProperties.SERVER_ID: lambda **kwargs: {"uuid": kwargs["value"]},
@@ -114,8 +114,8 @@ class QueryServer(QueryWrapper):
             PresetHandlerDateTime(self.FILTER_FUNCTION_MAPPING_DATETIME),
             PresetHandlerString(self.FILTER_FUNCTION_MAPPING_STRING),
         ]
-        kwarg_handler = KwargHandler(self._KWARG_MAPPINGS)
+        server_side_handler = ServerSideHandler(self._SERVER_SIDE_FILTER_MAPPINGS)
         prop_handler = PropHandler(self._PROPERTY_MAPPINGS)
 
-        super().__init__(prop_handler, preset_handlers, kwarg_handler)
+        super().__init__(prop_handler, preset_handlers, server_side_handler)
         self.runner = ServerRunner()

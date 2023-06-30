@@ -4,7 +4,7 @@ from typing import Optional, List, Any, Callable
 
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.openstack_connection import OpenstackConnection
-from custom_types.openstack_query.aliases import OpenstackFilterKwargs, ParsedFilterFunc
+from custom_types.openstack_query.aliases import ServerSideFilters, ParsedFilterFunc
 
 
 class QueryRunner(OpenstackWrapperBase):
@@ -20,7 +20,7 @@ class QueryRunner(OpenstackWrapperBase):
         self,
         cloud_account: str,
         filter_func: Optional[ParsedFilterFunc] = None,
-        filter_kwargs: Optional[OpenstackFilterKwargs] = None,
+        filter_kwargs: Optional[ServerSideFilters] = None,
         from_subset: Optional[List[Any]] = None,
         **kwargs
     ) -> List[Any]:
@@ -70,7 +70,7 @@ class QueryRunner(OpenstackWrapperBase):
     def _run_query(
         self,
         conn: OpenstackConnection,
-        filter_kwargs: Optional[OpenstackFilterKwargs] = None,
+        filter_kwargs: Optional[ServerSideFilters] = None,
         **kwargs
     ) -> List[Any]:
         """
