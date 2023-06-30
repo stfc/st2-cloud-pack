@@ -4,20 +4,15 @@ from typing import List, Any, Pattern
 from custom_types.openstack_query.aliases import PresetToValidPropsMap
 
 from enums.query.query_presets import QueryPresetsString
-from openstack_query.handlers.presets.preset_handler_base import PresetHandlerBase
+from openstack_query.handlers.client_side_handler import ClientSideHandler
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 
 
-class PresetHandlerString(PresetHandlerBase):
+class ClientSideHandlerString(ClientSideHandler):
     """
-    Preset handler for String Presets.
-    This class stores a dictionary which maps a String type preset to a filter function called FILTER_FUNCTIONS,
-    and a dictionary which maps a String type preset to a list of supported properties called FILTER_FUNCTION_MAPPINGS.
-
-    This class supports a set of methods to check and return a filter function for a given String type preset and
-    property pair
-
-    Filter functions which map to String type presets are defined here
+    Client Side handler for String related queries.
+    This class stores a dictionary which maps a String preset/prop pairs to a filter function
+    Filter functions which map to QueryPresetsString are defined here
     """
 
     def __init__(self, filter_function_mappings: PresetToValidPropsMap):
@@ -29,8 +24,7 @@ class PresetHandlerString(PresetHandlerBase):
             QueryPresetsString.NOT_ANY_IN: self._prop_not_any_in,
         }
 
-    @staticmethod
-    def _prop_matches_regex(prop: Any, regex_string: Pattern[str]) -> bool:
+    def _prop_matches_regex(self, prop: Any, regex_string: Pattern[str]) -> bool:
         """
         Filter function which returns true if a prop matches a regex pattern
         :param prop: prop value to check against
@@ -38,8 +32,7 @@ class PresetHandlerString(PresetHandlerBase):
         """
         return bool(re.match(regex_string, prop))
 
-    @staticmethod
-    def _prop_any_in(prop: Any, values: List[str]) -> bool:
+    def _prop_any_in(self, prop: Any, values: List[str]) -> bool:
         """
         Filter function which returns true if a prop matches any in a given list
         :param prop: prop value to check against

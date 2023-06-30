@@ -8,11 +8,14 @@ from enums.query.query_presets import (
 from openstack_query.queries.query_wrapper import QueryWrapper
 from openstack_query.runners.server_runner import ServerRunner
 
-from openstack_query.handlers.presets.preset_handler_generic import PresetHandlerGeneric
-from openstack_query.handlers.presets.preset_handler_string import PresetHandlerString
-from openstack_query.handlers.presets.preset_handler_datetime import (
-    PresetHandlerDateTime,
+from openstack_query.handlers.client_side_handler_generic import (
+    ClientSideHandlerGeneric,
 )
+from openstack_query.handlers.client_side_handler_string import ClientSideHandlerString
+from openstack_query.handlers.client_side_handler_datetime import (
+    ClientSideHandlerDateTime,
+)
+
 from openstack_query.handlers.server_side_handler import ServerSideHandler
 from openstack_query.handlers.prop_handler import PropHandler
 
@@ -80,12 +83,12 @@ class QueryServer(QueryWrapper):
         },
     }
 
-    FILTER_FUNCTION_MAPPING_GENERIC = {
+    CLIENT_SIDE_MAPPING_GENERIC = {
         QueryPresetsGeneric.EQUAL_TO: ["*"],
         QueryPresetsGeneric.NOT_EQUAL_TO: ["*"],
     }
 
-    FILTER_FUNCTION_MAPPING_DATETIME = {
+    CLIENT_SIDE_MAPPING_DATETIME = {
         QueryPresetsDateTime.OLDER_THAN: [
             ServerProperties.SERVER_CREATION_DATE,
             ServerProperties.SERVER_LAST_UPDATED_DATE,
@@ -104,18 +107,18 @@ class QueryServer(QueryWrapper):
         ],
     }
 
-    FILTER_FUNCTION_MAPPING_STRING = {
+    CLIENT_SIDE_MAPPING_STRING = {
         QueryPresetsString.MATCHES_REGEX: [ServerProperties.SERVER_NAME],
     }
 
     def __init__(self):
-        preset_handlers = [
-            PresetHandlerGeneric(self.FILTER_FUNCTION_MAPPING_GENERIC),
-            PresetHandlerDateTime(self.FILTER_FUNCTION_MAPPING_DATETIME),
-            PresetHandlerString(self.FILTER_FUNCTION_MAPPING_STRING),
+        client_side_handlers = [
+            ClientSideHandlerGeneric(self.CLIENT_SIDE_MAPPING_GENERIC),
+            ClientSideHandlerDateTime(self.CLIENT_SIDE_MAPPING_DATETIME),
+            ClientSideHandlerString(self.CLIENT_SIDE_MAPPING_STRING),
         ]
         server_side_handler = ServerSideHandler(self._SERVER_SIDE_FILTER_MAPPINGS)
         prop_handler = PropHandler(self._PROPERTY_MAPPINGS)
 
-        super().__init__(prop_handler, preset_handlers, server_side_handler)
+        super().__init__(prop_handler, client_side_handlers, server_side_handler)
         self.runner = ServerRunner()

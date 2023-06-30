@@ -15,11 +15,11 @@ class QueryWrapperTests(unittest.TestCase):
         """
         super().setUp()
         self.mock_prop_handler = MagicMock()
-        self.mock_preset_handlers = ["mock_preset_handler1", "mock_preset_handler2"]
+        self.mock_client_side_handlers = ["mock_handler1", "mock_handler2"]
         self.mock_server_side_handler = MagicMock()
         self.instance = QueryWrapper(
             self.mock_prop_handler,
-            self.mock_preset_handlers,
+            self.mock_client_side_handlers,
             self.mock_server_side_handler,
         )
 

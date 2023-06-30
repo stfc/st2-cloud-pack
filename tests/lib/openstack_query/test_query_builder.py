@@ -21,11 +21,11 @@ class QueryBuilderTests(unittest.TestCase):
         """
         super().setUp()
         self.mock_prop_handler = MagicMock()
-        self.mock_preset_handlers = ["mock_preset_handler1", "mock_preset_handler2"]
+        self.mock_client_side_handlers = ["mock_handler1", "mock_handler2"]
         self.mock_server_side_handler = MagicMock()
         self.instance = QueryBuilder(
             self.mock_prop_handler,
-            self.mock_preset_handlers,
+            self.mock_client_side_handlers,
             self.mock_server_side_handler,
         )
 
@@ -35,9 +35,9 @@ class QueryBuilderTests(unittest.TestCase):
         Tests that parse_where method sets up filter function and filter kwargs
         """
 
-        mock_preset_handler = MagicMock()
-        mock_preset_handler.get_filter_func.return_value = "some-filter-func"
-        mock_get_preset_handler.return_value = mock_preset_handler
+        mock_client_side_handler = MagicMock()
+        mock_client_side_handler.get_filter_func.return_value = "some-filter-func"
+        mock_get_preset_handler.return_value = mock_client_side_handler
 
         self.mock_server_side_handler.get_filters.return_value = "some-kwargs"
         self.mock_prop_handler.get_prop_mapping.return_value = "some-func"
@@ -50,7 +50,7 @@ class QueryBuilderTests(unittest.TestCase):
         mock_get_preset_handler.assert_called_once_with(
             MockQueryPresets.ITEM_1, MockProperties.PROP_1
         )
-        mock_preset_handler.get_filter_func.assert_called_once_with(
+        mock_client_side_handler.get_filter_func.assert_called_once_with(
             MockQueryPresets.ITEM_1, MockProperties.PROP_1, "some-func", mock_kwargs
         )
         self.mock_server_side_handler.get_filters.assert_called_once_with(
@@ -80,14 +80,14 @@ class QueryBuilderTests(unittest.TestCase):
         mock_preset2.check_supported.return_value = True
 
         # check when preset found
-        self.instance._preset_handlers = [mock_preset1, mock_preset2]
+        self.instance._client_side_handlers = [mock_preset1, mock_preset2]
         res = self.instance._get_preset_handler(
             MockQueryPresets.ITEM_1, MockProperties.PROP_1
         )
         self.assertEqual(res, mock_preset2)
 
         # check raises error when preset not found
-        self.instance._preset_handlers = [mock_preset1]
+        self.instance._client_side_handlers = [mock_preset1]
         with self.assertRaises(QueryPresetMappingError):
             _ = self.instance._get_preset_handler(
                 MockQueryPresets.ITEM_1, MockProperties.PROP_1

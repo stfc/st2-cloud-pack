@@ -2,16 +2,16 @@ import unittest
 from unittest.mock import MagicMock, patch
 from parameterized import parameterized
 
-from openstack_query.handlers.presets.preset_handler_base import PresetHandlerBase
+from openstack_query.handlers.client_side_handler import ClientSideHandler
 from exceptions.query_preset_mapping_error import QueryPresetMappingError
 
 from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 
-class PresetHandlerBaseTests(unittest.TestCase):
+class ClientSideHandlerBaseTests(unittest.TestCase):
     """
-    Runs various tests to ensure that PresetHandlerBase class methods function expectedly
+    Runs various tests to ensure that ClientSideHandlerBase class methods function expectedly
     """
 
     def setUp(self):
@@ -25,7 +25,7 @@ class PresetHandlerBaseTests(unittest.TestCase):
             MockQueryPresets.ITEM_2: [MockProperties.PROP_1, MockProperties.PROP_2],
             MockQueryPresets.ITEM_3: [MockProperties.PROP_3, MockProperties.PROP_4],
         }
-        self.instance = PresetHandlerBase(_FILTER_FUNCTION_MAPPINGS)
+        self.instance = ClientSideHandler(_FILTER_FUNCTION_MAPPINGS)
         self.instance._FILTER_FUNCTIONS = {
             MockQueryPresets.ITEM_1: "item1_func",
             MockQueryPresets.ITEM_2: "item2_func",
@@ -85,10 +85,10 @@ class PresetHandlerBaseTests(unittest.TestCase):
         )
 
     @patch(
-        "openstack_query.handlers.presets.preset_handler_base.PresetHandlerBase._check_filter_func"
+        "openstack_query.handlers.client_side_handler.ClientSideHandler._check_filter_func"
     )
     @patch(
-        "openstack_query.handlers.presets.preset_handler_base.PresetHandlerBase._filter_func_wrapper"
+        "openstack_query.handlers.client_side_handler.ClientSideHandler._filter_func_wrapper"
     )
     def test_get_filter_func_valid(
         self, mock_filter_func_wrapper, mock_check_filter_func
@@ -116,7 +116,7 @@ class PresetHandlerBaseTests(unittest.TestCase):
         self.assertEqual(val, "a-boolean-value")
 
     @patch(
-        "openstack_query.handlers.presets.preset_handler_base.PresetHandlerBase._check_filter_func"
+        "openstack_query.handlers.client_side_handler.ClientSideHandler._check_filter_func"
     )
     def test_get_filter_func_invalid(self, mock_check_filter_func):
         mock_prop_func = MagicMock()

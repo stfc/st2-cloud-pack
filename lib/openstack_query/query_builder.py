@@ -1,7 +1,7 @@
 from typing import Optional, Dict, Any, List
 from enum import Enum
 
-from openstack_query.handlers.presets.preset_handler_base import PresetHandlerBase
+from openstack_query.handlers.client_side_handler import ClientSideHandler
 from openstack_query.handlers.prop_handler import PropHandler
 from openstack_query.handlers.server_side_handler import ServerSideHandler
 
@@ -21,10 +21,10 @@ class QueryBuilder:
     def __init__(
         self,
         prop_handler: PropHandler,
-        preset_handlers: List[PresetHandlerBase],
+        client_side_handlers: List[ClientSideHandler],
         server_side_handler: Optional[ServerSideHandler],
     ):
-        self._preset_handlers = preset_handlers
+        self._client_side_handlers = client_side_handlers
         self._prop_handler = prop_handler
         self._server_side_handler = server_side_handler
 
@@ -75,13 +75,13 @@ class QueryBuilder:
 
     def _get_preset_handler(
         self, preset: QueryPresets, prop: Enum
-    ) -> PresetHandlerBase:
+    ) -> ClientSideHandler:
         """
         method which returns a preset handler object which supports the corresponding preset and property pair
         :param preset: A given preset that describes the query type
         :param prop: A prop which the preset will act on
         """
-        for i in self._preset_handlers:
+        for i in self._client_side_handlers:
             if i.check_supported(preset, prop):
                 return i
 

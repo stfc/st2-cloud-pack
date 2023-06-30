@@ -14,7 +14,7 @@ from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
 class OpenstackImage(OpenstackWrapperBase, OpenstackQueryEmailBase):
-    # Lists all possible query presets for image.list
+    # Lists all possible query client_side for image.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_images",
         "images_older_than",
@@ -30,7 +30,7 @@ class OpenstackImage(OpenstackWrapperBase, OpenstackQueryEmailBase):
         "images_non_existent_project",
     ]
 
-    # Lists possible queries presets that don't require a project to function
+    # Lists possible queries client_side that don't require a project to function
     SEARCH_QUERY_PRESETS_NO_PROJECT: List[str] = [
         "images_older_than",
         "images_last_updated_before",

@@ -5,7 +5,7 @@ from openstack_query.query_output import QueryOutput
 from openstack_query.query_builder import QueryBuilder
 
 from openstack_query.handlers.prop_handler import PropHandler
-from openstack_query.handlers.presets.preset_handler_base import PresetHandlerBase
+from openstack_query.handlers.client_side_handler import ClientSideHandler
 from openstack_query.handlers.server_side_handler import ServerSideHandler
 
 from exceptions.parse_query_error import ParseQueryError
@@ -20,8 +20,8 @@ class QueryWrapper:
     def __init__(
         self,
         prop_handler: PropHandler,
-        preset_handlers: List[PresetHandlerBase],
-        kwarg_handler: Optional[ServerSideHandler] = None,
+        client_side_handlers: List[ClientSideHandler],
+        server_side_handler: Optional[ServerSideHandler] = None,
     ):
         self._query_results = []
 
@@ -29,8 +29,8 @@ class QueryWrapper:
         self.output = QueryOutput(prop_handler)
         self.builder = QueryBuilder(
             prop_handler,
-            preset_handlers,
-            kwarg_handler,
+            client_side_handlers,
+            server_side_handler,
         )
 
     def select(self, *props: Enum):

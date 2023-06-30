@@ -2,19 +2,14 @@ from typing import Union
 from custom_types.openstack_query.aliases import PresetToValidPropsMap
 
 from enums.query.query_presets import QueryPresetsInteger
-from openstack_query.handlers.presets.preset_handler_base import PresetHandlerBase
+from openstack_query.handlers.client_side_handler import ClientSideHandler
 
 
-class PresetHandlerInteger(PresetHandlerBase):
+class ClientSideHandlerInteger(ClientSideHandler):
     """
-    Preset handler for Integer Presets.
-    This class stores a dictionary which maps a Integer type preset to a filter function called FILTER_FUNCTIONS,
-    and a dictionary which maps a Integer type preset to a list of supported properties called FILTER_FUNCTION_MAPPINGS.
-
-    This class supports a set of methods to check and return a filter function for a given Integer type preset and
-    property pair
-
-    Filter functions which map to Integer type presets are defined here
+    Client Side handler for Integer related queries.
+    This class stores a dictionary which maps an Integer preset/prop pairs to a filter function
+    Filter functions which map to QueryPresetsInteger are defined here
     """
 
     def __init__(self, filter_function_mappings: PresetToValidPropsMap):

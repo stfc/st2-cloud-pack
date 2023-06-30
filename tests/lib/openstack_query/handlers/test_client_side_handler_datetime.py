@@ -3,17 +3,18 @@ from datetime import datetime
 from unittest.mock import patch
 from parameterized import parameterized
 
-from openstack_query.handlers.presets.preset_handler_datetime import (
-    PresetHandlerDateTime,
+from openstack_query.handlers.client_side_handler_datetime import (
+    ClientSideHandlerDateTime,
 )
+
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 from enums.query.query_presets import QueryPresetsDateTime
 
 
-class PresetHandlerGenericTests(unittest.TestCase):
+class ClientSideHandlerDateTimeTests(unittest.TestCase):
     """
-    Run various tests to ensure that PresetHandlerGeneric class methods function expectedly
+    Run various tests to ensure that ClientSideHandlerDateTime class methods function expectedly
     """
 
     def setUp(self):
@@ -21,18 +22,18 @@ class PresetHandlerGenericTests(unittest.TestCase):
         Setup for tests
         """
         super().setUp()
-        # sets filter function mappings so that PROP_1 is valid for all presets
+        # sets filter function mappings so that PROP_1 is valid for all client_side
         _FILTER_FUNCTION_MAPPINGS = {
             preset: [MockProperties.PROP_1] for preset in QueryPresetsDateTime
         }
-        self.instance = PresetHandlerDateTime(_FILTER_FUNCTION_MAPPINGS)
+        self.instance = ClientSideHandlerDateTime(_FILTER_FUNCTION_MAPPINGS)
 
     @parameterized.expand(
         [(f"test {preset.name}", preset) for preset in QueryPresetsDateTime]
     )
     def test_check_supported_all_presets(self, name, preset):
         """
-        Tests that handler supports all generic query presets
+        Tests that handler supports all generic query client_side
         """
         self.assertTrue(self.instance.check_supported(preset, MockProperties.PROP_1))
 
@@ -41,7 +42,7 @@ class PresetHandlerGenericTests(unittest.TestCase):
     )
     def test_get_mapping_all_presets(self, name, preset):
         """
-        Tests that handler supports all generic query presets
+        Tests that handler supports all generic query client_side
         """
         self.assertIsNotNone(self.instance._get_mapping(preset, MockProperties.PROP_1))
 

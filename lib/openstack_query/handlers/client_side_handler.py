@@ -15,13 +15,11 @@ from enums.query.query_presets import QueryPresets
 from exceptions.query_preset_mapping_error import QueryPresetMappingError
 
 
-class PresetHandlerBase(HandlerBase):
+class ClientSideHandler(HandlerBase):
     """
-    Base class for preset handlers.
-    This class stores a dictionary which maps a preset to a filter function called FILTER_FUNCTIONS, and a dictionary
-    which maps a preset to a list of supported properties called FILTER_FUNCTION_MAPPINGS.
-
-    This class supports a set of methods to check and return a filter function for a given preset and property pair
+    Base class for subclasses that handle client-side filtering.
+    This class stores a dictionary which maps preset/property pairs to a filter function that will be used after
+    listing openstack resources
     """
 
     def __init__(self, filter_func_mappings: PresetToValidPropsMap):
@@ -29,10 +27,9 @@ class PresetHandlerBase(HandlerBase):
 
     def check_supported(self, preset: QueryPresets, prop: Enum):
         """
-        Method that returns True if this class supports a preset-property pair - i.e. a filter function exists for the
-        preset and that the preset supports the given property
-        :param preset: A QueryPreset Enum for which a filter function mapping may exist for
-        :param prop: A property Enum for which a filter function mapping may exist for
+        Method that returns True if filter function exists for a preset-property pair
+        :param preset: A QueryPreset Enum for which a client-side filter function mapping may exist for
+        :param prop: A property Enum for which a client-side filter function mapping may exist for
         """
         if preset not in self._FILTER_FUNCTIONS.keys():
             return False
@@ -49,7 +46,7 @@ class PresetHandlerBase(HandlerBase):
 
     def _get_mapping(self, preset: QueryPresets, prop: Enum) -> Optional[FilterFunc]:
         """
-        Method that returns whether a filter function mapping exists in this handler
+        Method that returns a client-side filter function mapping if mapping exists in this handler
         :param preset: A QueryPreset Enum for which a filter function mapping may exist for
         :param prop: A property Enum for which a filter function mapping may exist for
         """

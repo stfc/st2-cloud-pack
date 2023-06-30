@@ -5,19 +5,14 @@ from enums.query.query_presets import QueryPresetsDateTime
 from custom_types.openstack_query.aliases import PresetToValidPropsMap
 
 from openstack_query.utils import get_timestamp_in_seconds
-from openstack_query.handlers.presets.preset_handler_base import PresetHandlerBase
+from openstack_query.handlers.client_side_handler import ClientSideHandler
 
 
-class PresetHandlerDateTime(PresetHandlerBase):
+class ClientSideHandlerDateTime(ClientSideHandler):
     """
-    Preset handler for Date Time related Presets.
-    This class stores a dictionary which maps a Date Time preset to a filter function called FILTER_FUNCTIONS,
-    and a dictionary which maps a Date Time preset to a list of supported properties called FILTER_FUNCTION_MAPPINGS.
-
-    This class supports a set of methods to check and return a filter function for a given Date Time preset and
-    property pair
-
-    Filter functions which map to DateTime presets are defined here
+    Client Side handler for Date Time related queries.
+    This class stores a dictionary which maps a Date Time preset/prop pairs to a filter function
+    Filter functions which map to QueryPresetsDateTime are defined here
     """
 
     def __init__(self, filter_function_mappings: PresetToValidPropsMap):
