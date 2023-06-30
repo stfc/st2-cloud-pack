@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 from enum import Enum
 
 from openstack_query.handlers.handler_base import HandlerBase
@@ -35,13 +35,16 @@ class ClientSideHandler(HandlerBase):
             return False
 
         props_valid_for_preset = self._FILTER_FUNCTION_MAPPINGS.get(preset, None)
-        if props_valid_for_preset:
-            if prop in props_valid_for_preset:
-                return True
+        if not props_valid_for_preset:
+            return False
 
-            # '*' represents that all props are valid for preset
-            if ["*"] == self._FILTER_FUNCTION_MAPPINGS[preset]:
-                return True
+        if prop in props_valid_for_preset:
+            return True
+
+        # '*' represents that all props are valid for preset
+        if ["*"] == self._FILTER_FUNCTION_MAPPINGS[preset]:
+            return True
+
         return False
 
     def _get_mapping(self, preset: QueryPresets, prop: Enum) -> Optional[FilterFunc]:
@@ -80,12 +83,13 @@ class ClientSideHandler(HandlerBase):
                 "does the preset work with property specified?"
             )
 
-        try:
-            _ = self._check_filter_func(filter_func, filter_func_kwargs)
-        except TypeError as err:
+        filter_func_valid, reason = self._check_filter_func(
+            filter_func, filter_func_kwargs
+        )
+        if not filter_func_valid:
             raise QueryPresetMappingError(
-                f"Preset Argument Error: failed to build filter_function for preset '{preset.name}'"
-            ) from err
+                f"Preset Argument Error: failed to build filter_function for preset '{preset.name}', reason: {reason}"
+            )
 
         return lambda a: self._filter_func_wrapper(
             a, filter_func, prop_func, filter_func_kwargs
@@ -94,29 +98,30 @@ class ClientSideHandler(HandlerBase):
     @staticmethod
     def _filter_func_wrapper(
         item: Any,
-        filter_func: FilterFunc,
-        prop_func: PropFunc,
+        selected_filter_func: FilterFunc,
+        selected_prop_func: PropFunc,
         filter_func_kwargs: Optional[PresetKwargs] = None,
-    ):
+    ) -> bool:
         """
-        Method that acts as a wrapper to the filter function, if the property cannot be found for the resource
+        Method that acts as a wrapper to a filter function, if the property cannot be found for the resource
         we return False before calling the filter function - since there's no property to compare.
         :param item: An openstack resource item
-        :param filter_func: A filter function to run if property given can be retrieved from openstack resource
-        :param **filter_func_kwargs: A dictionary of keyword args to pass to filter function
+        :param selected_filter_func: The selected filter function to run if property given can be retrieved from given openstack resource
+        :param selected_prop_func: The selected prop function to run to get property from given openstack resource
+        :param **filter_func_kwargs: A dictionary of keyword args to configure selected filter function
         """
         try:
-            item_prop = prop_func(item)
+            item_prop = selected_prop_func(item)
         except AttributeError:
             return False
         if filter_func_kwargs:
-            return filter_func(item_prop, **filter_func_kwargs)
-        return filter_func(item_prop)
+            return selected_filter_func(item_prop, **filter_func_kwargs)
+        return selected_filter_func(item_prop)
 
     @staticmethod
     def _check_filter_func(
         func: FilterFunc, func_kwargs: Optional[PresetKwargs] = None
-    ) -> bool:
+    ) -> Tuple[bool, str]:
         """
         Method that checks a given function can accept a set of kwargs as arguments.
         :param func: function to test
@@ -125,8 +130,8 @@ class ClientSideHandler(HandlerBase):
 
         signature = inspect.signature(func)
 
-        # skip first parameter for filter function as it is a positional arg which takes the output
-        # of a property function and use that to compare against
+        # skip first parameter for the filter function as this is always the a positional arg which takes
+        # an Openstack resource property as the input for our filter function to compare against
         parameters = list(signature.parameters.values())[1:]
 
         has_varargs = any(param.kind == param.VAR_POSITIONAL for param in parameters)
@@ -139,13 +144,17 @@ class ClientSideHandler(HandlerBase):
                     kwargs_value = func_kwargs[param_name]
                     param_type = param.annotation
                     if not isinstance(kwargs_value, param_type):
-                        return False
+                        return (
+                            False,
+                            f"{param_name} given has incorrect type, "
+                            f"expected {param_type}, found {type(kwargs_value)}",
+                        )
                 elif param.default is inspect.Parameter.empty:
-                    return False
+                    return False, f"{param_name} expected but not given"
 
         if not has_varargs and not has_varkwargs:
             # Check for extra items in kwargs not present in the function signature
-            if set(func_kwargs.keys()) - set(p.name for p in parameters):
-                return False
-
-        return True
+            unexpected_vals = set(func_kwargs.keys()) - set(p.name for p in parameters)
+            if unexpected_vals:
+                return False, f"unexpected arguments: '{unexpected_vals}'"
+        return True, ""

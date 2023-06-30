@@ -98,7 +98,7 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
         mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
         # mock function return values
-        mock_check_filter_func.return_value = True
+        mock_check_filter_func.return_value = True, ""
         mock_filter_func_wrapper.return_value = "a-boolean-value"
 
         res = self.instance.get_filter_func(
@@ -140,8 +140,8 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
                 mock_kwargs,
             )
 
-        # when check_filter_func raises TypeError exception
-        mock_check_filter_func.side_effect = TypeError()
+        # when check_filter_func is false
+        mock_check_filter_func.return_value = False, "some-error"
         with self.assertRaises(QueryPresetMappingError):
             self.instance.get_filter_func(
                 MockQueryPresets.ITEM_1,
@@ -225,5 +225,5 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
         self.assertFalse(
             self.instance._check_filter_func(
                 mock_filter_func, func_kwargs=invalid_kwargs_to_test
-            )
+            )[0]
         )

@@ -28,16 +28,10 @@ class ClientSideHandlerGeneric(ClientSideHandler):
         """
         return not self._prop_equal_to(prop, value)
 
-    @staticmethod
-    def _prop_equal_to(prop: Any, value: Any) -> bool:
+    def _prop_equal_to(self, prop: Any, value: Any) -> bool:
         """
         Filter function which returns true if a prop is equal to a given value
         :param prop: prop value to check against
         :param value: given value to check against
         """
-        if isinstance(prop, type(value)):
-            if isinstance(prop, object) and hasattr(prop, "__eq__"):
-                return prop == value
-        else:
-            return False
         return prop == value
