@@ -47,16 +47,6 @@ class ClientSideHandler(HandlerBase):
 
         return False
 
-    def _get_mapping(self, preset: QueryPresets, prop: Enum) -> Optional[FilterFunc]:
-        """
-        Method that returns a client-side filter function mapping if mapping exists in this handler
-        :param preset: A QueryPreset Enum for which a filter function mapping may exist for
-        :param prop: A property Enum for which a filter function mapping may exist for
-        """
-        if self.check_supported(preset, prop):
-            return self._FILTER_FUNCTIONS.get(preset, None)
-        return None
-
     def get_filter_func(
         self,
         preset: QueryPresets,
@@ -75,7 +65,10 @@ class ClientSideHandler(HandlerBase):
         :param filter_func_kwargs: A dictionary of keyword: argument pairs to pass into filter function
         """
 
-        filter_func = self._get_mapping(preset, prop)
+        filter_func = None
+        if self.check_supported(preset, prop):
+            filter_func = self._FILTER_FUNCTIONS.get(preset, None)
+
         if not filter_func:
             raise QueryPresetMappingError(
                 "Preset Not Found: failed to find filter_function mapping for preset "

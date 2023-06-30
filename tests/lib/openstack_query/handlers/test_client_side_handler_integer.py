@@ -34,15 +34,6 @@ class ClientSideHandlerIntegerTests(unittest.TestCase):
         self.assertTrue(self.instance.check_supported(preset, MockProperties.PROP_1))
 
     @parameterized.expand(
-        [(f"test {preset.name}", preset) for preset in QueryPresetsInteger]
-    )
-    def test_get_mapping_all_presets(self, name, preset):
-        """
-        Tests that handler supports all generic query client_side
-        """
-        self.assertIsNotNone(self.instance._get_mapping(preset, MockProperties.PROP_1))
-
-    @parameterized.expand(
         [
             ("test less than", 8, 10, True),
             ("test equal", 10, 10, False),

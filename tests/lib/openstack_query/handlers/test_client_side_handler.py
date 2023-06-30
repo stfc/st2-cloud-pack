@@ -62,28 +62,6 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
             )
         )
 
-    def test_get_mapping_valid(self):
-        self.assertEqual(
-            self.instance._get_mapping(MockQueryPresets.ITEM_1, MockProperties.PROP_1),
-            "item1_func",
-        )
-        # when preset has explicit prop mapping
-        self.assertEqual(
-            self.instance._get_mapping(MockQueryPresets.ITEM_2, MockProperties.PROP_2),
-            "item2_func",
-        )
-
-    def test_get_mapping_invalid(self):
-        # when preset is not supported
-        self.assertIsNone(
-            self.instance._get_mapping(MockQueryPresets.ITEM_4, MockProperties.PROP_1)
-        )
-
-        # when preset is found, but prop is not supported
-        self.assertIsNone(
-            self.instance._get_mapping(MockQueryPresets.ITEM_2, MockProperties.PROP_3)
-        )
-
     @patch(
         "openstack_query.handlers.client_side_handler.ClientSideHandler._check_filter_func"
     )
