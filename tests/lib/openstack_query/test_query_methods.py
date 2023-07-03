@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from openstack_query.queries.query_wrapper import QueryWrapper
+from openstack_query.query_methods import QueryMethods
 
 from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
@@ -8,19 +8,19 @@ from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 from exceptions.parse_query_error import ParseQueryError
 
 
-class QueryWrapperTests(unittest.TestCase):
+class QueryMethodsTests(unittest.TestCase):
     def setUp(self) -> None:
         """
         Setup for tests
         """
         super().setUp()
-        self.mock_prop_handler = MagicMock()
-        self.mock_client_side_handlers = ["mock_handler1", "mock_handler2"]
-        self.mock_server_side_handler = MagicMock()
-        self.instance = QueryWrapper(
-            self.mock_prop_handler,
-            self.mock_client_side_handlers,
-            self.mock_server_side_handler,
+        self.mock_builder = MagicMock()
+        self.mock_runner = MagicMock()
+        self.mock_output = MagicMock()
+        self.instance = QueryMethods(
+            self.mock_builder,
+            self.mock_runner,
+            self.mock_output,
         )
 
     def test_select(self):

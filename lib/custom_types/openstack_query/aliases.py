@@ -1,18 +1,19 @@
-from typing import List, Callable, Any, Dict
+from typing import List, Callable, Any, Dict, Union, Literal
 from enum import Enum
 from enums.query.query_presets import QueryPresets
 
+OpenstackResourceObj = Any
 
-PropFunc = Callable[[Any], Any]
-PropToPropFuncMap = Dict[Enum, PropFunc]
+PropFunc = Callable[[OpenstackResourceObj], Dict[str, Any]]
+PropertyMappings = Dict[Enum, PropFunc]
 
 PresetKwargs = Dict[str, Any]
+
 FilterFunc = Callable[[PropFunc, PresetKwargs], bool]
 PresetToFilterFuncMap = Dict[QueryPresets, FilterFunc]
 PresetToValidPropsMap = Dict[QueryPresets, List[Enum]]
 
-
-ParsedFilterFunc = Callable[[Any], bool]
+ParsedFilterFunc = Callable[[OpenstackResourceObj], bool]
 
 ServerSideFilters = Dict[str, Any]
 ServerSideFilterFunc = Callable[[Any], ServerSideFilters]
@@ -20,4 +21,4 @@ ServerSideFilterFunc = Callable[[Any], ServerSideFilters]
 PropToServerSideFilterFunc = Dict[Enum, ServerSideFilterFunc]
 ServerSideFilterMappings = Dict[QueryPresets, PropToServerSideFilterFunc]
 
-OpenstackResourceObj = Any
+ClientSidePropMapping = Union[List[Enum], List[Literal["*"]]]

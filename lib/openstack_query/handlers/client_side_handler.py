@@ -85,8 +85,8 @@ class ClientSideHandler(HandlerBase):
                 f"Preset Argument Error: failed to build filter_function for preset '{preset.name}', reason: {reason}"
             )
 
-        return lambda a: self._filter_func_wrapper(
-            a, filter_func, prop_func, filter_func_kwargs
+        return lambda resource: self._filter_func_wrapper(
+            resource, filter_func, prop_func, filter_func_kwargs
         )
 
     @staticmethod

@@ -11,7 +11,7 @@ class HandlerBase(ABC):
     A handler stores a mapping between a preset and a function.
     """
 
-    def _check_supported(self, preset: QueryPresets, prop: Enum) -> bool:
+    def check_supported(self, preset: QueryPresets, prop: Enum) -> bool:
         """
         Method used to return if a preset and prop are supported by the handler
         :param preset: An Enum which represents a preset

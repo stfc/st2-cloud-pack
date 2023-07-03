@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Optional, Set
 from custom_types.openstack_query.aliases import (
-    PropToPropFuncMap,
+    PropertyMappings,
     PropFunc,
     OpenstackResourceObj,
 )
@@ -14,7 +14,7 @@ class PropHandler:
     called PROPERTY_MAPPINGS
     """
 
-    def __init__(self, property_mappings: PropToPropFuncMap):
+    def __init__(self, property_mappings: PropertyMappings):
         self._PROPERTY_MAPPINGS = property_mappings
 
     def check_supported(self, prop: Enum):

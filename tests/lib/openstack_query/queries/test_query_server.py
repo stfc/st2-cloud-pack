@@ -21,8 +21,9 @@ class TestQueryServer(unittest.TestCase):
     @parameterized.expand(
         [(f"test {prop.name.lower()}", prop) for prop in ServerProperties]
     )
-    def test_all_properties_have_func_mapping(self, name, prop):
+    def test_get_prop_handler(self, name, prop):
         """
-        Tests that all openstack properties have a property function mapping
+        Tests that all server properties have a property function mapping
         """
-        assert self.instance.builder._prop_handler.check_supported(prop)
+        prop_handler = self.instance._get_prop_handler()
+        prop_handler.check_supported(prop)
