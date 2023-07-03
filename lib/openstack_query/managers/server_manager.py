@@ -43,7 +43,7 @@ class ServerManager(QueryManager):
         seconds: int = 0,
     ):
         """
-        method that returns a list of all servers older than a time relative to now
+        method that returns a list of all servers older than a time relative to now. Uses UTC timezone
         :param output_details: A dataclass containing config info on how results should be returned
         :param days: number of days since current time
         :param hours: number of hours since current time
@@ -74,7 +74,7 @@ class ServerManager(QueryManager):
         seconds: int = 0,
     ):
         """
-        method that returns a list of all servers younger than a time relative to now
+        method that returns a list of all servers younger than a time relative to now. Uses UTC timezone
         :param output_details: A dataclass containing config info on how results should be returned
         :param days: number of days since current time
         :param hours: number of hours since current time
@@ -105,7 +105,8 @@ class ServerManager(QueryManager):
         seconds: int = 0,
     ):
         """
-        method that returns a list of all servers which were last updated before a time relative to now
+        method that returns a list of all servers which were last updated before a time relative to now.
+        Uses UTC timezone
         :param output_details: A dataclass containing config info on how results should be returned
         :param days: number of days since current time
         :param hours: number of hours since current time
@@ -136,7 +137,8 @@ class ServerManager(QueryManager):
         seconds: int = 0,
     ):
         """
-        method that returns a list of all servers which were last updated after a time relative to now
+        method that returns a list of all servers which were last updated after a time relative to now.
+        Uses UTC timezone
         :param output_details: A dataclass containing config info on how results should be returned
         :param days: number of days since current time
         :param hours: number of hours since current time

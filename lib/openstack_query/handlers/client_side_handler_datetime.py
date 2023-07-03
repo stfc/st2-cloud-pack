@@ -37,7 +37,7 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         """
         Filter function which returns True if property older than a relative amount of time since current time.
 
-        :param prop: prop value to check against
+        :param prop: prop value to check against - in UTC time
         :param days: (Optional) relative number of days since current time to compare against
         :param hours: (Optional) relative number of hours since current time to compare against
         :param minutes: (Optional) relative number of minutes since current time to compare against
@@ -64,7 +64,7 @@ class ClientSideHandlerDateTime(ClientSideHandler):
     ):
         """
         Filter function which returns True if property younger than or equal to a relative amount of time since current time
-        :param prop: prop value to check against
+        :param prop: prop value to check against - in UTC time
         :param days: (Optional) relative number of days since current time to compare against
         :param hours: (Optional) relative number of hours since current time to compare against
         :param minutes: (Optional) relative number of minutes since current time to compare against
@@ -90,7 +90,7 @@ class ClientSideHandlerDateTime(ClientSideHandler):
     ):
         """
         Filter function which returns True if property younger than a relative amount of time since current time
-        :param prop: prop value to check against
+        :param prop: prop value to check against - in UTC time
         :param days: (Optional) relative number of days since current time to compare against
         :param hours: (Optional) relative number of hours since current time to compare against
         :param minutes: (Optional) relative number of minutes since current time to compare against
@@ -116,7 +116,7 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         """
         Filter function which returns True if property older than or equal to a relative amount of time since current
         time
-        :param prop: prop value to check against
+        :param prop: prop value to check against - in UTC time
         :param days: (Optional) relative number of days since current time to compare against
         :param hours: (Optional) relative number of hours since current time to compare against
         :param minutes: (Optional) relative number of minutes since current time to compare against
