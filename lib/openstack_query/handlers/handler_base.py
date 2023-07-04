@@ -1,7 +1,6 @@
-from enum import Enum
 from abc import ABC, abstractmethod
-from typing import Callable
 from enums.query.query_presets import QueryPresets
+from enums.query.props.prop_enum import PropEnum
 
 
 class HandlerBase(ABC):
@@ -12,7 +11,7 @@ class HandlerBase(ABC):
     """
 
     @abstractmethod
-    def check_supported(self, preset: QueryPresets, prop: Enum) -> bool:
+    def check_supported(self, preset: QueryPresets, prop: PropEnum) -> bool:
         """
         Method used to return if a preset and prop are supported by the handler
         :param preset: An Enum which represents a preset

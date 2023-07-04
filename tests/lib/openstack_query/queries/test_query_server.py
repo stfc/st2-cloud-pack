@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 
 from parameterized import parameterized
 from openstack_query.queries.query_server import QueryServer
-from enums.query.server_properties import ServerProperties
+from enums.query.props.server_properties import ServerProperties
 
 
 class TestQueryServer(unittest.TestCase):

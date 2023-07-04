@@ -10,7 +10,7 @@ from enums.query.query_presets import (
     QueryPresetsString,
 )
 
-from enums.query.server_properties import ServerProperties
+from enums.query.props.server_properties import ServerProperties
 
 from structs.query.query_preset_details import QueryPresetDetails
 from tests.lib.openstack_query.mocks.mocked_structs import MOCKED_OUTPUT_DETAILS

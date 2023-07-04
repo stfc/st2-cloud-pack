@@ -1,11 +1,15 @@
 from typing import Union, List, Any, Optional, Dict
-from enum import Enum
+
+from enums.query.props.prop_enum import PropEnum
+from enums.query.query_presets import QueryPresets
+
 
 from openstack_query.query_output import QueryOutput
 from openstack_query.query_builder import QueryBuilder
 from openstack_query.runners.server_runner import QueryRunner
 
 from exceptions.parse_query_error import ParseQueryError
+from custom_types.openstack_query.aliases import OpenstackResourceObj
 
 
 class QueryMethods:
@@ -19,7 +23,7 @@ class QueryMethods:
         self.output = output
         self._query_results = []
 
-    def select(self, *props: Enum):
+    def select(self, *props: PropEnum):
         """
         Public method used to 'select' properties that the query will return the value of.
         Mutually exclusive to returning objects using select_all()
@@ -45,18 +49,20 @@ class QueryMethods:
         self.output.parse_select(select_all=True)
         return self
 
-    def where(self, preset: Enum, prop: Enum, **kwargs: Optional[Dict[str, Any]]):
+    def where(
+        self, preset: QueryPresets, prop: PropEnum, **kwargs: Optional[Dict[str, Any]]
+    ):
         """
         Public method used to set the conditions for the query.
-        :param preset: Name of query preset to use
-        :param prop: Property that the query preset will be used on
+        :param preset: QueryPreset Enum to use
+        :param prop: Property Enum that the query preset will be used on
         :param kwargs: a set of optional arguments to pass along with the preset - property pair
             - these kwargs are dependent on the preset given
         """
         self.builder.parse_where(preset, prop, kwargs)
         return self
 
-    def sort_by(self, sort_by: Enum, reverse=False):
+    def sort_by(self, sort_by: PropEnum, reverse=False):
         """
         Public method used to configure sorting results
         :param sort_by: name of property to sort by
@@ -64,7 +70,7 @@ class QueryMethods:
         """
         raise NotImplementedError
 
-    def group_by(self, group_by: Enum):
+    def group_by(self, group_by: PropEnum):
         """
         Public method used to configure grouping results.
         :param group_by: name of the property to group by
@@ -72,7 +78,10 @@ class QueryMethods:
         raise NotImplementedError
 
     def run(
-        self, cloud_account: str, from_subset: Optional[List[Any]] = None, **kwargs
+        self,
+        cloud_account: str,
+        from_subset: Optional[List[OpenstackResourceObj]] = None,
+        **kwargs
     ):
         """
         Public method that runs the query provided and outputs

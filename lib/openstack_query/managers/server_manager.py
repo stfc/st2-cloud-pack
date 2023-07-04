@@ -5,7 +5,7 @@ from enums.query.query_presets import (
     QueryPresetsDateTime,
     QueryPresetsString,
 )
-from enums.query.server_properties import ServerProperties
+from enums.query.props.server_properties import ServerProperties
 
 from openstack_query.queries.query_server import QueryServer
 from openstack_query.managers.query_manager import QueryManager

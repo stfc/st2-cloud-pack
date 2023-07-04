@@ -1,7 +1,7 @@
-from enum import Enum
+from enums.query.props.prop_enum import PropEnum
 
 
-class MockProperties(Enum):
+class MockProperties(PropEnum):
     PROP_1 = 1
     PROP_2 = 2
     PROP_3 = 3

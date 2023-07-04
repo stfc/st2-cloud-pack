@@ -1,6 +1,5 @@
 import inspect
-from typing import Any, Optional, Tuple
-from enum import Enum
+from typing import Optional, Tuple
 
 from openstack_query.handlers.handler_base import HandlerBase
 from custom_types.openstack_query.aliases import (
@@ -13,6 +12,7 @@ from custom_types.openstack_query.aliases import (
 )
 
 from enums.query.query_presets import QueryPresets
+from enums.query.props.prop_enum import PropEnum
 from exceptions.query_preset_mapping_error import QueryPresetMappingError
 
 
@@ -26,7 +26,7 @@ class ClientSideHandler(HandlerBase):
     def __init__(self, filter_func_mappings: PresetToValidPropsMap):
         self._FILTER_FUNCTION_MAPPINGS = filter_func_mappings
 
-    def check_supported(self, preset: QueryPresets, prop: Enum) -> bool:
+    def check_supported(self, preset: QueryPresets, prop: PropEnum) -> bool:
         """
         Method that returns True if filter function exists for a preset-property pair
         :param preset: A QueryPreset Enum for which a client-side filter function mapping may exist for
@@ -54,7 +54,7 @@ class ClientSideHandler(HandlerBase):
     def get_filter_func(
         self,
         preset: QueryPresets,
-        prop: Enum,
+        prop: PropEnum,
         prop_func: PropFunc,
         filter_func_kwargs: Optional[PresetKwargs] = None,
     ) -> Optional[ClientSideFilterFunc]:

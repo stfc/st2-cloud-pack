@@ -1,7 +1,8 @@
-from enum import Enum
-from typing import Optional, Set, Any, List, Union
+from typing import Optional, Set, Any, List, Union, Dict
 
 from enums.query.query_output_types import QueryOutputTypes
+from enums.query.props.prop_enum import PropEnum
+
 
 from structs.query.query_output_details import QueryOutputDetails
 from structs.query.query_preset_details import QueryPresetDetails
@@ -61,7 +62,7 @@ class QueryManager:
     def _populate_query(
         self,
         preset_details: Optional[QueryPresetDetails] = None,
-        properties_to_select: Optional[Set[Enum]] = None,
+        properties_to_select: Optional[Set[PropEnum]] = None,
     ) -> None:
         """
         method that populates the query before executing.

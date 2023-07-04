@@ -1,7 +1,7 @@
 from typing import Any, List, Dict
-from enum import Enum
 from tabulate import tabulate
 
+from enums.query.props.prop_enum import PropEnum
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 from openstack_query.handlers.prop_handler import PropHandler
 from custom_types.openstack_query.aliases import OpenstackResourceObj
@@ -24,7 +24,7 @@ class QueryOutput:
     def results(self) -> List[OpenstackResourceObj]:
         return self._results
 
-    def sort_by(self, sort_by: Enum, reverse=False):
+    def sort_by(self, sort_by: PropEnum, reverse=False):
         """
         Public method used to configure sorting results
         :param sort_by: name of property to sort by
@@ -32,7 +32,7 @@ class QueryOutput:
         """
         raise NotImplementedError
 
-    def group_by(self, group_by: Enum):
+    def group_by(self, group_by: PropEnum):
         """
         Public method used to configure grouping results.
         :param group_by: name of the property to group by
@@ -53,7 +53,7 @@ class QueryOutput:
         """
         return self._generate_table(self._results, return_html=True, **kwargs)
 
-    def parse_select(self, *props: Enum, select_all=False) -> None:
+    def parse_select(self, *props: PropEnum, select_all=False) -> None:
         """
         Method which is used to set which properties to output once results are gathered
         This method checks that each Enum provided is valid and populates internal attribute self._props
@@ -67,7 +67,7 @@ class QueryOutput:
                 self._check_prop_valid(prop)
                 self._props.add(prop)
 
-    def _check_prop_valid(self, prop: Enum):
+    def _check_prop_valid(self, prop: PropEnum):
         """
         method which checks if the given property is valid - i.e. has an associated function mapping in
         self.prop_handler which takes a openstack resource and returns the corresponding property for that object

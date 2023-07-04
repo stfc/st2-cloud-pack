@@ -1,6 +1,6 @@
-from enum import Enum
 from typing import Optional, Tuple
 from enums.query.query_presets import QueryPresets
+from enums.query.props.prop_enum import PropEnum
 
 from custom_types.openstack_query.aliases import (
     PresetKwargs,
@@ -23,7 +23,7 @@ class ServerSideHandler(HandlerBase):
     def __init__(self, kwarg_mappings: ServerSideFilterMappings):
         self._SERVER_SIDE_FILTER_MAPPINGS = kwarg_mappings
 
-    def check_supported(self, preset: QueryPresets, prop: Enum) -> bool:
+    def check_supported(self, preset: QueryPresets, prop: PropEnum) -> bool:
         """
         Method that returns True if a set of kwargs exist for a preset-property pair
         :param preset: A QueryPreset Enum for which a set of kwargs may exist for
@@ -41,7 +41,7 @@ class ServerSideHandler(HandlerBase):
         return preset in self._SERVER_SIDE_FILTER_MAPPINGS.keys()
 
     def _get_mapping(
-        self, preset: QueryPresets, prop: Enum
+        self, preset: QueryPresets, prop: PropEnum
     ) -> Optional[ServerSideFilterFunc]:
         """
         Method that returns a function which takes a set of args and returns a dictionary of filter kwargs to pass to an
@@ -56,7 +56,7 @@ class ServerSideHandler(HandlerBase):
     def get_filters(
         self,
         preset: QueryPresets,
-        prop: Enum,
+        prop: PropEnum,
         params: Optional[PresetKwargs] = None,
     ) -> Optional[ServerSideFilters]:
         """

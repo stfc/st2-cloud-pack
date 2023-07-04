@@ -2,7 +2,7 @@ from typing import Dict, Optional
 
 from structs.query.query_client_side_handlers import QueryClientSideHandlers
 
-from enums.query.server_properties import ServerProperties
+from enums.query.props.server_properties import ServerProperties
 from enums.query.query_presets import (
     QueryPresetsGeneric,
     QueryPresetsDateTime,

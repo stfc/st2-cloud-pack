@@ -1,11 +1,11 @@
 from typing import Optional, Dict, Any, List
-from enum import Enum
 
 from openstack_query.handlers.client_side_handler import ClientSideHandler
 from openstack_query.handlers.prop_handler import PropHandler
 from openstack_query.handlers.server_side_handler import ServerSideHandler
 
 from enums.query.query_presets import QueryPresets
+from enums.query.props.prop_enum import PropEnum
 
 from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_preset_mapping_error import QueryPresetMappingError
@@ -44,7 +44,7 @@ class QueryBuilder:
     def parse_where(
         self,
         preset: QueryPresets,
-        prop: Enum,
+        prop: PropEnum,
         preset_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
@@ -78,7 +78,7 @@ class QueryBuilder:
         )
 
     def _get_preset_handler(
-        self, preset: QueryPresets, prop: Enum
+        self, preset: QueryPresets, prop: PropEnum
     ) -> ClientSideHandler:
         """
         method which returns a preset handler object which supports the corresponding preset and property pair
