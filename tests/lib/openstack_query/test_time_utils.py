@@ -5,11 +5,11 @@ from unittest.mock import patch
 from parameterized import parameterized
 from nose.tools import raises
 
-import openstack_query.utils as utils
+from openstack_query.time_utils import TimeUtils
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 
 
-class UtilsTests(unittest.TestCase):
+class TimeUtilsTests(unittest.TestCase):
     """
     Runs various tests to ensure that utils module functions expectedly
     """
@@ -22,12 +22,12 @@ class UtilsTests(unittest.TestCase):
             ("20 seconds", 0, 0, 0, 20, 20),
         ]
     )
-    @patch("openstack_query.utils.get_current_time")
+    @patch("openstack_query.time_utils.TimeUtils.get_current_time")
     def test_get_timestamp_in_seconds(
         self, name, days, hours, minutes, seconds, total_seconds, mock_current_datetime
     ):
         mock_current_datetime.return_value = datetime(2023, 6, 4, 10, 30, 0)
-        out = utils.get_timestamp_in_seconds(days, hours, minutes, seconds)
+        out = TimeUtils.get_timestamp_in_seconds(days, hours, minutes, seconds)
 
         mock_current_datetime.assert_called_once()
 
@@ -38,7 +38,7 @@ class UtilsTests(unittest.TestCase):
 
     @raises(MissingMandatoryParamError)
     def test_get_timestamp_in_seconds_invalid(self):
-        utils.get_timestamp_in_seconds(days=0, hours=0, minutes=0, seconds=0)
+        TimeUtils.get_timestamp_in_seconds(days=0, hours=0, minutes=0, seconds=0)
 
     @parameterized.expand(
         [
@@ -60,7 +60,7 @@ class UtilsTests(unittest.TestCase):
             ),
         ]
     )
-    @patch("openstack_query.utils.get_current_time")
+    @patch("openstack_query.time_utils.TimeUtils.get_current_time")
     def test_convert_to_timestamp(
         self,
         name,
@@ -72,6 +72,6 @@ class UtilsTests(unittest.TestCase):
         mock_current_datetime,
     ):
         mock_current_datetime.return_value = datetime(2023, 6, 4, 10, 30, 0)
-        out = utils.convert_to_timestamp(days, hours, minutes, seconds)
+        out = TimeUtils.convert_to_timestamp(days, hours, minutes, seconds)
         mock_current_datetime.assert_called_once()
         self.assertEqual(out, expected_timestamp)

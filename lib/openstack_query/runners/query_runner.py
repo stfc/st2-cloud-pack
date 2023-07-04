@@ -2,11 +2,12 @@ from abc import abstractmethod
 
 from typing import Optional, List, Any, Callable
 
+from exceptions.parse_query_error import ParseQueryError
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.openstack_connection import OpenstackConnection
 from custom_types.openstack_query.aliases import (
     ServerSideFilters,
-    ParsedFilterFunc,
+    ClientSideFilterFunc,
     OpenstackResourceObj,
 )
 
@@ -23,16 +24,16 @@ class QueryRunner(OpenstackWrapperBase):
     def run(
         self,
         cloud_account: str,
-        filter_func: Optional[ParsedFilterFunc] = None,
-        filter_kwargs: Optional[ServerSideFilters] = None,
+        client_side_filter_func: Optional[ClientSideFilterFunc] = None,
+        server_side_filters: Optional[ServerSideFilters] = None,
         from_subset: Optional[List[Any]] = None,
         **kwargs
     ) -> List[OpenstackResourceObj]:
         """
         Public method that runs the query by querying openstacksdk and then applying a filter function.
         :param cloud_account: The account from the clouds configuration to use
-        :param filter_func: An Optional function that we can use to limit the results after querying openstacksdk
-        :param filter_kwargs: An Optional set of filter kwargs to limit the results by when querying openstacksdk
+        :param client_side_filter_func: An Optional function that we can use to limit the results after querying openstacksdk
+        :param server_side_filters: An Optional set of filter kwargs to limit the results by when querying openstacksdk
         :param from_subset: A subset of openstack resources to run query on instead of querying openstacksdk
         :param kwargs: An extra set of kwargs to pass to internal _run_query method that changes what/how the
         openstacksdk query is run
@@ -40,33 +41,32 @@ class QueryRunner(OpenstackWrapperBase):
             runner of interest.
         """
 
-        force_filter_func_usage = False
-        with self._connection_cls(cloud_account) as conn:
-            if from_subset:
-                results_resource_objects = self._parse_subset(conn, from_subset)
-                force_filter_func_usage = True
-            else:
-                results_resource_objects = self._run_query(
-                    conn, filter_kwargs, **kwargs
-                )
+        if from_subset and server_side_filters:
+            raise ParseQueryError("Cannot parse from a subset and server filter")
 
-        if filter_kwargs is None or force_filter_func_usage:
-            results_resource_objects = self._apply_filter_func(
-                results_resource_objects,
-                filter_func,
+        with self._connection_cls(cloud_account) as conn:
+            resource_objects = (
+                self._parse_subset(conn, from_subset)
+                if from_subset
+                else self._run_query(conn, server_side_filters, **kwargs)
             )
-        return results_resource_objects
+
+        if client_side_filter_func and not server_side_filters:
+            resource_objects = self._apply_client_side_filter(
+                resource_objects, client_side_filter_func
+            )
+        return resource_objects
 
     @staticmethod
-    def _apply_filter_func(
-        items: List[OpenstackResourceObj], filter_func: Callable[[Any], bool]
+    def _apply_client_side_filter(
+        items: List[OpenstackResourceObj], filter_func: ClientSideFilterFunc
     ) -> List[OpenstackResourceObj]:
         """
-        Removes items from a list by running a given query function
+        Removes items from a list by running a given filter function
         :param items: List of items to query e.g. list of servers
         :param filter_func: An Optional function that we can use to limit the results after querying openstacksdk,
             - function takes an openstack resource object and returns True if it passes the filter, false if not
-        :return: List of items that match the given query
+        :return: List of items that match the1 given query
         """
         return [item for item in items if filter_func(item)]
 

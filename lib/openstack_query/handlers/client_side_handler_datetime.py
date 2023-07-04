@@ -4,7 +4,7 @@ from enums.query.query_presets import QueryPresetsDateTime
 
 from custom_types.openstack_query.aliases import PresetToValidPropsMap
 
-from openstack_query.utils import get_timestamp_in_seconds
+from openstack_query.time_utils import TimeUtils
 from openstack_query.handlers.client_side_handler import ClientSideHandler
 
 
@@ -32,7 +32,6 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         hours: int = 0,
         minutes: int = 0,
         seconds: float = 0,
-        prop_timestamp_fmt: str = "%Y-%m-%dT%H:%M:%SZ",
     ):
         """
         Filter function which returns True if property older than a relative amount of time since current time.
@@ -42,14 +41,15 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         :param hours: (Optional) relative number of hours since current time to compare against
         :param minutes: (Optional) relative number of minutes since current time to compare against
         :param seconds: (Optional) relative number of seconds since current time to compare against
-        :param prop_timestamp_fmt: (Optional) timestamp format of prop value (default: yyyy-MM-ddTHH:mm:ssZ)
 
         By default, all time args are set to 0, i.e. now. Setting this to 10 seconds would mean 10 seconds in the past.
         You must give at least one non-zero argument (days, hours, minutes, seconds) otherwise a
         MissingMandatoryArgument exception will be thrown
         """
-        prop_timestamp = datetime.strptime(prop, prop_timestamp_fmt).timestamp()
-        given_timestamp = get_timestamp_in_seconds(days, hours, minutes, seconds)
+        prop_timestamp = datetime.strptime(prop, "%Y-%m-%dT%H:%M:%SZ").timestamp()
+        given_timestamp = TimeUtils.get_timestamp_in_seconds(
+            days, hours, minutes, seconds
+        )
 
         return prop_timestamp > given_timestamp
 
@@ -60,7 +60,6 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         hours: int = 0,
         minutes: int = 0,
         seconds: float = 0,
-        prop_timestamp_fmt: str = "%Y-%m-%dT%H:%M:%SZ",
     ):
         """
         Filter function which returns True if property younger than or equal to a relative amount of time since current time
@@ -69,15 +68,12 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         :param hours: (Optional) relative number of hours since current time to compare against
         :param minutes: (Optional) relative number of minutes since current time to compare against
         :param seconds: (Optional) relative number of seconds since current time to compare against
-        :param prop_timestamp_fmt: (Optional) timestamp format of prop value (default: yyyy-MM-ddTHH:mm:ssZ)
 
         By default, all time args are set to 0, i.e. now. Setting this to 10 seconds would mean 10 seconds in the past.
         You must give at least one non-zero argument (days, hours, minutes, seconds) otherwise a
         MissingMandatoryArgument exception will be thrown
         """
-        return not self._prop_older_than(
-            prop, days, hours, minutes, seconds, prop_timestamp_fmt
-        )
+        return not self._prop_older_than(prop, days, hours, minutes, seconds)
 
     def _prop_younger_than(
         self,
@@ -86,7 +82,6 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         hours: int = 0,
         minutes: int = 0,
         seconds: float = 0,
-        prop_timestamp_fmt: str = "%Y-%m-%dT%H:%M:%SZ",
     ):
         """
         Filter function which returns True if property younger than a relative amount of time since current time
@@ -95,14 +90,15 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         :param hours: (Optional) relative number of hours since current time to compare against
         :param minutes: (Optional) relative number of minutes since current time to compare against
         :param seconds: (Optional) relative number of seconds since current time to compare against
-        :param prop_timestamp_fmt: (Optional) timestamp format of prop value (default: yyyy-MM-ddTHH:mm:ssZ)
 
         By default, all time args are set to 0, i.e. now. Setting this to 10 seconds would mean 10 seconds in the past.
         You must give at least one non-zero argument (days, hours, minutes, seconds) otherwise a
         MissingMandatoryArgument exception will be thrown
         """
-        prop_datetime = datetime.strptime(prop, prop_timestamp_fmt).timestamp()
-        return prop_datetime < get_timestamp_in_seconds(days, hours, minutes, seconds)
+        prop_datetime = datetime.strptime(prop, "%Y-%m-%dT%H:%M:%SZ").timestamp()
+        return prop_datetime < TimeUtils.get_timestamp_in_seconds(
+            days, hours, minutes, seconds
+        )
 
     def _prop_older_than_or_equal_to(
         self,
@@ -111,7 +107,6 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         hours: int = 0,
         minutes: int = 0,
         seconds: float = 0,
-        prop_timestamp_fmt: str = "%Y-%m-%dT%H:%M:%SZ",
     ):
         """
         Filter function which returns True if property older than or equal to a relative amount of time since current
@@ -121,12 +116,9 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         :param hours: (Optional) relative number of hours since current time to compare against
         :param minutes: (Optional) relative number of minutes since current time to compare against
         :param seconds: (Optional) relative number of seconds since current time to compare against
-        :param prop_timestamp_fmt: (Optional) timestamp format of prop value (default: yyyy-MM-ddTHH:mm:ssZ)
 
         By default, all time args are set to 0, i.e. now. Setting this to 10 seconds would mean 10 seconds in the past.
         You must give at least one non-zero argument (days, hours, minutes, seconds) otherwise a
         MissingMandatoryArgument exception will be thrown
         """
-        return not self._prop_younger_than(
-            prop, days, hours, minutes, seconds, prop_timestamp_fmt
-        )
+        return not self._prop_younger_than(prop, days, hours, minutes, seconds)

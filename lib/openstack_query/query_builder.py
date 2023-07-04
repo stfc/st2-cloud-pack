@@ -11,6 +11,8 @@ from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_preset_mapping_error import QueryPresetMappingError
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 
+from custom_types.openstack_query.aliases import ClientSideFilterFunc, ServerSideFilters
+
 
 class QueryBuilder:
     """
@@ -28,15 +30,15 @@ class QueryBuilder:
         self._prop_handler = prop_handler
         self._server_side_handler = server_side_handler
 
-        self._filter_func = None
+        self._client_side_filter = None
         self._server_side_filters = None
 
     @property
-    def filter_func(self):
-        return self._filter_func
+    def client_side_filter(self) -> Optional[ClientSideFilterFunc]:
+        return self._client_side_filter
 
     @property
-    def server_side_filters(self):
+    def server_side_filters(self) -> Optional[ServerSideFilters]:
         return self._server_side_filters
 
     def parse_where(
@@ -53,11 +55,13 @@ class QueryBuilder:
         :param preset_kwargs: A set of arguments to pass to configure filter function and filter kwargs
         """
 
-        if self._filter_func:
+        if self._client_side_filter:
             raise ParseQueryError("Error: Already set a query preset")
 
         prop_func = self._prop_handler.get_prop_mapping(prop)
         if not prop_func:
+            # If you are here from a search, you have likely forgotten to add it to the
+            # client mapping variable in your Query object
             raise QueryPropertyMappingError(
                 f"""
                 Error: failed to get property mapping, given property
@@ -66,7 +70,7 @@ class QueryBuilder:
             )
 
         preset_handler = self._get_preset_handler(preset, prop)
-        self._filter_func = preset_handler.get_filter_func(
+        self._client_side_filter = preset_handler.get_filter_func(
             preset, prop, prop_func, preset_kwargs
         )
         self._server_side_filters = self._server_side_handler.get_filters(
@@ -81,14 +85,20 @@ class QueryBuilder:
         :param preset: A given preset that describes the query type
         :param prop: A prop which the preset will act on
         """
+
+        # Most likely we have forgotten to add a mapping for a preset at the client-side
+        # All presets should have a client-side handler associated to it
+        if not any(i.preset_known(preset) for i in self._client_side_handlers):
+            raise QueryPresetMappingError(
+                "A preset with no known client side handler was passed. Please raise an issue with the repo maintainer"
+            )
+
         for i in self._client_side_handlers:
             if i.check_supported(preset, prop):
                 return i
 
         raise QueryPresetMappingError(
-            """
-                Error: failed to get preset mapping, the property cannot be
-                used with the preset given. If you believe it should, please raise an
-                issue with repo maintainer
-            """
+            f"Error: failed to get preset mapping, the preset '{preset.name}' cannot be "
+            f"used on the property '{prop.name}' given.\n"
+            f"If you believe it should, please raise an issue with repo maintainer"
         )

@@ -45,8 +45,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 0,
                 0,
                 0,
-                "2023-06-04 10:30:00",
-                "%Y-%m-%d %H:%M:%S",
+                "2023-06-04T10:30:00Z",
                 True,
             ),
             (
@@ -55,8 +54,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 12,
                 0,
                 0,
-                "2023-06-04 10:30:00 AM",
-                "%Y-%m-%d %I:%M:%S %p",
+                "2023-06-04T10:30:00Z",
                 True,
             ),
             (
@@ -65,8 +63,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 0,
                 0,
                 0,
-                "2023-06-02",
-                "%Y-%m-%d",
+                "2023-06-02T10:30:00Z",
                 False,
             ),
             (
@@ -75,8 +72,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 0,
                 30,
                 0,
-                "2023-06-04 10:00:00",
-                "%Y-%m-%d %H:%M:%S",
+                "2023-06-04T10:00:00Z",
                 False,
             ),
             (
@@ -85,13 +81,12 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 0,
                 0,
                 0.5,
-                "2023-06-04 10:30:00",
-                "%Y-%m-%d %H:%M:%S",
+                "2023-06-04T10:30:00Z",
                 True,
             ),
         ]
     )
-    @patch("openstack_query.utils.get_current_time")
+    @patch("openstack_query.time_utils.TimeUtils.get_current_time")
     def test_prop_older_than(
         self,
         name,
@@ -100,7 +95,6 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         minutes,
         seconds,
         string_timestamp,
-        timestamp_format,
         expected_out,
         mock_current_datetime,
     ):
@@ -113,7 +107,6 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
             hours=hours,
             minutes=minutes,
             seconds=seconds,
-            prop_timestamp_fmt=timestamp_format,
         )
         assert out == expected_out
 
@@ -125,8 +118,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 0,
                 0,
                 0,
-                "2023-06-04 10:30:00",
-                "%Y-%m-%d %H:%M:%S",
+                "2023-06-04T10:30:00Z",
                 True,
             ),
             (
@@ -135,8 +127,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 12,
                 0,
                 0,
-                "2023-06-04 10:30:00 AM",
-                "%Y-%m-%d %I:%M:%S %p",
+                "2023-06-04T10:30:00Z",
                 True,
             ),
             (
@@ -145,8 +136,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 0,
                 0,
                 0,
-                "2023-06-02",
-                "%Y-%m-%d",
+                "2023-06-02T10:30:00Z",
                 False,
             ),
             (
@@ -155,8 +145,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 0,
                 30,
                 0,
-                "2023-06-04 10:00:00",
-                "%Y-%m-%d %H:%M:%S",
+                "2023-06-04T10:00:00Z",
                 True,
             ),
             (
@@ -165,13 +154,12 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 0,
                 0,
                 0.5,
-                "2023-06-04 10:30:00",
-                "%Y-%m-%d %H:%M:%S",
+                "2023-06-04T10:30:00Z",
                 True,
             ),
         ]
     )
-    @patch("openstack_query.utils.get_current_time")
+    @patch("openstack_query.time_utils.TimeUtils.get_current_time")
     def test_prop_older_than_or_equal_to(
         self,
         name,
@@ -180,7 +168,6 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         minutes,
         seconds,
         string_timestamp,
-        timestamp_format,
         expected_out,
         mock_current_datetime,
     ):
@@ -193,7 +180,6 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
             hours=hours,
             minutes=minutes,
             seconds=seconds,
-            prop_timestamp_fmt=timestamp_format,
         )
         assert out == expected_out
 
@@ -205,8 +191,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 0,
                 0,
                 0,
-                "2023-06-02 10:30:00",
-                "%Y-%m-%d %H:%M:%S",
+                "2023-06-02T10:30:00Z",
                 True,
             ),
             (
@@ -215,8 +200,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 12,
                 0,
                 0,
-                "2023-06-03 10:30:00 AM",
-                "%Y-%m-%d %I:%M:%S %p",
+                "2023-06-03T10:30:00Z",
                 True,
             ),
             (
@@ -225,8 +209,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 0,
                 0,
                 0,
-                "2023-06-04",
-                "%Y-%m-%d",
+                "2023-06-04T10:30:00Z",
                 False,
             ),
             (
@@ -235,8 +218,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 0,
                 30,
                 0,
-                "2023-06-04 10:00:00",
-                "%Y-%m-%d %H:%M:%S",
+                "2023-06-04T10:00:00Z",
                 False,
             ),
             (
@@ -245,13 +227,12 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 0,
                 0,
                 0.5,
-                "2023-06-03 10:29:59",
-                "%Y-%m-%d %H:%M:%S",
+                "2023-06-03T10:29:59Z",
                 True,
             ),
         ]
     )
-    @patch("openstack_query.utils.get_current_time")
+    @patch("openstack_query.time_utils.TimeUtils.get_current_time")
     def test_prop_younger_than(
         self,
         name,
@@ -260,7 +241,6 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         minutes,
         seconds,
         string_timestamp,
-        timestamp_format,
         expected_out,
         mock_current_time,
     ):
@@ -273,7 +253,6 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
             hours=hours,
             minutes=minutes,
             seconds=seconds,
-            prop_timestamp_fmt=timestamp_format,
         )
         assert out == expected_out
 
@@ -285,8 +264,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 0,
                 0,
                 0,
-                "2023-06-02 10:30:00",
-                "%Y-%m-%d %H:%M:%S",
+                "2023-06-02T10:30:00Z",
                 True,
             ),
             (
@@ -295,8 +273,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 12,
                 0,
                 0,
-                "2023-06-03 10:30:00 AM",
-                "%Y-%m-%d %I:%M:%S %p",
+                "2023-06-03T10:30:00Z",
                 True,
             ),
             (
@@ -305,8 +282,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 0,
                 0,
                 0,
-                "2023-06-04",
-                "%Y-%m-%d",
+                "2023-06-04T10:30:00Z",
                 False,
             ),
             (
@@ -315,8 +291,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 0,
                 30,
                 0,
-                "2023-06-04 10:00:00",
-                "%Y-%m-%d %H:%M:%S",
+                "2023-06-04T10:00:00Z",
                 True,
             ),
             (
@@ -325,13 +300,12 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 0,
                 0,
                 0.5,
-                "2023-06-03 10:29:59",
-                "%Y-%m-%d %H:%M:%S",
+                "2023-06-03T10:29:59Z",
                 True,
             ),
         ]
     )
-    @patch("openstack_query.utils.get_current_time")
+    @patch("openstack_query.time_utils.TimeUtils.get_current_time")
     def test_prop_younger_than_or_equal_to(
         self,
         name,
@@ -340,7 +314,6 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         minutes,
         seconds,
         string_timestamp,
-        timestamp_format,
         expected_out,
         mock_current_time,
     ):
@@ -353,6 +326,5 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
             hours=hours,
             minutes=minutes,
             seconds=seconds,
-            prop_timestamp_fmt=timestamp_format,
         )
         assert out == expected_out

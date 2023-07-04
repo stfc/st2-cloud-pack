@@ -6,7 +6,7 @@ from openstack_query.handlers.handler_base import HandlerBase
 from custom_types.openstack_query.aliases import (
     FilterFunc,
     PresetToValidPropsMap,
-    ParsedFilterFunc,
+    ClientSideFilterFunc,
     PropFunc,
     PresetKwargs,
     OpenstackResourceObj,
@@ -26,20 +26,16 @@ class ClientSideHandler(HandlerBase):
     def __init__(self, filter_func_mappings: PresetToValidPropsMap):
         self._FILTER_FUNCTION_MAPPINGS = filter_func_mappings
 
-    def check_supported(self, preset: QueryPresets, prop: Enum):
+    def check_supported(self, preset: QueryPresets, prop: Enum) -> bool:
         """
         Method that returns True if filter function exists for a preset-property pair
         :param preset: A QueryPreset Enum for which a client-side filter function mapping may exist for
         :param prop: A property Enum for which a client-side filter function mapping may exist for
         """
-        if preset not in self._FILTER_FUNCTIONS.keys():
+        if not self.preset_known(preset):
             return False
 
-        props_valid_for_preset = self._FILTER_FUNCTION_MAPPINGS.get(preset, None)
-        if not props_valid_for_preset:
-            return False
-
-        if prop in props_valid_for_preset:
+        if prop in self._FILTER_FUNCTION_MAPPINGS[preset]:
             return True
 
         # '*' represents that all props are valid for preset
@@ -48,13 +44,20 @@ class ClientSideHandler(HandlerBase):
 
         return False
 
+    def preset_known(self, preset: QueryPresets) -> bool:
+        """
+        Method that returns True if a preset is known to the handler
+        :param preset: A QueryPreset Enum which may have filter function mappings known to the handler
+        """
+        return preset in self._FILTER_FUNCTION_MAPPINGS.keys()
+
     def get_filter_func(
         self,
         preset: QueryPresets,
         prop: Enum,
         prop_func: PropFunc,
         filter_func_kwargs: Optional[PresetKwargs] = None,
-    ) -> Optional[ParsedFilterFunc]:
+    ) -> Optional[ClientSideFilterFunc]:
         """
         Method that checks and returns a parsed filter function (if a mapping exists in this handler).
         the parsed filter function will take as input a single openstack resource and return

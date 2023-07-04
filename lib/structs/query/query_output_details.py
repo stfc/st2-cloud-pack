@@ -12,5 +12,5 @@ class QueryOutputDetails:
     and how to output them to_html(), to_string() etc.
     """
 
-    properties_to_select: Optional[Set[Enum]]
-    output_type: Optional[QueryOutputTypes]
+    properties_to_select: Optional[Set[Enum]] = None
+    output_type: Optional[QueryOutputTypes] = None

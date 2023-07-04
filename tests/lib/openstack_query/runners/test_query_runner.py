@@ -15,7 +15,7 @@ class QueryRunnerTests(unittest.TestCase):
         self.instance = QueryRunner(connection_cls=self.mocked_connection)
         self.conn = self.mocked_connection.return_value.__enter__.return_value
 
-    @patch("openstack_query.runners.query_runner.QueryRunner._apply_filter_func")
+    @patch("openstack_query.runners.query_runner.QueryRunner._apply_client_side_filter")
     @patch("openstack_query.runners.query_runner.QueryRunner._run_query")
     def test_run_only_filter_func(self, mock_run_query, mock_apply_filter_func):
         mock_run_query.return_value = ["openstack-resource-1", "openstack-resource-2"]
@@ -23,7 +23,7 @@ class QueryRunnerTests(unittest.TestCase):
 
         res = self.instance.run(
             cloud_account="test",
-            filter_func="some-filter-func",
+            client_side_filter_func="some-filter-func",
             **{"arg1": "val1", "arg2": "val2"}
         )
         self.mocked_connection.assert_called_once_with("test")
@@ -37,14 +37,14 @@ class QueryRunnerTests(unittest.TestCase):
         self.assertEqual(["filtered-openstack-resource"], res)
 
     @patch("openstack_query.runners.query_runner.QueryRunner._run_query")
-    def test_run_with_filter_kwargs(self, mock_run_query):
+    def test_run_with_server_side_filters(self, mock_run_query):
         mock_run_query.return_value = ["kwarg-filtered-openstack-resource"]
         self.instance._run_query = mock_run_query
 
         res = self.instance.run(
             cloud_account="test",
-            filter_func="some-filter-func",
-            filter_kwargs="some-filter-kwargs",
+            client_side_filter_func="some-filter-func",
+            server_side_filters="some-filter-kwargs",
             **{"arg1": "val1", "arg2": "val2"}
         )
         self.mocked_connection.assert_called_once_with("test")
@@ -56,7 +56,7 @@ class QueryRunnerTests(unittest.TestCase):
         self.assertEqual(["kwarg-filtered-openstack-resource"], res)
 
     @patch("openstack_query.runners.query_runner.QueryRunner._parse_subset")
-    @patch("openstack_query.runners.query_runner.QueryRunner._apply_filter_func")
+    @patch("openstack_query.runners.query_runner.QueryRunner._apply_client_side_filter")
     def test_run_with_subset(self, mock_apply_filter_func, mock_parse_subset):
         mock_parse_subset.return_value = [
             "parsed-openstack-resource-1",
@@ -66,7 +66,7 @@ class QueryRunnerTests(unittest.TestCase):
 
         res = self.instance.run(
             cloud_account="test",
-            filter_func="some-filter-func",
+            client_side_filter_func="some-filter-func",
             from_subset=["openstack-resource-1", "openstack-resource-2"],
         )
         self.mocked_connection.assert_called_once_with("test")
@@ -88,5 +88,5 @@ class QueryRunnerTests(unittest.TestCase):
 
         mock_items = ["openstack-resource-1", "openstack-resource-2"]
 
-        res = self.instance._apply_filter_func(mock_items, mock_filter_func)
+        res = self.instance._apply_client_side_filter(mock_items, mock_filter_func)
         self.assertEqual(["openstack-resource-2"], res)

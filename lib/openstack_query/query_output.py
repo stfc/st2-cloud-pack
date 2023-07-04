@@ -21,7 +21,7 @@ class QueryOutput:
         self._results = []
 
     @property
-    def results(self):
+    def results(self) -> List[OpenstackResourceObj]:
         return self._results
 
     def sort_by(self, sort_by: Enum, reverse=False):
@@ -64,10 +64,10 @@ class QueryOutput:
             self._props = set(self._prop_handler.all_props())
         else:
             for prop in props:
-                _ = self._check_prop_valid(prop)
+                self._check_prop_valid(prop)
                 self._props.add(prop)
 
-    def _check_prop_valid(self, prop: Enum) -> bool:
+    def _check_prop_valid(self, prop: Enum):
         """
         method which checks if the given property is valid - i.e. has an associated function mapping in
         self.prop_handler which takes a openstack resource and returns the corresponding property for that object
@@ -77,27 +77,30 @@ class QueryOutput:
             raise QueryPropertyMappingError(
                 "Error: failed to get property mapping, property is not supported by prop_handler"
             )
-        return True
 
     def generate_output(
-        self, items: List[OpenstackResourceObj]
+        self, openstack_resources: List[OpenstackResourceObj]
     ) -> List[Dict[str, str]]:
         """
         Generates a dictionary of queried properties from a list of openstack objects e.g. servers
-        :param items: List of items to obtain properties from
+        e.g. {['server_name': 'server1', 'server_id': 'server1_id'], ['server_name': 'server2', 'server_id': 'server2_id'] etc.
+        (if we selected 'server_name' and 'server_id' as properties
+        :param openstack_resources: List of openstack objects to obtain properties from - e.g. [Server1, Server2]
         :return: List containing dictionaries of the requested properties obtained from the items
         """
-        self._results = [self._parse_property(item) for item in items]
+        self._results = [self._parse_property(item) for item in openstack_resources]
         return self._results
 
-    def _parse_property(self, item: OpenstackResourceObj) -> Dict[str, str]:
+    def _parse_property(
+        self, openstack_resource: OpenstackResourceObj
+    ) -> Dict[str, str]:
         """
         Generates a dictionary of queried properties from a single openstack object
-        :param item: openstack resource item to obtain properties from
+        :param openstack_resource: openstack resource item to obtain properties from
         """
         return {
             prop.name.lower(): self._prop_handler.get_prop(
-                item, prop, default_out="Not Found"
+                openstack_resource, prop, default_out="Not Found"
             )
             for prop in self._props
         }

@@ -57,17 +57,17 @@ class QueryBuilderTests(unittest.TestCase):
             MockQueryPresets.ITEM_1, MockProperties.PROP_1, "some-func", mock_kwargs
         )
 
-        self.assertEqual(self.instance._filter_func, "some-filter-func")
+        self.assertEqual(self.instance._client_side_filter, "some-filter-func")
         self.assertEqual(self.instance._server_side_filters, "some-kwargs")
 
     def test_parse_where_invalid(self):
         # test if already set a query preset
-        self.instance._filter_func = "previously-set-func"
+        self.instance._client_side_filter = "previously-set-func"
         with self.assertRaises(ParseQueryError):
             self.instance.parse_where(MockQueryPresets.ITEM_1, MockProperties.PROP_1)
 
         # test if prop_mapping doesn't exist
-        self.instance._filter_func = None
+        self.instance._client_side_filter = None
         self.mock_prop_handler.get_prop_mapping.return_value = None
         with self.assertRaises(QueryPropertyMappingError):
             self.instance.parse_where(MockQueryPresets.ITEM_1, MockProperties.PROP_1)

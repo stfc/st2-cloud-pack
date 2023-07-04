@@ -95,12 +95,12 @@ class QueryMethodsTests(unittest.TestCase):
         mock_query_output = MagicMock()
         self.instance.output = mock_query_output
 
-        mock_query_builder.filter_func.return_value = "some-filter-func"
+        mock_query_builder.client_side_filter.return_value = "some-filter-func"
         mock_query_builder.server_side_filters.return_value = "some-filter-kwargs"
         mock_query_runner.run.return_value = "some-runner-output"
 
         res = self.instance.run("test-account")
-        mock_query_builder.filter_func.assert_called_once()
+        mock_query_builder.client_side_filter.assert_called_once()
         mock_query_builder.server_side_filters.assert_called_once()
         mock_query_runner.run.assert_called_once_with(
             "test-account", "some-filter-func", "some-filter-kwargs", None

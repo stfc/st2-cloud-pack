@@ -81,11 +81,11 @@ class QueryMethods:
         :param kwargs: keyword args that can be used to configure details of how query is run
             - valid kwargs specific to resource
         """
-        filter_func = self.builder.filter_func()
-        filter_kwargs = self.builder.server_side_filters()
+        local_filters = self.builder.client_side_filter()
+        server_filters = self.builder.server_side_filters()
 
         self._query_results = self.runner.run(
-            cloud_account, filter_func, filter_kwargs, from_subset, **kwargs
+            cloud_account, local_filters, server_filters, from_subset, **kwargs
         )
         self.output.generate_output(self._query_results)
 

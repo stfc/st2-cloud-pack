@@ -92,7 +92,7 @@ class QueryOutputTests(unittest.TestCase):
 
         # when prop_handler exists
         self.mock_prop_handler.check_supported.return_value = True
-        self.assertTrue(self.instance._check_prop_valid(MockProperties.PROP_1))
+        self.instance._check_prop_valid(MockProperties.PROP_1)
 
         # when prop_handler not found
         self.mock_prop_handler.check_supported.return_value = False

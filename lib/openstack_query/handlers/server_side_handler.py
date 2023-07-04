@@ -29,11 +29,16 @@ class ServerSideHandler(HandlerBase):
         :param preset: A QueryPreset Enum for which a set of kwargs may exist for
         :param prop: A property Enum for which a set of kwargs may exist for
         """
-        props_valid_for_preset = self._SERVER_SIDE_FILTER_MAPPINGS.get(preset, None)
-        if props_valid_for_preset:
-            if prop in props_valid_for_preset.keys():
-                return True
-        return False
+        if not self.preset_known(preset):
+            return False
+        return prop in self._SERVER_SIDE_FILTER_MAPPINGS[preset].keys()
+
+    def preset_known(self, preset: QueryPresets) -> bool:
+        """
+        Method that returns True if a preset is known to the handler
+        :param preset: A QueryPreset Enum which may have filter function mappings known to the handler
+        """
+        return preset in self._SERVER_SIDE_FILTER_MAPPINGS.keys()
 
     def _get_mapping(
         self, preset: QueryPresets, prop: Enum

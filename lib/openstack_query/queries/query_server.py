@@ -24,7 +24,7 @@ from openstack_query.handlers.client_side_handler_datetime import (
 from openstack_query.queries.query_wrapper import QueryWrapper
 from openstack_query.runners.server_runner import ServerRunner
 
-from openstack_query.utils import convert_to_timestamp
+from openstack_query.time_utils import TimeUtils
 
 
 class QueryServer(QueryWrapper):
@@ -84,12 +84,12 @@ class QueryServer(QueryWrapper):
                 },
                 QueryPresetsDateTime.OLDER_THAN_OR_EQUAL_TO: {
                     ServerProperties.SERVER_LAST_UPDATED_DATE: lambda **kwargs: {
-                        "changes-before": convert_to_timestamp(**kwargs)
+                        "changes-before": TimeUtils.convert_to_timestamp(**kwargs)
                     }
                 },
                 QueryPresetsDateTime.YOUNGER_THAN_OR_EQUAL_TO: {
                     ServerProperties.SERVER_LAST_UPDATED_DATE: lambda **kwargs: {
-                        "changes-since": convert_to_timestamp(**kwargs)
+                        "changes-since": TimeUtils.convert_to_timestamp(**kwargs)
                     }
                 },
             }
