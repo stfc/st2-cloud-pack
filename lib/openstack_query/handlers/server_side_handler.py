@@ -3,7 +3,7 @@ from enums.query.query_presets import QueryPresets
 from enums.query.props.prop_enum import PropEnum
 
 from custom_types.openstack_query.aliases import (
-    PresetKwargs,
+    FilterParams,
     ServerSideFilterMappings,
     ServerSideFilterFunc,
     ServerSideFilters,
@@ -57,7 +57,7 @@ class ServerSideHandler(HandlerBase):
         self,
         preset: QueryPresets,
         prop: PropEnum,
-        params: Optional[PresetKwargs] = None,
+        params: Optional[FilterParams] = None,
     ) -> Optional[ServerSideFilters]:
         """
         Method that returns a dictionary of server side filter params to pass to an openstack list function
@@ -79,7 +79,7 @@ class ServerSideHandler(HandlerBase):
 
     @staticmethod
     def _check_filter_mapping(
-        filter_func: ServerSideFilterFunc, filter_params: PresetKwargs
+        filter_func: ServerSideFilterFunc, filter_params: FilterParams
     ) -> Tuple[bool, str]:
         """
         Method that checks if optional parameters are valid for the kwarg mapping function

@@ -2,7 +2,7 @@ from datetime import datetime
 
 from enums.query.query_presets import QueryPresetsDateTime
 
-from custom_types.openstack_query.aliases import PresetToValidPropsMap
+from custom_types.openstack_query.aliases import PresetPropMappings
 
 from openstack_query.time_utils import TimeUtils
 from openstack_query.handlers.client_side_handler import ClientSideHandler
@@ -15,7 +15,7 @@ class ClientSideHandlerDateTime(ClientSideHandler):
     Filter functions which map to QueryPresetsDateTime are defined here
     """
 
-    def __init__(self, filter_function_mappings: PresetToValidPropsMap):
+    def __init__(self, filter_function_mappings: PresetPropMappings):
         super().__init__(filter_function_mappings)
 
         self._FILTER_FUNCTIONS = {

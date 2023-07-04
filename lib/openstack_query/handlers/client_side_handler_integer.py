@@ -1,5 +1,5 @@
 from typing import Union
-from custom_types.openstack_query.aliases import PresetToValidPropsMap
+from custom_types.openstack_query.aliases import PresetPropMappings
 
 from enums.query.query_presets import QueryPresetsInteger
 from openstack_query.handlers.client_side_handler import ClientSideHandler
@@ -12,7 +12,7 @@ class ClientSideHandlerInteger(ClientSideHandler):
     Filter functions which map to QueryPresetsInteger are defined here
     """
 
-    def __init__(self, filter_function_mappings: PresetToValidPropsMap):
+    def __init__(self, filter_function_mappings: PresetPropMappings):
         super().__init__(filter_function_mappings)
 
         self._FILTER_FUNCTIONS = {

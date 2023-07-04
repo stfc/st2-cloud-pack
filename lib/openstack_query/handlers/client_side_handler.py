@@ -4,10 +4,10 @@ from typing import Optional, Tuple
 from openstack_query.handlers.handler_base import HandlerBase
 from custom_types.openstack_query.aliases import (
     FilterFunc,
-    PresetToValidPropsMap,
+    PresetPropMappings,
     ClientSideFilterFunc,
     PropFunc,
-    PresetKwargs,
+    FilterParams,
     OpenstackResourceObj,
 )
 
@@ -23,7 +23,7 @@ class ClientSideHandler(HandlerBase):
     listing openstack resources
     """
 
-    def __init__(self, filter_func_mappings: PresetToValidPropsMap):
+    def __init__(self, filter_func_mappings: PresetPropMappings):
         self._FILTER_FUNCTION_MAPPINGS = filter_func_mappings
 
     def check_supported(self, preset: QueryPresets, prop: PropEnum) -> bool:
@@ -56,7 +56,7 @@ class ClientSideHandler(HandlerBase):
         preset: QueryPresets,
         prop: PropEnum,
         prop_func: PropFunc,
-        filter_func_kwargs: Optional[PresetKwargs] = None,
+        filter_func_kwargs: Optional[FilterParams] = None,
     ) -> Optional[ClientSideFilterFunc]:
         """
         Method that checks and returns a parsed filter function (if a mapping exists in this handler).
@@ -97,7 +97,7 @@ class ClientSideHandler(HandlerBase):
         item: OpenstackResourceObj,
         selected_filter_func: FilterFunc,
         selected_prop_func: PropFunc,
-        filter_func_kwargs: Optional[PresetKwargs] = None,
+        filter_func_kwargs: Optional[FilterParams] = None,
     ) -> bool:
         """
         Method that acts as a wrapper to a filter function, if the property cannot be found for the resource
@@ -117,7 +117,7 @@ class ClientSideHandler(HandlerBase):
 
     @staticmethod
     def _check_filter_func(
-        func: FilterFunc, func_kwargs: Optional[PresetKwargs] = None
+        func: FilterFunc, func_kwargs: Optional[FilterParams] = None
     ) -> Tuple[bool, str]:
         """
         Method that checks a given function can accept a set of kwargs as arguments.
