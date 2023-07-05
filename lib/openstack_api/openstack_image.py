@@ -314,3 +314,23 @@ class OpenstackImage(OpenstackWrapperBase, OpenstackQueryEmailBase):
                 object_project_param_name="owner",
             ),
         )
+
+    def get_images(self, cloud_account: str, image_name: str):
+        """
+        returns images based on the hard coded string
+        :param cloud_account: The associated clouds.yaml account
+        """
+        with self._connection_cls(cloud_account) as conn:
+            ubuntu_images = conn.image.images(name=image_name)
+        return ubuntu_images
+
+    def get_single_image(self, cloud_account: str, image_name: str):
+        """
+        returns a single image based on the metadata status
+        :param cloud_account: The associated clouds.yaml account
+        """
+        usable_image = None
+        for image in self.get_images(cloud_account, image_name):
+            if image.status == "active":
+                useable_image = image
+        return useable_image

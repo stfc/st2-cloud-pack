@@ -1,9 +1,14 @@
 from typing import List, Dict, Union, Optional
 from openstack.compute.v2.flavor import Flavor
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
-
+from openstack_api.openstack_aggregate import OpenstackAggregate
 
 class OpenstackFlavor(OpenstackWrapperBase):
+
+    def __init__(self, connection_cls=OpenstackConnection):
+        OpenstackWrapperBase.__init__(self, connection_cls)
+        self._aggregate_api = OpenstackAggregate(self._connection_cls)
+
     def list_flavor(self, cloud_account: str) -> List[Flavor]:
         """
         Get list of flavors from either production or development cloud
@@ -123,3 +128,49 @@ class OpenstackFlavor(OpenstackWrapperBase):
             self.set_flavor_specs(dest_cloud, dest_flavor.id, metadata)
 
         return missing_flavors
+
+
+    def get_all_flavors(self, cloud_account: str):
+        """
+        returns all flavors from the openstack instance
+        :param cloud_account: connection to the cloud
+        """
+        with self._connection_cls(cloud_account) as conn:
+            all_flavors = list(conn.compute.flavors(get_extra_specs=True))
+        return all_flavors
+
+    def find_flavors_with_hosttype(self, cloud_account: str):
+        """
+        filters all flavors into flavors that have aggregate_instance_extra_specs:hosttype set
+        :param cloud_account: connection to the cloud
+        """
+        host_typed_flavors = [i for i in self.get_all_flavors(cloud_account) if "aggregate_instance_extra_specs:hosttype" in i.extra_specs]
+        return host_typed_flavors
+
+    def find_smallest_flavors(self, cloud_account: str):
+        """
+        create a dictionary of flavors against the hosstype flag in which the flavor selected is the smallest
+        :param cloud_account: connection to the cloud
+        """
+        smallest_flavors = {}
+        for flavors in self.find_flavors_with_hosttype(cloud_account):
+            host_type = flavors["extra_specs"]["aggregate_instance_extra_specs:hosttype"]
+            if host_type not in smallest_flavors:
+                smallest_flavors[host_type] = flavors
+            new_smallest_flavor_size = min(flavors, smallest_flavors[host_type], key=lambda flavors: flavors["ram"])
+            smallest_flavors[host_type] = new_smallest_flavor_size
+        return smallest_flavors
+
+    def find_smallest_flavor_for_each_aggregate(self, cloud_account: str):
+        """
+        create a dictionary of aggregate against the smallest flavor for that aggregate
+        :param cloud_account: connection to the cloud
+        """
+        aggregate_smallest_flavor = {
+            aggre_objects["name"]: flavors
+            for aggre_objects in self._aggregate_api.find_aggregates_with_hosttype(cloud_account)
+            for flavors in self.find_smallest_flavors(cloud_account).values()
+            if
+            aggre_objects["metadata"]["hosttype"] == flavors["extra_specs"]["aggregate_instance_extra_specs:hosttype"]
+        }
+        return aggregate_smallest_flavor

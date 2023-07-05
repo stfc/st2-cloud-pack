@@ -1,0 +1,23 @@
+---
+description: Create server of smallest flavor on all hypervisors
+enabled: true
+entry_point: src/server_actions.py
+name: server.create.smallest.flavor.on.all.hypervisors
+parameters:
+  submodule:
+    default: server_create_smallest_flavor_on_all_hypervisors
+    immutable: true
+    type: string
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  aggregates:
+    required: false
+    type: array
+    description: Sublist of aggregates to test script (if not provided script runs on all aggregates)
+runner_type: python-script

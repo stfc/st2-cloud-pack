@@ -1,4 +1,5 @@
 from typing import List, Dict, Callable, Any
+import os
 
 from openstack.compute.v2.server import Server
 from openstack.exceptions import HttpException
@@ -12,9 +13,13 @@ from openstack_api.openstack_query_email_base import OpenstackQueryEmailBase
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.dataclasses import EmailQueryParams
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
+from openstack_api.openstack_image import OpenstackImage
+from openstack_api.openstack_flavor import OpenstackFlavor
+from openstack_api.openstack_aggregate import OpenstackAggregate
 
 
 class OpenstackServer(OpenstackWrapperBase, OpenstackQueryEmailBase):
+
     # Lists all possible query presets for server.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_servers",
@@ -66,6 +71,9 @@ class OpenstackServer(OpenstackWrapperBase, OpenstackQueryEmailBase):
             ),
         )
         self._identity_api = OpenstackIdentity(self._connection_cls)
+        self._flavor_api = OpenstackFlavor(self._connection_cls)
+        self._aggregate_api = OpenstackAggregate(self._connection_cls)
+        self._image_api = OpenstackImage(self._connection_cls)
 
     def get_query_property_funcs(
         self, cloud_account: str
@@ -395,3 +403,31 @@ class OpenstackServer(OpenstackWrapperBase, OpenstackQueryEmailBase):
                 object_project_param_name="project_id",
             ),
         )
+
+    def create_server_smallest_flavor_on_all_hypervisors(self, cloud_account: str, aggregate: Optional[List[str]] = None):
+        """
+        Creates a vm on all hypervisors of the smallest flavor viable if ram and vcpus have space
+        :param cloud_account: The associated clouds.yaml account
+        :param aggregate: A sublist of aggregates to create VMs on (optional, if not given, creates VMs on all aggregates)
+        :return: A list of strings which state where VMs are created
+        """
+        #TODO make aggregate work
+        created_list = []
+        security_group_id = "771352ca-41b7-4fb6-addc-882aa0d1d628"
+        network_id = "fa2f5ebe-d0e0-4465-9637-e9461de443f1"
+        for agg, hvs in self._hypervisor_api.remove_disabled_hvs(cloud_account).items():
+            flavor = self._flavor_api.find_smallest_flavor_for_each_aggregate(cloud_account)[agg]
+            if hvs:
+                count = 0
+                for hv in hvs:
+                    if count > 0:
+                        break
+                    if (hv.vcpus - hv.vcpus_used - 4) > flavor.vcpus and hv.memory_free > flavor.ram:
+                        vm_name = F"aggregates_build_test_from_script_{hv.name}"
+                        created_list.append(f"A VM has been created on {hv.name}")
+                        #This calls python-openstackclient which needs to be set up on the StackStorm VM
+                        #We need to setup automatic authentication for the python-openstackclient
+                        os.system(
+                            f"openstack server create --image {self._image_api.select_single_image(cloud_account).id} --flavor {flavor.id} --security-group {security_group_id} --network {network_id} --hypervisor-hostname {hv.name} --os-cloud openstack --os-compute-api-version 2.79 {vm_name}")
+                        count = count + 1
+        return created_list

@@ -1,4 +1,4 @@
-from typing import Dict, Callable, List
+from typing import Dict, Callable, List, Optional
 
 from openstack.compute.v2.server import Server
 
@@ -76,3 +76,12 @@ class ServerActions(Action):
         :return: A dictionary containing the non-existent server ids and their projects
         """
         return self._server_api.find_non_existent_projects(cloud_account=cloud_account)
+
+    def server_create_smallest_flavor_on_all_hypervisors(self, cloud_account: str, aggregate: Optional[List[str]] = None):
+        """
+        Creates a vm on all hypervisors of the smallest flavor viable
+        :param cloud_account: The associated clouds.yaml account
+        :param aggregate: A sublist of aggregates to create VMs on (optional, if not given, creates VMs on all aggregates)
+        :return: A list of strings which state where VMs are created
+        """
+        return self._server_api.server_create_smallest_flavor_on_all_hypervisors(cloud_account=cloud_account, aggregate=aggregate)

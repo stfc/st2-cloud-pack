@@ -383,3 +383,14 @@ class OpenstackImageTests(unittest.TestCase, OpenstackQueryEmailBaseTests):
         result = self.instance.find_non_existent_projects(cloud_account="test")
 
         self.assertEqual(result, {"ProjectID1": ["ImageID1", "ImageID2"]})
+
+    def test_get_images(self):
+        """
+        test the function returns an empty list
+        """
+        cloud_account = "PLACEHOLDER"
+        expected_value = []
+        self.mocked_connection.image.images.return_value = []
+        res = self.instance.get_images(cloud_account, image_name="ubuntu")
+        self.mocked_connection.image.images.assert_called_once_with("ubuntu")
+        self.assertEqual(res, expected_value)

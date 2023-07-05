@@ -6,6 +6,7 @@ from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_query import OpenstackQuery
 from openstack_api.openstack_query_base import OpenstackQueryBase
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
+from openstack_api.openstack_aggregate import OpenstackAggregate
 
 
 class OpenstackHypervisor(OpenstackWrapperBase, OpenstackQueryBase):
@@ -53,6 +54,7 @@ class OpenstackHypervisor(OpenstackWrapperBase, OpenstackQueryBase):
         OpenstackWrapperBase.__init__(self, connection_cls)
         OpenstackQueryBase.__init__(self, connection_cls)
         self._query_api = OpenstackQuery(self._connection_cls)
+        self._aggregate_api = OpenstackAggregate(self._connection_cls)
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -223,3 +225,23 @@ class OpenstackHypervisor(OpenstackWrapperBase, OpenstackQueryBase):
         selected_hvs = self.search_all_hvs(cloud_account)
 
         return self._query_api.apply_query(selected_hvs, self._query_enabled)
+
+    def list_all_hv_objects(self, cloud_account: str):
+        """
+        get a list of all hypervisor objects in the openstack instance
+        :param cloud_account: The associated clouds.yaml account
+        """
+        with self._connection_cls(cloud_account) as conn:
+            all_hypervisors: List[Hypervisor] = list(conn.compute.hypervisors(details=True))
+        return all_hypervisors
+
+    def remove_disabled_hvs(self, cloud_account: str):
+        """
+        removes any hvs with the status "disabled"
+        :param cloud_account: The associated clouds.yaml account
+        """
+        dict_of_Agg_to_hvs = {}
+        for key, values in self._aggregate_api.create_dict_of_aggregate_to_hv_objects(cloud_account):
+            enabled_hvs = [obj for obj in values if obj.status == "enabled"]
+            dict_of_Agg_to_hvs[key] = enabled_hvs
+        return dict_of_Agg_to_hvs
