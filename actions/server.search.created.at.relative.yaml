@@ -1,0 +1,76 @@
+---
+description: Query servers
+enabled: true
+entry_point: src/query_actions/server_query_actions.py
+name: server.search.created.at.relative
+parameters:
+  timeout:
+    default: 5400
+  submodule:
+    default: search_servers_older_than_relative_to_now
+    enum:
+      - "search_servers_older_than_relative_to_now"
+      - "search_servers_younger_than_relative_to_now"
+    type: string
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  properties_to_select:
+    default: ""
+    type: array
+    description: "
+    A comma-spaced list of server properties to display for the resulting servers - leave empty for all properties. One of:
+      - 'flavor_id'
+      - 'hypervisor_id'
+      - 'image_id'
+      - 'project_id'
+      - 'server_creation_date'
+      - 'server_description'
+      - 'server_id'
+      - 'server_last_updated_date'
+      - 'server_name'
+      - 'server_status'
+      - 'user_id'
+    Anything else will raise an error"
+    required: false
+  return_type:
+    default: "to_str"
+    type: string
+    enum:
+      - "to_html"
+      - "to_object_list"
+      - "to_list"
+      - "to_str"
+    description: "
+    A string representing how to return the results of the query
+      - 'to_html' - a tabulate table (in html)
+      - 'to_list' - properties dicts as a python list
+      - 'to_object_list - as a list of openstack resources
+      - 'to_str' - a tabulate table"
+    required: true
+  days:
+    description: "(Optional) Number of days threshold for selecting servers"
+    type: integer
+    default: 0
+    required: false
+  hours:
+    description: "(Optional) Number of hours threshold for selecting servers"
+    type: integer
+    default: 0
+    required: false
+  minutes:
+    description: "(Optional) Number of minutes threshold for selecting servers"
+    type: integer
+    default: 0
+    required: false
+  seconds:
+    description: "(Optional) Number of seconds threshold for selecting servers"
+    type: float
+    default: 0
+    required: false
+runner_type: python-script
