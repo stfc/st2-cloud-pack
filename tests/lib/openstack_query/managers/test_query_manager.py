@@ -53,12 +53,11 @@ class QueryManagerTests(unittest.TestCase):
         """
         self.assertIsNotNone(self.instance._get_query_output(outtype))
 
-    def test_populate_query(self):
+    def test_populate_query_with_properties(self):
         """
-        Tests that _populate_query method functions expectedly
+        Tests that _populate_query method functions expectedly with properties
         """
 
-        # with properties to select given
         self.instance._populate_query(
             MOCKED_PRESET_DETAILS, MOCKED_OUTPUT_DETAILS.properties_to_select
         )
@@ -71,8 +70,11 @@ class QueryManagerTests(unittest.TestCase):
             MOCKED_PRESET_DETAILS.args,
         )
 
-        # with no properties to select
-        self.query.reset_mock()
+    def test_populate_query_with_no_properties(self):
+        """
+        Tests that _populate_query method functions expectedly with no properties
+        """
+
         self.instance._populate_query(MOCKED_PRESET_DETAILS, None)
         self.query.select_all.assert_called_once()
         self.query.where.assert_called_once_with(

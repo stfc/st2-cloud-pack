@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 from parameterized import parameterized
 
 from nose.tools import raises
@@ -43,11 +44,13 @@ class ClientSideHandlerStringTests(unittest.TestCase):
             ("Empty string, no match", "[A-Za-z]+", "", False),
         ]
     )
+    @patch("re.match")
     def test_prop_matches_regex_valid(
-        self, name, regex_string, test_prop, expected_out
+        self, name, regex_string, test_prop, expected_out, mock_regex
     ):
-        out = self.instance._prop_matches_regex(test_prop, regex_string)
-        assert out == expected_out
+        mock_regex.return_value = test_prop
+        self.instance._prop_matches_regex(test_prop, regex_string)
+        mock_regex.assert_called_once_with(regex_string, test_prop)
 
     @parameterized.expand(
         [

@@ -2,6 +2,8 @@ import unittest
 from unittest.mock import patch, MagicMock
 from openstack_query.query_methods import QueryMethods
 
+from nose.tools import raises
+
 from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
@@ -23,26 +25,33 @@ class QueryMethodsTests(unittest.TestCase):
             self.mock_output,
         )
 
-    def test_select(self):
+    @raises(ParseQueryError)
+    def test_select_invalid(self):
         """
-        Tests select method works expectedly and calls parse_select in QueryOutput object
+        Tests select method works expectedly and calls parse_select in QueryOutput object - no props given
+        """
+        self.instance.select()
+
+    def test_select_with_one_prop(self):
+        """
+        Tests select method works expectedly and calls parse_select in QueryOutput object - one prop given
         """
         mock_query_output = MagicMock()
         self.instance.output = mock_query_output
 
-        # with no props
-        with self.assertRaises(ParseQueryError):
-            _ = self.instance.select()
-
-        # with one prop
         res = self.instance.select(MockProperties.PROP_1)
         mock_query_output.parse_select.assert_called_once_with(
             MockProperties.PROP_1, select_all=False
         )
         self.assertEqual(res, self.instance)
 
-        # with 2 props
-        mock_query_output.reset_mock()
+    def test_select_with_many_props(self):
+        """
+        Tests select method works expectedly and calls parse_select in QueryOutput object - many props given
+        """
+        mock_query_output = MagicMock()
+        self.instance.output = mock_query_output
+
         res = self.instance.select(MockProperties.PROP_1, MockProperties.PROP_2)
         mock_query_output.parse_select.assert_called_once_with(
             MockProperties.PROP_1, MockProperties.PROP_2, select_all=False
@@ -59,22 +68,25 @@ class QueryMethodsTests(unittest.TestCase):
         mock_query_output.parse_select.assert_called_once_with(select_all=True)
         self.assertEqual(res, self.instance)
 
-    def test_where(self):
+    def test_where_no_kwargs(self):
         """
-        Tests that where method works expectedly and calls parse_where in QueryBuilder object
+        Tests that where method works expectedly and calls parse_where in QueryBuilder object - when no kwargs given
         """
         mock_query_builder = MagicMock()
         self.instance.builder = mock_query_builder
 
-        # no kwargs
         res = self.instance.where(MockQueryPresets.ITEM_1, MockProperties.PROP_1)
         mock_query_builder.parse_where.assert_called_once_with(
             MockQueryPresets.ITEM_1, MockProperties.PROP_1, {}
         )
         self.assertEqual(res, self.instance)
 
-        mock_query_builder.reset_mock()
-        # with kwargs
+    def test_where_with_kwargs(self):
+        """
+        Tests that where method works expectedly and calls parse_where in QueryBuilder object - with kwargs given
+        """
+        mock_query_builder = MagicMock()
+        self.instance.builder = mock_query_builder
         res = self.instance.where(
             MockQueryPresets.ITEM_2, MockProperties.PROP_2, arg1="val1", arg2="val2"
         )
@@ -86,6 +98,9 @@ class QueryMethodsTests(unittest.TestCase):
         self.assertEqual(res, self.instance)
 
     def test_run(self):
+        """
+        Tests that run method works expectedly
+        """
         mock_query_builder = MagicMock()
         self.instance.builder = mock_query_builder
 

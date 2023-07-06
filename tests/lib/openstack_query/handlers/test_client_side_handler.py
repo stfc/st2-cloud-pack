@@ -93,10 +93,7 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
 
         self.assertEqual(val, "a-boolean-value")
 
-    @patch(
-        "openstack_query.handlers.client_side_handler.ClientSideHandler._check_filter_func"
-    )
-    def test_get_filter_func_invalid(self, mock_check_filter_func):
+    def test_get_filter_func_preset_invalid(self):
         mock_prop_func = MagicMock()
         mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
@@ -109,8 +106,11 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
                 mock_kwargs,
             )
 
+    def test_get_filter_func_prop_invalid(self):
         # when the preset is valid, but property is invalid
         with self.assertRaises(QueryPresetMappingError):
+            mock_prop_func = MagicMock()
+            mock_kwargs = {"arg1": "val1", "arg2": "val2"}
             self.instance.get_filter_func(
                 MockQueryPresets.ITEM_2,
                 MockProperties.PROP_3,
@@ -118,6 +118,12 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
                 mock_kwargs,
             )
 
+    @patch(
+        "openstack_query.handlers.client_side_handler.ClientSideHandler._check_filter_func"
+    )
+    def test_get_filter_func_arguments_invalid(self, mock_check_filter_func):
+        mock_prop_func = MagicMock()
+        mock_kwargs = {"arg1": "val1", "arg2": "val2"}
         # when check_filter_func is false
         mock_check_filter_func.return_value = False, "some-error"
         with self.assertRaises(QueryPresetMappingError):
@@ -128,12 +134,14 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
                 mock_kwargs,
             )
 
-    def test_filter_func_wrapper(self):
+    def test_filter_func_wrapper_prop_func_error(self):
         mock_item = "some-openstack-item"
+
         mock_filter_func = MagicMock()
+        mock_filter_func.return_value = "a-boolean-value"
+
         mock_prop_func = MagicMock()
         mock_filter_func_kwargs = {"arg1": "val1", "arg2": "val2"}
-        mock_filter_func.return_value = "a-boolean-value"
 
         # when prop_func raises exception - i.e. property not found
         mock_prop_func.side_effect = AttributeError()
@@ -141,6 +149,15 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
             mock_item, mock_filter_func, mock_prop_func, mock_filter_func_kwargs
         )
         self.assertFalse(res)
+
+    def test_filter_func_wrapper_valid(self):
+        mock_item = "some-openstack-item"
+
+        mock_filter_func = MagicMock()
+        mock_filter_func.return_value = "a-boolean-value"
+
+        mock_prop_func = MagicMock()
+        mock_filter_func_kwargs = {"arg1": "val1", "arg2": "val2"}
 
         # when prop_func is valid and filter_kwargs given
         mock_prop_func.return_value = "some-prop-val"
@@ -166,42 +183,29 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
 
     @parameterized.expand(
         [
-            ("required args only", {"arg1": 12}),
-            ("required and default", {"arg1": 12, "arg2": "non-default"}),
-            ("required and kwarg", {"arg1": 12, "some_kwarg": "some-val"}),
+            ("required args only", {"arg1": 12}, True),
+            ("required and default", {"arg1": 12, "arg2": "non-default"}, True),
+            ("required and kwarg", {"arg1": 12, "some_kwarg": "some-val"}, True),
             (
                 "all possible",
                 {"arg1": 12, "arg2": "non-default", "some_kwarg": "some-val"},
+                True,
             ),
             (
                 "different order",
                 {"arg2": "non-default", "some_kwarg": "some-val", "arg1": 12},
+                True,
             ),
+            ("no required", {}, False),
+            ("required wrong type", {"arg1": "non-default"}, False),
+            ("optional wrong type", {"arg1": 12, "arg2": 12}, False),
         ]
     )
-    def test_check_filter_func(self, name, valid_kwargs_to_test):
+    def test_check_filter_func(self, name, valid_kwargs_to_test, expected_value):
         def mock_filter_func(prop, arg1: int, arg2: str = "some-default", **kwargs):
             return None
 
-        self.assertTrue(
-            self.instance._check_filter_func(
-                mock_filter_func, func_kwargs=valid_kwargs_to_test
-            )
+        res = self.instance._check_filter_func(
+            mock_filter_func, func_kwargs=valid_kwargs_to_test
         )
-
-    @parameterized.expand(
-        [
-            ("no required", {}),
-            ("required wrong type", {"arg1": "non-default"}),
-            ("optional wrong type", {"arg1": 12, "arg2": 12}),
-        ]
-    )
-    def test_check_filter_func(self, name, invalid_kwargs_to_test):
-        def mock_filter_func(prop, arg1: int, arg2: str = "some-default", **kwargs):
-            return None
-
-        self.assertFalse(
-            self.instance._check_filter_func(
-                mock_filter_func, func_kwargs=invalid_kwargs_to_test
-            )[0]
-        )
+        self.assertEqual(expected_value, res[0])

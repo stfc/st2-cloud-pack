@@ -16,6 +16,7 @@ from structs.query.query_preset_details import QueryPresetDetails
 from tests.lib.openstack_query.mocks.mocked_structs import MOCKED_OUTPUT_DETAILS
 
 
+@patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
 class ServerManagerTests(unittest.TestCase):
     """
     Runs various tests to ensure that ServerManager class methods function expectedly
@@ -31,7 +32,6 @@ class ServerManagerTests(unittest.TestCase):
         self.instance = ServerManager(cloud_account="test_account")
         self.instance._query = self.query
 
-    @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
     def test_search_all_servers(self, mock_build_and_run_query):
         """
         Tests that search_all_servers method functions expectedly
@@ -44,7 +44,6 @@ class ServerManagerTests(unittest.TestCase):
         )
         self.assertEqual(res, "some-output")
 
-    @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
     def test_search_servers_older_than_relative_to_now(self, mock_build_and_run_query):
         """
         Tests that search_servers_older_than_relative_to_now method functions expectedly
@@ -70,7 +69,6 @@ class ServerManagerTests(unittest.TestCase):
         )
         self.assertEqual(res, "some-output")
 
-    @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
     def test_search_servers_younger_than_relative_to_now(
         self, mock_build_and_run_query
     ):
@@ -98,7 +96,6 @@ class ServerManagerTests(unittest.TestCase):
         )
         self.assertEqual(res, "some-output")
 
-    @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
     def test_search_servers_last_updated_before_relative_to_now(
         self, mock_build_and_run_query
     ):
@@ -126,7 +123,6 @@ class ServerManagerTests(unittest.TestCase):
         )
         self.assertEqual(res, "some-output")
 
-    @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
     def test_search_servers_last_updated_after_relative_to_now(
         self, mock_build_and_run_query
     ):
@@ -154,7 +150,6 @@ class ServerManagerTests(unittest.TestCase):
         )
         self.assertEqual(res, "some-output")
 
-    @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
     def test_search_servers_name_in(self, mock_build_and_run_query):
         """
         Tests that search_servers_name_in method functions expectedly
@@ -174,7 +169,6 @@ class ServerManagerTests(unittest.TestCase):
         )
         self.assertEqual(res, "some-output")
 
-    @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
     def test_search_servers_name_not_in(self, mock_build_and_run_query):
         """
         Tests that search_servers_name_not_in method functions expectedly
