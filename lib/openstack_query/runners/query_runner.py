@@ -1,6 +1,7 @@
 from abc import abstractmethod
-
 from typing import Optional, List, Any, Callable
+
+from enums.cloud_domains import CloudDomains
 
 from exceptions.parse_query_error import ParseQueryError
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
@@ -23,7 +24,7 @@ class QueryRunner(OpenstackWrapperBase):
 
     def run(
         self,
-        cloud_account: str,
+        cloud_account: CloudDomains,
         client_side_filter_func: Optional[ClientSideFilterFunc] = None,
         server_side_filters: Optional[ServerSideFilters] = None,
         from_subset: Optional[List[Any]] = None,
@@ -31,7 +32,7 @@ class QueryRunner(OpenstackWrapperBase):
     ) -> List[OpenstackResourceObj]:
         """
         Public method that runs the query by querying openstacksdk and then applying a filter function.
-        :param cloud_account: The account from the clouds configuration to use
+        :param cloud_account: An Enum for the account from the clouds configuration to use
         :param client_side_filter_func: An Optional function that we can use to limit the results after querying openstacksdk
         :param server_side_filters: An Optional set of filter kwargs to limit the results by when querying openstacksdk
         :param from_subset: A subset of openstack resources to run query on instead of querying openstacksdk
@@ -41,7 +42,7 @@ class QueryRunner(OpenstackWrapperBase):
             runner of interest.
         """
 
-        with self._connection_cls(cloud_account) as conn:
+        with self._connection_cls(cloud_account.name.lower()) as conn:
             resource_objects = (
                 self._parse_subset(conn, from_subset)
                 if from_subset

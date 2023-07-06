@@ -28,9 +28,11 @@ class QueryRunnerTests(unittest.TestCase):
         mock_apply_client_side_filter.return_value = ["openstack-resource-1"]
 
         mock_client_side_filter_func = MagicMock()
+        mock_cloud_domain = MagicMock()
+        mock_cloud_domain.name = "test"
 
         res = self.instance.run(
-            cloud_account="test",
+            cloud_account=mock_cloud_domain,
             client_side_filter_func=mock_client_side_filter_func,
             **{"arg1": "val1", "arg2": "val2"}
         )
@@ -55,9 +57,11 @@ class QueryRunnerTests(unittest.TestCase):
         mock_run_query.return_value = ["openstack-resource-1"]
         self.instance._run_query = mock_run_query
         mock_client_side_filter_func = MagicMock()
+        mock_user_domain = MagicMock()
+        mock_user_domain.name = "test"
 
         res = self.instance.run(
-            cloud_account="test",
+            cloud_account=mock_user_domain,
             client_side_filter_func=mock_client_side_filter_func,
             server_side_filters="some-filter-kwargs",
             **{"arg1": "val1", "arg2": "val2"}
@@ -85,9 +89,11 @@ class QueryRunnerTests(unittest.TestCase):
         ]
         mock_apply_filter_func.return_value = ["parsed-openstack-resource-1"]
         mock_client_side_filter_func = MagicMock()
+        mock_cloud_domain = MagicMock()
+        mock_cloud_domain.name = "test"
 
         res = self.instance.run(
-            cloud_account="test",
+            cloud_account=mock_cloud_domain,
             client_side_filter_func=mock_client_side_filter_func,
             from_subset=["openstack-resource-1", "openstack-resource-2"],
         )
