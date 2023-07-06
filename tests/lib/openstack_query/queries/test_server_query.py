@@ -2,13 +2,13 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from parameterized import parameterized
-from openstack_query.queries.query_server import QueryServer
+from openstack_query.queries.server_query import ServerQuery
 from enums.query.props.server_properties import ServerProperties
 
 
-class TestQueryServer(unittest.TestCase):
+class TestServerQuery(unittest.TestCase):
     """
-    Runs various tests to ensure that QueryServer functions expectedly.
+    Runs various tests to ensure that ServerQuery functions expectedly.
     """
 
     def setUp(self) -> None:
@@ -16,7 +16,7 @@ class TestQueryServer(unittest.TestCase):
         Setup for tests
         """
         super().setUp()
-        self.instance = QueryServer()
+        self.instance = ServerQuery()
 
     @parameterized.expand(
         [(f"test {prop.name.lower()}", prop) for prop in ServerProperties]

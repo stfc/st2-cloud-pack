@@ -27,7 +27,7 @@ from openstack_query.runners.server_runner import ServerRunner
 from openstack_query.time_utils import TimeUtils
 
 
-class QueryServer(QueryWrapper):
+class ServerQuery(QueryWrapper):
     """
     Query class for querying Openstack Server objects.
     Define property mappings, kwarg mappings and filter function mappings related to servers here
