@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 import re
 
 from enums.query.query_output_types import QueryOutputTypes
@@ -41,11 +41,13 @@ class QueryManager:
         self,
         output_details: QueryOutputDetails,
         preset_details: Optional[QueryPresetDetails] = None,
+        runner_params: Optional[Dict[str, Any]] = None,
     ) -> QueryReturn:
         """
         method to build the query, execute it, and return the results
         :param output_details: A dataclass containing config on how to output results of query
         :param preset_details: A dataclass containing query preset config information
+        :param runner_params: A set of extra params to pass when calling run()
         """
         logging.info("Running Query")
         if preset_details:
@@ -76,7 +78,11 @@ class QueryManager:
             preset_details=preset_details,
             properties_to_select=output_details.properties_to_select,
         )
-        self._query.run(self._cloud_account)
+        if not runner_params:
+            runner_params = {}
+
+        self._query.run(self._cloud_account, **runner_params)
+
         return self._get_query_output(
             output_details.output_type,
         )
