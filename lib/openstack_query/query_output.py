@@ -24,7 +24,7 @@ class QueryOutput:
     def results(self) -> List[OpenstackResourceObj]:
         return self._results
 
-    def sort_by(self, sort_by: PropEnum, reverse=False):
+    def sort_by(self, sort_by: PropEnum, reverse=False) -> List[OpenstackResourceObj]:
         """
         Public method used to configure sorting results
         :param sort_by: name of property to sort by
@@ -32,7 +32,7 @@ class QueryOutput:
         """
         raise NotImplementedError
 
-    def group_by(self, group_by: PropEnum):
+    def group_by(self, group_by: PropEnum) -> List[Dict[str, OpenstackResourceObj]]:
         """
         Public method used to configure grouping results.
         :param group_by: name of the property to group by

@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, NonCallableMock
 from parameterized import parameterized
 
 from openstack_query.handlers.server_side_handler import ServerSideHandler
@@ -33,6 +33,10 @@ class ServerSideHandlerTests(unittest.TestCase):
         self.instance = ServerSideHandler(_SERVER_SIDE_FUNCTION_MAPPINGS)
 
     def test_check_supported_true(self):
+        """
+        Tests that check_supported method works expectedly
+        returns True if Prop Enum and Preset Enum have server-side mapping
+        """
         self.assertTrue(
             self.instance.check_supported(
                 MockQueryPresets.ITEM_1, MockProperties.PROP_1
@@ -40,6 +44,11 @@ class ServerSideHandlerTests(unittest.TestCase):
         )
 
     def test_check_supported_false(self):
+        """
+        Tests that check_supported method works expectedly
+        returns False if either Preset is not supported or Preset-Prop does not have a mapping
+        """
+
         # when preset is not supported
         self.assertFalse(
             self.instance.check_supported(
@@ -55,12 +64,20 @@ class ServerSideHandlerTests(unittest.TestCase):
         )
 
     def test_get_mapping_valid(self):
+        """
+        Tests that get_mapping method works expectedly
+        returns server-side filter func if Prop Enum and Preset Enum are supported
+        """
         self.assertEqual(
             self.instance._get_mapping(MockQueryPresets.ITEM_1, MockProperties.PROP_1),
             "item1-prop1-kwarg",
         )
 
     def test_get_mapping_invalid(self):
+        """
+        Tests that get_mapping method works expectedly
+        returns None if Prop Enum and Preset Enum are not supported or don't have a mapping
+        """
         # when preset is not supported
         self.assertIsNone(
             self.instance._get_mapping(MockQueryPresets.ITEM_3, MockProperties.PROP_1)
@@ -78,9 +95,17 @@ class ServerSideHandlerTests(unittest.TestCase):
         "openstack_query.handlers.server_side_handler.ServerSideHandler._get_mapping"
     )
     def test_get_filters_valid(self, mock_get_mapping, mock_check_filter_mapping):
+        """
+        Tests that get_filters method works expectedly
+        returns server-side filters as a set of kwargs
+            - Prop Enum and Preset Enum are supported
+            - and filter_params are valid
+        """
         mock_params = {"arg1": "val1", "arg2": "val2"}
         mock_filter_func = MagicMock()
-        mock_filter_func.return_value = "a-kwarg-mapping"
+
+        mock_filters = NonCallableMock()
+        mock_filter_func.return_value = mock_filters
 
         mock_check_filter_mapping.return_value = True, ""
         mock_get_mapping.return_value = mock_filter_func
@@ -91,14 +116,19 @@ class ServerSideHandlerTests(unittest.TestCase):
 
         mock_check_filter_mapping.assert_called_once_with(mock_filter_func, mock_params)
         mock_filter_func.assert_called_once_with(**mock_params)
-        self.assertEqual(res, "a-kwarg-mapping")
+        self.assertEqual(res, mock_filters)
 
     @patch(
         "openstack_query.handlers.server_side_handler.ServerSideHandler._check_filter_mapping"
     )
     def test_get_filters_invalid(self, mock_check_filter_mapping):
+        """
+        Tests that get_filters method works expectedly
+        raises QueryPresetMappingError if:
+            - Prop Enum and Preset Enum are not supported
+            - or filter_params is not valid
+        """
         mock_params = {"arg1": "val1", "arg2": "val2"}
-        mock_kwarg_func = MagicMock()
 
         # when preset/prop not supported
         res = self.instance.get_filters(
@@ -106,7 +136,7 @@ class ServerSideHandlerTests(unittest.TestCase):
         )
         self.assertIsNone(res)
 
-        # when preset/prop are supported, but wrong kwarg_params
+        # when preset/prop are supported, but wrong filter_params
         mock_check_filter_mapping.return_value = False, "some-reason"
         with self.assertRaises(QueryPresetMappingError):
             self.instance.get_filters(
@@ -129,6 +159,10 @@ class ServerSideHandlerTests(unittest.TestCase):
         ]
     )
     def test_check_filter_mapping(self, name, valid_params_to_test):
+        """
+        Tests that check_filter_mapping method works expectedly
+        returns True only if args match expected args required by filter function lambda
+        """
         mock_server_side_mapping = lambda arg1, arg2="some-default", **kwargs: {
             "kwarg1": "val1"
         }

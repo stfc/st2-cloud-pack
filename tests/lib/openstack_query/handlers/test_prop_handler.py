@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, NonCallableMock, patch
 
 from openstack_query.handlers.prop_handler import PropHandler
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
@@ -23,39 +23,67 @@ class PropHandlerTests(unittest.TestCase):
         self.instance = PropHandler(_PROPERTY_MAPPINGS)
 
     def test_check_supported_true(self):
+        """
+        Tests that check_supported method works expectedly
+        returns True if Prop Enum internal Property Mappings Dict
+        """
         self.assertTrue(self.instance.check_supported(MockProperties.PROP_1))
 
     def test_check_supported_false(self):
+        """
+        Tests that check_supported method works expectedly
+        returns False if Prop Enum not in internal Property Mappings Dict
+        """
         self.assertFalse(self.instance.check_supported(MockProperties.PROP_3))
 
     def test_get_mapping_valid(self):
+        """
+        Tests that get_mapping method works expectedly
+        Returns corresponding Prop Func for supported Prop Enum
+        """
         self.assertEqual(
             self.instance._get_mapping(MockProperties.PROP_1), "prop1-func"
         )
 
     def test_get_mapping_invalid(self):
+        """
+        Tests that get_mapping method works expectedly
+        Returns None for unsupported Prop Enum
+        """
         self.assertIsNone(self.instance._get_mapping(MockProperties.PROP_3))
 
     def test_all_props(self):
+        """
+        Tests that method all_props works expectedly
+        Returns all Prop Enums with internal Property Mappings
+        """
         self.assertEqual(
             self.instance.all_props(), {MockProperties.PROP_1, MockProperties.PROP_2}
         )
 
     @patch("openstack_query.handlers.prop_handler.PropHandler._get_mapping")
     def test_get_prop_valid(self, mock_get_mapping):
-        item = "some-openstack-resource"
+        """
+        Tests that method get_prop works expectedly - with valid Prop Enum and Openstack Resource
+        Returns output of prop_func
+        """
+        mock_openstack_resource = NonCallableMock()
         mock_prop_func = MagicMock()
 
         mock_get_mapping.return_value = mock_prop_func
         mock_prop_func.return_value = "prop-val"
 
-        res = self.instance.get_prop(item, MockProperties.PROP_1)
-        mock_prop_func.assert_called_once_with("some-openstack-resource")
+        res = self.instance.get_prop(mock_openstack_resource, MockProperties.PROP_1)
+        mock_prop_func.assert_called_once_with(mock_openstack_resource)
         self.assertEqual(res, "prop-val")
 
     @patch("openstack_query.handlers.prop_handler.PropHandler._get_mapping")
     def test_get_prop_use_default(self, mock_get_mapping):
-        item = "some-openstack-resource"
+        """
+        Tests that method get_prop works expectedly
+        Returns default value when prop_func returns Attribute error
+        """
+        item = NonCallableMock()
         default_out = "some-default"
         mock_prop_func = MagicMock()
 
@@ -63,10 +91,14 @@ class PropHandlerTests(unittest.TestCase):
         mock_prop_func.side_effect = AttributeError()
 
         res = self.instance.get_prop(item, MockProperties.PROP_1, default_out)
-        mock_prop_func.assert_called_once_with("some-openstack-resource")
+        mock_prop_func.assert_called_once_with(item)
         self.assertEqual(res, "some-default")
 
     def test_get_prop_invalid(self):
+        """
+        Tests that method get_prop works expectedly
+        Returns default value when prop given that is not supported by handler
+        """
         item = "some-openstack-resource"
         default_out = "some-default"
 

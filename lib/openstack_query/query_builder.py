@@ -35,10 +35,16 @@ class QueryBuilder:
 
     @property
     def client_side_filter(self) -> Optional[ClientSideFilterFunc]:
+        """
+        a getter method to return the client-side filter function
+        """
         return self._client_side_filter
 
     @property
     def server_side_filters(self) -> Optional[ServerSideFilters]:
+        """
+        a getter method to return server-side filters to pass to openstacksdk
+        """
         return self._server_side_filters
 
     def parse_where(

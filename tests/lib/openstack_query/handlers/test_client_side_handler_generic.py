@@ -33,7 +33,7 @@ class ClientSideHandlerGenericTests(unittest.TestCase):
     )
     def test_check_supported_all_presets(self, name, preset):
         """
-        Tests that handler supports all generic query client_side
+        Tests that client_side_handler_generic supports all generic QueryPresets
         """
         self.assertTrue(self.instance.check_supported(preset, MockProperties.PROP_1))
 
@@ -49,6 +49,10 @@ class ClientSideHandlerGenericTests(unittest.TestCase):
         ]
     )
     def test_prop_equal_to(self, name, prop, value, expected_out):
+        """
+        Tests that method prop_equal_to functions expectedly
+        Returns True if prop and value are equal
+        """
         assert self.instance._prop_equal_to(prop, value) == expected_out
 
     @parameterized.expand(
@@ -60,4 +64,8 @@ class ClientSideHandlerGenericTests(unittest.TestCase):
         ]
     )
     def test_prop_not_equal_to(self, name, prop, value, expected_out):
+        """
+        Tests that method not_prop_equal_to functions expectedly
+        Returns True if prop and value are not equal
+        """
         assert self.instance._prop_not_equal_to(prop, value) == expected_out

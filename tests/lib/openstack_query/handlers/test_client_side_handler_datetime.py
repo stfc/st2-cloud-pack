@@ -32,6 +32,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         }
         self.instance = ClientSideHandlerDateTime(_FILTER_FUNCTION_MAPPINGS)
 
+        # a set of test cases that each datetime filter function will be tested against
         self.test_cases = {
             "older_by_1_day": {
                 "prop": "2023-06-04T10:30:00Z",
@@ -89,7 +90,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
     )
     def test_check_supported_all_presets(self, mock_current_time, name, preset):
         """
-        Tests that handler supports all generic query client_side
+        Tests that client_side_handler_datetime supports all datetime QueryPresets
         """
         self.assertTrue(self.instance.check_supported(preset, MockProperties.PROP_1))
 
@@ -105,6 +106,10 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         ]
     )
     def test_prop_older_than(self, mock_current_time, name, expected_out):
+        """
+        Tests that function prop_older_than functions expectedly
+        Returns True if prop is older than a calculated relative time from current time (set to 2023-06-04 10:30AM)
+        """
         kwargs = self.test_cases[name]
         out = self.instance._prop_older_than(**kwargs)
         assert out == expected_out
@@ -121,6 +126,10 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         ]
     )
     def test_prop_older_than_or_equal_to(self, mock_current_time, name, expected_out):
+        """
+        Tests that function prop_older_than_or_equal_to functions expectedly
+        Returns True if prop time is older than or equal to a calculated relative time from current time (set to 2023-06-04 10:30AM)
+        """
         kwargs = self.test_cases[name]
         out = self.instance._prop_older_than_or_equal_to(**kwargs)
         assert out == expected_out
@@ -137,6 +146,10 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         ]
     )
     def test_prop_younger_than(self, mock_current_time, name, expected_out):
+        """
+        Tests that function prop_younger_than functions expectedly
+        Returns True if prop time is younger than a calculated relative time from current time (set to 2023-06-04 10:30AM)
+        """
         kwargs = self.test_cases[name]
         out = self.instance._prop_younger_than(**kwargs)
         assert out == expected_out
@@ -153,6 +166,11 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         ]
     )
     def test_prop_younger_than_or_equal_to(self, mock_current_time, name, expected_out):
+        """
+        Tests that function prop_younger_than_or_equal_to functions expectedly
+        Returns True if prop time is younger than or equal to a calculated relative time from current time (set to 2023-06-04 10:30AM)
+
+        """
         kwargs = self.test_cases[name]
         out = self.instance._prop_younger_than_or_equal_to(**kwargs)
         assert out == expected_out

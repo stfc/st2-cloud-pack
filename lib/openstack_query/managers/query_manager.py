@@ -3,13 +3,11 @@ from typing import Optional, Set, Any, List, Union, Dict
 from enums.query.query_output_types import QueryOutputTypes
 from enums.query.props.prop_enum import PropEnum
 
-
 from structs.query.query_output_details import QueryOutputDetails
 from structs.query.query_preset_details import QueryPresetDetails
 
 from openstack_query.queries.query_wrapper import QueryWrapper
-
-QueryReturn = Union[str, List[Any]]
+from custom_types.openstack_query.aliases import QueryReturn
 
 
 class QueryManager:
@@ -26,7 +24,7 @@ class QueryManager:
         self,
         preset_details: QueryPresetDetails,
         output_details: QueryOutputDetails,
-    ):
+    ) -> QueryReturn:
         """
         method to build the query, execute it, and return the results
         :param preset_details: A dataclass containing query preset config information

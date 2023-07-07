@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, NonCallableMock
 from openstack_query.query_methods import QueryMethods
 
 from nose.tools import raises
@@ -28,13 +28,15 @@ class QueryMethodsTests(unittest.TestCase):
     @raises(ParseQueryError)
     def test_select_invalid(self):
         """
-        Tests select method works expectedly and calls parse_select in QueryOutput object - no props given
+        Tests select method works expectedly - with no inputs
+        method raises ParseQueryError when given no properties
         """
         self.instance.select()
 
     def test_select_with_one_prop(self):
         """
-        Tests select method works expectedly and calls parse_select in QueryOutput object - one prop given
+        Tests select method works expectedly - with one prop
+        method should forward prop to parse_select in QueryOutput object
         """
         mock_query_output = MagicMock()
         self.instance.output = mock_query_output
@@ -47,7 +49,8 @@ class QueryMethodsTests(unittest.TestCase):
 
     def test_select_with_many_props(self):
         """
-        Tests select method works expectedly and calls parse_select in QueryOutput object - many props given
+        Tests select method works expectedly - with multiple prop
+        method should forward props to parse_select in QueryOutput object
         """
         mock_query_output = MagicMock()
         self.instance.output = mock_query_output
@@ -60,7 +63,8 @@ class QueryMethodsTests(unittest.TestCase):
 
     def test_select_all(self):
         """
-        Tests select all method works expectedly and calls parse_select in QueryOutput object
+        Tests select all method works expectedly
+        method should call parse_select in QueryOutput object
         """
         mock_query_output = MagicMock()
         self.instance.output = mock_query_output
@@ -70,7 +74,8 @@ class QueryMethodsTests(unittest.TestCase):
 
     def test_where_no_kwargs(self):
         """
-        Tests that where method works expectedly and calls parse_where in QueryBuilder object - when no kwargs given
+        Tests that where method works expectedly
+        method should forward to parse_where in QueryBuilder object - with no kwargs given
         """
         mock_query_builder = MagicMock()
         self.instance.builder = mock_query_builder
@@ -83,7 +88,8 @@ class QueryMethodsTests(unittest.TestCase):
 
     def test_where_with_kwargs(self):
         """
-        Tests that where method works expectedly and calls parse_where in QueryBuilder object - with kwargs given
+        Tests that where method works expectedly
+        method should forward to parse_where in QueryBuilder object - with kwargs given
         """
         mock_query_builder = MagicMock()
         self.instance.builder = mock_query_builder
@@ -100,6 +106,7 @@ class QueryMethodsTests(unittest.TestCase):
     def test_run(self):
         """
         Tests that run method works expectedly
+        method should get client_side and server_side filters and forward them to query runner object
         """
         mock_query_builder = MagicMock()
         self.instance.builder = mock_query_builder
@@ -110,39 +117,62 @@ class QueryMethodsTests(unittest.TestCase):
         mock_query_output = MagicMock()
         self.instance.output = mock_query_output
 
-        mock_query_builder.client_side_filter.return_value = "some-filter-func"
-        mock_query_builder.server_side_filters.return_value = "some-filter-kwargs"
-        mock_query_runner.run.return_value = "some-runner-output"
+        mock_client_filter_func = MagicMock()
+        mock_query_builder.client_side_filter.return_value = mock_client_filter_func
+
+        mock_server_filters = NonCallableMock()
+        mock_query_builder.server_side_filters.return_value = mock_server_filters
+
+        mock_query_results = NonCallableMock()
+        mock_query_runner.run.return_value = mock_query_results
 
         res = self.instance.run("test-account")
         mock_query_builder.client_side_filter.assert_called_once()
         mock_query_builder.server_side_filters.assert_called_once()
         mock_query_runner.run.assert_called_once_with(
-            "test-account", "some-filter-func", "some-filter-kwargs", None
+            "test-account", mock_client_filter_func, mock_server_filters, None
         )
-        mock_query_output.generate_output.assert_called_once_with("some-runner-output")
+        mock_query_output.generate_output.assert_called_once_with(mock_query_results)
 
         self.assertEqual(res, self.instance)
 
-    def test_to_list(self):
+    def test_to_list_as_objects_false(self):
+        """
+        Tests that to_list method functions expectedly
+        method should call QueryOutput object results() if as_objects input is false,
+        """
         mock_query_output = MagicMock()
+        mock_query_results = NonCallableMock()
         self.instance.output = mock_query_output
-        self.instance.output.results.return_value = "list-out"
+        self.instance.output.results.return_value = mock_query_results
+        self.assertEqual(self.instance.to_list(), mock_query_results)
 
-        # when as_objects false
-        self.assertEqual(self.instance.to_list(), "list-out")
-
-        # when as_objects true
-        self.instance._query_results = "objects-out"
-        self.assertEqual(self.instance.to_list(as_objects=True), "objects-out")
+    def test_to_list_as_objects_true(self):
+        """
+        Tests that to_list method functions expectedly
+        method should return query_results internal attribute if as_objects input is true,
+        """
+        mock_query_results_list = ["object-1", "object-2"]
+        self.instance._query_results = mock_query_results_list
+        self.assertEqual(
+            self.instance.to_list(as_objects=True), mock_query_results_list
+        )
 
     def test_to_string(self):
+        """
+        Tests that to_string method functions expectedly
+        method should call QueryOutput object to_string() and return results
+        """
         mock_query_output = MagicMock()
         self.instance.output = mock_query_output
         self.instance.output.to_string.return_value = "string-out"
         self.assertEqual(self.instance.to_string(), "string-out")
 
     def test_to_html(self):
+        """
+        Tests that to_html method functions expectedly
+        method should call QueryOutput object to_html() and return results
+        """
         mock_query_output = MagicMock()
         self.instance.output = mock_query_output
         self.instance.output.to_html.return_value = "html-out"

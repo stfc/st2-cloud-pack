@@ -4,13 +4,13 @@ from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 
 class TimeUtils:
     @staticmethod
-    def get_current_time():
+    def get_current_time() -> datetime:
         return datetime.now()
 
     @staticmethod
     def get_timestamp_in_seconds(
         days: int = 0, hours: int = 0, minutes: int = 0, seconds: float = 0
-    ):
+    ) -> float:
         """
         Function which takes a number of days, hours, minutes, and seconds - and calculates the total seconds
         :param days: (Optional) number of days
@@ -36,7 +36,7 @@ class TimeUtils:
         hours: int = 0,
         minutes: int = 0,
         seconds: float = 0,
-    ):
+    ) -> str:
         """
         Helper function to convert a relative time from current time into a timestamp
         :param days: (Optional) relative number of days since current time

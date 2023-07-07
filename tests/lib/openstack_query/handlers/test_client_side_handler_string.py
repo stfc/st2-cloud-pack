@@ -31,7 +31,7 @@ class ClientSideHandlerStringTests(unittest.TestCase):
     )
     def test_check_supported_all_presets(self, name, preset):
         """
-        Tests that handler supports all generic query client_side
+        Tests that client_side_handler_string supports all string QueryPresets
         """
         self.assertTrue(self.instance.check_supported(preset, MockProperties.PROP_1))
 
@@ -48,6 +48,10 @@ class ClientSideHandlerStringTests(unittest.TestCase):
     def test_prop_matches_regex_valid(
         self, name, regex_string, test_prop, expected_out, mock_regex
     ):
+        """
+        Tests that method prop_matches_regex functions expectedly - with valid regex patterns
+        Returns True if test_prop matches given regex pattern regex_string
+        """
         mock_regex.return_value = test_prop
         self.instance._prop_matches_regex(test_prop, regex_string)
         mock_regex.assert_called_once_with(regex_string, test_prop)
@@ -59,11 +63,18 @@ class ClientSideHandlerStringTests(unittest.TestCase):
         ]
     )
     def test_prop_any_in(self, name, val_list, test_prop, expected_out):
+        """
+        Tests that method prop_any_in functions expectedly
+        Returns True if test_prop matches any values in a given list val_list
+        """
         out = self.instance._prop_any_in(test_prop, val_list)
         assert out == expected_out
 
     @raises(MissingMandatoryParamError)
     def test_prop_any_in_empty_list(self):
+        """
+        Tests that method prop_any_in functions expectedly - when given empty list raise error
+        """
         self.instance._prop_any_in("some-prop-val", [])
 
     @parameterized.expand(
@@ -73,5 +84,9 @@ class ClientSideHandlerStringTests(unittest.TestCase):
         ]
     )
     def test_prop_not_any_in(self, name, val_list, test_prop, expected_out):
+        """
+        Tests that method prop_any_not_in functions expectedly
+        Returns True if test_prop does not match any values in a given list val_list
+        """
         out = self.instance._prop_not_any_in(test_prop, val_list)
         assert out == expected_out

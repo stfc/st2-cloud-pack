@@ -29,7 +29,7 @@ class ClientSideHandlerIntegerTests(unittest.TestCase):
     )
     def test_check_supported_all_presets(self, name, preset):
         """
-        Tests that handler supports all generic query client_side
+        Tests that client_side_handler_integer supports all integer QueryPresets
         """
         self.assertTrue(self.instance.check_supported(preset, MockProperties.PROP_1))
 
@@ -41,6 +41,10 @@ class ClientSideHandlerIntegerTests(unittest.TestCase):
         ]
     )
     def test_prop_less_than(self, name, val1, val2, expected_out):
+        """
+        Tests that method prop_less_than functions expectedly
+        Returns True if val1 is less than val2
+        """
         assert self.instance._prop_less_than(val1, val2) == expected_out
 
     @parameterized.expand(
@@ -51,6 +55,10 @@ class ClientSideHandlerIntegerTests(unittest.TestCase):
         ]
     )
     def test_prop_greater_than(self, name, val1, val2, expected_out):
+        """
+        Tests that method prop_greater_than functions expectedly
+        Returns True if val1 is greater than val2
+        """
         assert self.instance._prop_greater_than(val1, val2) == expected_out
 
     @parameterized.expand(
@@ -61,6 +69,10 @@ class ClientSideHandlerIntegerTests(unittest.TestCase):
         ]
     )
     def test_prop_less_than_or_equal_to(self, name, val1, val2, expected_out):
+        """
+        Tests that method prop_less_than_or_equal_to functions expectedly
+        Returns True if val1 is less than or equal to val2
+        """
         assert self.instance._prop_less_than_or_equal_to(val1, val2) == expected_out
 
     @parameterized.expand(
@@ -71,4 +83,8 @@ class ClientSideHandlerIntegerTests(unittest.TestCase):
         ]
     )
     def test_prop_greater_than_or_equal_to(self, name, val1, val2, expected_out):
+        """
+        Tests that method prop_greater_than_or_equal_to functions expectedly
+        Returns True if val1 is greater than or equal to val2
+        """
         assert self.instance._prop_greater_than_or_equal_to(val1, val2) == expected_out

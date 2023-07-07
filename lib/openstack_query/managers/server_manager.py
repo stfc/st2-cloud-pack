@@ -12,6 +12,7 @@ from openstack_query.managers.query_manager import QueryManager
 
 from structs.query.query_output_details import QueryOutputDetails
 from structs.query.query_preset_details import QueryPresetDetails
+from custom_types.openstack_query.aliases import QueryReturn
 
 
 class ServerManager(QueryManager):
@@ -22,9 +23,7 @@ class ServerManager(QueryManager):
     def __init__(self, cloud_account: str):
         QueryManager.__init__(self, query=ServerQuery(), cloud_account=cloud_account)
 
-    def search_all_servers(
-        self, output_details: QueryOutputDetails
-    ) -> Union[str, List[Any]]:
+    def search_all_servers(self, output_details: QueryOutputDetails) -> QueryReturn:
         """
         method that returns a list of all servers
         :param output_details: A dataclass containing config info on how results should be returned
@@ -41,7 +40,7 @@ class ServerManager(QueryManager):
         hours: int = 0,
         minutes: int = 0,
         seconds: int = 0,
-    ):
+    ) -> QueryReturn:
         """
         method that returns a list of all servers older than a time relative to now. Uses UTC timezone
         :param output_details: A dataclass containing config info on how results should be returned
@@ -72,7 +71,7 @@ class ServerManager(QueryManager):
         hours: int = 0,
         minutes: int = 0,
         seconds: int = 0,
-    ):
+    ) -> QueryReturn:
         """
         method that returns a list of all servers younger than a time relative to now. Uses UTC timezone
         :param output_details: A dataclass containing config info on how results should be returned
@@ -103,7 +102,7 @@ class ServerManager(QueryManager):
         hours: int = 0,
         minutes: int = 0,
         seconds: int = 0,
-    ):
+    ) -> QueryReturn:
         """
         method that returns a list of all servers which were last updated before a time relative to now.
         Uses UTC timezone
@@ -135,7 +134,7 @@ class ServerManager(QueryManager):
         hours: int = 0,
         minutes: int = 0,
         seconds: int = 0,
-    ):
+    ) -> QueryReturn:
         """
         method that returns a list of all servers which were last updated after a time relative to now.
         Uses UTC timezone
@@ -162,7 +161,7 @@ class ServerManager(QueryManager):
 
     def search_servers_name_in(
         self, output_details: QueryOutputDetails, names: List[str]
-    ):
+    ) -> QueryReturn:
         """
         method that returns a list of all servers which have a name in a given list
         :param output_details: A dataclass containing config info on how results should be returned
@@ -179,7 +178,7 @@ class ServerManager(QueryManager):
 
     def search_servers_name_not_in(
         self, output_details: QueryOutputDetails, names: List[str]
-    ):
+    ) -> QueryReturn:
         """
         method that returns a list of all servers which do not have a name matching any from a given list
         :param output_details: A dataclass containing config info on how results should be returned

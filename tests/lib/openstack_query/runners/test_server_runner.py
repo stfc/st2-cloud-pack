@@ -26,22 +26,26 @@ class ServerRunnerTests(unittest.TestCase):
 
     def test_get_projects_get_all(self):
         """
-        Tests _get_projects gets all projects when project param empty
+        Tests _get_projects method works expectedly
+        method should return all projects when project param empty
         """
         self.conn.identity.projects.return_value = ["project1", "project2"]
         res = self.instance._get_projects(self.conn)
         self.conn.identity.projects.assert_called_once()
         self.assertEqual(res, ["project1", "project2"])
 
-    def test_get_projects_with_string_project_identifiers(self):
+    def test_get_projects_with_valid_project_identifiers(self):
         """
-        Tests _get_project method works when projects param not empty
+        Tests _get_project method works expectedly - with valid project identifiers
+        method should iteratively call find_project() to find each project in list and return outputs
         """
+
         mock_project_identifiers = ["project_id1", "project_id2"]
         self.conn.identity.find_project.side_effect = [
             "project1",
             "project2",
         ]
+
         res = self.instance._get_projects(self.conn, mock_project_identifiers)
         self.conn.identity.find_project.assert_has_calls(
             [
@@ -51,9 +55,21 @@ class ServerRunnerTests(unittest.TestCase):
         )
         self.assertEqual(res, ["project1", "project2"])
 
+    @raises(ParseQueryError)
+    def test_get_projects_with_invalid_project_identifier(self):
+        """
+        Tests _get_project method works expectedly
+        method should raise ParseQueryError when an invalid project identifier is given
+        (or when project cannot be found)
+        """
+        mock_project_identifiers = ["project_id3"]
+        self.conn.identity.find_project.side_effect = [ResourceNotFound()]
+        self.instance._get_projects(self.conn, mock_project_identifiers)
+
     def test_get_projects_with_project_objects(self):
         """
-        Tests _get_project method works when projects param not empty
+        Tests _get_project method works expectedly - when projects param has openstack Projects objects
+        method should assume that openstack projects are valid and return them without doing anything else
         """
         mock_proj1 = Mock()
         mock_proj1.__class__ = Project
@@ -65,19 +81,17 @@ class ServerRunnerTests(unittest.TestCase):
         res = self.instance._get_projects(self.conn, mock_project_identifiers)
         self.assertEqual(res, [mock_proj1, mock_proj2])
 
-    @raises(ParseQueryError)
-    def test_get_projects_with_invalid_list(self):
-        """
-        Tests _get_project method raises error when projects param has invalid entry
-        """
-        self.conn.identity.find_project.side_effect = [ResourceNotFound()]
-        _ = self.instance._get_projects(self.conn, ["invalid-identifier"])
-
     @patch("openstack_query.runners.server_runner.ServerRunner._get_projects")
     @patch("openstack_query.runners.server_runner.ServerRunner._run_query_on_projects")
-    def test_run_query(self, mock_run_query_on_projects, mock_get_projects):
+    def test_run_query_with_from_projects(
+        self, mock_run_query_on_projects, mock_get_projects
+    ):
         """
-        Tests _run_query method works expectedly
+        Tests _run_query method works expectedly - when from_projects extra param set
+        method should:
+            - run _get_projects passing through from_projects values to get list of projects
+            - then run _run_query_on_projects passing through list of projects and filer kwargs
+            - then output a list of servers flattening the dictionary run_query_on_projects returns
         """
         mock_get_projects.return_value = ["project1", "project2"]
         mock_run_query_on_projects.return_value = {
@@ -100,6 +114,8 @@ class ServerRunnerTests(unittest.TestCase):
     def test_run_query_from_projects(self, mock_run_query_on_project):
         """
         Tests _run_query_on_projects works expectedly
+        this method will build a dictionary by iterating through projects given.
+        The dictionary will have the format {project-id: 'results of running the query on the project'}
         """
         project1 = {"id": "project-id1"}
         project2 = {"id": "project-id2"}
@@ -126,6 +142,8 @@ class ServerRunnerTests(unittest.TestCase):
     def test_run_query_on_project(self):
         """
         Tests _run_query_on_project works expectedly
+        method should run and return the results of the function conn.compute.servers with 'project_id' filter set to
+        the given project's id. This filter will limit the servers returned to be only those that belong to that project
         """
         mock_project = {"id": "project1"}
         self.conn.compute.servers.return_value = [{"id": "server1"}, {"id": "server2"}]
@@ -138,6 +156,7 @@ class ServerRunnerTests(unittest.TestCase):
     def test_parse_subset(self):
         """
         Tests _parse_subset works expectedly
+        method simply checks each value in 'subset' param is of the Server type and returns it
         """
 
         # with one item
@@ -151,3 +170,12 @@ class ServerRunnerTests(unittest.TestCase):
         mock_server_2.__class__ = Server
         res = self.instance._parse_subset(self.conn, [mock_server_1, mock_server_2])
         self.assertEqual(res, [mock_server_1, mock_server_2])
+
+    @raises(ParseQueryError)
+    def test_parse_subset_invalid(self):
+        """
+        Tests _parse_subset works expectedly
+        method raises error when provided value which is not of Server type
+        """
+        invalid_server = "invalid-server-obj"
+        self.instance._parse_subset(self.conn, [invalid_server])

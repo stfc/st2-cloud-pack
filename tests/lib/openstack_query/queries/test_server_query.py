@@ -1,5 +1,4 @@
 import unittest
-from unittest.mock import MagicMock, patch
 
 from parameterized import parameterized
 from openstack_query.queries.server_query import ServerQuery

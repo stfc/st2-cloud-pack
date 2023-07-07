@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, NonCallableMock
 from parameterized import parameterized
 
 from openstack_query.managers.query_manager import QueryManager
@@ -30,8 +30,10 @@ class QueryManagerTests(unittest.TestCase):
     def test_build_and_run_query(self, mock_get_query_output, mock_populate_query):
         """
         Tests that _build_and_run_query method functions expectedly
+        Sets up a QueryResource object and runs a given query with appropriate inputs. Returns query result
         """
-        mock_get_query_output.return_value = "some-output"
+        mock_query_return = NonCallableMock()
+        mock_get_query_output.return_value = mock_query_return
 
         res = self.instance._build_and_run_query(
             MOCKED_PRESET_DETAILS, MOCKED_OUTPUT_DETAILS
@@ -42,7 +44,7 @@ class QueryManagerTests(unittest.TestCase):
         )
         self.query.run.assert_called_once_with("test_account")
         mock_get_query_output.assert_called_once_with(MOCKED_OUTPUT_DETAILS.output_type)
-        self.assertEqual(res, "some-output")
+        self.assertEqual(res, mock_query_return)
 
     @parameterized.expand(
         [(f"test {outtype.name.lower()}", outtype) for outtype in QueryOutputTypes]
@@ -56,6 +58,7 @@ class QueryManagerTests(unittest.TestCase):
     def test_populate_query_with_properties(self):
         """
         Tests that _populate_query method functions expectedly with properties
+        method builds the query with appropriate inputs before executing - calls select() with given properties
         """
 
         self.instance._populate_query(
@@ -73,6 +76,7 @@ class QueryManagerTests(unittest.TestCase):
     def test_populate_query_with_no_properties(self):
         """
         Tests that _populate_query method functions expectedly with no properties
+        method builds the query with appropriate inputs before executing - calls select_all() when given no properties
         """
 
         self.instance._populate_query(MOCKED_PRESET_DETAILS, None)

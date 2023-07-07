@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, NonCallableMock
 
 from openstack_query.managers.server_manager import ServerManager
 
@@ -35,20 +35,24 @@ class ServerManagerTests(unittest.TestCase):
     def test_search_all_servers(self, mock_build_and_run_query):
         """
         Tests that search_all_servers method functions expectedly
+        Runs a query to get all servers, returns query results
         """
-        mock_build_and_run_query.return_value = "some-output"
+        mock_query_return = NonCallableMock()
+        mock_build_and_run_query.return_value = mock_query_return
 
         res = self.instance.search_all_servers(MOCKED_OUTPUT_DETAILS)
         mock_build_and_run_query.assert_called_once_with(
             preset_details=None, output_details=MOCKED_OUTPUT_DETAILS
         )
-        self.assertEqual(res, "some-output")
+        self.assertEqual(res, mock_query_return)
 
     def test_search_servers_older_than_relative_to_now(self, mock_build_and_run_query):
         """
         Tests that search_servers_older_than_relative_to_now method functions expectedly
+        Runs a query to get all servers older than a relative time (e.g. older than 60 days)
         """
-        mock_build_and_run_query.return_value = "some-output"
+        mock_query_return = NonCallableMock()
+        mock_build_and_run_query.return_value = mock_query_return
 
         res = self.instance.search_servers_older_than_relative_to_now(
             MOCKED_OUTPUT_DETAILS, days=10, hours=10, minutes=1
@@ -67,15 +71,17 @@ class ServerManagerTests(unittest.TestCase):
             ),
             output_details=MOCKED_OUTPUT_DETAILS,
         )
-        self.assertEqual(res, "some-output")
+        self.assertEqual(res, mock_query_return)
 
     def test_search_servers_younger_than_relative_to_now(
         self, mock_build_and_run_query
     ):
         """
         Tests that search_servers_younger_than_relative_to_now method functions expectedly
+        Runs a query to get all servers younger than a relative time (e.g. younger than 60 days)
         """
-        mock_build_and_run_query.return_value = "some-output"
+        mock_query_return = NonCallableMock()
+        mock_build_and_run_query.return_value = mock_query_return
 
         res = self.instance.search_servers_younger_than_relative_to_now(
             MOCKED_OUTPUT_DETAILS, days=10, hours=10, minutes=1
@@ -94,15 +100,17 @@ class ServerManagerTests(unittest.TestCase):
             ),
             output_details=MOCKED_OUTPUT_DETAILS,
         )
-        self.assertEqual(res, "some-output")
+        self.assertEqual(res, mock_query_return)
 
     def test_search_servers_last_updated_before_relative_to_now(
         self, mock_build_and_run_query
     ):
         """
         Tests that search_servers_last_updated_before_relative_to_now method functions expectedly
+        Runs a query to get all servers that have had their last status changed before than a relative time (e.g. days=60 => 60 days ago or older)
         """
-        mock_build_and_run_query.return_value = "some-output"
+        mock_query_return = NonCallableMock()
+        mock_build_and_run_query.return_value = mock_query_return
 
         res = self.instance.search_servers_last_updated_before_relative_to_now(
             MOCKED_OUTPUT_DETAILS, days=10, hours=10, minutes=1
@@ -121,15 +129,17 @@ class ServerManagerTests(unittest.TestCase):
             ),
             output_details=MOCKED_OUTPUT_DETAILS,
         )
-        self.assertEqual(res, "some-output")
+        self.assertEqual(res, mock_query_return)
 
     def test_search_servers_last_updated_after_relative_to_now(
         self, mock_build_and_run_query
     ):
         """
         Tests that search_servers_last_updated_after_relative_to_now method functions expectedly
+        Runs a query to get all servers that have had their last status changed after than a relative time (e.g. days=60 => 60 days ago or earlier)
         """
-        mock_build_and_run_query.return_value = "some-output"
+        mock_query_return = NonCallableMock()
+        mock_build_and_run_query.return_value = mock_query_return
 
         res = self.instance.search_servers_last_updated_after_relative_to_now(
             MOCKED_OUTPUT_DETAILS, days=10, hours=10, minutes=1
@@ -148,14 +158,15 @@ class ServerManagerTests(unittest.TestCase):
             ),
             output_details=MOCKED_OUTPUT_DETAILS,
         )
-        self.assertEqual(res, "some-output")
+        self.assertEqual(res, mock_query_return)
 
     def test_search_servers_name_in(self, mock_build_and_run_query):
         """
         Tests that search_servers_name_in method functions expectedly
+        Runs a query to get all servers that match a given list of names
         """
-        mock_build_and_run_query.return_value = "some-output"
-
+        mock_query_return = NonCallableMock()
+        mock_build_and_run_query.return_value = mock_query_return
         res = self.instance.search_servers_name_in(
             MOCKED_OUTPUT_DETAILS, names=["name1", "name2"]
         )
@@ -167,13 +178,15 @@ class ServerManagerTests(unittest.TestCase):
             ),
             output_details=MOCKED_OUTPUT_DETAILS,
         )
-        self.assertEqual(res, "some-output")
+        self.assertEqual(res, mock_query_return)
 
     def test_search_servers_name_not_in(self, mock_build_and_run_query):
         """
         Tests that search_servers_name_not_in method functions expectedly
+        Runs a query to get all servers that don't match a given list of names
         """
-        mock_build_and_run_query.return_value = "some-output"
+        mock_query_return = NonCallableMock()
+        mock_build_and_run_query.return_value = mock_query_return
 
         res = self.instance.search_servers_name_not_in(
             MOCKED_OUTPUT_DETAILS, names=["name1", "name2"]
@@ -186,4 +199,4 @@ class ServerManagerTests(unittest.TestCase):
             ),
             output_details=MOCKED_OUTPUT_DETAILS,
         )
-        self.assertEqual(res, "some-output")
+        self.assertEqual(res, mock_query_return)

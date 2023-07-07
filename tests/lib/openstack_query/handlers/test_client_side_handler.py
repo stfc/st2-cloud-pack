@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, NonCallableMock
 from parameterized import parameterized
 
 from openstack_query.handlers.client_side_handler import ClientSideHandler
@@ -33,6 +33,10 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
         }
 
     def test_check_supported_true(self):
+        """
+        Tests that check_supported method works expectedly
+        returns True if Prop Enum and Preset Enum have client-side mapping
+        """
         # when preset has '*' mapping - accepts all props
         self.assertTrue(
             self.instance.check_supported(
@@ -48,6 +52,11 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
         )
 
     def test_check_preset_supported_false(self):
+        """
+        Tests that check_supported method works expectedly
+        returns False if either Preset is not supported or Preset-Prop does not have a mapping
+        """
+
         # when preset is not supported
         self.assertFalse(
             self.instance.check_supported(
@@ -71,6 +80,10 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
     def test_get_filter_func_valid(
         self, mock_filter_func_wrapper, mock_check_filter_func
     ):
+        """
+        Tests that get_filter_func method works expectedly - with valid inputs
+        sets up and returns a function that when given an openstack object will return a boolean value on whether it passes the filter
+        """
         # define inputs
         mock_prop_func = MagicMock()
         mock_kwargs = {"arg1": "val1", "arg2": "val2"}
@@ -94,6 +107,10 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
         self.assertEqual(val, "a-boolean-value")
 
     def test_get_filter_func_preset_invalid(self):
+        """
+        Tests that get_filter_func method works expectedly - with invalid inputs
+        raises QueryPresetMappingError if preset invalid
+        """
         mock_prop_func = MagicMock()
         mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
@@ -107,6 +124,11 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
             )
 
     def test_get_filter_func_prop_invalid(self):
+        """
+        Tests that get_filter_func method works expectedly - with invalid inputs
+        raises QueryPresetMappingError if prop invalid
+        """
+
         # when the preset is valid, but property is invalid
         with self.assertRaises(QueryPresetMappingError):
             mock_prop_func = MagicMock()
@@ -122,6 +144,10 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
         "openstack_query.handlers.client_side_handler.ClientSideHandler._check_filter_func"
     )
     def test_get_filter_func_arguments_invalid(self, mock_check_filter_func):
+        """
+        Tests that get_filter_func method works expectedly - with invalid inputs
+        raises QueryPresetMappingError if filter_func_kwargs are invalid
+        """
         mock_prop_func = MagicMock()
         mock_kwargs = {"arg1": "val1", "arg2": "val2"}
         # when check_filter_func is false
@@ -135,7 +161,11 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
             )
 
     def test_filter_func_wrapper_prop_func_error(self):
-        mock_item = "some-openstack-item"
+        """
+        Tests that get_filter_func method works expectedly - with invalid inputs
+        raises QueryPresetMappingError if filter_func_kwargs are invalid
+        """
+        mock_item = NonCallableMock()
 
         mock_filter_func = MagicMock()
         mock_filter_func.return_value = "a-boolean-value"
@@ -151,7 +181,14 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
         self.assertFalse(res)
 
     def test_filter_func_wrapper_valid(self):
-        mock_item = "some-openstack-item"
+        """
+        Tests that filter_func_wrapper method works expectedly - with valid inputs
+        returns a function that takes an openstack item as input and returns either True or False
+        on whether that item passes the set filter condition.
+            - Prop Enum and Preset Enum are supported
+            - and filter_func_kwargs are valid
+        """
+        mock_item = NonCallableMock()
 
         mock_filter_func = MagicMock()
         mock_filter_func.return_value = "a-boolean-value"
@@ -202,6 +239,11 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
         ]
     )
     def test_check_filter_func(self, name, valid_kwargs_to_test, expected_value):
+        """
+        Tests that check_filter_func method works expectedly
+        returns True only if args match expected args required by client-side filter function
+        """
+
         def mock_filter_func(prop, arg1: int, arg2: str = "some-default", **kwargs):
             return None
 

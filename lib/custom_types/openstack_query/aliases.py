@@ -36,3 +36,9 @@ PresetPropMappings = Union[List[PropEnum], List[Literal["*"]]]
 
 # type alias for project identifier - either name/id or Project object
 ProjectIdentifier = Union[str, Project]
+
+# type alias for returning a query - any one of:
+#   - A string with values in a tabulate table
+#   - A list of Openstack Resource objects
+#   - A list of dictionaries containing selected properties for each openstack resource
+QueryReturn = Union[str, List[OpenstackResourceObj], List[Dict]]

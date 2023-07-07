@@ -17,9 +17,16 @@ class QueryRunnerTests(unittest.TestCase):
 
     @patch("openstack_query.runners.query_runner.QueryRunner._apply_client_side_filter")
     @patch("openstack_query.runners.query_runner.QueryRunner._run_query")
-    def test_run_only_filter_func(self, mock_run_query, mock_apply_filter_func):
+    def test_run_with_only_client_side_filter(
+        self, mock_run_query, mock_apply_client_side_filter
+    ):
+        """
+        Tests that run method functions expectedly - with only client_side_filter_func set
+        method should call run_query and run apply_client_side_filter and return results
+        """
         mock_run_query.return_value = ["openstack-resource-1", "openstack-resource-2"]
-        mock_apply_filter_func.return_value = ["filtered-openstack-resource"]
+        mock_apply_client_side_filter.return_value = ["openstack-resource-1"]
+
         mock_client_side_filter_func = MagicMock()
 
         res = self.instance.run(
@@ -32,16 +39,20 @@ class QueryRunnerTests(unittest.TestCase):
         mock_run_query.assert_called_once_with(
             self.conn, None, **{"arg1": "val1", "arg2": "val2"}
         )
-        mock_apply_filter_func.assert_called_once_with(
+        mock_apply_client_side_filter.assert_called_once_with(
             ["openstack-resource-1", "openstack-resource-2"],
             mock_client_side_filter_func,
         )
         mock_client_side_filter_func.assert_not_called()
-        self.assertEqual(["filtered-openstack-resource"], res)
+        self.assertEqual(["openstack-resource-1"], res)
 
     @patch("openstack_query.runners.query_runner.QueryRunner._run_query")
     def test_run_with_server_side_filters(self, mock_run_query):
-        mock_run_query.return_value = ["kwarg-filtered-openstack-resource"]
+        """
+        Tests that run method functions expectedly - with server_side_filters set
+        method should call run_query and return results
+        """
+        mock_run_query.return_value = ["openstack-resource-1"]
         self.instance._run_query = mock_run_query
         mock_client_side_filter_func = MagicMock()
 
@@ -59,16 +70,20 @@ class QueryRunnerTests(unittest.TestCase):
 
         # if we have server-side filters, don't use client_side_filters
         mock_client_side_filter_func.assert_not_called()
-        self.assertEqual(["kwarg-filtered-openstack-resource"], res)
+        self.assertEqual(["openstack-resource-1"], res)
 
     @patch("openstack_query.runners.query_runner.QueryRunner._parse_subset")
     @patch("openstack_query.runners.query_runner.QueryRunner._apply_client_side_filter")
     def test_run_with_subset(self, mock_apply_filter_func, mock_parse_subset):
+        """
+        Tests that run method functions expectedly - with meta param 'from_subset' set
+        method should run parse_subset on 'from_subset' values and then apply_client_side_filter and return results
+        """
         mock_parse_subset.return_value = [
             "parsed-openstack-resource-1",
             "parsed-openstack-resource-2",
         ]
-        mock_apply_filter_func.return_value = ["filtered-openstack-resource"]
+        mock_apply_filter_func.return_value = ["parsed-openstack-resource-1"]
         mock_client_side_filter_func = MagicMock()
 
         res = self.instance.run(
@@ -87,9 +102,13 @@ class QueryRunnerTests(unittest.TestCase):
             mock_client_side_filter_func,
         )
 
-        self.assertEqual(["filtered-openstack-resource"], res)
+        self.assertEqual(["parsed-openstack-resource-1"], res)
 
     def test_apply_filter_func(self):
+        """
+        Tests that apply_filter_func method functions expectedly
+        method should iteratively run filter_func on each item and return only those that filter_function returned True
+        """
         mock_client_side_filter_func = MagicMock()
         mock_client_side_filter_func.side_effect = [False, True]
 

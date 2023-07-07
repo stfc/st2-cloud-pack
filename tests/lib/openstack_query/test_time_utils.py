@@ -26,6 +26,10 @@ class TimeUtilsTests(unittest.TestCase):
     def test_get_timestamp_in_seconds(
         self, name, days, hours, minutes, seconds, total_seconds, mock_current_datetime
     ):
+        """
+        Tests that get_timestamp_in_seconds method works expectedly
+        method takes a set of integer params "days, hours, minutes, seconds" and calculates total seconds
+        """
         mock_current_datetime.return_value = datetime(2023, 6, 4, 10, 30, 0)
         out = TimeUtils.get_timestamp_in_seconds(days, hours, minutes, seconds)
 
@@ -38,6 +42,10 @@ class TimeUtilsTests(unittest.TestCase):
 
     @raises(MissingMandatoryParamError)
     def test_get_timestamp_in_seconds_invalid(self):
+        """
+        Tests that get_timestamp_in_seconds method works expectedly - with invalid inputs - all 0
+        method should raise an error - we should expect at least one non-zero param
+        """
         TimeUtils.get_timestamp_in_seconds(days=0, hours=0, minutes=0, seconds=0)
 
     @parameterized.expand(
@@ -71,6 +79,11 @@ class TimeUtilsTests(unittest.TestCase):
         expected_timestamp,
         mock_current_datetime,
     ):
+        """
+        Tests that convert_to_timestamp method works expectedly
+        method takes a set of integer params "days, hours, minutes, seconds" and calculates a relative timestamp
+        of that many seconds in the past from current time
+        """
         mock_current_datetime.return_value = datetime(2023, 6, 4, 10, 30, 0)
         out = TimeUtils.convert_to_timestamp(days, hours, minutes, seconds)
         mock_current_datetime.assert_called_once()
