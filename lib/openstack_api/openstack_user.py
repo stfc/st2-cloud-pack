@@ -10,7 +10,7 @@ from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
 class OpenstackUser(OpenstackWrapperBase, OpenstackQueryBase):
-    # Lists all possible query presets for user.list
+    # Lists all possible query client_side for user.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_users",
         "users_id_in",

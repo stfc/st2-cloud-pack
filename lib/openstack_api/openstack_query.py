@@ -19,7 +19,6 @@ from structs.smtp_account import SMTPAccount
 
 
 class OpenstackQuery(OpenstackWrapperBase):
-
     # Various queries useful for openstack objects
     def query_datetime_before(self, prop: str, days: int):
         """

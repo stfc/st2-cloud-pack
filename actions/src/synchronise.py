@@ -1,6 +1,7 @@
 from openstack_api.openstack_connection import OpenstackConnection
 from st2common.runners.base_action import Action
 
+
 # pylint: disable=too-few-public-methods
 class SyncAction(Action):
     # pylint: disable=arguments-differ

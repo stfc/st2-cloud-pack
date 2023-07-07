@@ -111,7 +111,7 @@ class OpenstackSecurityGroups(OpenstackWrapperBase):
         end_port = str(details.port_range[1]).strip()
         self._validate_rule_ports(start_port, end_port)
 
-        # Map any values to None types as per OS API
+        # Map any values to None custom_types as per OS API
         protocol = (
             None if details.protocol is Protocol.ANY else details.protocol.value.lower()
         )

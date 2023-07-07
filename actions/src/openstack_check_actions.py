@@ -9,7 +9,6 @@ from post_ticket import post_ticket
 
 
 class CheckActions(Action):
-
     # pylint: disable=arguments-differ
     def run(self, submodule: str, **kwargs):
         """
@@ -59,7 +58,6 @@ class CheckActions(Action):
             )
 
         for server in servers:
-
             with OpenstackConnection(cloud_name=cloud) as conn:
                 applied = conn.list_server_security_groups(server.id)
             for rule in rules:
@@ -241,7 +239,6 @@ class CheckActions(Action):
             logging.info("No issues found")
             sys.exit()
         for ticket in actual_tickets_info["server_list"]:
-
             # pylint: disable=too-many-function-args
             issue = post_ticket(
                 actual_tickets_info,

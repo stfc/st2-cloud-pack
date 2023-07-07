@@ -15,7 +15,7 @@ from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
 class OpenstackServer(OpenstackWrapperBase, OpenstackQueryEmailBase):
-    # Lists all possible query presets for server.list
+    # Lists all possible query client_side for server.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_servers",
         "servers_older_than",
@@ -34,7 +34,7 @@ class OpenstackServer(OpenstackWrapperBase, OpenstackQueryEmailBase):
         "servers_shutoff_before",
     ]
 
-    # Lists possible queries presets that don't require a project to function
+    # Lists possible queries client_side that don't require a project to function
     SEARCH_QUERY_PRESETS_NO_PROJECT: List[str] = [
         "servers_older_than",
         "servers_last_updated_before",

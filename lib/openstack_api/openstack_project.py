@@ -9,7 +9,7 @@ from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
 class OpenstackProject(OpenstackWrapperBase, OpenstackQueryBase):
-    # Lists all possible query presets for project.list
+    # Lists all possible query client_side for project.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_projects",
         "projects_id_in",

@@ -14,7 +14,7 @@ from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
 class OpenstackFloatingIP(OpenstackWrapperBase, OpenstackQueryEmailBase):
-    # Lists all possible query presets for floating.ip.list
+    # Lists all possible query client_side for floating.ip.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_fips",
         "fips_older_than",
@@ -31,7 +31,7 @@ class OpenstackFloatingIP(OpenstackWrapperBase, OpenstackQueryEmailBase):
         "fips_down_before",
     ]
 
-    # Lists possible queries presets that don't require a project to function
+    # Lists possible queries client_side that don't require a project to function
     SEARCH_QUERY_PRESETS_NO_PROJECT: List[str] = [
         "fips_older_than",
         "fips_last_updated_before",

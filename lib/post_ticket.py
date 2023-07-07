@@ -1,6 +1,7 @@
 import requests
 from requests.auth import HTTPBasicAuth
 
+
 # pylint: disable=too-many-arguments
 def post_ticket(
     tickets_info, ticket_details, service_desk_id, request_type_id, email, api_key

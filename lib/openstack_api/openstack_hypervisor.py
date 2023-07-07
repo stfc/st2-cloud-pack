@@ -9,7 +9,7 @@ from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 
 class OpenstackHypervisor(OpenstackWrapperBase, OpenstackQueryBase):
-    # Lists all possible query presets for hypervisor.list
+    # Lists all possible query client_side for hypervisor.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_hvs",
         "hvs_id_in",
