@@ -90,8 +90,8 @@ class QueryMethods:
         :param kwargs: keyword args that can be used to configure details of how query is run
             - valid kwargs specific to resource
         """
-        local_filters = self.builder.client_side_filter()
-        server_filters = self.builder.server_side_filters()
+        local_filters = self.builder.client_side_filter
+        server_filters = self.builder.server_side_filters
 
         self._query_results = self.runner.run(
             cloud_account, local_filters, server_filters, from_subset, **kwargs
@@ -108,7 +108,7 @@ class QueryMethods:
         """
         if as_objects:
             return self._query_results
-        return self.output.results()
+        return self.output.results
 
     def to_string(self, **kwargs) -> str:
         """

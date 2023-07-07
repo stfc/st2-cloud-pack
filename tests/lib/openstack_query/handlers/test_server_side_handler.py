@@ -158,9 +158,9 @@ class ServerSideHandlerTests(unittest.TestCase):
             ),
         ]
     )
-    def test_check_filter_mapping(self, name, valid_params_to_test):
+    def test_check_filter_mapping_valid(self, name, valid_params_to_test):
         """
-        Tests that check_filter_mapping method works expectedly
+        Tests that check_filter_mapping method works expectedly - valid
         returns True only if args match expected args required by filter function lambda
         """
         mock_server_side_mapping = lambda arg1, arg2="some-default", **kwargs: {
@@ -169,5 +169,17 @@ class ServerSideHandlerTests(unittest.TestCase):
         self.assertTrue(
             self.instance._check_filter_mapping(
                 mock_server_side_mapping, filter_params=valid_params_to_test
-            )
+            )[0]
+        )
+
+    def test_check_filter_mapping_invalid(self):
+        """
+        Tests that check_filter_mapping method works expectedly - invalid params
+        returns False if args don't match expected args required by filter function lambda
+        """
+        mock_server_side_mapping = lambda arg1: {"kwarg1": "val1"}
+        self.assertFalse(
+            self.instance._check_filter_mapping(
+                mock_server_side_mapping, filter_params={"arg2": "val2"}
+            )[0]
         )

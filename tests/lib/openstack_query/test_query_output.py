@@ -194,3 +194,12 @@ class QueryOutputTests(unittest.TestCase):
         self.instance._props = {MockProperties.PROP_1, MockProperties.PROP_2}
         res = self.instance._parse_property("openstack-item")
         self.assertEqual(res, {"prop_1": "prop_1-func", "prop_2": "prop_2-func"})
+
+    def test_results(self):
+        """
+        Tests that property method returns results value
+        """
+
+        self.instance._results = "some-results"
+        res = self.instance.results
+        self.assertEqual(res, "some-results")

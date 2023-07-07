@@ -238,9 +238,9 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
             ("optional wrong type", {"arg1": 12, "arg2": 12}, False),
         ]
     )
-    def test_check_filter_func(self, name, valid_kwargs_to_test, expected_value):
+    def test_check_filter_func(self, name, kwargs_to_test, expected_value):
         """
-        Tests that check_filter_func method works expectedly
+        Tests that check_filter_func method works expectedly - for filter_func which takes extra params
         returns True only if args match expected args required by client-side filter function
         """
 
@@ -248,6 +248,26 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
             return None
 
         res = self.instance._check_filter_func(
-            mock_filter_func, func_kwargs=valid_kwargs_to_test
+            mock_filter_func, func_kwargs=kwargs_to_test
+        )
+        self.assertEqual(expected_value, res[0])
+
+    @parameterized.expand(
+        [
+            ("empty", {}, True),
+            ("provided invalid arg", {"arg1": "non-default"}, False),
+        ]
+    )
+    def test_check_filter_func_with_no_args(self, name, kwargs_to_test, expected_value):
+        """
+        Tests that check_filter_func method works expectedly - for filter_func which takes no extra params
+        returns True if args match expected args required by client-side filter function
+        """
+
+        def mock_filter_func(prop):
+            return None
+
+        res = self.instance._check_filter_func(
+            mock_filter_func, func_kwargs=kwargs_to_test
         )
         self.assertEqual(expected_value, res[0])

@@ -88,6 +88,6 @@ class ServerSideHandler(HandlerBase):
         """
         try:
             filter_func(**filter_params)
-        except KeyError as err:
+        except TypeError as err:
             return False, f"expected arg '{err.args[0]}' but not found"
         return True, ""

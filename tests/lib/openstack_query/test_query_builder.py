@@ -122,3 +122,21 @@ class QueryBuilderTests(unittest.TestCase):
         self.instance._get_preset_handler(
             MockQueryPresets.ITEM_1, MockProperties.PROP_1
         )
+
+    def test_client_side_filter(self):
+        """
+        Tests that property method returns client_side_filter value
+        """
+
+        self.instance._client_side_filter = "some-client-side-filter"
+        res = self.instance.client_side_filter
+        self.assertEqual(res, "some-client-side-filter")
+
+    def test_server_side_filters(self):
+        """
+        Tests that property method returns server_side_filter value
+        """
+
+        self.instance._server_side_filters = "some-server-side-filter"
+        res = self.instance.server_side_filters
+        self.assertEqual(res, "some-server-side-filter")

@@ -118,17 +118,15 @@ class QueryMethodsTests(unittest.TestCase):
         self.instance.output = mock_query_output
 
         mock_client_filter_func = MagicMock()
-        mock_query_builder.client_side_filter.return_value = mock_client_filter_func
+        mock_query_builder.client_side_filter = mock_client_filter_func
 
         mock_server_filters = NonCallableMock()
-        mock_query_builder.server_side_filters.return_value = mock_server_filters
+        mock_query_builder.server_side_filters = mock_server_filters
 
         mock_query_results = NonCallableMock()
         mock_query_runner.run.return_value = mock_query_results
 
         res = self.instance.run("test-account")
-        mock_query_builder.client_side_filter.assert_called_once()
-        mock_query_builder.server_side_filters.assert_called_once()
         mock_query_runner.run.assert_called_once_with(
             "test-account", mock_client_filter_func, mock_server_filters, None
         )
@@ -144,7 +142,7 @@ class QueryMethodsTests(unittest.TestCase):
         mock_query_output = MagicMock()
         mock_query_results = NonCallableMock()
         self.instance.output = mock_query_output
-        self.instance.output.results.return_value = mock_query_results
+        self.instance.output.results = mock_query_results
         self.assertEqual(self.instance.to_list(), mock_query_results)
 
     def test_to_list_as_objects_true(self):
