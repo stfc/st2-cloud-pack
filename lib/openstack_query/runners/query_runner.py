@@ -41,9 +41,6 @@ class QueryRunner(OpenstackWrapperBase):
             runner of interest.
         """
 
-        if from_subset and server_side_filters:
-            raise ParseQueryError("Cannot parse from a subset and server filter")
-
         with self._connection_cls(cloud_account) as conn:
             resource_objects = (
                 self._parse_subset(conn, from_subset)
