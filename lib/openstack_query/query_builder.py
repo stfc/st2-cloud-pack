@@ -77,10 +77,13 @@ class QueryBuilder:
 
         preset_handler = self._get_preset_handler(preset, prop)
         self._client_side_filter = preset_handler.get_filter_func(
-            preset, prop, prop_func, preset_kwargs
+            preset=preset,
+            prop=prop,
+            prop_func=prop_func,
+            filter_func_kwargs=preset_kwargs,
         )
         self._server_side_filters = self._server_side_handler.get_filters(
-            preset, prop, prop_func, preset_kwargs
+            preset=preset, prop=prop, params=preset_kwargs
         )
 
     def _get_preset_handler(

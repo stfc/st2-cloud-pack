@@ -67,10 +67,15 @@ class QueryBuilderTests(unittest.TestCase):
             MockQueryPresets.ITEM_1, MockProperties.PROP_1
         )
         mock_client_side_handler.get_filter_func.assert_called_once_with(
-            MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_prop_func, mock_kwargs
+            preset=MockQueryPresets.ITEM_1,
+            prop=MockProperties.PROP_1,
+            prop_func=mock_prop_func,
+            filter_func_kwargs=mock_kwargs,
         )
         self.mock_server_side_handler.get_filters.assert_called_once_with(
-            MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_prop_func, mock_kwargs
+            preset=MockQueryPresets.ITEM_1,
+            prop=MockProperties.PROP_1,
+            params=mock_kwargs,
         )
 
         self.assertEqual(self.instance._client_side_filter, mock_client_filter_func)
