@@ -56,7 +56,7 @@ class QueryBuilderTests(unittest.TestCase):
         self.mock_server_side_handler.get_filters.return_value = mock_server_filters
 
         mock_prop_func = MagicMock()
-        self.mock_prop_handler.get_prop_mapping.return_value = mock_prop_func
+        self.mock_prop_handler.get_prop_func.return_value = mock_prop_func
 
         mock_kwargs = {"arg1": "val1", "arg2": "val2"}
         self.instance.parse_where(
@@ -94,7 +94,7 @@ class QueryBuilderTests(unittest.TestCase):
         """
         # test if prop_mapping doesn't exist
         self.instance._client_side_filter = None
-        self.mock_prop_handler.get_prop_mapping.return_value = None
+        self.mock_prop_handler.get_prop_func.return_value = None
         self.instance.parse_where(MockQueryPresets.ITEM_1, MockProperties.PROP_1)
 
     def test_get_preset_handler_valid(self):

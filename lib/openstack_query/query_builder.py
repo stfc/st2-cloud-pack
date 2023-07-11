@@ -64,7 +64,7 @@ class QueryBuilder:
         if self._client_side_filter:
             raise ParseQueryError("Error: Already set a query preset")
 
-        prop_func = self._prop_handler.get_prop_mapping(prop)
+        prop_func = self._prop_handler.get_prop_func(prop)
         if not prop_func:
             # If you are here from a search, you have likely forgotten to add it to the
             # client mapping variable in your Query object

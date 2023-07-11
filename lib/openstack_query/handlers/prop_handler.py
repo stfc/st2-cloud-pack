@@ -24,7 +24,7 @@ class PropHandler:
         """
         return prop in self._PROPERTY_MAPPINGS.keys()
 
-    def _get_mapping(self, prop: PropEnum) -> Optional[PropFunc]:
+    def get_prop_func(self, prop: PropEnum) -> Optional[PropFunc]:
         """
         Method that returns the property function if function mapping exists for a given property Enum
         :param prop: A property Enum for which a function may exist for
@@ -50,7 +50,7 @@ class PropHandler:
         if not self.check_supported(prop):
             return default_out
 
-        prop_func = self._get_mapping(prop)
+        prop_func = self.get_prop_func(prop)
         try:
             return str(prop_func(item))
         except AttributeError:
