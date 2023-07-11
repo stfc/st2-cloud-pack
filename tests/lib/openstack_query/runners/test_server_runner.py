@@ -149,7 +149,7 @@ class ServerRunnerTests(unittest.TestCase):
         self.conn.compute.servers.return_value = [{"id": "server1"}, {"id": "server2"}]
         res = self.instance._run_query_on_project(self.conn, mock_project)
         self.conn.compute.servers.assert_called_once_with(
-            filters={"project_id": "project1", "all_tenants": True}
+            all_projects=False, project_id="project1", all_tenants=True
         )
         self.assertEqual(res, [{"id": "server1"}, {"id": "server2"}])
 

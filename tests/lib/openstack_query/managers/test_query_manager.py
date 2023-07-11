@@ -65,7 +65,7 @@ class QueryManagerTests(unittest.TestCase):
             MOCKED_PRESET_DETAILS, MOCKED_OUTPUT_DETAILS.properties_to_select
         )
         self.query.select.assert_called_once_with(
-            MOCKED_OUTPUT_DETAILS.properties_to_select
+            *MOCKED_OUTPUT_DETAILS.properties_to_select
         )
         self.query.where.assert_called_once_with(
             MOCKED_PRESET_DETAILS.preset,
