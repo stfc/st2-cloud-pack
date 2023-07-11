@@ -74,5 +74,7 @@ class QueryManager:
 
         if preset_details:
             self._query.where(
-                preset_details.preset, preset_details.prop, preset_details.args
+                preset=preset_details.preset,
+                prop=preset_details.prop,
+                **preset_details.args
             )
