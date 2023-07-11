@@ -68,7 +68,7 @@ class QueryManager:
         :param properties_to_select: A set of properties to get from each result when outputting
         """
         if properties_to_select:
-            self._query.select(properties_to_select)
+            self._query.select(*properties_to_select)
         else:
             self._query.select_all()
 
