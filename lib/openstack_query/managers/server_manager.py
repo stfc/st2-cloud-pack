@@ -39,7 +39,7 @@ class ServerManager(QueryManager):
         days: int = 0,
         hours: int = 0,
         minutes: int = 0,
-        seconds: int = 0,
+        seconds: Union[int, float] = 0,
     ) -> QueryReturn:
         """
         method that returns a list of all servers older than a time relative to now. Uses UTC timezone
@@ -57,7 +57,7 @@ class ServerManager(QueryManager):
                     "days": days,
                     "hours": hours,
                     "minutes": minutes,
-                    "seconds": seconds,
+                    "seconds": float(seconds),
                     "prop_timestamp_fmt": "%Y-%m-%dT%H:%M:%SZ",
                 },
             ),
@@ -70,7 +70,7 @@ class ServerManager(QueryManager):
         days: int = 0,
         hours: int = 0,
         minutes: int = 0,
-        seconds: int = 0,
+        seconds: Union[int, float] = 0,
     ) -> QueryReturn:
         """
         method that returns a list of all servers younger than a time relative to now. Uses UTC timezone
@@ -88,7 +88,7 @@ class ServerManager(QueryManager):
                     "days": days,
                     "hours": hours,
                     "minutes": minutes,
-                    "seconds": seconds,
+                    "seconds": float(seconds),
                     "prop_timestamp_fmt": "%Y-%m-%dT%H:%M:%SZ",
                 },
             ),
@@ -101,7 +101,7 @@ class ServerManager(QueryManager):
         days: int,
         hours: int = 0,
         minutes: int = 0,
-        seconds: int = 0,
+        seconds: Union[int, float] = 0,
     ) -> QueryReturn:
         """
         method that returns a list of all servers which were last updated before a time relative to now.
@@ -120,7 +120,7 @@ class ServerManager(QueryManager):
                     "days": days,
                     "hours": hours,
                     "minutes": minutes,
-                    "seconds": seconds,
+                    "seconds": float(seconds),
                     "prop_timestamp_fmt": "%Y-%m-%dT%H:%M:%SZ",
                 },
             ),
@@ -133,7 +133,7 @@ class ServerManager(QueryManager):
         days: int,
         hours: int = 0,
         minutes: int = 0,
-        seconds: int = 0,
+        seconds: Union[int, float] = 0,
     ) -> QueryReturn:
         """
         method that returns a list of all servers which were last updated after a time relative to now.
@@ -152,7 +152,7 @@ class ServerManager(QueryManager):
                     "days": days,
                     "hours": hours,
                     "minutes": minutes,
-                    "seconds": seconds,
+                    "seconds": float(seconds),
                     "prop_timestamp_fmt": "%Y-%m-%dT%H:%M:%SZ",
                 },
             ),
