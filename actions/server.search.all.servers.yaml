@@ -1,7 +1,7 @@
 ---
 description: Query servers
 enabled: true
-entry_point: src/query_actions/server_query_actions.py
+entry_point: src/server_query_actions.py
 name: server.search.all.servers
 parameters:
   timeout:

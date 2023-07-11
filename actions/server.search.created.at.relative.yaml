@@ -1,7 +1,7 @@
 ---
 description: Query servers
 enabled: true
-entry_point: src/query_actions/server_query_actions.py
+entry_point: src/server_query_actions.py
 name: server.search.created.at.relative
 parameters:
   timeout:
@@ -81,7 +81,7 @@ parameters:
     required: false
   seconds:
     description: "(Optional) Number of seconds threshold for selecting servers"
-    type: float
+    type: integer
     default: 0
     required: false
 runner_type: python-script

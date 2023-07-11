@@ -1,13 +1,12 @@
-from typing import Callable, List, Optional
+from typing import Callable, List
+from st2common.runners.base_action import Action
 
-from structs.query.query_output_details import QueryOutputDetails
 from enums.query.props.server_properties import ServerProperties
 from enums.query.query_output_types import QueryOutputTypes
-from enums.user_domains import UserDomains
+from enums.cloud_domains import CloudDomains
 
 from openstack_query.managers.server_manager import ServerManager
-
-from st2common.runners.base_action import Action
+from structs.query.query_output_details import QueryOutputDetails
 
 
 class ServerQueryActions(Action):
@@ -30,12 +29,12 @@ class ServerQueryActions(Action):
         :param return_type: A string representing how to return the results of the query
         :param kwargs: A set of extra parameters to pass to manager method, if any
         """
-        func: Callable = getattr(ServerManager, submodule)
-        prop_enums = [ServerProperties[prop] for prop in properties_to_select]
-        return ServerManager(UserDomains[cloud_account]).func(
+        server_mgr = ServerManager(CloudDomains[cloud_account.upper()])
+        prop_enums = [ServerProperties[prop.upper()] for prop in properties_to_select]
+        return getattr(server_mgr, submodule)(
             output_details=QueryOutputDetails(
                 properties_to_select=prop_enums,
-                output_type=QueryOutputTypes[return_type],
+                output_type=QueryOutputTypes[return_type.upper()],
             ),
             **kwargs
         )
