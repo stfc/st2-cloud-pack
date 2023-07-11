@@ -19,7 +19,18 @@ parameters:
       - "dev"
       - "prod"
   properties_to_select:
-    default: ""
+    default:
+      - 'flavor_id'
+      - 'hypervisor_id'
+      - 'image_id'
+      - 'project_id'
+      - 'server_creation_date'
+      - 'server_description'
+      - 'server_id'
+      - 'server_last_updated_date'
+      - 'server_name'
+      - 'server_status'
+      - 'user_id'
     type: array
     description: "
     A comma-spaced list of server properties to display for the resulting servers - leave empty for all properties. One of:

@@ -7,7 +7,7 @@ parameters:
   timeout:
     default: 5400
   submodule:
-    default: search_servers_older_than_relative_to_now
+    default: search_servers_last_updated_after_relative_to_now
     enum:
       - "search_servers_last_updated_after_relative_to_now"
       - "search_servers_last_updated_before_relative_to_now"
@@ -21,7 +21,18 @@ parameters:
       - "dev"
       - "prod"
   properties_to_select:
-    default: ""
+    default:
+      - 'flavor_id'
+      - 'hypervisor_id'
+      - 'image_id'
+      - 'project_id'
+      - 'server_creation_date'
+      - 'server_description'
+      - 'server_id'
+      - 'server_last_updated_date'
+      - 'server_name'
+      - 'server_status'
+      - 'user_id'
     type: array
     description: "
     A comma-spaced list of server properties to display for the resulting servers - leave empty for all properties. One of:

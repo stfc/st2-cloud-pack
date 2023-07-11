@@ -2,15 +2,15 @@
 description: Query servers
 enabled: true
 entry_point: src/query_actions/server_query_actions.py
-name: server.search.created.at.relative
+name: server.search.name
 parameters:
   timeout:
     default: 5400
   submodule:
-    default: search_servers_older_than_relative_to_now
+    default: search_servers_name_in
     enum:
-      - "search_servers_older_than_relative_to_now"
-      - "search_servers_younger_than_relative_to_now"
+      - search_servers_name_in
+      - search_servers_name_not_in
     type: string
   cloud_account:
     description: "The clouds.yaml account to use whilst performing this action"
@@ -64,24 +64,8 @@ parameters:
       - 'to_object_list - as a list of openstack resources
       - 'to_str' - a tabulate table"
     required: true
-  days:
-    description: "(Optional) Number of days threshold for selecting servers"
-    type: integer
-    default: 0
-    required: false
-  hours:
-    description: "(Optional) Number of hours threshold for selecting servers"
-    type: integer
-    default: 0
-    required: false
-  minutes:
-    description: "(Optional) Number of minutes threshold for selecting servers"
-    type: integer
-    default: 0
-    required: false
-  seconds:
-    description: "(Optional) Number of seconds threshold for selecting servers"
-    type: float
-    default: 0
-    required: false
+  names:
+    description: "Comma spaced server names to search for/ignore"
+    type: array
+    required: true
 runner_type: python-script
