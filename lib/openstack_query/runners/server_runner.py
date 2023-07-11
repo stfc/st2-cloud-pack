@@ -98,7 +98,7 @@ class ServerRunner(QueryRunner):
         """
         server_filters = {"project_id": project["id"], "all_tenants": True}
         server_filters.update(filter_kwargs if filter_kwargs else {})
-        return list(conn.compute.servers(filters=server_filters))
+        return list(conn.compute.servers(all_projects=False, **server_filters))
 
     def _parse_subset(
         self, _: OpenstackConnection, subset: List[Server]
