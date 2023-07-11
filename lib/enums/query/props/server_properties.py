@@ -1,5 +1,5 @@
-from enum import Enum, auto
-from lib.enums.query.props.prop_enum import PropEnum
+from enum import auto
+from enums.query.props.prop_enum import PropEnum
 
 
 class ServerProperties(PropEnum):
