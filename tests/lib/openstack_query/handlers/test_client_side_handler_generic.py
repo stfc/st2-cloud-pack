@@ -1,15 +1,12 @@
 import unittest
-from unittest.mock import MagicMock, patch
 from parameterized import parameterized
-
-from nose.tools import raises
 
 from openstack_query.handlers.client_side_handler_generic import (
     ClientSideHandlerGeneric,
 )
-from tests.lib.openstack_query.mocks.mocked_props import MockProperties
-
 from enums.query.query_presets import QueryPresetsGeneric
+
+from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 
 class ClientSideHandlerGenericTests(unittest.TestCase):

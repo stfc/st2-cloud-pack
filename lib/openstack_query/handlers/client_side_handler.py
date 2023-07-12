@@ -103,7 +103,8 @@ class ClientSideHandler(HandlerBase):
         Method that acts as a wrapper to a filter function, if the property cannot be found for the resource
         we return False before calling the filter function - since there's no property to compare.
         :param item: An openstack resource item
-        :param selected_filter_func: The selected filter function to run if property given can be retrieved from given openstack resource
+        :param selected_filter_func: The selected filter function to run if property given can be retrieved from
+        given openstack resource
         :param selected_prop_func: The selected prop function to run to get property from given openstack resource
         :param **filter_func_kwargs: A dictionary of keyword args to configure selected filter function
         """

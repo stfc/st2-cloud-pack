@@ -4,5 +4,3 @@ class ParseQueryError(RuntimeError):
     exceptions
     e.g. when inputs given are incorrect/unexpected
     """
-
-    pass

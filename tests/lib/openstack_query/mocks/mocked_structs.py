@@ -1,10 +1,10 @@
 from structs.query.query_preset_details import QueryPresetDetails
 from structs.query.query_output_details import QueryOutputDetails
 
+from enums.query.query_output_types import QueryOutputTypes
+
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
-
-from enums.query.query_output_types import QueryOutputTypes
 
 # Mocked Preset Details Dataclass object - which uses mocked Prop and Preset Enums
 MOCKED_PRESET_DETAILS = QueryPresetDetails(

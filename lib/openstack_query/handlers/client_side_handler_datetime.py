@@ -7,6 +7,8 @@ from custom_types.openstack_query.aliases import PresetPropMappings
 from openstack_query.time_utils import TimeUtils
 from openstack_query.handlers.client_side_handler import ClientSideHandler
 
+# pylint: disable=too-many-arguments
+
 
 class ClientSideHandlerDateTime(ClientSideHandler):
     """
@@ -25,6 +27,7 @@ class ClientSideHandlerDateTime(ClientSideHandler):
             QueryPresetsDateTime.YOUNGER_THAN_OR_EQUAL_TO: self._prop_younger_than_or_equal_to,
         }
 
+    # pylint: disable=too-many-arguments
     def _prop_older_than(
         self,
         prop: str,
@@ -53,6 +56,7 @@ class ClientSideHandlerDateTime(ClientSideHandler):
 
         return prop_timestamp > given_timestamp
 
+    # pylint: disable=too-many-arguments
     def _prop_younger_than_or_equal_to(
         self,
         prop: str,
@@ -62,7 +66,8 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         seconds: float = 0,
     ):
         """
-        Filter function which returns True if property younger than or equal to a relative amount of time since current time
+        Filter function which returns True if property younger than or equal to a relative amount of time since
+        current time
         :param prop: prop value to check against - in UTC time
         :param days: (Optional) relative number of days since current time to compare against
         :param hours: (Optional) relative number of hours since current time to compare against
@@ -75,6 +80,7 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         """
         return not self._prop_older_than(prop, days, hours, minutes, seconds)
 
+    # pylint: disable=too-many-arguments
     def _prop_younger_than(
         self,
         prop: str,
@@ -100,6 +106,7 @@ class ClientSideHandlerDateTime(ClientSideHandler):
             days, hours, minutes, seconds
         )
 
+    # pylint: disable=too-many-arguments
     def _prop_older_than_or_equal_to(
         self,
         prop: str,

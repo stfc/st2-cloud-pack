@@ -83,7 +83,8 @@ class QueryOutput:
     ) -> List[Dict[str, str]]:
         """
         Generates a dictionary of queried properties from a list of openstack objects e.g. servers
-        e.g. {['server_name': 'server1', 'server_id': 'server1_id'], ['server_name': 'server2', 'server_id': 'server2_id'] etc.
+        e.g. {['server_name': 'server1', 'server_id': 'server1_id'],
+              ['server_name': 'server2', 'server_id': 'server2_id']} etc.
         (if we selected 'server_name' and 'server_id' as properties
         :param openstack_resources: List of openstack objects to obtain properties from - e.g. [Server1, Server2]
         :return: List containing dictionaries of the requested properties obtained from the items

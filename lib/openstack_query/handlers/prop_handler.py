@@ -1,4 +1,4 @@
-from typing import Any, Optional, Set
+from typing import Optional, Set
 from custom_types.openstack_query.aliases import (
     PropertyMappings,
     PropFunc,

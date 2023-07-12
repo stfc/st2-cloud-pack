@@ -1,4 +1,4 @@
-from typing import List, Any, Union
+from typing import List, Union
 
 
 from enums.query.query_presets import (

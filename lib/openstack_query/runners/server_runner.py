@@ -26,7 +26,8 @@ class ServerRunner(QueryRunner):
         """
         This method runs the query by running openstacksdk commands
 
-        For ServerQuery, this command gets all projects available and iteratively finds servers that belong to that project
+        For ServerQuery, this command gets all projects available and iteratively finds servers that belong to that
+        project
         :param conn: An OpenstackConnection object - used to connect to openstacksdk
         :param filter_kwargs: An Optional set of filter kwargs to pass to conn.compute.servers()
             to limit the servers being returned. - see https://docs.openstack.org/api-ref/compute/#list-servers
@@ -104,7 +105,8 @@ class ServerRunner(QueryRunner):
         self, _: OpenstackConnection, subset: List[Server]
     ) -> List[Server]:
         """
-        This method is a helper function that will check a list of servers to ensure that they are valid Server objects
+        This method is a helper function that will check a list of servers to ensure that they are valid Server
+        objects
         :param subset: A list of openstack Server objects
         """
         if any(not isinstance(i, Server) for i in subset):

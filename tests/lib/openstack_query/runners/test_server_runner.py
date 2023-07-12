@@ -1,13 +1,14 @@
 import unittest
-from openstack.exceptions import ResourceNotFound
-
 from unittest.mock import Mock, MagicMock, call, patch
+from nose.tools import raises
+
 from openstack_query.runners.server_runner import ServerRunner
 
+from openstack.exceptions import ResourceNotFound
 from openstack.compute.v2.server import Server
 from openstack.identity.v3.project import Project
+
 from exceptions.parse_query_error import ParseQueryError
-from nose.tools import raises
 
 
 class ServerRunnerTests(unittest.TestCase):

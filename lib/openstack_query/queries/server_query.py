@@ -1,5 +1,3 @@
-from typing import Dict, Optional
-
 from structs.query.query_client_side_handlers import QueryClientSideHandlers
 
 from enums.query.props.server_properties import ServerProperties
@@ -7,7 +5,6 @@ from enums.query.query_presets import (
     QueryPresetsGeneric,
     QueryPresetsDateTime,
     QueryPresetsString,
-    QueryPresetsInteger,
 )
 from openstack_query.handlers.server_side_handler import ServerSideHandler
 from openstack_query.handlers.prop_handler import PropHandler

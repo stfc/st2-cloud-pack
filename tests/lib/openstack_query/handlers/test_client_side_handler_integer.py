@@ -1,12 +1,12 @@
 import unittest
 from parameterized import parameterized
 
+from enums.query.query_presets import QueryPresetsInteger
+
 from openstack_query.handlers.client_side_handler_integer import (
     ClientSideHandlerInteger,
 )
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
-
-from enums.query.query_presets import QueryPresetsInteger
 
 
 class ClientSideHandlerIntegerTests(unittest.TestCase):

@@ -1,8 +1,8 @@
-from dataclasses import dataclass
+from typing import Any, Dict
 from enum import Enum
+from dataclasses import dataclass
 
 from enums.query.query_presets import QueryPresets
-from typing import Any, Dict
 
 
 @dataclass

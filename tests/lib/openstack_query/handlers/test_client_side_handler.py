@@ -82,7 +82,8 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
     ):
         """
         Tests that get_filter_func method works expectedly - with valid inputs
-        sets up and returns a function that when given an openstack object will return a boolean value on whether it passes the filter
+        sets up and returns a function that when given an openstack object will return a boolean value on
+        whether it passes the filter
         """
         # define inputs
         mock_prop_func = MagicMock()

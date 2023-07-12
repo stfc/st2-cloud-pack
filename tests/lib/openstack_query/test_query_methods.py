@@ -4,10 +4,9 @@ from openstack_query.query_methods import QueryMethods
 
 from nose.tools import raises
 
+from exceptions.parse_query_error import ParseQueryError
 from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
-
-from exceptions.parse_query_error import ParseQueryError
 
 
 class QueryMethodsTests(unittest.TestCase):
