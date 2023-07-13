@@ -17,8 +17,8 @@ class ClientSideHandlerDateTime(ClientSideHandler):
     Filter functions which map to QueryPresetsDateTime are defined here
     """
 
-    def __init__(self, _filter_function_mappings: PresetPropMappings):
-        super().__init__(_filter_function_mappings)
+    def __init__(self, filter_function_mappings: PresetPropMappings):
+        super().__init__(filter_function_mappings)
 
         self._filter_functions = {
             QueryPresetsDateTime.OLDER_THAN: self._prop_older_than,
