@@ -23,8 +23,8 @@ class ClientSideHandler(HandlerBase):
     listing openstack resources
     """
 
-    def __init__(self, filter_func_mappings: PresetPropMappings):
-        self._filter_function_mappings = filter_func_mappings
+    def __init__(self, _filter_func_mappings: PresetPropMappings):
+        self._filter_function_mappings = _filter_func_mappings
 
     def check_supported(self, preset: QueryPresets, prop: PropEnum) -> bool:
         """
