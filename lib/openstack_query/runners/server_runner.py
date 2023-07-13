@@ -10,6 +10,8 @@ from openstack_query.runners.query_runner import QueryRunner
 from exceptions.parse_query_error import ParseQueryError
 from custom_types.openstack_query.aliases import ProjectIdentifier
 
+# pylint:disable=too-few-public-methods
+
 
 class ServerRunner(QueryRunner):
     """

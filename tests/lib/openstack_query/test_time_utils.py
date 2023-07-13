@@ -8,6 +8,8 @@ from nose.tools import raises
 from openstack_query.time_utils import TimeUtils
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 
+# pylint:disable=too-many-arguments
+
 
 class TimeUtilsTests(unittest.TestCase):
     """
@@ -24,7 +26,7 @@ class TimeUtilsTests(unittest.TestCase):
     )
     @patch("openstack_query.time_utils.TimeUtils.get_current_time")
     def test_get_timestamp_in_seconds(
-        self, name, days, hours, minutes, seconds, total_seconds, mock_current_datetime
+        self, _, days, hours, minutes, seconds, total_seconds, mock_current_datetime
     ):
         """
         Tests that get_timestamp_in_seconds method works expectedly
@@ -71,7 +73,7 @@ class TimeUtilsTests(unittest.TestCase):
     @patch("openstack_query.time_utils.TimeUtils.get_current_time")
     def test_convert_to_timestamp(
         self,
-        name,
+        _,
         days,
         hours,
         minutes,

@@ -1,8 +1,6 @@
 from abc import abstractmethod
 from typing import Optional, List, Any
 
-from enums.cloud_domains import CloudDomains
-
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.openstack_connection import OpenstackConnection
 from custom_types.openstack_query.aliases import (
@@ -10,6 +8,8 @@ from custom_types.openstack_query.aliases import (
     ClientSideFilterFunc,
     OpenstackResourceObj,
 )
+
+# pylint:disable=too-few-public-methods
 
 
 class QueryRunner(OpenstackWrapperBase):

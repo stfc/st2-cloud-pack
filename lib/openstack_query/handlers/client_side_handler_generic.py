@@ -4,6 +4,8 @@ from custom_types.openstack_query.aliases import PresetPropMappings
 from enums.query.query_presets import QueryPresetsGeneric
 from openstack_query.handlers.client_side_handler import ClientSideHandler
 
+# pylint: disable=too-few-public-methods
+
 
 class ClientSideHandlerGeneric(ClientSideHandler):
     """

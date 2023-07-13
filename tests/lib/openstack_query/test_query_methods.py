@@ -8,6 +8,8 @@ from exceptions.parse_query_error import ParseQueryError
 from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
+# pylint:disable=protected-access
+
 
 class QueryMethodsTests(unittest.TestCase):
     def setUp(self) -> None:

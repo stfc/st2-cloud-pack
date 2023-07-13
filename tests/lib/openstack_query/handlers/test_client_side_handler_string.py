@@ -11,6 +11,8 @@ from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
+# pylint:disable=protected-access
+
 
 class ClientSideHandlerStringTests(unittest.TestCase):
     """
@@ -30,7 +32,7 @@ class ClientSideHandlerStringTests(unittest.TestCase):
     @parameterized.expand(
         [(f"test {preset.name}", preset) for preset in QueryPresetsString]
     )
-    def test_check_supported_all_presets(self, name, preset):
+    def test_check_supported_all_presets(self, _, preset):
         """
         Tests that client_side_handler_string supports all string QueryPresets
         """
@@ -46,7 +48,7 @@ class ClientSideHandlerStringTests(unittest.TestCase):
         ]
     )
     @patch("re.match")
-    def test_prop_matches_regex_valid(self, name, regex_string, test_prop, mock_regex):
+    def test_prop_matches_regex_valid(self, _, regex_string, test_prop, mock_regex):
         """
         Tests that method prop_matches_regex functions expectedly - with valid regex patterns
         Returns True if test_prop matches given regex pattern regex_string
@@ -61,7 +63,7 @@ class ClientSideHandlerStringTests(unittest.TestCase):
             ("item is not in", ["val1", "val2"], "val3", False),
         ]
     )
-    def test_prop_any_in(self, name, val_list, test_prop, expected_out):
+    def test_prop_any_in(self, _, val_list, test_prop, expected_out):
         """
         Tests that method prop_any_in functions expectedly
         Returns True if test_prop matches any values in a given list val_list
@@ -82,7 +84,7 @@ class ClientSideHandlerStringTests(unittest.TestCase):
             ("item is not in", ["val1", "val2"], "val3", True),
         ]
     )
-    def test_prop_not_any_in(self, name, val_list, test_prop, expected_out):
+    def test_prop_not_any_in(self, _, val_list, test_prop, expected_out):
         """
         Tests that method prop_any_not_in functions expectedly
         Returns True if test_prop does not match any values in a given list val_list

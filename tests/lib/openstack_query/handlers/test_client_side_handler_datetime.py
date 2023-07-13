@@ -10,6 +10,8 @@ from enums.query.query_presets import QueryPresetsDateTime
 
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
+# pylint:disable=protected-access, unused-argument
+
 
 @patch(
     "openstack_query.time_utils.TimeUtils.get_current_time",
@@ -87,7 +89,7 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
     @parameterized.expand(
         [(f"test {preset.name}", preset) for preset in QueryPresetsDateTime]
     )
-    def test_check_supported_all_presets(self, mock_current_time, name, preset):
+    def test_check_supported_all_presets(self, mock_current_time, _, preset):
         """
         Tests that client_side_handler_datetime supports all datetime QueryPresets
         """

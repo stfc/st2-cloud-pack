@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, patch, NonCallableMock
 from openstack_query.managers.server_manager import ServerManager
 
 from enums.query.query_presets import (
-    QueryPresetsGeneric,
     QueryPresetsDateTime,
     QueryPresetsString,
 )
@@ -13,6 +12,8 @@ from enums.query.props.server_properties import ServerProperties
 
 from structs.query.query_preset_details import QueryPresetDetails
 from tests.lib.openstack_query.mocks.mocked_structs import MOCKED_OUTPUT_DETAILS
+
+# pylint:disable=protected-access,
 
 
 @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")

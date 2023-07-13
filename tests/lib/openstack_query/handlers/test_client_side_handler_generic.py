@@ -8,6 +8,8 @@ from enums.query.query_presets import QueryPresetsGeneric
 
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
+# pylint:disable=protected-access
+
 
 class ClientSideHandlerGenericTests(unittest.TestCase):
     """
@@ -28,7 +30,7 @@ class ClientSideHandlerGenericTests(unittest.TestCase):
     @parameterized.expand(
         [(f"test {preset.name}", preset) for preset in QueryPresetsGeneric]
     )
-    def test_check_supported_all_presets(self, name, preset):
+    def test_check_supported_all_presets(self, _, preset):
         """
         Tests that client_side_handler_generic supports all generic QueryPresets
         """
@@ -45,7 +47,7 @@ class ClientSideHandlerGenericTests(unittest.TestCase):
             ("test dict keys not equal", {"a": 12, "b": 12}, {"a": 12}, False),
         ]
     )
-    def test_prop_equal_to(self, name, prop, value, expected_out):
+    def test_prop_equal_to(self, _, prop, value, expected_out):
         """
         Tests that method prop_equal_to functions expectedly
         Returns True if prop and value are equal
@@ -60,7 +62,7 @@ class ClientSideHandlerGenericTests(unittest.TestCase):
             ("test string not equal", "some-string", "some-other-string", True),
         ]
     )
-    def test_prop_not_equal_to(self, name, prop, value, expected_out):
+    def test_prop_not_equal_to(self, _, prop, value, expected_out):
         """
         Tests that method not_prop_equal_to functions expectedly
         Returns True if prop and value are not equal

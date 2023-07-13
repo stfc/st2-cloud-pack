@@ -7,7 +7,7 @@ from custom_types.openstack_query.aliases import PresetPropMappings
 from openstack_query.time_utils import TimeUtils
 from openstack_query.handlers.client_side_handler import ClientSideHandler
 
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments,too-few-public-methods
 
 
 class ClientSideHandlerDateTime(ClientSideHandler):

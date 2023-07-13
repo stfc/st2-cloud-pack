@@ -10,6 +10,8 @@ from tests.lib.openstack_query.mocks.mocked_structs import (
     MOCKED_PRESET_DETAILS,
 )
 
+# pylint:disable=protected-access,
+
 
 class QueryManagerTests(unittest.TestCase):
     """
@@ -49,7 +51,7 @@ class QueryManagerTests(unittest.TestCase):
     @parameterized.expand(
         [(f"test {outtype.name.lower()}", outtype) for outtype in QueryOutputTypes]
     )
-    def test_get_query_output_supports_all_types(self, name, outtype):
+    def test_get_query_output_supports_all_types(self, _, outtype):
         """
         Tests that _get_query_output method works for all OutputType Enums
         """

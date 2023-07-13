@@ -23,6 +23,8 @@ from openstack_query.runners.server_runner import ServerRunner
 
 from openstack_query.time_utils import TimeUtils
 
+# pylint:disable=too-few-public-methods
+
 
 class ServerQuery(QueryWrapper):
     """

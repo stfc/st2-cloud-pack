@@ -9,6 +9,8 @@ from structs.query.query_preset_details import QueryPresetDetails
 from openstack_query.queries.query_wrapper import QueryWrapper
 from custom_types.openstack_query.aliases import QueryReturn
 
+# pylint:disable=too-few-public-methods
+
 
 class QueryManager:
     """

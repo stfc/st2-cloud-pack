@@ -5,6 +5,8 @@ from openstack_query.runners.server_runner import QueryRunner
 from openstack_query.query_methods import QueryMethods
 from openstack_query.query_base import QueryBase
 
+# pylint:disable=too-few-public-methods
+
 
 class QueryWrapper(QueryMethods, QueryBase):
     """

@@ -1,5 +1,7 @@
 from enums.query.query_presets import QueryPresets
 
+# pylint:disable=too-few-public-methods
+
 
 class MockQueryPresets(QueryPresets):
     """

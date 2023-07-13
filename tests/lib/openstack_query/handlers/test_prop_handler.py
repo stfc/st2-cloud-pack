@@ -4,6 +4,8 @@ from unittest.mock import MagicMock, NonCallableMock, patch
 from openstack_query.handlers.prop_handler import PropHandler
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
+# pylint:disable=protected-access
+
 
 class PropHandlerTests(unittest.TestCase):
     """

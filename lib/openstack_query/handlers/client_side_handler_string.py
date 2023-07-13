@@ -7,6 +7,8 @@ from enums.query.query_presets import QueryPresetsString
 from openstack_query.handlers.client_side_handler import ClientSideHandler
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 
+# pylint: disable=too-few-public-methods
+
 
 class ClientSideHandlerString(ClientSideHandler):
     """

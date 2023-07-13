@@ -10,6 +10,8 @@ from openstack.identity.v3.project import Project
 
 from exceptions.parse_query_error import ParseQueryError
 
+# pylint:disable=protected-access
+
 
 class ServerRunnerTests(unittest.TestCase):
     """

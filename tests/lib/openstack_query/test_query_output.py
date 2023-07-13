@@ -6,6 +6,8 @@ from nose.tools import raises
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
+# pylint:disable=protected-access
+
 
 class QueryOutputTests(unittest.TestCase):
     """
@@ -20,6 +22,7 @@ class QueryOutputTests(unittest.TestCase):
         self.mock_prop_handler = MagicMock()
         self.instance = QueryOutput(self.mock_prop_handler)
 
+    # pylint:disable=unused-argument
     def _mock_get_prop_func(self, item, prop, default_out):
         """
         mock _get_prop_func for prop_handler to return a mock prop value

@@ -8,6 +8,8 @@ from exceptions.query_preset_mapping_error import QueryPresetMappingError
 from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
+# pylint:disable=protected-access, unnecessary-lambda-assignment
+
 
 class ServerSideHandlerTests(unittest.TestCase):
     """
@@ -158,7 +160,7 @@ class ServerSideHandlerTests(unittest.TestCase):
             ),
         ]
     )
-    def test_check_filter_mapping_valid(self, name, valid_params_to_test):
+    def test_check_filter_mapping_valid(self, _, valid_params_to_test):
         """
         Tests that check_filter_mapping method works expectedly - valid
         returns True only if args match expected args required by filter function lambda

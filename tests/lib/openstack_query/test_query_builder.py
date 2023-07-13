@@ -11,6 +11,8 @@ from exceptions.query_property_mapping_error import QueryPropertyMappingError
 from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
+# pylint:disable=protected-access
+
 
 class QueryBuilderTests(unittest.TestCase):
     """
