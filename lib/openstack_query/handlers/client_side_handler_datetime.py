@@ -34,7 +34,7 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         days: int = 0,
         hours: int = 0,
         minutes: int = 0,
-        seconds: float = 0,
+        seconds: int = 0,
     ):
         """
         Filter function which returns True if property older than a relative amount of time since current time.
@@ -63,7 +63,7 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         days: int = 0,
         hours: int = 0,
         minutes: int = 0,
-        seconds: float = 0,
+        seconds: int = 0,
     ):
         """
         Filter function which returns True if property younger than or equal to a relative amount of time since
@@ -87,7 +87,7 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         days: int = 0,
         hours: int = 0,
         minutes: int = 0,
-        seconds: float = 0,
+        seconds: int = 0,
     ):
         """
         Filter function which returns True if property younger than a relative amount of time since current time
@@ -113,7 +113,7 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         days: int = 0,
         hours: int = 0,
         minutes: int = 0,
-        seconds: float = 0,
+        seconds: int = 0,
     ):
         """
         Filter function which returns True if property older than or equal to a relative amount of time since current

@@ -49,12 +49,12 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 "minutes": 0,
                 "seconds": 0,
             },
-            "older_by_0.5_seconds": {
+            "older_by_1_second": {
                 "prop": "2023-06-04T10:30:00Z",
                 "days": 0,
                 "hours": 0,
                 "minutes": 0,
-                "seconds": 0.5,
+                "seconds": 1,
             },
             "equal": {
                 "prop": "2023-06-04T10:00:00Z",
@@ -77,12 +77,12 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 "minutes": 0,
                 "seconds": 0,
             },
-            "younger_by_0.5_seconds": {
+            "younger_by_1_second": {
                 "prop": "2023-06-03T10:29:59Z",
                 "days": 0,
                 "hours": 0,
                 "minutes": 0,
-                "seconds": 0.5,
+                "seconds": 1,
             },
         }
 
@@ -99,11 +99,11 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         [
             ("older_by_1_day", True),
             ("older_by_12_hours", True),
-            ("older_by_0.5_seconds", True),
+            ("older_by_1_second", True),
             ("equal", False),
             ("younger_by_1_day", False),
             ("younger_by_12_hours", False),
-            ("younger_by_0.5_seconds", False),
+            ("younger_by_1_second", False),
         ]
     )
     def test_prop_older_than(self, mock_current_time, name, expected_out):
@@ -119,11 +119,11 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         [
             ("older_by_1_day", True),
             ("older_by_12_hours", True),
-            ("older_by_0.5_seconds", True),
+            ("older_by_1_second", True),
             ("equal", True),
             ("younger_by_1_day", False),
             ("younger_by_12_hours", False),
-            ("younger_by_0.5_seconds", False),
+            ("younger_by_1_second", False),
         ]
     )
     def test_prop_older_than_or_equal_to(self, mock_current_time, name, expected_out):
@@ -140,11 +140,11 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         [
             ("older_by_1_day", False),
             ("older_by_12_hours", False),
-            ("older_by_0.5_seconds", False),
+            ("older_by_1_second", False),
             ("equal", False),
             ("younger_by_1_day", True),
             ("younger_by_12_hours", True),
-            ("younger_by_0.5_seconds", True),
+            ("younger_by_1_second", True),
         ]
     )
     def test_prop_younger_than(self, mock_current_time, name, expected_out):
@@ -161,11 +161,11 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         [
             ("older_by_1_day", False),
             ("older_by_12_hours", False),
-            ("older_by_0.5_seconds", False),
+            ("older_by_1_second", False),
             ("equal", True),
             ("younger_by_1_day", True),
             ("younger_by_12_hours", True),
-            ("younger_by_0.5_seconds", True),
+            ("younger_by_1_second", True),
         ]
     )
     def test_prop_younger_than_or_equal_to(self, mock_current_time, name, expected_out):
