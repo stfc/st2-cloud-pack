@@ -2,7 +2,7 @@ from typing import Union, List, Any, Optional, Dict
 
 from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresets
-
+from enums.cloud_domains import CloudDomains
 
 from openstack_query.query_output import QueryOutput
 from openstack_query.query_builder import QueryBuilder
@@ -79,13 +79,13 @@ class QueryMethods:
 
     def run(
         self,
-        cloud_account: str,
+        cloud_account: CloudDomains,
         from_subset: Optional[List[OpenstackResourceObj]] = None,
         **kwargs
     ):
         """
         Public method that runs the query provided and outputs
-        :param cloud_account: The account from the clouds configuration to use
+        :param cloud_account: An Enum for the account from the clouds configuration to use
         :param from_subset: A subset of openstack resources to run query on instead of querying openstacksdk
         :param kwargs: keyword args that can be used to configure details of how query is run
             - valid kwargs specific to resource

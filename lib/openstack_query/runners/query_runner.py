@@ -1,6 +1,9 @@
 from abc import abstractmethod
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Callable
 
+from enums.cloud_domains import CloudDomains
+
+from exceptions.parse_query_error import ParseQueryError
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.openstack_connection import OpenstackConnection
 from custom_types.openstack_query.aliases import (
@@ -23,7 +26,7 @@ class QueryRunner(OpenstackWrapperBase):
 
     def run(
         self,
-        cloud_account: str,
+        cloud_account: CloudDomains,
         client_side_filter_func: Optional[ClientSideFilterFunc] = None,
         server_side_filters: Optional[ServerSideFilters] = None,
         from_subset: Optional[List[Any]] = None,
@@ -42,7 +45,7 @@ class QueryRunner(OpenstackWrapperBase):
             runner of interest.
         """
 
-        with self._connection_cls(cloud_account) as conn:
+        with self._connection_cls(cloud_account.name.lower()) as conn:
             resource_objects = (
                 self._parse_subset(conn, from_subset)
                 if from_subset

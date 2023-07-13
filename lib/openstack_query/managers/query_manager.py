@@ -2,6 +2,7 @@ from typing import Optional, Set
 
 from enums.query.query_output_types import QueryOutputTypes
 from enums.query.props.prop_enum import PropEnum
+from enums.cloud_domains import CloudDomains
 
 from structs.query.query_output_details import QueryOutputDetails
 from structs.query.query_preset_details import QueryPresetDetails
@@ -18,7 +19,7 @@ class QueryManager:
     Managers hold a query object and several methods which build and run specific queries
     """
 
-    def __init__(self, query: QueryWrapper, cloud_account: str):
+    def __init__(self, query: QueryWrapper, cloud_account: CloudDomains):
         self._query = query
         self._cloud_account = cloud_account
 
