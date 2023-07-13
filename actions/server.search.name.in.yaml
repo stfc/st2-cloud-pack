@@ -9,8 +9,8 @@ parameters:
   submodule:
     default: search_servers_name_in
     enum:
-      - search_servers_name_in
-      - search_servers_name_not_in
+      - "search_servers_name_in"
+      - "search_servers_name_not_in"
     type: string
   cloud_account:
     description: "The clouds.yaml account to use whilst performing this action"
