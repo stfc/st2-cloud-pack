@@ -4,12 +4,14 @@ from openstack_query.query_builder import QueryBuilder
 
 from nose.tools import raises
 
-from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
-from tests.lib.openstack_query.mocks.mocked_props import MockProperties
-
 from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_preset_mapping_error import QueryPresetMappingError
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
+
+from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
+from tests.lib.openstack_query.mocks.mocked_props import MockProperties
+
+# pylint:disable=protected-access
 
 
 class QueryBuilderTests(unittest.TestCase):
@@ -56,7 +58,7 @@ class QueryBuilderTests(unittest.TestCase):
         self.mock_server_side_handler.get_filters.return_value = mock_server_filters
 
         mock_prop_func = MagicMock()
-        self.mock_prop_handler.get_prop_mapping.return_value = mock_prop_func
+        self.mock_prop_handler.get_prop_func.return_value = mock_prop_func
 
         mock_kwargs = {"arg1": "val1", "arg2": "val2"}
         self.instance.parse_where(
@@ -67,10 +69,15 @@ class QueryBuilderTests(unittest.TestCase):
             MockQueryPresets.ITEM_1, MockProperties.PROP_1
         )
         mock_client_side_handler.get_filter_func.assert_called_once_with(
-            MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_prop_func, mock_kwargs
+            preset=MockQueryPresets.ITEM_1,
+            prop=MockProperties.PROP_1,
+            prop_func=mock_prop_func,
+            filter_func_kwargs=mock_kwargs,
         )
         self.mock_server_side_handler.get_filters.assert_called_once_with(
-            MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_prop_func, mock_kwargs
+            preset=MockQueryPresets.ITEM_1,
+            prop=MockProperties.PROP_1,
+            params=mock_kwargs,
         )
 
         self.assertEqual(self.instance._client_side_filter, mock_client_filter_func)
@@ -94,7 +101,7 @@ class QueryBuilderTests(unittest.TestCase):
         """
         # test if prop_mapping doesn't exist
         self.instance._client_side_filter = None
-        self.mock_prop_handler.get_prop_mapping.return_value = None
+        self.mock_prop_handler.get_prop_func.return_value = None
         self.instance.parse_where(MockQueryPresets.ITEM_1, MockProperties.PROP_1)
 
     def test_get_preset_handler_valid(self):

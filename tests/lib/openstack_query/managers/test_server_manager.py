@@ -4,8 +4,6 @@ from unittest.mock import MagicMock, patch, NonCallableMock
 from openstack_query.managers.server_manager import ServerManager
 
 from enums.query.query_presets import (
-    QueryPresetsGeneric,
-    QueryPresetsInteger,
     QueryPresetsDateTime,
     QueryPresetsString,
 )
@@ -30,6 +28,8 @@ class ServerManagerTests(unittest.TestCase):
 
         self.query = MagicMock()
         self.instance = ServerManager(cloud_account="test_account")
+
+        # pylint:disable=protected-access
         self.instance._query = self.query
 
     def test_search_all_servers(self, mock_build_and_run_query):
@@ -66,7 +66,6 @@ class ServerManagerTests(unittest.TestCase):
                     "hours": 10,
                     "minutes": 1,
                     "seconds": 0,
-                    "prop_timestamp_fmt": "%Y-%m-%dT%H:%M:%SZ",
                 },
             ),
             output_details=MOCKED_OUTPUT_DETAILS,
@@ -95,7 +94,6 @@ class ServerManagerTests(unittest.TestCase):
                     "hours": 10,
                     "minutes": 1,
                     "seconds": 0,
-                    "prop_timestamp_fmt": "%Y-%m-%dT%H:%M:%SZ",
                 },
             ),
             output_details=MOCKED_OUTPUT_DETAILS,
@@ -107,7 +105,8 @@ class ServerManagerTests(unittest.TestCase):
     ):
         """
         Tests that search_servers_last_updated_before_relative_to_now method functions expectedly
-        Runs a query to get all servers that have had their last status changed before than a relative time (e.g. days=60 => 60 days ago or older)
+        Runs a query to get all servers that have had their last status changed before than a relative time
+        (e.g. days=60 => 60 days ago or older)
         """
         mock_query_return = NonCallableMock()
         mock_build_and_run_query.return_value = mock_query_return
@@ -124,7 +123,6 @@ class ServerManagerTests(unittest.TestCase):
                     "hours": 10,
                     "minutes": 1,
                     "seconds": 0,
-                    "prop_timestamp_fmt": "%Y-%m-%dT%H:%M:%SZ",
                 },
             ),
             output_details=MOCKED_OUTPUT_DETAILS,
@@ -136,7 +134,8 @@ class ServerManagerTests(unittest.TestCase):
     ):
         """
         Tests that search_servers_last_updated_after_relative_to_now method functions expectedly
-        Runs a query to get all servers that have had their last status changed after than a relative time (e.g. days=60 => 60 days ago or earlier)
+        Runs a query to get all servers that have had their last status changed after than a relative time
+        (e.g. days=60 => 60 days ago or earlier)
         """
         mock_query_return = NonCallableMock()
         mock_build_and_run_query.return_value = mock_query_return
@@ -153,7 +152,6 @@ class ServerManagerTests(unittest.TestCase):
                     "hours": 10,
                     "minutes": 1,
                     "seconds": 0,
-                    "prop_timestamp_fmt": "%Y-%m-%dT%H:%M:%SZ",
                 },
             ),
             output_details=MOCKED_OUTPUT_DETAILS,

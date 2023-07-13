@@ -3,8 +3,10 @@ from unittest.mock import MagicMock, patch, call
 from openstack_query.query_output import QueryOutput
 
 from nose.tools import raises
-from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
+from tests.lib.openstack_query.mocks.mocked_props import MockProperties
+
+# pylint:disable=protected-access
 
 
 class QueryOutputTests(unittest.TestCase):
@@ -20,6 +22,7 @@ class QueryOutputTests(unittest.TestCase):
         self.mock_prop_handler = MagicMock()
         self.instance = QueryOutput(self.mock_prop_handler)
 
+    # pylint:disable=unused-argument
     def _mock_get_prop_func(self, item, prop, default_out):
         """
         mock _get_prop_func for prop_handler to return a mock prop value
@@ -99,7 +102,8 @@ class QueryOutputTests(unittest.TestCase):
     def test_parse_select_given_args(self, mock_check_prop_valid):
         """
         tests that parse select works expectedly - when called from select() - where props args given
-        method should set check each given prop to see if mapping exists in prop_handler and add to internal attribute set props
+        method should set check each given prop to see if mapping exists in prop_handler and
+        add to internal attribute set props
         """
         # if given props
         mock_check_prop_valid.return_value = True
@@ -128,8 +132,7 @@ class QueryOutputTests(unittest.TestCase):
         self.mock_prop_handler.check_supported.return_value = False
         self.instance._check_prop_valid(MockProperties.PROP_1)
 
-    @patch("openstack_query.query_output.QueryOutput._parse_property")
-    def test_generate_output_no_items(self, mock_parse_property):
+    def test_generate_output_no_items(self):
         """
         Tests that parse_properties function works expectedly - no openstack items
         method should return an empty list

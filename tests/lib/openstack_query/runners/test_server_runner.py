@@ -1,13 +1,16 @@
 import unittest
-from openstack.exceptions import ResourceNotFound
-
 from unittest.mock import Mock, MagicMock, call, patch
+from nose.tools import raises
+
 from openstack_query.runners.server_runner import ServerRunner
 
+from openstack.exceptions import ResourceNotFound
 from openstack.compute.v2.server import Server
 from openstack.identity.v3.project import Project
+
 from exceptions.parse_query_error import ParseQueryError
-from nose.tools import raises
+
+# pylint:disable=protected-access
 
 
 class ServerRunnerTests(unittest.TestCase):
@@ -149,7 +152,7 @@ class ServerRunnerTests(unittest.TestCase):
         self.conn.compute.servers.return_value = [{"id": "server1"}, {"id": "server2"}]
         res = self.instance._run_query_on_project(self.conn, mock_project)
         self.conn.compute.servers.assert_called_once_with(
-            filters={"project_id": "project1", "all_tenants": True}
+            all_projects=False, project_id="project1", all_tenants=True
         )
         self.assertEqual(res, [{"id": "server1"}, {"id": "server2"}])
 

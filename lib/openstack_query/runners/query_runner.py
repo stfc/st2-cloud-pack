@@ -1,8 +1,6 @@
 from abc import abstractmethod
+from typing import Optional, List, Any
 
-from typing import Optional, List, Any, Callable
-
-from exceptions.parse_query_error import ParseQueryError
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.openstack_connection import OpenstackConnection
 from custom_types.openstack_query.aliases import (
@@ -10,6 +8,8 @@ from custom_types.openstack_query.aliases import (
     ClientSideFilterFunc,
     OpenstackResourceObj,
 )
+
+# pylint:disable=too-few-public-methods
 
 
 class QueryRunner(OpenstackWrapperBase):
@@ -31,8 +31,9 @@ class QueryRunner(OpenstackWrapperBase):
     ) -> List[OpenstackResourceObj]:
         """
         Public method that runs the query by querying openstacksdk and then applying a filter function.
-        :param cloud_account: The account from the clouds configuration to use
-        :param client_side_filter_func: An Optional function that we can use to limit the results after querying openstacksdk
+        :param cloud_account: An Enum for the account from the clouds configuration to use
+        :param client_side_filter_func: An Optional function that we can use to limit the results after querying
+        openstacksdk
         :param server_side_filters: An Optional set of filter kwargs to limit the results by when querying openstacksdk
         :param from_subset: A subset of openstack resources to run query on instead of querying openstacksdk
         :param kwargs: An extra set of kwargs to pass to internal _run_query method that changes what/how the

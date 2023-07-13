@@ -10,6 +10,8 @@ from openstack_query.runners.query_runner import QueryRunner
 from exceptions.parse_query_error import ParseQueryError
 from custom_types.openstack_query.aliases import ProjectIdentifier
 
+# pylint:disable=too-few-public-methods
+
 
 class ServerRunner(QueryRunner):
     """
@@ -26,7 +28,8 @@ class ServerRunner(QueryRunner):
         """
         This method runs the query by running openstacksdk commands
 
-        For ServerQuery, this command gets all projects available and iteratively finds servers that belong to that project
+        For ServerQuery, this command gets all projects available and iteratively finds servers that belong to that
+        project
         :param conn: An OpenstackConnection object - used to connect to openstacksdk
         :param filter_kwargs: An Optional set of filter kwargs to pass to conn.compute.servers()
             to limit the servers being returned. - see https://docs.openstack.org/api-ref/compute/#list-servers
@@ -98,13 +101,14 @@ class ServerRunner(QueryRunner):
         """
         server_filters = {"project_id": project["id"], "all_tenants": True}
         server_filters.update(filter_kwargs if filter_kwargs else {})
-        return list(conn.compute.servers(filters=server_filters))
+        return list(conn.compute.servers(all_projects=False, **server_filters))
 
     def _parse_subset(
         self, _: OpenstackConnection, subset: List[Server]
     ) -> List[Server]:
         """
-        This method is a helper function that will check a list of servers to ensure that they are valid Server objects
+        This method is a helper function that will check a list of servers to ensure that they are valid Server
+        objects
         :param subset: A list of openstack Server objects
         """
         if any(not isinstance(i, Server) for i in subset):

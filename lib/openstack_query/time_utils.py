@@ -9,7 +9,7 @@ class TimeUtils:
 
     @staticmethod
     def get_timestamp_in_seconds(
-        days: int = 0, hours: int = 0, minutes: int = 0, seconds: float = 0
+        days: int = 0, hours: int = 0, minutes: int = 0, seconds: int = 0
     ) -> float:
         """
         Function which takes a number of days, hours, minutes, and seconds - and calculates the total seconds
@@ -25,7 +25,7 @@ class TimeUtils:
 
         current_time = TimeUtils.get_current_time().timestamp()
         prop_time_in_seconds = timedelta(
-            days=days, hours=hours, minutes=minutes, seconds=seconds
+            days=days, hours=hours, minutes=minutes, seconds=float(seconds)
         ).total_seconds()
 
         return current_time - prop_time_in_seconds
@@ -35,7 +35,7 @@ class TimeUtils:
         days: int = 0,
         hours: int = 0,
         minutes: int = 0,
-        seconds: float = 0,
+        seconds: int = 0,
     ) -> str:
         """
         Helper function to convert a relative time from current time into a timestamp

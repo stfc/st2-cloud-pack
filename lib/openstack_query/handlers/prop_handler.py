@@ -1,4 +1,4 @@
-from typing import Any, Optional, Set
+from typing import Optional, Set
 from custom_types.openstack_query.aliases import (
     PropertyMappings,
     PropFunc,
@@ -15,27 +15,27 @@ class PropHandler:
     """
 
     def __init__(self, property_mappings: PropertyMappings):
-        self._PROPERTY_MAPPINGS = property_mappings
+        self._property_mappings = property_mappings
 
     def check_supported(self, prop: PropEnum) -> bool:
         """
         Method that returns True if function mapping exists for a given property Enum
         :param prop: A property Enum for which a function may exist for
         """
-        return prop in self._PROPERTY_MAPPINGS.keys()
+        return prop in self._property_mappings.keys()
 
-    def _get_mapping(self, prop: PropEnum) -> Optional[PropFunc]:
+    def get_prop_func(self, prop: PropEnum) -> Optional[PropFunc]:
         """
         Method that returns the property function if function mapping exists for a given property Enum
         :param prop: A property Enum for which a function may exist for
         """
-        return self._PROPERTY_MAPPINGS.get(prop, None)
+        return self._property_mappings.get(prop, None)
 
     def all_props(self) -> Set[PropEnum]:
         """
         Method that returns all valid property Enums that this handler supports
         """
-        return set(self._PROPERTY_MAPPINGS.keys())
+        return set(self._property_mappings.keys())
 
     def get_prop(
         self, item: OpenstackResourceObj, prop: PropEnum, default_out: str = "Not Found"
@@ -50,7 +50,7 @@ class PropHandler:
         if not self.check_supported(prop):
             return default_out
 
-        prop_func = self._get_mapping(prop)
+        prop_func = self.get_prop_func(prop)
         try:
             return str(prop_func(item))
         except AttributeError:

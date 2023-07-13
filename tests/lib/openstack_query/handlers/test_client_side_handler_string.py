@@ -5,10 +5,13 @@ from parameterized import parameterized
 from nose.tools import raises
 
 from openstack_query.handlers.client_side_handler_string import ClientSideHandlerString
-from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 from enums.query.query_presets import QueryPresetsString
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
+
+from tests.lib.openstack_query.mocks.mocked_props import MockProperties
+
+# pylint:disable=protected-access
 
 
 class ClientSideHandlerStringTests(unittest.TestCase):
@@ -21,15 +24,15 @@ class ClientSideHandlerStringTests(unittest.TestCase):
         Setup for tests
         """
         super().setUp()
-        _FILTER_FUNCTION_MAPPINGS = {
+        _filter_function_mappings = {
             preset: [MockProperties.PROP_1] for preset in QueryPresetsString
         }
-        self.instance = ClientSideHandlerString(_FILTER_FUNCTION_MAPPINGS)
+        self.instance = ClientSideHandlerString(_filter_function_mappings)
 
     @parameterized.expand(
         [(f"test {preset.name}", preset) for preset in QueryPresetsString]
     )
-    def test_check_supported_all_presets(self, name, preset):
+    def test_check_supported_all_presets(self, _, preset):
         """
         Tests that client_side_handler_string supports all string QueryPresets
         """
@@ -37,17 +40,15 @@ class ClientSideHandlerStringTests(unittest.TestCase):
 
     @parameterized.expand(
         [
-            ("Numeric digits only", "[0-9]+", "123", True),
-            ("Alphabetic characters only", "[A-Za-z]+", "abc", True),
-            ("No alphabetic characters", "[A-Za-z]+", "123", False),
-            ("Alphabetic and numeric characters", "[A-Za-z0-9]+", "abc123", True),
-            ("Empty string, no match", "[A-Za-z]+", "", False),
+            ("Numeric digits only", "[0-9]+", "123"),
+            ("Alphabetic characters only", "[A-Za-z]+", "abc"),
+            ("No alphabetic characters", "[A-Za-z]+", "123"),
+            ("Alphabetic and numeric characters", "[A-Za-z0-9]+", "abc123"),
+            ("Empty string, no match", "[A-Za-z]+", ""),
         ]
     )
     @patch("re.match")
-    def test_prop_matches_regex_valid(
-        self, name, regex_string, test_prop, expected_out, mock_regex
-    ):
+    def test_prop_matches_regex_valid(self, _, regex_string, test_prop, mock_regex):
         """
         Tests that method prop_matches_regex functions expectedly - with valid regex patterns
         Returns True if test_prop matches given regex pattern regex_string
@@ -62,7 +63,7 @@ class ClientSideHandlerStringTests(unittest.TestCase):
             ("item is not in", ["val1", "val2"], "val3", False),
         ]
     )
-    def test_prop_any_in(self, name, val_list, test_prop, expected_out):
+    def test_prop_any_in(self, _, val_list, test_prop, expected_out):
         """
         Tests that method prop_any_in functions expectedly
         Returns True if test_prop matches any values in a given list val_list
@@ -83,7 +84,7 @@ class ClientSideHandlerStringTests(unittest.TestCase):
             ("item is not in", ["val1", "val2"], "val3", True),
         ]
     )
-    def test_prop_not_any_in(self, name, val_list, test_prop, expected_out):
+    def test_prop_not_any_in(self, _, val_list, test_prop, expected_out):
         """
         Tests that method prop_any_not_in functions expectedly
         Returns True if test_prop does not match any values in a given list val_list

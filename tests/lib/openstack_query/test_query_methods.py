@@ -4,10 +4,9 @@ from openstack_query.query_methods import QueryMethods
 
 from nose.tools import raises
 
+from exceptions.parse_query_error import ParseQueryError
 from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
-
-from exceptions.parse_query_error import ParseQueryError
 
 
 class QueryMethodsTests(unittest.TestCase):
@@ -151,6 +150,8 @@ class QueryMethodsTests(unittest.TestCase):
         method should return query_results internal attribute if as_objects input is true,
         """
         mock_query_results_list = ["object-1", "object-2"]
+
+        # pylint: disable=too-few-public-methods
         self.instance._query_results = mock_query_results_list
         self.assertEqual(
             self.instance.to_list(as_objects=True), mock_query_results_list

@@ -1,5 +1,3 @@
-from typing import Dict, Optional
-
 from structs.query.query_client_side_handlers import QueryClientSideHandlers
 
 from enums.query.props.server_properties import ServerProperties
@@ -7,7 +5,6 @@ from enums.query.query_presets import (
     QueryPresetsGeneric,
     QueryPresetsDateTime,
     QueryPresetsString,
-    QueryPresetsInteger,
 )
 from openstack_query.handlers.server_side_handler import ServerSideHandler
 from openstack_query.handlers.prop_handler import PropHandler
@@ -25,6 +22,8 @@ from openstack_query.queries.query_wrapper import QueryWrapper
 from openstack_query.runners.server_runner import ServerRunner
 
 from openstack_query.time_utils import TimeUtils
+
+# pylint:disable=too-few-public-methods
 
 
 class ServerQuery(QueryWrapper):

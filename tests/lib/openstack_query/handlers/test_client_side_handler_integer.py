@@ -1,12 +1,14 @@
 import unittest
 from parameterized import parameterized
 
+from enums.query.query_presets import QueryPresetsInteger
+
 from openstack_query.handlers.client_side_handler_integer import (
     ClientSideHandlerInteger,
 )
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
-from enums.query.query_presets import QueryPresetsInteger
+# pylint:disable=protected-access,
 
 
 class ClientSideHandlerIntegerTests(unittest.TestCase):
@@ -19,15 +21,15 @@ class ClientSideHandlerIntegerTests(unittest.TestCase):
         Setup for tests
         """
         super().setUp()
-        _FILTER_FUNCTION_MAPPINGS = {
+        _filter_function_mappings = {
             preset: [MockProperties.PROP_1] for preset in QueryPresetsInteger
         }
-        self.instance = ClientSideHandlerInteger(_FILTER_FUNCTION_MAPPINGS)
+        self.instance = ClientSideHandlerInteger(_filter_function_mappings)
 
     @parameterized.expand(
         [(f"test {preset.name}", preset) for preset in QueryPresetsInteger]
     )
-    def test_check_supported_all_presets(self, name, preset):
+    def test_check_supported_all_presets(self, _, preset):
         """
         Tests that client_side_handler_integer supports all integer QueryPresets
         """
@@ -40,7 +42,7 @@ class ClientSideHandlerIntegerTests(unittest.TestCase):
             ("test greater than", 10, 8, False),
         ]
     )
-    def test_prop_less_than(self, name, val1, val2, expected_out):
+    def test_prop_less_than(self, _, val1, val2, expected_out):
         """
         Tests that method prop_less_than functions expectedly
         Returns True if val1 is less than val2
@@ -54,7 +56,7 @@ class ClientSideHandlerIntegerTests(unittest.TestCase):
             ("test greater than", 10, 8, True),
         ]
     )
-    def test_prop_greater_than(self, name, val1, val2, expected_out):
+    def test_prop_greater_than(self, _, val1, val2, expected_out):
         """
         Tests that method prop_greater_than functions expectedly
         Returns True if val1 is greater than val2
@@ -68,7 +70,7 @@ class ClientSideHandlerIntegerTests(unittest.TestCase):
             ("test greater than", 10, 8, False),
         ]
     )
-    def test_prop_less_than_or_equal_to(self, name, val1, val2, expected_out):
+    def test_prop_less_than_or_equal_to(self, _, val1, val2, expected_out):
         """
         Tests that method prop_less_than_or_equal_to functions expectedly
         Returns True if val1 is less than or equal to val2
@@ -82,7 +84,7 @@ class ClientSideHandlerIntegerTests(unittest.TestCase):
             ("test greater than", 10, 8, True),
         ]
     )
-    def test_prop_greater_than_or_equal_to(self, name, val1, val2, expected_out):
+    def test_prop_greater_than_or_equal_to(self, _, val1, val2, expected_out):
         """
         Tests that method prop_greater_than_or_equal_to functions expectedly
         Returns True if val1 is greater than or equal to val2

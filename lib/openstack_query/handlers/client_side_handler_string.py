@@ -7,6 +7,8 @@ from enums.query.query_presets import QueryPresetsString
 from openstack_query.handlers.client_side_handler import ClientSideHandler
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 
+# pylint: disable=too-few-public-methods
+
 
 class ClientSideHandlerString(ClientSideHandler):
     """
@@ -18,7 +20,7 @@ class ClientSideHandlerString(ClientSideHandler):
     def __init__(self, filter_function_mappings: PresetPropMappings):
         super().__init__(filter_function_mappings)
 
-        self._FILTER_FUNCTIONS = {
+        self._filter_functions = {
             QueryPresetsString.ANY_IN: self._prop_any_in,
             QueryPresetsString.MATCHES_REGEX: self._prop_matches_regex,
             QueryPresetsString.NOT_ANY_IN: self._prop_not_any_in,
