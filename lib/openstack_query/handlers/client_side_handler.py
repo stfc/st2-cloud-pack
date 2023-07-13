@@ -24,7 +24,7 @@ class ClientSideHandler(HandlerBase):
     """
 
     def __init__(self, filter_func_mappings: PresetPropMappings):
-        self._FILTER_FUNCTION_MAPPINGS = filter_func_mappings
+        self._filter_function_mappings = filter_func_mappings
 
     def check_supported(self, preset: QueryPresets, prop: PropEnum) -> bool:
         """
@@ -35,11 +35,11 @@ class ClientSideHandler(HandlerBase):
         if not self.preset_known(preset):
             return False
 
-        if prop in self._FILTER_FUNCTION_MAPPINGS[preset]:
+        if prop in self._filter_function_mappings[preset]:
             return True
 
         # '*' represents that all props are valid for preset
-        if ["*"] == self._FILTER_FUNCTION_MAPPINGS[preset]:
+        if ["*"] == self._filter_function_mappings[preset]:
             return True
 
         return False
@@ -49,7 +49,7 @@ class ClientSideHandler(HandlerBase):
         Method that returns True if a preset is known to the handler
         :param preset: A QueryPreset Enum which may have filter function mappings known to the handler
         """
-        return preset in self._FILTER_FUNCTION_MAPPINGS.keys()
+        return preset in self._filter_function_mappings.keys()
 
     def get_filter_func(
         self,
@@ -71,7 +71,7 @@ class ClientSideHandler(HandlerBase):
 
         filter_func = None
         if self.check_supported(preset, prop):
-            filter_func = self._FILTER_FUNCTIONS.get(preset, None)
+            filter_func = self._filter_functions.get(preset, None)
 
         if not filter_func:
             raise QueryPresetMappingError(

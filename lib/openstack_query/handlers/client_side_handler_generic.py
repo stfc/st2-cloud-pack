@@ -12,10 +12,10 @@ class ClientSideHandlerGeneric(ClientSideHandler):
     Filter functions which map to QueryPresetsGeneric are defined here
     """
 
-    def __init__(self, filter_function_mappings: PresetPropMappings):
-        super().__init__(filter_function_mappings)
+    def __init__(self, _filter_function_mappings: PresetPropMappings):
+        super().__init__(_filter_function_mappings)
 
-        self._FILTER_FUNCTIONS = {
+        self._filter_functions = {
             QueryPresetsGeneric.EQUAL_TO: self._prop_equal_to,
             QueryPresetsGeneric.NOT_EQUAL_TO: self._prop_not_equal_to,
         }

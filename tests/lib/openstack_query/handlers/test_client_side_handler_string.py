@@ -22,10 +22,10 @@ class ClientSideHandlerStringTests(unittest.TestCase):
         Setup for tests
         """
         super().setUp()
-        _FILTER_FUNCTION_MAPPINGS = {
+        _filter_function_mappings = {
             preset: [MockProperties.PROP_1] for preset in QueryPresetsString
         }
-        self.instance = ClientSideHandlerString(_FILTER_FUNCTION_MAPPINGS)
+        self.instance = ClientSideHandlerString(_filter_function_mappings)
 
     @parameterized.expand(
         [(f"test {preset.name}", preset) for preset in QueryPresetsString]

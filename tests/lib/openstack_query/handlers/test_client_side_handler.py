@@ -20,13 +20,13 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
         """
         super().setUp()
 
-        _FILTER_FUNCTION_MAPPINGS = {
+        _filter_function_mappings = {
             MockQueryPresets.ITEM_1: ["*"],
             MockQueryPresets.ITEM_2: [MockProperties.PROP_1, MockProperties.PROP_2],
             MockQueryPresets.ITEM_3: [MockProperties.PROP_3, MockProperties.PROP_4],
         }
-        self.instance = ClientSideHandler(_FILTER_FUNCTION_MAPPINGS)
-        self.instance._FILTER_FUNCTIONS = {
+        self.instance = ClientSideHandler(_filter_function_mappings)
+        self.instance._filter_functions = {
             MockQueryPresets.ITEM_1: "item1_func",
             MockQueryPresets.ITEM_2: "item2_func",
             MockQueryPresets.ITEM_3: "item3_func",

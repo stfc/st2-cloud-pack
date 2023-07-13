@@ -12,10 +12,10 @@ class ClientSideHandlerInteger(ClientSideHandler):
     Filter functions which map to QueryPresetsInteger are defined here
     """
 
-    def __init__(self, filter_function_mappings: PresetPropMappings):
-        super().__init__(filter_function_mappings)
+    def __init__(self, _filter_function_mappings: PresetPropMappings):
+        super().__init__(_filter_function_mappings)
 
-        self._FILTER_FUNCTIONS = {
+        self._filter_functions = {
             QueryPresetsInteger.GREATER_THAN: self._prop_greater_than,
             QueryPresetsInteger.LESS_THAN: self._prop_less_than,
             QueryPresetsInteger.GREATER_THAN_OR_EQUAL_TO: self._prop_greater_than_or_equal_to,

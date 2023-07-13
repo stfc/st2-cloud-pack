@@ -19,10 +19,10 @@ class ClientSideHandlerIntegerTests(unittest.TestCase):
         Setup for tests
         """
         super().setUp()
-        _FILTER_FUNCTION_MAPPINGS = {
+        _filter_function_mappings = {
             preset: [MockProperties.PROP_1] for preset in QueryPresetsInteger
         }
-        self.instance = ClientSideHandlerInteger(_FILTER_FUNCTION_MAPPINGS)
+        self.instance = ClientSideHandlerInteger(_filter_function_mappings)
 
     @parameterized.expand(
         [(f"test {preset.name}", preset) for preset in QueryPresetsInteger]

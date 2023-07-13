@@ -20,10 +20,10 @@ class ClientSideHandlerGenericTests(unittest.TestCase):
         """
         super().setUp()
         # sets filter function mappings so that PROP_1 is valid for all client_side
-        _FILTER_FUNCTION_MAPPINGS = {
+        _filter_function_mappings = {
             preset: [MockProperties.PROP_1] for preset in QueryPresetsGeneric
         }
-        self.instance = ClientSideHandlerGeneric(_FILTER_FUNCTION_MAPPINGS)
+        self.instance = ClientSideHandlerGeneric(_filter_function_mappings)
 
     @parameterized.expand(
         [(f"test {preset.name}", preset) for preset in QueryPresetsGeneric]

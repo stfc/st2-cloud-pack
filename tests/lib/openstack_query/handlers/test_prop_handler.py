@@ -16,11 +16,11 @@ class PropHandlerTests(unittest.TestCase):
         """
         super().setUp()
 
-        _PROPERTY_MAPPINGS = {
+        _property_mappings = {
             MockProperties.PROP_1: "prop1-func",
             MockProperties.PROP_2: "prop2-func",
         }
-        self.instance = PropHandler(_PROPERTY_MAPPINGS)
+        self.instance = PropHandler(_property_mappings)
 
     def test_check_supported_true(self):
         """

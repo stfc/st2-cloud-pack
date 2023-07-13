@@ -26,10 +26,10 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         """
         super().setUp()
         # sets filter function mappings so that PROP_1 is valid for all client_side
-        _FILTER_FUNCTION_MAPPINGS = {
+        _filter_function_mappings = {
             preset: [MockProperties.PROP_1] for preset in QueryPresetsDateTime
         }
-        self.instance = ClientSideHandlerDateTime(_FILTER_FUNCTION_MAPPINGS)
+        self.instance = ClientSideHandlerDateTime(_filter_function_mappings)
 
         # a set of test cases that each datetime filter function will be tested against
         self.test_cases = {

@@ -20,7 +20,7 @@ class ServerSideHandlerTests(unittest.TestCase):
         """
         super().setUp()
 
-        _SERVER_SIDE_FUNCTION_MAPPINGS = {
+        server_side_function_mappings = {
             MockQueryPresets.ITEM_1: {
                 MockProperties.PROP_1: "item1-prop1-kwarg",
                 MockProperties.PROP_2: "item2-prop2-kwarg",
@@ -30,7 +30,7 @@ class ServerSideHandlerTests(unittest.TestCase):
                 MockProperties.PROP_4: "item2-prop4-kwarg",
             },
         }
-        self.instance = ServerSideHandler(_SERVER_SIDE_FUNCTION_MAPPINGS)
+        self.instance = ServerSideHandler(server_side_function_mappings)
 
     def test_check_supported_true(self):
         """
