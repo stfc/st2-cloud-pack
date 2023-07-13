@@ -1,5 +1,7 @@
 from enums.query.props.prop_enum import PropEnum
 
+# pylint:disable=too-few-public-methods
+
 
 class MockProperties(PropEnum):
     """

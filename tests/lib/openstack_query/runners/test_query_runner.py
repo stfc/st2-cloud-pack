@@ -3,6 +3,8 @@ from unittest.mock import MagicMock, patch
 
 from openstack_query.runners.query_runner import QueryRunner
 
+# pylint:disable=protected-access
+
 
 class QueryRunnerTests(unittest.TestCase):
     @patch.multiple(QueryRunner, __abstractmethods__=set())

@@ -10,6 +10,8 @@ from tests.lib.openstack_query.mocks.mocked_structs import (
     MOCKED_PRESET_DETAILS,
 )
 
+# pylint:disable=protected-access,
+
 
 class QueryManagerTests(unittest.TestCase):
     """
@@ -49,7 +51,7 @@ class QueryManagerTests(unittest.TestCase):
     @parameterized.expand(
         [(f"test {outtype.name.lower()}", outtype) for outtype in QueryOutputTypes]
     )
-    def test_get_query_output_supports_all_types(self, name, outtype):
+    def test_get_query_output_supports_all_types(self, _, outtype):
         """
         Tests that _get_query_output method works for all OutputType Enums
         """
@@ -65,12 +67,12 @@ class QueryManagerTests(unittest.TestCase):
             MOCKED_PRESET_DETAILS, MOCKED_OUTPUT_DETAILS.properties_to_select
         )
         self.query.select.assert_called_once_with(
-            MOCKED_OUTPUT_DETAILS.properties_to_select
+            *MOCKED_OUTPUT_DETAILS.properties_to_select
         )
         self.query.where.assert_called_once_with(
-            MOCKED_PRESET_DETAILS.preset,
-            MOCKED_PRESET_DETAILS.prop,
-            MOCKED_PRESET_DETAILS.args,
+            preset=MOCKED_PRESET_DETAILS.preset,
+            prop=MOCKED_PRESET_DETAILS.prop,
+            **MOCKED_PRESET_DETAILS.args,
         )
 
     def test_populate_query_with_no_properties(self):
@@ -82,7 +84,7 @@ class QueryManagerTests(unittest.TestCase):
         self.instance._populate_query(MOCKED_PRESET_DETAILS, None)
         self.query.select_all.assert_called_once()
         self.query.where.assert_called_once_with(
-            MOCKED_PRESET_DETAILS.preset,
-            MOCKED_PRESET_DETAILS.prop,
-            MOCKED_PRESET_DETAILS.args,
+            preset=MOCKED_PRESET_DETAILS.preset,
+            prop=MOCKED_PRESET_DETAILS.prop,
+            **MOCKED_PRESET_DETAILS.args,
         )

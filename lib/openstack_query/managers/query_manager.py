@@ -1,4 +1,4 @@
-from typing import Optional, Set, Any, List, Union, Dict
+from typing import Optional, Set
 
 from enums.query.query_output_types import QueryOutputTypes
 from enums.query.props.prop_enum import PropEnum
@@ -9,6 +9,8 @@ from structs.query.query_preset_details import QueryPresetDetails
 
 from openstack_query.queries.query_wrapper import QueryWrapper
 from custom_types.openstack_query.aliases import QueryReturn
+
+# pylint:disable=too-few-public-methods
 
 
 class QueryManager:
@@ -69,11 +71,13 @@ class QueryManager:
         :param properties_to_select: A set of properties to get from each result when outputting
         """
         if properties_to_select:
-            self._query.select(properties_to_select)
+            self._query.select(*properties_to_select)
         else:
             self._query.select_all()
 
         if preset_details:
             self._query.where(
-                preset_details.preset, preset_details.prop, preset_details.args
+                preset=preset_details.preset,
+                prop=preset_details.prop,
+                **preset_details.args
             )

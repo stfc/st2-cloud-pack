@@ -21,7 +21,7 @@ class ServerSideHandler(HandlerBase):
     """
 
     def __init__(self, kwarg_mappings: ServerSideFilterMappings):
-        self._SERVER_SIDE_FILTER_MAPPINGS = kwarg_mappings
+        self._server_side_filter_mappings = kwarg_mappings
 
     def check_supported(self, preset: QueryPresets, prop: PropEnum) -> bool:
         """
@@ -31,14 +31,14 @@ class ServerSideHandler(HandlerBase):
         """
         if not self.preset_known(preset):
             return False
-        return prop in self._SERVER_SIDE_FILTER_MAPPINGS[preset].keys()
+        return prop in self._server_side_filter_mappings[preset].keys()
 
     def preset_known(self, preset: QueryPresets) -> bool:
         """
         Method that returns True if a preset is known to the handler
         :param preset: A QueryPreset Enum which may have filter function mappings known to the handler
         """
-        return preset in self._SERVER_SIDE_FILTER_MAPPINGS.keys()
+        return preset in self._server_side_filter_mappings.keys()
 
     def _get_mapping(
         self, preset: QueryPresets, prop: PropEnum
@@ -51,7 +51,7 @@ class ServerSideHandler(HandlerBase):
         """
         if not self.check_supported(preset, prop):
             return None
-        return self._SERVER_SIDE_FILTER_MAPPINGS[preset][prop]
+        return self._server_side_filter_mappings[preset][prop]
 
     def get_filters(
         self,

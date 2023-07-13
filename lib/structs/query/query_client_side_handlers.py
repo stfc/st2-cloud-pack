@@ -1,6 +1,5 @@
-from typing import List
+from typing import List, Optional
 from dataclasses import dataclass, fields
-from typing import Optional
 
 from openstack_query.handlers.client_side_handler import ClientSideHandler
 from openstack_query.handlers.client_side_handler_generic import (

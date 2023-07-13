@@ -1,4 +1,4 @@
-from typing import List, Any, Union
+from typing import List
 
 
 from enums.query.query_presets import (
@@ -14,6 +14,8 @@ from openstack_query.managers.query_manager import QueryManager
 from structs.query.query_output_details import QueryOutputDetails
 from structs.query.query_preset_details import QueryPresetDetails
 from custom_types.openstack_query.aliases import QueryReturn
+
+# pylint:disable=too-many-arguments
 
 
 class ServerManager(QueryManager):
@@ -58,8 +60,7 @@ class ServerManager(QueryManager):
                     "days": days,
                     "hours": hours,
                     "minutes": minutes,
-                    "seconds": seconds,
-                    "prop_timestamp_fmt": "%Y-%m-%dT%H:%M:%SZ",
+                    "seconds": float(seconds),
                 },
             ),
             output_details=output_details,
@@ -89,8 +90,7 @@ class ServerManager(QueryManager):
                     "days": days,
                     "hours": hours,
                     "minutes": minutes,
-                    "seconds": seconds,
-                    "prop_timestamp_fmt": "%Y-%m-%dT%H:%M:%SZ",
+                    "seconds": float(seconds),
                 },
             ),
             output_details=output_details,
@@ -121,8 +121,7 @@ class ServerManager(QueryManager):
                     "days": days,
                     "hours": hours,
                     "minutes": minutes,
-                    "seconds": seconds,
-                    "prop_timestamp_fmt": "%Y-%m-%dT%H:%M:%SZ",
+                    "seconds": float(seconds),
                 },
             ),
             output_details=output_details,
@@ -153,8 +152,7 @@ class ServerManager(QueryManager):
                     "days": days,
                     "hours": hours,
                     "minutes": minutes,
-                    "seconds": seconds,
-                    "prop_timestamp_fmt": "%Y-%m-%dT%H:%M:%SZ",
+                    "seconds": float(seconds),
                 },
             ),
             output_details=output_details,

@@ -4,6 +4,8 @@ from custom_types.openstack_query.aliases import PresetPropMappings
 from enums.query.query_presets import QueryPresetsInteger
 from openstack_query.handlers.client_side_handler import ClientSideHandler
 
+# pylint: disable=too-few-public-methods
+
 
 class ClientSideHandlerInteger(ClientSideHandler):
     """
@@ -15,7 +17,7 @@ class ClientSideHandlerInteger(ClientSideHandler):
     def __init__(self, filter_function_mappings: PresetPropMappings):
         super().__init__(filter_function_mappings)
 
-        self._FILTER_FUNCTIONS = {
+        self._filter_functions = {
             QueryPresetsInteger.GREATER_THAN: self._prop_greater_than,
             QueryPresetsInteger.LESS_THAN: self._prop_less_than,
             QueryPresetsInteger.GREATER_THAN_OR_EQUAL_TO: self._prop_greater_than_or_equal_to,

@@ -6,10 +6,11 @@ from parameterized import parameterized
 from openstack_query.handlers.client_side_handler_datetime import (
     ClientSideHandlerDateTime,
 )
+from enums.query.query_presets import QueryPresetsDateTime
 
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
-from enums.query.query_presets import QueryPresetsDateTime
+# pylint:disable=protected-access, unused-argument
 
 
 @patch(
@@ -27,10 +28,10 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         """
         super().setUp()
         # sets filter function mappings so that PROP_1 is valid for all client_side
-        _FILTER_FUNCTION_MAPPINGS = {
+        _filter_function_mappings = {
             preset: [MockProperties.PROP_1] for preset in QueryPresetsDateTime
         }
-        self.instance = ClientSideHandlerDateTime(_FILTER_FUNCTION_MAPPINGS)
+        self.instance = ClientSideHandlerDateTime(_filter_function_mappings)
 
         # a set of test cases that each datetime filter function will be tested against
         self.test_cases = {
@@ -48,12 +49,12 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 "minutes": 0,
                 "seconds": 0,
             },
-            "older_by_0.5_seconds": {
+            "older_by_1_second": {
                 "prop": "2023-06-04T10:30:00Z",
                 "days": 0,
                 "hours": 0,
                 "minutes": 0,
-                "seconds": 0.5,
+                "seconds": 1,
             },
             "equal": {
                 "prop": "2023-06-04T10:00:00Z",
@@ -76,19 +77,19 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
                 "minutes": 0,
                 "seconds": 0,
             },
-            "younger_by_0.5_seconds": {
+            "younger_by_1_second": {
                 "prop": "2023-06-03T10:29:59Z",
                 "days": 0,
                 "hours": 0,
                 "minutes": 0,
-                "seconds": 0.5,
+                "seconds": 1,
             },
         }
 
     @parameterized.expand(
         [(f"test {preset.name}", preset) for preset in QueryPresetsDateTime]
     )
-    def test_check_supported_all_presets(self, mock_current_time, name, preset):
+    def test_check_supported_all_presets(self, mock_current_time, _, preset):
         """
         Tests that client_side_handler_datetime supports all datetime QueryPresets
         """
@@ -98,11 +99,11 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         [
             ("older_by_1_day", True),
             ("older_by_12_hours", True),
-            ("older_by_0.5_seconds", True),
+            ("older_by_1_second", True),
             ("equal", False),
             ("younger_by_1_day", False),
             ("younger_by_12_hours", False),
-            ("younger_by_0.5_seconds", False),
+            ("younger_by_1_second", False),
         ]
     )
     def test_prop_older_than(self, mock_current_time, name, expected_out):
@@ -118,17 +119,18 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         [
             ("older_by_1_day", True),
             ("older_by_12_hours", True),
-            ("older_by_0.5_seconds", True),
+            ("older_by_1_second", True),
             ("equal", True),
             ("younger_by_1_day", False),
             ("younger_by_12_hours", False),
-            ("younger_by_0.5_seconds", False),
+            ("younger_by_1_second", False),
         ]
     )
     def test_prop_older_than_or_equal_to(self, mock_current_time, name, expected_out):
         """
         Tests that function prop_older_than_or_equal_to functions expectedly
-        Returns True if prop time is older than or equal to a calculated relative time from current time (set to 2023-06-04 10:30AM)
+        Returns True if prop time is older than or equal to a calculated relative time from current time
+        (set to 2023-06-04 10:30AM)
         """
         kwargs = self.test_cases[name]
         out = self.instance._prop_older_than_or_equal_to(**kwargs)
@@ -138,17 +140,18 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         [
             ("older_by_1_day", False),
             ("older_by_12_hours", False),
-            ("older_by_0.5_seconds", False),
+            ("older_by_1_second", False),
             ("equal", False),
             ("younger_by_1_day", True),
             ("younger_by_12_hours", True),
-            ("younger_by_0.5_seconds", True),
+            ("younger_by_1_second", True),
         ]
     )
     def test_prop_younger_than(self, mock_current_time, name, expected_out):
         """
         Tests that function prop_younger_than functions expectedly
-        Returns True if prop time is younger than a calculated relative time from current time (set to 2023-06-04 10:30AM)
+        Returns True if prop time is younger than a calculated relative time from current time
+        (set to 2023-06-04 10:30AM)
         """
         kwargs = self.test_cases[name]
         out = self.instance._prop_younger_than(**kwargs)
@@ -158,18 +161,18 @@ class ClientSideHandlerDateTimeTests(unittest.TestCase):
         [
             ("older_by_1_day", False),
             ("older_by_12_hours", False),
-            ("older_by_0.5_seconds", False),
+            ("older_by_1_second", False),
             ("equal", True),
             ("younger_by_1_day", True),
             ("younger_by_12_hours", True),
-            ("younger_by_0.5_seconds", True),
+            ("younger_by_1_second", True),
         ]
     )
     def test_prop_younger_than_or_equal_to(self, mock_current_time, name, expected_out):
         """
         Tests that function prop_younger_than_or_equal_to functions expectedly
-        Returns True if prop time is younger than or equal to a calculated relative time from current time (set to 2023-06-04 10:30AM)
-
+        Returns True if prop time is younger than or equal to a calculated relative time from current time
+        (set to 2023-06-04 10:30AM)
         """
         kwargs = self.test_cases[name]
         out = self.instance._prop_younger_than_or_equal_to(**kwargs)
