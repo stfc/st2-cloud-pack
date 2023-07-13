@@ -11,6 +11,7 @@ from structs.query.query_output_details import QueryOutputDetails
 
 class ServerQueryActions(Action):
     def __init__(self, *args, **kwargs):
+        self._server_manager = ServerManager(cloud_account=CloudDomains)
         super().__init__(*args, **kwargs)
 
     def run(
@@ -29,7 +30,7 @@ class ServerQueryActions(Action):
         :param return_type: A string representing how to return the results of the query
         :param kwargs: A set of extra parameters to pass to manager method, if any
         """
-        server_mgr = ServerManager(CloudDomains[cloud_account.upper()])
+        server_mgr = self._server_manager(CloudDomains[cloud_account.upper()])
         prop_enums = [ServerProperties[prop.upper()] for prop in properties_to_select]
         return getattr(server_mgr, submodule)(
             output_details=QueryOutputDetails(

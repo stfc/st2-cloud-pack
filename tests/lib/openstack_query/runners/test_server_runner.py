@@ -60,7 +60,7 @@ class ServerRunnerTests(unittest.TestCase):
 
     @raises(ParseQueryError)
     def test_get_projects_with_invalid_project_identifier(self):
-        """
+        """https://github.com/stfc/st2-cloud-pack/pull/74
         Tests _get_project method works expectedly
         method should raise ParseQueryError when an invalid project identifier is given
         (or when project cannot be found)

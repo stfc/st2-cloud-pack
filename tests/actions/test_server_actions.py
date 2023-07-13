@@ -9,7 +9,7 @@ from tests.actions.openstack_action_test_base import OpenstackActionTestBase
 
 class TestServerActions(OpenstackActionTestBase):
     """
-    Unit tests for the Server.* actions
+    Unit tests for the Server.* actions (not including server.search.* actions)
     """
 
     action_cls = ServerActions
