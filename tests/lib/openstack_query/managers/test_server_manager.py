@@ -13,8 +13,6 @@ from enums.query.props.server_properties import ServerProperties
 from structs.query.query_preset_details import QueryPresetDetails
 from tests.lib.openstack_query.mocks.mocked_structs import MOCKED_OUTPUT_DETAILS
 
-# pylint:disable=protected-access,
-
 
 @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
 class ServerManagerTests(unittest.TestCase):
@@ -30,6 +28,8 @@ class ServerManagerTests(unittest.TestCase):
 
         self.query = MagicMock()
         self.instance = ServerManager(cloud_account="test_account")
+
+        # pylint:disable=protected-access
         self.instance._query = self.query
 
     def test_search_all_servers(self, mock_build_and_run_query):
