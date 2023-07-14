@@ -10,6 +10,12 @@ from structs.query.query_output_details import QueryOutputDetails
 
 
 class ServerQueryActions(Action):
+    """
+    Stackstorm Action class that dynamically dispatches actions related to Server Queries to the corresponding
+    method in the ServerManager class
+    Actions that will be handled by this class follow the format server.search.*
+    """
+
     def __init__(self, *args, **kwargs):
         self._server_manager = ServerManager(cloud_account=CloudDomains)
         super().__init__(*args, **kwargs)
