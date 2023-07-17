@@ -1,4 +1,4 @@
-from typing import Optional, Set
+from typing import Optional, Set, List
 
 from enums.query.query_output_types import QueryOutputTypes
 from enums.query.props.prop_enum import PropEnum
@@ -81,3 +81,35 @@ class QueryManager:
                 prop=preset_details.prop,
                 **preset_details.args
             )
+
+    def _get_output_details(
+        self,
+        prop_enum_cls: PropEnum,
+        properties_to_select: List[str],
+        output_type: str,
+        **_
+    ) -> QueryOutputDetails:
+        """
+        method to parse string inputs that make-up output details form stackstorm action and create QueryOutputDetails
+        dataclass
+        :param properties_to_select: A list of strings which represent properties
+        :param prop_enum_cls: The enum class which holds corresponding enums for property strings
+        :param output_type: A string representing how to output the results
+        """
+        return QueryOutputDetails(
+            properties_to_select=self._parse_properties_to_select_strings(
+                properties_to_select, prop_enum_cls
+            ),
+            output_type=QueryOutputTypes.from_string(output_type),
+        )
+
+    @staticmethod
+    def _parse_properties_to_select_strings(
+        properties_to_select: List[str], prop_enum_cls: PropEnum
+    ) -> List[PropEnum]:
+        """
+        method to parse 'properties_to_select' list of strings from a stackstorm 'search' action.
+        :param properties_to_select: A list of strings which represent properties
+        :param prop_enum_cls: The enum class which holds corresponding enums for property strings
+        """
+        return list({prop_enum_cls.from_string(prop) for prop in properties_to_select})

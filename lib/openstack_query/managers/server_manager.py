@@ -1,9 +1,10 @@
-from typing import List
-
+from typing import List, Dict, Any
+import re
 
 from enums.query.query_presets import (
     QueryPresetsDateTime,
     QueryPresetsString,
+    QueryPresetsGeneric,
 )
 from enums.query.props.server_properties import ServerProperties
 from enums.cloud_domains import CloudDomains
@@ -11,7 +12,6 @@ from enums.cloud_domains import CloudDomains
 from openstack_query.queries.server_query import ServerQuery
 from openstack_query.managers.query_manager import QueryManager
 
-from structs.query.query_output_details import QueryOutputDetails
 from structs.query.query_preset_details import QueryPresetDetails
 from custom_types.openstack_query.aliases import QueryReturn
 
@@ -26,168 +26,104 @@ class ServerManager(QueryManager):
     def __init__(self, cloud_account: CloudDomains):
         QueryManager.__init__(self, query=ServerQuery(), cloud_account=cloud_account)
 
-    def search_all_servers(self, output_details: QueryOutputDetails) -> QueryReturn:
+    def search_all(self, **kwargs) -> QueryReturn:
         """
         method that returns a list of all servers
-        :param output_details: A dataclass containing config info on how results should be returned
+        :param kwargs: A set of optional kwargs to pass to the query
         """
         return self._build_and_run_query(
             preset_details=None,
-            output_details=output_details,
+            output_details=self._get_output_details(ServerProperties, **kwargs),
         )
 
-    def search_servers_older_than_relative_to_now(
+    def search_by_datetime(
         self,
-        output_details: QueryOutputDetails,
+        search_mode: str,
+        property_to_search_by: str,
         days: int = 0,
         hours: int = 0,
         minutes: int = 0,
         seconds: int = 0,
+        **kwargs
     ) -> QueryReturn:
         """
-        method that returns a list of all servers older than a time relative to now. Uses UTC timezone
-        :param output_details: A dataclass containing config info on how results should be returned
-        :param days: number of days since current time
-        :param hours: number of hours since current time
-        :param minutes: number of minutes since current time
-        :param seconds: number of seconds since current time
-        """
-        return self._build_and_run_query(
-            preset_details=QueryPresetDetails(
-                preset=QueryPresetsDateTime.OLDER_THAN,
-                prop=ServerProperties.SERVER_CREATION_DATE,
-                args={
-                    "days": days,
-                    "hours": hours,
-                    "minutes": minutes,
-                    "seconds": float(seconds),
-                },
-            ),
-            output_details=output_details,
-        )
-
-    def search_servers_younger_than_relative_to_now(
-        self,
-        output_details: QueryOutputDetails,
-        days: int = 0,
-        hours: int = 0,
-        minutes: int = 0,
-        seconds: int = 0,
-    ) -> QueryReturn:
-        """
-        method that returns a list of all servers younger than a time relative to now. Uses UTC timezone
-        :param output_details: A dataclass containing config info on how results should be returned
-        :param days: number of days since current time
-        :param hours: number of hours since current time
-        :param minutes: number of minutes since current time
-        :param seconds: number of seconds since current time
-        """
-        return self._build_and_run_query(
-            preset_details=QueryPresetDetails(
-                preset=QueryPresetsDateTime.YOUNGER_THAN,
-                prop=ServerProperties.SERVER_CREATION_DATE,
-                args={
-                    "days": days,
-                    "hours": hours,
-                    "minutes": minutes,
-                    "seconds": float(seconds),
-                },
-            ),
-            output_details=output_details,
-        )
-
-    def search_servers_last_updated_before_relative_to_now(
-        self,
-        output_details: QueryOutputDetails,
-        days: int,
-        hours: int = 0,
-        minutes: int = 0,
-        seconds: int = 0,
-    ) -> QueryReturn:
-        """
-        method that returns a list of all servers which were last updated before a time relative to now.
+        method that builds and runs a datetime-related query on Openstack Servers, and then returns results.
         Uses UTC timezone
-        :param output_details: A dataclass containing config info on how results should be returned
-        :param days: number of days since current time
-        :param hours: number of hours since current time
-        :param minutes: number of minutes since current time
-        :param seconds: number of seconds since current time
+        :param search_mode: A string representing what type of datetime query will be run - set as a Datetime Preset
+        that the query will use
+        :param property_to_search_by: A string representing a datetime property Enum that the preset will be used on
+        - must be datetime compatible
+        :param days: (Optional) Number of relative days in the past from now to use as threshold
+        :param hours: (Optional) Number of relative hours in the past from now to use as threshold
+        :param minutes: (Optional) Number of relative minutes in the past from now to use as threshold
+        :param seconds: (Optional) Number of relative seconds in the past from now to use as threshold
+        :param kwargs: A set of optional kwargs to pass to the query
         """
-        return self._build_and_run_query(
-            preset_details=QueryPresetDetails(
-                preset=QueryPresetsDateTime.OLDER_THAN,
-                prop=ServerProperties.SERVER_LAST_UPDATED_DATE,
-                args={
-                    "days": days,
-                    "hours": hours,
-                    "minutes": minutes,
-                    "seconds": float(seconds),
-                },
-            ),
-            output_details=output_details,
+        preset_details = QueryPresetDetails(
+            preset=QueryPresetsDateTime.from_string(search_mode),
+            prop=ServerProperties.from_string(property_to_search_by),
+            args={
+                "days": days,
+                "hours": hours,
+                "minutes": minutes,
+                "seconds": float(seconds),
+            },
         )
 
-    def search_servers_last_updated_after_relative_to_now(
-        self,
-        output_details: QueryOutputDetails,
-        days: int,
-        hours: int = 0,
-        minutes: int = 0,
-        seconds: int = 0,
-    ) -> QueryReturn:
-        """
-        method that returns a list of all servers which were last updated after a time relative to now.
-        Uses UTC timezone
-        :param output_details: A dataclass containing config info on how results should be returned
-        :param days: number of days since current time
-        :param hours: number of hours since current time
-        :param minutes: number of minutes since current time
-        :param seconds: number of seconds since current time
-        """
         return self._build_and_run_query(
-            preset_details=QueryPresetDetails(
-                preset=QueryPresetsDateTime.YOUNGER_THAN,
-                prop=ServerProperties.SERVER_LAST_UPDATED_DATE,
-                args={
-                    "days": days,
-                    "hours": hours,
-                    "minutes": minutes,
-                    "seconds": float(seconds),
-                },
-            ),
-            output_details=output_details,
+            preset_details=preset_details,
+            output_details=self._get_output_details(ServerProperties, **kwargs),
         )
 
-    def search_servers_name_in(
-        self, output_details: QueryOutputDetails, names: List[str]
+    def search_by_property(
+        self, search_mode: bool, property_to_search_by: str, values: List[str], **kwargs
     ) -> QueryReturn:
         """
-        method that returns a list of all servers which have a name in a given list
-        :param output_details: A dataclass containing config info on how results should be returned
-        :param names: a list of server names to check against
+        method that builds and runs a query to find Openstack servers with a selected property
+        matching, or not matching given value(s)
+        :param search_mode: A boolean representing what to return from query, if True - use the preset ANY_IN/EQUAL_TO,
+        if False - use the preset NOT_ANY_IN/NOT_EQUAL_TO
+        :param property_to_search_by: A string representing a datetime property Enum that the preset will be used on
+        :param values: A list of string values to compare server property against
+        :param kwargs: A set of optional kwargs to pass to the query
         """
-        return self._build_and_run_query(
-            preset_details=QueryPresetDetails(
-                preset=QueryPresetsString.ANY_IN,
-                prop=ServerProperties.SERVER_NAME,
-                args={"values": names},
-            ),
-            output_details=output_details,
+        args = {"values": values}
+        preset = (
+            QueryPresetsString.ANY_IN if search_mode else QueryPresetsString.NOT_ANY_IN
         )
 
-    def search_servers_name_not_in(
-        self, output_details: QueryOutputDetails, names: List[str]
-    ) -> QueryReturn:
-        """
-        method that returns a list of all servers which do not have a name matching any from a given list
-        :param output_details: A dataclass containing config info on how results should be returned
-        :param names: a list of server names to check against
-        """
+        # If values contains only one value - use EQUAL_TO/NOT_EQUAL_TO as the preset instead to speed up query
+        if len(values) == 1:
+            res = {
+                QueryPresetsString.ANY_IN: QueryPresetsGeneric.EQUAL_TO,
+                QueryPresetsString.NOT_ANY_IN: QueryPresetsGeneric.NOT_EQUAL_TO,
+            }.get(preset, None)
+            if res:
+                preset = res
+                args = {"value": values[0]}
+
         return self._build_and_run_query(
             preset_details=QueryPresetDetails(
-                preset=QueryPresetsString.NOT_ANY_IN,
-                prop=ServerProperties.SERVER_NAME,
-                args={"values": names},
+                preset=preset,
+                prop=ServerProperties.from_string(property_to_search_by),
+                args=args,
             ),
-            output_details=output_details,
+            output_details=self._get_output_details(ServerProperties, **kwargs),
+        )
+
+    def search_by_regex(self, property_to_search_by: str, pattern: str, **kwargs):
+        """
+        method that builds and runs a query to find Openstack servers with a selected property matching regex.
+        :param property_to_search_by: A string representing a string property Enum that the preset will be used on
+        :param pattern: A string representing a regex pattern
+        """
+        args = {"value": re.compile(pattern)}
+
+        return self._build_and_run_query(
+            preset_details=QueryPresetDetails(
+                preset=QueryPresetsString.MATCHES_REGEX,
+                prop=ServerProperties.from_string(property_to_search_by),
+                args=args,
+            ),
+            output_details=self._get_output_details(ServerProperties, **kwargs),
         )
