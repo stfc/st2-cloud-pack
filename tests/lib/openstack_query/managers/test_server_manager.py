@@ -76,11 +76,9 @@ class ServerManagerTests(unittest.TestCase):
         res = self.instance.search_by_datetime(
             search_mode="older_than",
             property_to_search_by="server_creation_date",
-            query_args={
-                "days": 10,
-                "hours": 10,
-                "minutes": 1,
-            },
+            days=10,
+            hours=10,
+            minutes=1,
             **mock_kwargs
         )
 
