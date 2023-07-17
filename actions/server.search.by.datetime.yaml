@@ -1,0 +1,103 @@
+---
+description: Query servers based on a datetime property (e.g. created-at or last-updated)
+enabled: true
+entry_point: src/server_query_actions.py
+name: server.search.by.datetime
+parameters:
+  timeout:
+    default: 5400
+  submodule:
+    default: "search_by_datetime"
+    immutable: true
+    type: string
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  properties_to_select:
+    default:
+      - 'flavor_id'
+      - 'hypervisor_id'
+      - 'image_id'
+      - 'project_id'
+      - 'server_creation_date'
+      - 'server_description'
+      - 'server_id'
+      - 'server_last_updated_date'
+      - 'server_name'
+      - 'server_status'
+      - 'user_id'
+    type: array
+    description: "
+    A comma-spaced list of server properties to display for the resulting servers - leave empty for all properties. One of:
+      - 'flavor_id'
+      - 'hypervisor_id'
+      - 'image_id'
+      - 'project_id'
+      - 'server_creation_date'
+      - 'server_description'
+      - 'server_id'
+      - 'server_last_updated_date'
+      - 'server_name'
+      - 'server_status'
+      - 'user_id'
+    Anything else will raise an error"
+    required: false
+  output_type:
+    default: "to_str"
+    type: string
+    enum:
+      - "to_html"
+      - "to_object_list"
+      - "to_list"
+      - "to_str"
+    description: "
+    A string representing how to return the results of the query
+      - 'to_html' - a tabulate table (in html)
+      - 'to_list' - properties dicts as a python list
+      - 'to_object_list - as a list of openstack resources
+      - 'to_str' - a tabulate table"
+    required: true
+  property_to_search_by:
+    description: "choose datetime property to base the query on"
+    default: "server_creation_date"
+    type: string
+    required: true
+    enum:
+      - "server_creation_date"
+      - "server_last_updated_date"
+  search_mode:
+    description: "what to mode to use to search by"
+    default: "older_than"
+    type: string
+    required: true
+    enum:
+      - "older_than"
+      - "older_than_or_equal_to"
+      - "younger_than"
+      - "younger_than_or_equal_to"
+  days:
+    description: "(Optional) Number of relative days from now threshold"
+    type: integer
+    default: 0
+    required: false
+  hours:
+    description: "(Optional) Number of relative hours from now threshold"
+    type: integer
+    default: 0
+    required: false
+  minutes:
+    description: "(Optional) Number of relative minutes from now threshold"
+    type: integer
+    default: 0
+    required: false
+  seconds:
+    description: "(Optional) Number of relative seconds from now threshold"
+    type: integer
+    default: 0
+    required: false
+runner_type: python-script

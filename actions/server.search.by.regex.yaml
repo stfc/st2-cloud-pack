@@ -1,0 +1,83 @@
+---
+description: Search for servers property using regex pattern, or not matching given value(s)
+enabled: true
+entry_point: src/server_query_actions.py
+name: server.search.by.regex
+parameters:
+  timeout:
+    default: 5400
+  submodule:
+    default: "search_by_regex"
+    immutable: true
+    type: string
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  properties_to_select:
+    default:
+      - "flavor_id"
+      - "hypervisor_id"
+      - "image_id"
+      - "project_id"
+      - "server_creation_date"
+      - "server_description"
+      - "server_id"
+      - "server_last_updated_date"
+      - "server_name"
+      - "server_status"
+      - "user_id"
+    type: array
+    description: "
+    A comma-spaced list of server properties to display for the resulting servers - leave empty for all properties. One of:
+      - 'flavor_id'
+      - 'hypervisor_id'
+      - 'image_id'
+      - 'project_id'
+      - 'server_creation_date'
+      - 'server_description'
+      - 'server_id'
+      - 'server_last_updated_date'
+      - 'server_name'
+      - 'server_status'
+      - 'user_id'
+    Anything else will raise an error"
+    required: false
+  output_type:
+    default: "to_str"
+    type: string
+    enum:
+      - "to_html"
+      - "to_object_list"
+      - "to_list"
+      - "to_str"
+    description: "
+    A string representing how to return the results of the query
+      - 'to_html' - a tabulate table (in html)
+      - 'to_list' - properties dicts as a python list
+      - 'to_object_list - as a list of openstack resources
+      - 'to_str' - a tabulate table"
+    required: true
+  property_to_search_by:
+    default: "server_name"
+    description: "choose property to search by"
+    enum:
+      - "flavor_id"
+      - "hypervisor_id"
+      - "image_id"
+      - "server_description"
+      - "server_id"
+      - "server_name"
+      - "server_status"
+      - "user_id"
+    type: string
+    required: true
+  pattern:
+    description: "the regex pattern to use - must be compatible with python regex 're' module"
+    required: true
+    type: string
+runner_type: python-script
