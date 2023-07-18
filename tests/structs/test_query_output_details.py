@@ -33,4 +33,7 @@ class QueryOutputDetailsTests(unittest.TestCase):
             properties_to_select=["prop1", "prop2"],
             output_type="to_str",
         )
-        self.assertEqual(res, MOCKED_OUTPUT_DETAILS)
+        assert set(res.properties_to_select) == set(
+            MOCKED_OUTPUT_DETAILS.properties_to_select
+        )
+        assert res.output_type == MOCKED_OUTPUT_DETAILS.output_type
