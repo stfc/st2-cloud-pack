@@ -81,22 +81,22 @@ parameters:
       - "younger_than"
       - "younger_than_or_equal_to"
   days:
-    description: "(Optional) Number of relative days from now threshold"
+    description: "(Optional) Number of relative days from now"
     type: integer
     default: 0
     required: false
   hours:
-    description: "(Optional) Number of relative hours from now threshold"
+    description: "(Optional) Number of relative hours from now"
     type: integer
     default: 0
     required: false
   minutes:
-    description: "(Optional) Number of relative minutes from now threshold"
+    description: "(Optional) Number of relative minutes from now"
     type: integer
     default: 0
     required: false
   seconds:
-    description: "(Optional) Number of relative seconds from now threshold"
+    description: "(Optional) Number of relative seconds from now"
     type: integer
     default: 0
     required: false

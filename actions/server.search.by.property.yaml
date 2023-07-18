@@ -64,7 +64,7 @@ parameters:
     required: true
   property_to_search_by:
     default: "server_name"
-    description: "choose property to search by"
+    description: "choose property to search by (acts as OR for each)"
     enum:
       - "flavor_id"
       - "hypervisor_id"

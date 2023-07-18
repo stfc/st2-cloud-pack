@@ -31,6 +31,8 @@ class ServerManager(QueryManager):
         """
         method that returns a list of all servers
         :param kwargs: A set of optional kwargs to pass to the query
+            - properties_to_select - list of strings representing which properties to select
+            - output_type - string representing how to output the query
         """
         return self._build_and_run_query(
             preset_details=None,
@@ -61,6 +63,8 @@ class ServerManager(QueryManager):
         :param minutes: (Optional) Number of relative minutes in the past from now to use as threshold
         :param seconds: (Optional) Number of relative seconds in the past from now to use as threshold
         :param kwargs: A set of optional kwargs to pass to the query
+            - properties_to_select - list of strings representing which properties to select
+            - output_type - string representing how to output the query
         """
         preset_details = QueryPresetDetails(
             preset=QueryPresetsDateTime.from_string(search_mode),
@@ -91,6 +95,8 @@ class ServerManager(QueryManager):
         :param property_to_search_by: A string representing a datetime property Enum that the preset will be used on
         :param values: A list of string values to compare server property against
         :param kwargs: A set of optional kwargs to pass to the query
+            - properties_to_select - list of strings representing which properties to select
+            - output_type - string representing how to output the query
         """
         args = {"values": values}
         preset = (
@@ -99,12 +105,12 @@ class ServerManager(QueryManager):
 
         # If values contains only one value - use EQUAL_TO/NOT_EQUAL_TO as the preset instead to speed up query
         if len(values) == 1:
-            res = {
+            equal_to_preset = {
                 QueryPresetsString.ANY_IN: QueryPresetsGeneric.EQUAL_TO,
                 QueryPresetsString.NOT_ANY_IN: QueryPresetsGeneric.NOT_EQUAL_TO,
             }.get(preset, None)
-            if res:
-                preset = res
+            if equal_to_preset:
+                preset = equal_to_preset
                 args = {"value": values[0]}
 
         return self._build_and_run_query(
@@ -123,6 +129,9 @@ class ServerManager(QueryManager):
         method that builds and runs a query to find Openstack servers with a selected property matching regex.
         :param property_to_search_by: A string representing a string property Enum that the preset will be used on
         :param pattern: A string representing a regex pattern
+        :param kwargs: A set of optional kwargs to pass to the query
+            - properties_to_select - list of strings representing which properties to select
+            - output_type - string representing how to output the query
         """
 
         re.compile(pattern)

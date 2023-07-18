@@ -24,8 +24,8 @@ class QueryOutputDetailsTests(unittest.TestCase):
 
         mock_prop_cls = MagicMock()
         mock_prop_cls.from_string.side_effect = [
-            (MockProperties.PROP_1),
-            (MockProperties.PROP_2),
+            MockProperties.PROP_1,
+            MockProperties.PROP_2,
         ]
 
         res = QueryOutputDetails.from_kwargs(
