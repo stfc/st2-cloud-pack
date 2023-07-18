@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, NonCallableMock
 from parameterized import parameterized
 
 from nose.tools import raises
@@ -48,14 +48,20 @@ class ClientSideHandlerStringTests(unittest.TestCase):
         ]
     )
     @patch("re.match")
-    def test_prop_matches_regex_valid(self, _, regex_string, test_prop, mock_regex):
+    @patch("re.compile")
+    def test_prop_matches_regex_valid(
+        self, _, regex_string, test_prop, mock_regex_compile, mock_regex_match
+    ):
         """
         Tests that method prop_matches_regex functions expectedly - with valid regex patterns
         Returns True if test_prop matches given regex pattern regex_string
         """
-        mock_regex.return_value = test_prop
+        mock_compile = NonCallableMock()
+        mock_regex_match.return_value = test_prop
+        mock_regex_compile.return_value = mock_compile
         self.instance._prop_matches_regex(test_prop, regex_string)
-        mock_regex.assert_called_once_with(regex_string, test_prop)
+        mock_regex_match.assert_called_once_with(mock_compile, test_prop)
+        mock_regex_compile.assert_called_once_with(regex_string)
 
     @parameterized.expand(
         [

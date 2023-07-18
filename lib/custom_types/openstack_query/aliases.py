@@ -1,4 +1,4 @@
-from typing import List, Callable, Any, Dict, Union, Literal
+from typing import List, Callable, Any, Dict, Union
 from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresets
 
@@ -32,7 +32,8 @@ ServerSideFilterMappings = Dict[QueryPresets, PropToServerSideFilterFunc]
 
 # type alias for mapping presets to valid properties that can be used with them
 # can also accept a literal ['*'] to indicate preset works for all enum values
-PresetPropMappings = Union[List[PropEnum], List[Literal["*"]]]
+# NOTE: can't use Literal typing for ['*'] with python 3.6 so using generic List
+PresetPropMappings = Union[List[PropEnum], List]
 
 # type alias for project identifier - either name/id or Project object
 ProjectIdentifier = Union[str, Project]

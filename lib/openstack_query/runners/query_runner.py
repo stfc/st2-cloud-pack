@@ -1,9 +1,8 @@
 from abc import abstractmethod
-from typing import Optional, List, Any, Callable
+from typing import Optional, List, Any
 
 from enums.cloud_domains import CloudDomains
 
-from exceptions.parse_query_error import ParseQueryError
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.openstack_connection import OpenstackConnection
 from custom_types.openstack_query.aliases import (
