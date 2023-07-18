@@ -1,8 +1,9 @@
 from unittest.mock import patch, NonCallableMock
 from parameterized import parameterized
+from enums.cloud_domains import CloudDomains
+
 from src.server_query_actions import ServerQueryActions
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase
-from enums.cloud_domains import CloudDomains
 
 
 class TestServerQueryActions(OpenstackActionTestBase):
@@ -12,6 +13,7 @@ class TestServerQueryActions(OpenstackActionTestBase):
 
     action_cls = ServerQueryActions
 
+    # pylint: disable=invalid-name
     def setUp(self):
         super().setUp()
         self.action: ServerQueryActions = self.get_action_instance()

@@ -1,6 +1,6 @@
 import re
 
-from typing import List, Any, Pattern
+from typing import List, Any
 from custom_types.openstack_query.aliases import PresetPropMappings
 
 from enums.query.query_presets import QueryPresetsString

@@ -146,7 +146,7 @@ class QueryPresetsTests(unittest.TestCase):
             ("mix_case", "YoUngEr_ThAn_Or_EqUaL_To"),
         ]
     )
-    def test_older_than_or_equal_to_serialization(self, _, val):
+    def test_younger_than_or_equal_to_serialization(self, _, val):
         """
         Tests that variants of YOUNGER_THAN_OR_EQUAL_TO can be serialized
         """
@@ -171,7 +171,7 @@ class QueryPresetsTests(unittest.TestCase):
             ("mix_case", "NoT_AnY_In"),
         ]
     )
-    def test_any_in_serialization(self, _, val):
+    def test_not_any_in_serialization(self, _, val):
         """
         Tests that variants of NOT_ANY_IN can be serialized
         """
@@ -184,7 +184,7 @@ class QueryPresetsTests(unittest.TestCase):
             ("mix_case", "MaTcHeS_ReGeX"),
         ]
     )
-    def test_any_in_serialization(self, _, val):
+    def test_matches_regex_serialization(self, _, val):
         """
         Tests that variants of MATCHES_REGEX can be serialized
         """

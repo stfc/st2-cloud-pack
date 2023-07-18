@@ -1,11 +1,9 @@
 import unittest
-from unittest.mock import MagicMock, patch, NonCallableMock, call
+from unittest.mock import MagicMock, patch, NonCallableMock
 from parameterized import parameterized
 
 from openstack_query.managers.query_manager import QueryManager
 from enums.query.query_output_types import QueryOutputTypes
-
-from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 from tests.lib.openstack_query.mocks.mocked_structs import (
     MOCKED_OUTPUT_DETAILS,

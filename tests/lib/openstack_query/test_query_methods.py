@@ -151,7 +151,7 @@ class QueryMethodsTests(unittest.TestCase):
         """
         mock_query_results_list = ["object-1", "object-2"]
 
-        # pylint: disable=too-few-public-methods
+        # pylint: disable=protected-access
         self.instance._query_results = mock_query_results_list
         self.assertEqual(
             self.instance.to_list(as_objects=True), mock_query_results_list
