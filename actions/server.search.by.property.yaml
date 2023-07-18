@@ -77,10 +77,13 @@ parameters:
     type: string
     required: true
   search_mode:
-    default: true
-    description: "True means return matching, False means return not matching"
+    description: "what to mode to use to search by"
+    default: "any_in"
+    type: string
     required: true
-    type: boolean
+    enum:
+      - "any_in"
+      - "not_any_in"
   values:
     description: "a comma-spaced list of values to search for"
     required: true

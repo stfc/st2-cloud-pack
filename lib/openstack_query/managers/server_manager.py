@@ -85,12 +85,13 @@ class ServerManager(QueryManager):
         )
 
     def search_by_property(
-        self, search_mode: bool, property_to_search_by: str, values: List[str], **kwargs
+        self, search_mode: str, property_to_search_by: str, values: List[str], **kwargs
     ) -> QueryReturn:
         """
         method that builds and runs a query to find Openstack servers with a selected property
         matching, or not matching given value(s)
-        :param search_mode: A boolean representing what to return from query, if True - use the preset ANY_IN/EQUAL_TO,
+        :param search_mode: A string representing a preset Enum ANY_IN or NOT_ANY_IN which dictates what query
+        to perform
         if False - use the preset NOT_ANY_IN/NOT_EQUAL_TO
         :param property_to_search_by: A string representing a datetime property Enum that the preset will be used on
         :param values: A list of string values to compare server property against

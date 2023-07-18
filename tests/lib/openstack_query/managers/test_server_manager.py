@@ -117,7 +117,7 @@ class ServerManagerTests(unittest.TestCase):
         }
 
         res = self.instance.search_by_property(
-            search_mode=True,
+            search_mode="any_in",
             property_to_search_by="image_id",
             values=["image-id1"],
             **mock_kwargs
@@ -153,7 +153,7 @@ class ServerManagerTests(unittest.TestCase):
         }
 
         res = self.instance.search_by_property(
-            search_mode=True,
+            search_mode="any_in",
             property_to_search_by="image_id",
             values=["image-id1", "image-id2"],
             **mock_kwargs
