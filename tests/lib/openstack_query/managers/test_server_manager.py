@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import MagicMock, patch, NonCallableMock
-from nose.tools import raises
 
 from openstack_query.managers.server_manager import ServerManager
 
@@ -12,11 +11,10 @@ from enums.query.query_presets import (
 from enums.query.props.server_properties import ServerProperties
 from enums.query.query_output_types import QueryOutputTypes
 from structs.query.query_preset_details import QueryPresetDetails
-from exceptions.parse_query_error import ParseQueryError
 
 
 @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
-@patch("openstack_query.managers.query_manager.QueryManager._get_output_details")
+@patch("openstack_query.managers.server_manager.QueryOutputDetails")
 class ServerManagerTests(unittest.TestCase):
     """
     Runs various tests to ensure that ServerManager class methods function expectedly
@@ -34,7 +32,7 @@ class ServerManagerTests(unittest.TestCase):
         # pylint:disable=protected-access
         self.instance._query = self.query
 
-    def test_search_all(self, mock_get_output_details, mock_build_and_run_query):
+    def test_search_all(self, mock_query_output_details, mock_build_and_run_query):
         """
         Tests that search_all method functions expectedly
         Runs a query to get all servers, returns query results
@@ -43,7 +41,7 @@ class ServerManagerTests(unittest.TestCase):
         mock_build_and_run_query.return_value = mock_query_return
 
         mock_output_details = MagicMock()
-        mock_get_output_details.return_value = mock_output_details
+        mock_query_output_details.from_kwargs.return_value = mock_output_details
 
         mock_kwargs = {
             "properties_to_select": ["server_name", "server_id"],
@@ -58,7 +56,7 @@ class ServerManagerTests(unittest.TestCase):
         self.assertEqual(res, mock_query_return)
 
     def test_search_by_datetime(
-        self, mock_get_output_details, mock_build_and_run_query
+        self, mock_query_output_details, mock_build_and_run_query
     ):
         """
         Tests that search_by_datetime method functions expectedly
@@ -68,7 +66,7 @@ class ServerManagerTests(unittest.TestCase):
         mock_build_and_run_query.return_value = mock_query_return
 
         mock_output_details = MagicMock()
-        mock_get_output_details.return_value = mock_output_details
+        mock_query_output_details.from_kwargs.return_value = mock_output_details
 
         mock_kwargs = {
             "properties_to_select": ["server_name", "server_id"],
@@ -100,7 +98,7 @@ class ServerManagerTests(unittest.TestCase):
         self.assertEqual(res, mock_query_return)
 
     def test_search_by_property_with_single_value(
-        self, mock_get_output_details, mock_build_and_run_query
+        self, mock_query_output_details, mock_build_and_run_query
     ):
         """
         Tests that search_by_property method functions expectedly - with single value list
@@ -111,7 +109,7 @@ class ServerManagerTests(unittest.TestCase):
         mock_build_and_run_query.return_value = mock_query_return
 
         mock_output_details = MagicMock()
-        mock_get_output_details.return_value = mock_output_details
+        mock_query_output_details.from_kwargs.return_value = mock_output_details
 
         mock_kwargs = {
             "properties_to_select": ["server_name", "server_id"],
@@ -137,7 +135,7 @@ class ServerManagerTests(unittest.TestCase):
         self.assertEqual(res, mock_query_return)
 
     def test_search_by_property_with_multiple_values(
-        self, mock_get_output_details, mock_build_and_run_query
+        self, mock_query_output_details, mock_build_and_run_query
     ):
         """
         Tests that search_by_property method functions expectedly - with single value list
@@ -147,7 +145,7 @@ class ServerManagerTests(unittest.TestCase):
         mock_build_and_run_query.return_value = mock_query_return
 
         mock_output_details = MagicMock()
-        mock_get_output_details.return_value = mock_output_details
+        mock_query_output_details.from_kwargs.return_value = mock_output_details
 
         mock_kwargs = {
             "properties_to_select": ["server_name", "server_id"],
@@ -173,7 +171,7 @@ class ServerManagerTests(unittest.TestCase):
 
     @patch("openstack_query.managers.server_manager.re")
     def test_search_by_regex_valid(
-        self, mock_re, mock_get_output_details, mock_build_and_run_query
+        self, mock_re, mock_query_output_details, mock_build_and_run_query
     ):
         """
         Tests that search_by_regex method functions expectedly - with single regex pattern
@@ -186,7 +184,7 @@ class ServerManagerTests(unittest.TestCase):
         mock_re.compile.return_value = mock_re_return
 
         mock_output_details = MagicMock()
-        mock_get_output_details.return_value = mock_output_details
+        mock_query_output_details.from_kwargs.return_value = mock_output_details
 
         mock_kwargs = {
             "properties_to_select": ["server_name", "server_id"],

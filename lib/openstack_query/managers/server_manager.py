@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 import re
+from custom_types.openstack_query.aliases import QueryReturn
 
 from enums.query.query_presets import (
     QueryPresetsDateTime,
@@ -13,8 +14,7 @@ from openstack_query.queries.server_query import ServerQuery
 from openstack_query.managers.query_manager import QueryManager
 
 from structs.query.query_preset_details import QueryPresetDetails
-from custom_types.openstack_query.aliases import QueryReturn
-from exceptions.parse_query_error import ParseQueryError
+from structs.query.query_output_details import QueryOutputDetails
 
 # pylint:disable=too-many-arguments
 
@@ -34,7 +34,9 @@ class ServerManager(QueryManager):
         """
         return self._build_and_run_query(
             preset_details=None,
-            output_details=self._get_output_details(ServerProperties, **kwargs),
+            output_details=QueryOutputDetails.from_kwargs(
+                prop_cls=ServerProperties, **kwargs
+            ),
         )
 
     def search_by_datetime(
@@ -73,7 +75,9 @@ class ServerManager(QueryManager):
 
         return self._build_and_run_query(
             preset_details=preset_details,
-            output_details=self._get_output_details(ServerProperties, **kwargs),
+            output_details=QueryOutputDetails.from_kwargs(
+                prop_cls=ServerProperties, **kwargs
+            ),
         )
 
     def search_by_property(
@@ -109,7 +113,9 @@ class ServerManager(QueryManager):
                 prop=ServerProperties.from_string(property_to_search_by),
                 args=args,
             ),
-            output_details=self._get_output_details(ServerProperties, **kwargs),
+            output_details=QueryOutputDetails.from_kwargs(
+                prop_cls=ServerProperties, **kwargs
+            ),
         )
 
     def search_by_regex(self, property_to_search_by: str, pattern: str, **kwargs):
@@ -128,5 +134,7 @@ class ServerManager(QueryManager):
                 prop=ServerProperties.from_string(property_to_search_by),
                 args=args,
             ),
-            output_details=self._get_output_details(ServerProperties, **kwargs),
+            output_details=QueryOutputDetails.from_kwargs(
+                prop_cls=ServerProperties, **kwargs
+            ),
         )
