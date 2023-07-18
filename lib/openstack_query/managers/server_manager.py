@@ -14,6 +14,7 @@ from openstack_query.managers.query_manager import QueryManager
 
 from structs.query.query_preset_details import QueryPresetDetails
 from custom_types.openstack_query.aliases import QueryReturn
+from exceptions.parse_query_error import ParseQueryError
 
 # pylint:disable=too-many-arguments
 
@@ -44,7 +45,7 @@ class ServerManager(QueryManager):
         hours: int = 0,
         minutes: int = 0,
         seconds: int = 0,
-        **kwargs
+        **kwargs,
     ) -> QueryReturn:
         """
         method that builds and runs a datetime-related query on Openstack Servers, and then returns results.
@@ -117,7 +118,9 @@ class ServerManager(QueryManager):
         :param property_to_search_by: A string representing a string property Enum that the preset will be used on
         :param pattern: A string representing a regex pattern
         """
-        args = {"value": re.compile(pattern)}
+
+        re.compile(pattern)
+        args = {"regex_string": pattern}
 
         return self._build_and_run_query(
             preset_details=QueryPresetDetails(

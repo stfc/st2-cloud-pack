@@ -1,6 +1,8 @@
 from parameterized import parameterized
 
 from enums.query.query_output_types import QueryOutputTypes
+from nose.tools import raises
+from exceptions.parse_query_error import ParseQueryError
 
 
 @parameterized(["to_HTML", "To_HtMl", "to_html"])
@@ -33,3 +35,11 @@ def test_to_str_serialization(val):
     Tests that variants of TO_STR can be serialized
     """
     assert QueryOutputTypes.from_string(val) is QueryOutputTypes.TO_STR
+
+
+@raises(ParseQueryError)
+def test_invalid_serialization():
+    """
+    Tests that error is raised when passes invalid string
+    """
+    QueryOutputTypes.from_string("some-invalid-string")

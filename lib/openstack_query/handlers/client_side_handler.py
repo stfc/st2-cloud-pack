@@ -141,6 +141,7 @@ class ClientSideHandler(HandlerBase):
                 if param_name in func_kwargs:
                     kwargs_value = func_kwargs[param_name]
                     param_type = param.annotation
+
                     if not isinstance(kwargs_value, param_type):
                         return (
                             False,

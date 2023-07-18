@@ -1,6 +1,8 @@
 from parameterized import parameterized
 
 from enums.query.props.server_properties import ServerProperties
+from nose.tools import raises
+from exceptions.parse_query_error import ParseQueryError
 
 
 @parameterized(["flavor_id", "Flavor_ID", "FlAvOr_Id"])
@@ -93,3 +95,11 @@ def test_user_id_serialization(val):
     Tests that variants of USER_ID can be serialized
     """
     assert ServerProperties.from_string(val) is ServerProperties.USER_ID
+
+
+@raises(ParseQueryError)
+def test_invalid_serialization():
+    """
+    Tests that error is raised when passes invalid string to all preset classes
+    """
+    ServerProperties.from_string("some-invalid-string")

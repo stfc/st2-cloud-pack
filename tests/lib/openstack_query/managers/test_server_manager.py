@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch, NonCallableMock
+from nose.tools import raises
 
 from openstack_query.managers.server_manager import ServerManager
 
@@ -11,6 +12,7 @@ from enums.query.query_presets import (
 from enums.query.props.server_properties import ServerProperties
 from enums.query.query_output_types import QueryOutputTypes
 from structs.query.query_preset_details import QueryPresetDetails
+from exceptions.parse_query_error import ParseQueryError
 
 
 @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
@@ -170,7 +172,7 @@ class ServerManagerTests(unittest.TestCase):
         self.assertEqual(res, mock_query_return)
 
     @patch("openstack_query.managers.server_manager.re")
-    def test_search_by_regex(
+    def test_search_by_regex_valid(
         self, mock_re, mock_get_output_details, mock_build_and_run_query
     ):
         """
@@ -201,7 +203,7 @@ class ServerManagerTests(unittest.TestCase):
             preset_details=QueryPresetDetails(
                 preset=QueryPresetsString.MATCHES_REGEX,
                 prop=ServerProperties.SERVER_NAME,
-                args={"value": mock_re_return},
+                args={"regex_string": "some-regex-pattern"},
             ),
             output_details=mock_output_details,
         )
