@@ -1,5 +1,5 @@
 import inspect
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Any
 
 from openstack_query.handlers.handler_base import HandlerBase
 from custom_types.openstack_query.aliases import (
@@ -141,8 +141,7 @@ class ClientSideHandler(HandlerBase):
                 if param_name in func_kwargs:
                     kwargs_value = func_kwargs[param_name]
                     param_type = param.annotation
-
-                    if not isinstance(kwargs_value, param_type):
+                    if param_type != Any and not isinstance(kwargs_value, param_type):
                         return (
                             False,
                             f"{param_name} given has incorrect type, "
