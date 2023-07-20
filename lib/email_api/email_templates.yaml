@@ -1,0 +1,34 @@
+# This file holds configuration information on each template
+# Each template requires two filepaths - one to html version of template and one to plaintext
+# If you want to use jinja to substitute parts of the email with python generated strings
+#   - specify the name of the attribute to replace in 'schema' list.
+#   - you can optionally map each 'schema' key to a default value to signify optional arguments
+#   - or map the value to 'null' to signify a mandatory argument
+
+
+# for internal use
+# sets wrapper for html emails
+wrapper:
+  schema:
+    body: null
+  html_filepath: "wrapper.html.j2"
+
+test:
+  schema:
+    username: null
+    test_body: "This is a test email"
+  html_filepath: "html/test.html.j2"
+  plaintext_filepath: "plaintext/test.txt.j2"
+
+footer:
+  schema: null
+  html_filepath: "html/footer.html"
+  plaintext_filepath: "plaintext/footer.txt"
+
+shutoff_error:
+  schema:
+    username: null
+    shutoff_table: "No Shutoff VMs"
+    errored_table: "No Errored VMs"
+  html_filepath: "html/shutoff_error.html.j2"
+  plaintext_filepath: "plaintext/shutoff_error.txt.j2"
