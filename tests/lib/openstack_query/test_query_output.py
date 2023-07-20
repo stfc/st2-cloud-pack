@@ -73,9 +73,14 @@ class QueryOutputTests(unittest.TestCase):
         Tests that generate_table function works expectedly
         method should format results dict and call tabulate and return a string of the tabled results
         """
+        results_dict_0 = []
+
         results_dict_1 = [{"prop1": "val1"}, {"prop1": "val2"}]
 
         results_dict_2 = [{"prop1": "val1", "prop2": "val2"}]
+
+        no_out = self.instance._generate_table(results_dict_0, return_html=False)
+        self.assertEqual(no_out, "No results found")
 
         _ = self.instance._generate_table(results_dict_1, return_html=False)
 

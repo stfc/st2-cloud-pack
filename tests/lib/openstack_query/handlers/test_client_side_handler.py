@@ -1,4 +1,5 @@
 import unittest
+from typing import Any
 from unittest.mock import MagicMock, patch, NonCallableMock
 from parameterized import parameterized
 
@@ -276,3 +277,23 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
             mock_filter_func, func_kwargs=kwargs_to_test
         )
         self.assertEqual(expected_value, res[0])
+
+    def test_check_filter_func_with_any_typing(self):
+        """
+        Tests that check_filter_func method works expectedly - for filter_func which takes a param with Any
+        returns True for any args which match
+        """
+
+        # pylint:disable=unused-argument
+        def mock_filter_func(prop, arg1: Any):
+            return None
+
+        res = self.instance._check_filter_func(
+            mock_filter_func, func_kwargs={"arg1": 123}
+        )
+        self.assertEqual(True, res[0])
+
+        res = self.instance._check_filter_func(
+            mock_filter_func, func_kwargs={"arg1": "string"}
+        )
+        self.assertEqual(True, res[0])

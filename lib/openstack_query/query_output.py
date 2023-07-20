@@ -117,8 +117,10 @@ class QueryOutput:
         :param kwargs: kwargs to pass to tabulate
         :return: String (html or plaintext table of results)
         """
-        headers = list(results[0].keys())
-        rows = [list(row.values()) for row in results]
-        return tabulate(
-            rows, headers, tablefmt="html" if return_html else "grid", **kwargs
-        )
+        if results:
+            headers = list(results[0].keys())
+            rows = [list(row.values()) for row in results]
+            return tabulate(
+                rows, headers, tablefmt="html" if return_html else "grid", **kwargs
+            )
+        return "No results found"
