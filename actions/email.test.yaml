@@ -1,0 +1,46 @@
+---
+description: Sends a test email
+enabled: true
+entry_point: src/email_actions.py
+name: email.test
+parameters:
+  timeout:
+    default: 5400
+  submodule:
+    default: send_test_email
+    immutable: true
+    type: string
+  email_from:
+    type: string
+    description: "Email address to send email from"
+    required: true
+    default: "cloud-support@stfc.ac.uk"
+    immutable: true
+  email_cc:
+    description: "Email Addresses to Cc in (comma separated)"
+    required: false
+    type: array
+  username:
+    type: string
+    description: "name of person to add to email greeting"
+    required: true
+  test_message:
+    type: string
+    description: "Email message to put in the body"
+    required: false
+  subject:
+    type: string
+    description: "Email subject"
+    required: true
+    default: "Test Message"
+  smtp_account_name:
+    type: string
+    description: "Name of SMTP Account to use. Must be configured in in the pack settings."
+    required: true
+    default: "default"
+  send_as_html:
+    type: boolean
+    description: "Send email body as HTML"
+    required: true
+    default: true
+runner_type: python-script
