@@ -19,7 +19,9 @@ class Emailer:
 
     # Holds absolute dirpath to directory where email attachements files are stored
     EMAIL_ATTACHMENTS_ROOT_DIR = os.path.normpath(
-        os.path.join(os.getcwd(), "../email_attachments")
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "../email_attachments"
+        )
     )
 
     def __init__(self, smtp_account: SMTPAccount):

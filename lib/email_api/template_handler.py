@@ -15,13 +15,17 @@ class TemplateHandler:
     # Holds absolute filepath to email template metadata (from current dir)
     # .../st2-cloud-pack/lib/email_api/email_templates.yaml
     EMAIL_TEMPLATE_METADATA_FP = os.path.normpath(
-        os.path.join(os.getcwd(), "./email_templates.yaml")
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "./email_templates.yaml"
+        )
     )
 
     # Holds absolute dirpath to directory where email template files are stores
     # .../st2-cloud-pack/email_templates
     EMAIL_TEMPLATE_ROOT_DIR = os.path.normpath(
-        os.path.join(os.getcwd(), "../../email_templates")
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "../../email_templates"
+        )
     )
 
     def __init__(self):
