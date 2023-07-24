@@ -7,7 +7,7 @@ from nose.tools import raises
 
 from jinja2.exceptions import TemplateError, TemplateNotFound
 from exceptions.email_template_error import EmailTemplateError
-from email_api.template_handler import TemplateHandler, EMAIL_TEMPLATE_METADATA_FP
+from email_api.template_handler import TemplateHandler
 
 # pylint:disable=protected-access
 
@@ -48,12 +48,15 @@ class TestTemplateHandler(unittest.TestCase):
         Test that load_all_metadata method functions expectedly
         Reads yaml file containing metadata info set in EMAIL_TEMPLATE_METADATA_FP
         """
-        mock_yaml_load.safe_load.return_value = NonCallableMock()
+        safe_load_out = NonCallableMock()
+        mock_yaml_load.return_value = safe_load_out
 
         res = self.instance._load_all_metadata()
-        mock_file.assert_called_once_with(EMAIL_TEMPLATE_METADATA_FP, "r")
+        mock_file.assert_called_once_with(
+            self.instance.EMAIL_TEMPLATE_METADATA_FP, "r", encoding="utf-8"
+        )
         mock_yaml_load.assert_called_once_with(mock_file.return_value)
-        self.assertEqual(res, mock_yaml_load.safe_load.return_value)
+        self.assertEqual(res, safe_load_out)
 
     @raises(EmailTemplateError)
     @patch("email_api.template_handler.safe_load")

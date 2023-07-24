@@ -1,3 +1,4 @@
+import os
 import unittest
 from unittest.mock import patch, call, NonCallableMock, MagicMock, mock_open
 
@@ -200,8 +201,22 @@ class TestEmailer(unittest.TestCase):
 
         res = self.instance._attach_files(mock_msg, mock_filepaths)
         assert mock_file.call_args_list == [
-            call("path/to/file1", "rb"),
-            call("path/to/file2", "rb"),
+            call(
+                os.path.normpath(
+                    os.path.join(
+                        self.instance.EMAIL_ATTACHMENTS_ROOT_DIR, "path/to/file1"
+                    )
+                ),
+                "rb",
+            ),
+            call(
+                os.path.normpath(
+                    os.path.join(
+                        self.instance.EMAIL_ATTACHMENTS_ROOT_DIR, "path/to/file2"
+                    )
+                ),
+                "rb",
+            ),
         ]
 
         mock_mime_application.assert_has_calls(
