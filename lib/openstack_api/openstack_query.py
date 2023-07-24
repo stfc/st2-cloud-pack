@@ -4,7 +4,6 @@ from typing import Any, Callable, Dict, List
 import openstack
 from tabulate import tabulate
 
-from email_api.email_api import EmailApi
 from openstack_api.dataclasses import (
     NonExistentCheckParams,
     NonExistentProjectCheckParams,
@@ -14,8 +13,6 @@ from openstack_api.openstack_connection import OpenstackConnection
 
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
-from structs.email_params import EmailParams
-from structs.smtp_account import SMTPAccount
 
 
 class OpenstackQuery(OpenstackWrapperBase):
@@ -85,7 +82,6 @@ class OpenstackQuery(OpenstackWrapperBase):
     def __init__(self, connection_cls=OpenstackConnection):
         super().__init__(connection_cls)
         self._identity_api = OpenstackIdentity(connection_cls)
-        self._email_api = EmailApi()
 
     def apply_query(self, items: List, query_func: Callable[[Any], bool]) -> List:
         """
@@ -377,33 +373,3 @@ class OpenstackQuery(OpenstackWrapperBase):
                     else:
                         selected_projects.update({project_id: [object_id]})
         return selected_projects
-
-    # pylint:disable=too-many-arguments,too-many-locals
-    def email_users(
-        self,
-        smtp_account: SMTPAccount,
-        email_params: EmailParams,
-        message: str,
-        result_tables: Dict[str, str],
-    ):
-        """
-        Emails users given a list of search result tables and a message to put with it
-        :param: smtp_account (SMTPAccount): SMTP config
-        :param: email_params: See EmailParams
-        :param: message: Message to add to the body of emails sent
-        :param: result_tables: The result tables (in a dict where the keys are the email addresses)
-        :return:
-        """
-
-        if result_tables is None:
-            return "No emails to send"
-
-        for key, value in result_tables.items():
-            separator = "<br><br>" if email_params.send_as_html else "\n\n"
-            result_tables[key] = f"{message}{separator}{value}"
-
-        return self._email_api.send_emails(
-            smtp_account=smtp_account,
-            email_params=email_params,
-            emails=result_tables,
-        )
