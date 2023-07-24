@@ -6,30 +6,39 @@ from jinja2 import Environment, FileSystemLoader, Template
 from jinja2.exceptions import TemplateError, TemplateNotFound
 from exceptions.email_template_error import EmailTemplateError
 
-# Holds relative filepath to email template metadata (from current dir)
-EMAIL_TEMPLATE_METADATA_FP = "./email_templates.yaml"
-
-# Holds relative filepath to root directory where email template files are stored (from current dir)
-EMAIL_TEMPLATE_ROOT_DIR = "../../email_templates"
-
 
 class TemplateHandler:
     """
     TemplateHandler class is used to get template files and render them using jinja2 templating engine.
     """
 
+    # Holds absolute filepath to email template metadata (from current dir)
+    # .../st2-cloud-pack/lib/email_api/email_templates.yaml
+    EMAIL_TEMPLATE_METADATA_FP = os.path.normpath(
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "./email_templates.yaml"
+        )
+    )
+
+    # Holds absolute dirpath to directory where email template files are stores
+    # .../st2-cloud-pack/email_templates
+    EMAIL_TEMPLATE_ROOT_DIR = os.path.normpath(
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "../../email_templates"
+        )
+    )
+
     def __init__(self):
         self._template_env = Environment(
-            loader=FileSystemLoader(EMAIL_TEMPLATE_ROOT_DIR)
+            loader=FileSystemLoader(self.EMAIL_TEMPLATE_ROOT_DIR)
         )
         self._template_metadata = self._load_all_metadata()
 
-    @staticmethod
-    def _load_all_metadata() -> Dict:
+    def _load_all_metadata(self) -> Dict:
         """
         Static method which reads in email templates yaml file. This file holds metadata for each template name.
         """
-        with open(EMAIL_TEMPLATE_METADATA_FP, "r", encoding="utf-8") as stream:
+        with open(self.EMAIL_TEMPLATE_METADATA_FP, "r", encoding="utf-8") as stream:
             try:
                 return safe_load(stream)
             except YAMLError as exc:
@@ -70,7 +79,7 @@ class TemplateHandler:
         except TemplateNotFound as not_found_exp:
             raise EmailTemplateError(
                 "Could not find template with filepath "
-                f"{os.path.join(EMAIL_TEMPLATE_METADATA_FP, template_fp)}"
+                f"{os.path.join(self.EMAIL_TEMPLATE_METADATA_FP, template_fp)}"
             ) from not_found_exp
 
     def _get_template_metadata(self, template_name) -> Dict:
@@ -82,7 +91,7 @@ class TemplateHandler:
         if not metadata:
             raise EmailTemplateError(
                 f"could not find template with name {template_name}, "
-                f"make sure an entry in {EMAIL_TEMPLATE_METADATA_FP} exists"
+                f"make sure an entry in {self.EMAIL_TEMPLATE_METADATA_FP} exists"
             )
         return metadata
 
@@ -155,5 +164,5 @@ class TemplateHandler:
         except TemplateError as template_exp:
             raise EmailTemplateError(
                 "Error occurred when rendering the template, check the template file "
-                f"{os.path.join(EMAIL_TEMPLATE_METADATA_FP, template_fp)}"
+                f"{os.path.join(self.EMAIL_TEMPLATE_METADATA_FP, template_fp)}"
             ) from template_exp

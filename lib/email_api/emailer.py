@@ -17,6 +17,13 @@ class Emailer:
     emails
     """
 
+    # Holds absolute dirpath to directory where email attachements files are stored
+    EMAIL_ATTACHMENTS_ROOT_DIR = os.path.normpath(
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "../email_attachments"
+        )
+    )
+
     def __init__(self, smtp_account: SMTPAccount):
         self._smtp_account = smtp_account
 
@@ -106,18 +113,21 @@ class Emailer:
             msg["Cc"] = ", ".join(email_cc)
         return msg
 
-    @staticmethod
-    def _attach_files(msg: MIMEMultipart, filepaths: List[str]) -> MIMEMultipart:
+    def _attach_files(self, msg: MIMEMultipart, filepaths: List[str]) -> MIMEMultipart:
         """
         Loads and adds attachments to an email message
         :param msg: The message object for the email
-        :param filepaths: Tuple containing file paths of files to attach
-        :return:
+        :param filepaths: Tuple containing relative filepaths of files to attach from EMAIL_ATTACHMENTS_ROOT_DIR
         """
-        for filepath in filepaths:
-            filename = os.path.basename(filepath)
+        for rel_filepath in filepaths:
+            filename = os.path.basename(rel_filepath)
             try:
-                with open(filepath, "rb") as file:
+                with open(
+                    os.path.normpath(
+                        os.path.join(self.EMAIL_ATTACHMENTS_ROOT_DIR, rel_filepath)
+                    ),
+                    "rb",
+                ) as file:
                     part = MIMEApplication(file.read(), Name=filename)
                 part["Content-Disposition"] = f"attachment; filename={filename}"
                 msg.attach(part)
