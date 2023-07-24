@@ -17,7 +17,6 @@ class TestST2EmailActions(OpenstackActionTestBase):
         super().setUp()
         self.action: ST2EmailActions = self.get_action_instance()
         self.mock_kwargs = {
-            "smtp_account": "config1",
             "kwarg1": NonCallableMock(),
             "kwarg2": NonCallableMock(),
         }
@@ -35,10 +34,15 @@ class TestST2EmailActions(OpenstackActionTestBase):
         """
         assert hasattr(mock_email_actions, method_name)
         mock_method = getattr(mock_email_actions.return_value, method_name)
-        self.action.run(submodule=method_name, **self.mock_kwargs)
+        self.action.run(
+            submodule=method_name, smtp_account_name="config1", **self.mock_kwargs
+        )
 
-        mock_smtp_account.assert_called_once_with(self.action.config, "config1")
+        mock_smtp_account.from_pack_config.assert_called_once_with(
+            self.action.config, "config1"
+        )
         mock_email_actions.assert_called_once()
         mock_method.assert_called_once_with(
-            mock_smtp_account.from_pack_config.return_value, **self.args
+            smtp_account=mock_smtp_account.from_pack_config.return_value,
+            **self.mock_kwargs
         )
