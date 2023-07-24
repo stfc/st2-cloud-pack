@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict
+from typing import Tuple, Dict, List, Optional
 from smtplib import SMTP_SSL
 from email.header import Header
 from email.mime.application import MIMEApplication
@@ -7,7 +7,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
 
-from email_api.template_hanlder import TemplateHandler
 from structs.email_params import EmailParams
 from structs.smtp_account import SMTPAccount
 
@@ -21,33 +20,31 @@ class Emailer:
     def __init__(self, smtp_account: SMTPAccount):
         self._smtp_account = smtp_account
 
-    def send_emails(
-        self,
-        emails: Dict[List[str], EmailParams],
-    ):
+    def send_emails(self, emails: Dict[Tuple[str], EmailParams], as_html: bool = True):
         """
         send emails
         :param emails: (Dict) keys are list of email addresses, values are configured EmailParams dataclass
+        :param as_html: whether to send emails using html message body (if True), or plaintext (if False) (Default True)
         """
         for email_to, email_params in emails.items():
-            self.send_email(email_to, email_params)
+            self.send_email(email_to, email_params, as_html)
 
     def send_email(
-        self,
-        email_to: List[str],
-        email_params: EmailParams,
+        self, email_to: Tuple[str], email_params: EmailParams, as_html: bool = True
     ):
         """
         send an email
         :param email_params: An EmailParams Dataclass which holds all config info needed to build and send an email
         :param email_to: email addresses to send the email to
+        :param as_html: whether to send email using html message body (if True), or plaintext (if False) (Default True)
+
         """
-        msg = Emailer._build_messsage(email_params, email_to)
+        msg = Emailer._build_message(email_params, email_to, as_html)
         with SMTP_SSL(
             self._smtp_account.server, self._smtp_account.port, timeout=60
         ) as server:
             server = Emailer._setup_smtp(server, self._smtp_account)
-            server.sendmail(msg["From"], msg["To"], msg.as_string())
+            server.sendmail(email_params.email_from, email_to, msg.as_string())
 
     @staticmethod
     def _setup_smtp(server, smtp_account):
@@ -63,35 +60,35 @@ class Emailer:
         return server
 
     @staticmethod
-    def _build_messsage(
-        email_params: EmailParams,
-        email_to: List[str],
+    def _build_message(
+        email_params: EmailParams, email_to: Tuple[str], as_html: bool = True
     ):
         """
         build message object for a single email
         :param email_params: An EmailParams Dataclass which holds all config info needed to build and send an email
         :param: email_to: Email addresses to send the email to
+        :param as_html: whether to build email message as html (if True), or plaintext (if False) (Default True)
         """
 
-        chosen_email_to = (
-            email_params.test_override_email
-            if email_params.test_override_email
-            else email_to
-        )
         msg = Emailer._setup_email_metadata(
-            chosen_email_to, email_params.email_from, email_params.subject
+            email_to, email_params.email_from, email_params.subject
         )
-        msg.attach(
-            Emailer._setup_email_body(email_params.body_html, True)
-        ) if email_params.send_as_html else msg.attach(
-            self._setup_email_body(email_params.body_plaintext, False)
-        )
-        msg = Emailer._attach_files(msg, email_params.attachment_filepaths)
+
+        if as_html:
+            msg.attach(MIMEText(email_params.body_html, "html"))
+        else:
+            msg.attach(MIMEText(email_params.body_plaintext, "plain", "utf-8"))
+
+        if email_params.attachment_filepaths:
+            msg = Emailer._attach_files(msg, email_params.attachment_filepaths)
         return msg
 
     @staticmethod
     def _setup_email_metadata(
-        email_to: List[str], email_from: str, subject: str, email_cc: List[str] = None
+        email_to: Tuple[str],
+        email_from: str,
+        subject: str,
+        email_cc: Optional[Tuple[str]] = None,
     ):
         """
         Setup message object metadata
@@ -105,37 +102,25 @@ class Emailer:
         msg["From"] = email_from
         msg["To"] = ", ".join(email_to)
         msg["Date"] = formatdate(localtime=True)
-        msg["Cc"] = ", ".join(email_cc)
+        if email_cc:
+            msg["Cc"] = ", ".join(email_cc)
         return msg
 
     @staticmethod
-    def _setup_email_body(body: str, is_html: bool):
-        """
-        Setup email message body
-        :param body: a string which should be written in as email body (either HTML or plaintext)
-        :param is_html: a flag to set string type - either html if True, plaintext if False
-        """
-        if is_html:
-            email_body_html = TemplateHandler().render_template(
-                template_name="wrapper",
-                render_html=True,
-                template_params={"body": body},
-            )
-            return MIMEText(email_body_html, "html")
-        return MIMEText(body, "plain", "utf-8")
-
-    @staticmethod
-    def _attach_files(msg: MIMEMultipart, files) -> MIMEMultipart:
+    def _attach_files(msg: MIMEMultipart, filepaths: List[str]) -> MIMEMultipart:
         """
         Loads and adds attachments to an email message
         :param msg: The message object for the email
-        :param files: List/Tuple of file paths of files to attach
+        :param filepaths: Tuple containing file paths of files to attach
         :return:
         """
-        for filepath in files:
+        for filepath in filepaths:
             filename = os.path.basename(filepath)
-            with open(filepath, "rb") as file:
-                part = MIMEApplication(file.read(), Name=filename)
-            part["Content-Disposition"] = f"attachment; filename={filename}"
-            msg.attach(part)
+            try:
+                with open(filepath, "rb") as file:
+                    part = MIMEApplication(file.read(), Name=filename)
+                part["Content-Disposition"] = f"attachment; filename={filename}"
+                msg.attach(part)
+            except FileNotFoundError as exp:
+                raise RuntimeError(f"Failed to attach file to email: {exp}") from exp
         return msg

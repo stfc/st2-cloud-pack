@@ -42,7 +42,7 @@ parameters:
     description: "Name of SMTP Account to use. Must be configured in in the pack settings."
     required: true
     default: "default"
-  send_as_html:
+  as_html:
     type: boolean
     description: "Send email body as HTML"
     required: true

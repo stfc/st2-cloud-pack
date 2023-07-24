@@ -1,14 +1,16 @@
-from typing import Optional
+from typing import Optional, List
 from custom_types.email_api.aliases import (
     TemplateMappings,
-    EmailAddressList,
     EmailAddress,
+    EmailAddresses,
 )
 
 from structs.email_params import EmailParams
 from structs.smtp_account import SMTPAccount
 
 from email_api.emailer import Emailer
+
+# pylint: disable=too-few-public-methods
 
 
 class EmailActions:
@@ -22,9 +24,8 @@ class EmailActions:
         templates: TemplateMappings,
         subject: str,
         email_from: EmailAddress,
-        send_as_html: bool = True,
-        email_cc: Optional[EmailAddressList] = None,
-        test_override_email: Optional[str] = None,
+        email_cc: Optional[EmailAddresses] = None,
+        attachment_filepaths: Optional[List[str]] = None,
     ):
         """
         static helper method to setup EmailParams dataclass from template mappings
@@ -32,37 +33,43 @@ class EmailActions:
         :param: subject: (String): Subject of the email
         :param: email_from (String): Sender Email, subject (String): Email Subject,
         :param: email_cc (List[String]): Email addresses to Cc
-        :param: send_as_html (Boolean): a flag to set body as html or plaintext
-        :param test_override_email Optional(String): an override email to send all emails to - for testing purposes
+        :param: attachment_filepaths (List[str]): filepaths to files to attach to email
         """
         return EmailParams.from_template_mappings(
             template_mappings=templates,
             subject=subject,
             email_from=email_from,
-            email_cc=email_cc,
-            send_as_html=send_as_html,
-            test_override_email=test_override_email,
+            email_cc=tuple(email_cc) if email_cc else None,
+            attachment_filepaths=attachment_filepaths,
         )
 
+    # pylint: disable=too-many-arguments
     def send_test_email(
         self,
         smtp_account: SMTPAccount,
-        email_to: EmailAddressList,
+        email_to: List[str],
         username: str,
         test_message: Optional[str] = None,
+        as_html: bool = True,
         **kwargs
     ):
         """
         Action to send a test email using 'test' template.
         :param smtp_account: (SMTPAccount): SMTP config
         :param email_to: Email addresses to send the email to
-        :param username: user name required for test template
+        :param username: name required for test template
         :param test_message: message body required for test template
+        :param as_html: send message body as html (if true) or plaintext (if false)
         :param kwargs: see EmailParams dataclass class docstring
         """
         email_params = self._setup_email_params(
-            templates={"test": {"username": username, "test_message": test_message}},
+            templates={
+                "test": {"username": username, "test_message": test_message},
+                "footer": {},
+            },
             **kwargs
         )
 
-        Emailer(smtp_account).send_email(email_to=email_to, email_params=email_params)
+        Emailer(smtp_account).send_email(
+            email_to=tuple(email_to), email_params=email_params, as_html=as_html
+        )

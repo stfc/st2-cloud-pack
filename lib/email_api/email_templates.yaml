@@ -16,7 +16,7 @@ wrapper:
 test:
   schema:
     username: null
-    test_body: "This is a test email"
+    test_message: "This is a test email"
   html_filepath: "html/test.html.j2"
   plaintext_filepath: "plaintext/test.txt.j2"
 

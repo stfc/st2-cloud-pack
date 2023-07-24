@@ -1,9 +1,9 @@
 from dataclasses import dataclass, fields
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 from custom_types.email_api.aliases import (
     TemplateMappings,
     EmailAddress,
-    EmailAddressList,
+    EmailAddresses,
 )
 from email_api.template_handler import TemplateHandler
 
@@ -15,20 +15,17 @@ class EmailParams:
     Email parameters that hold config info on how to structure and send an email
     :param: subject: (String): Subject of the email
     :param: email_from (String): Sender Email, subject (String): Email Subject,
-    :param: email_cc (List[String]): Email addresses to Cc
+    :param: email_cc (Tuple[String]): Email addresses to Cc
     :param: body_html (String): Email body (HTML)
     :param: body_plaintext (String): Email body as plaintext
-    :param: send_as_html (Boolean): a flag to set body as html or plaintext
-    :param test_override_email Optional(String): an override email to send all emails to - for testing purposes
     """
 
     subject: str
     email_from: EmailAddress
     body_html: str
     body_plaintext: str
-    email_cc: Optional[EmailAddressList]
-    send_as_html: bool = True
-    test_override_email: Optional[str] = None
+    email_cc: Optional[EmailAddresses] = None
+    attachment_filepaths: Optional[List[str]] = None
 
     @staticmethod
     def from_dict(dictionary: Dict):
@@ -62,15 +59,13 @@ class EmailParams:
         template_handler = TemplateHandler()
         for template_name, template_params in template_mappings.items():
 
-            body_html += template_handler.render_template(
+            body_html += template_handler.render_html_template(
                 template_name=template_name,
-                render_html=True,
                 template_params=template_params,
             )
 
-            body_plaintext += template_handler.render_template(
+            body_plaintext += template_handler.render_plaintext_template(
                 template_name=template_name,
-                render_html=False,
                 template_params=template_params,
             )
 
