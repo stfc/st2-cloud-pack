@@ -113,7 +113,8 @@ class Emailer:
             msg["Cc"] = ", ".join(email_cc)
         return msg
 
-    def _attach_files(self, msg: MIMEMultipart, filepaths: List[str]) -> MIMEMultipart:
+    @staticmethod
+    def _attach_files(msg: MIMEMultipart, filepaths: List[str]) -> MIMEMultipart:
         """
         Loads and adds attachments to an email message
         :param msg: The message object for the email
@@ -124,7 +125,7 @@ class Emailer:
             try:
                 with open(
                     os.path.normpath(
-                        os.path.join(self.EMAIL_ATTACHMENTS_ROOT_DIR, rel_filepath)
+                        os.path.join(Emailer.EMAIL_ATTACHMENTS_ROOT_DIR, rel_filepath)
                     ),
                     "rb",
                 ) as file:

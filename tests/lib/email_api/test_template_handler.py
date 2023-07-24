@@ -229,7 +229,6 @@ class TestTemplateHandler(unittest.TestCase):
     @raises(EmailTemplateError)
     @patch("email_api.template_handler.TemplateHandler._get_template_file")
     def test_render_template_jinja_failure(self, mock_get_template_file):
-
         mock_get_template_file.return_value.render.side_effect = TemplateError()
         self.instance._render_template(
             "mock-template-no-schema",

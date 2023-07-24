@@ -26,7 +26,6 @@ class TestEmailParams(unittest.TestCase):
     @patch("structs.email_params.EmailParams.from_dict")
     @patch("structs.email_params.TemplateHandler")
     def test_from_template_mappings(self, mock_template_handler, mock_from_dict):
-
         mock_template_handler.return_value.render_html_template.side_effect = [
             "html rendered template for template-name1\n",
             "html rendered template for template-name2\n",
