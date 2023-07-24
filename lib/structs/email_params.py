@@ -58,7 +58,6 @@ class EmailParams:
 
         template_handler = TemplateHandler()
         for template_name, template_params in template_mappings.items():
-
             body_html += template_handler.render_html_template(
                 template_name=template_name,
                 template_params=template_params,

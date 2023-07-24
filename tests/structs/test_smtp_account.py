@@ -47,13 +47,11 @@ class TestEmailParams(unittest.TestCase):
             self.assertEqual(val, getattr(res, key))
 
     def test_from_pack_config_valid(self):
-
         expected_attrs = {**self.mock_smtp_accounts_config[0]}
         expected_attrs.pop("name")
 
         res = SMTPAccount.from_pack_config(self.mock_pack_config, "config1")
         for key, val in expected_attrs.items():
-
             self.assertEqual(val, getattr(res, key))
 
     @raises(KeyError)

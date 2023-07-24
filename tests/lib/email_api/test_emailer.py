@@ -47,7 +47,6 @@ class TestEmailer(unittest.TestCase):
     @patch("email_api.emailer.Emailer._setup_smtp")
     @patch("email_api.emailer.SMTP_SSL")
     def test_send_email(self, mock_smtp_ssl, mock_setup_smtp, mock_build_message):
-
         mock_email_param = MagicMock()
         mock_email_to = ("example@example.com",)
 
