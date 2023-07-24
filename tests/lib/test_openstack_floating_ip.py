@@ -7,11 +7,9 @@ import openstack
 
 from openstack_api.openstack_floating_ip import OpenstackFloatingIP
 
-from tests.lib.test_openstack_query_email_base import OpenstackQueryEmailBaseTests
-
 
 # pylint:disable=too-many-public-methods
-class OpenstackFloatingIPTests(unittest.TestCase, OpenstackQueryEmailBaseTests):
+class OpenstackFloatingIPTests(unittest.TestCase):
     """
     Runs various tests to ensure we are using the Openstack
     Network module in the expected way

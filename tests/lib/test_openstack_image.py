@@ -10,10 +10,9 @@ from openstack_api.openstack_image import OpenstackImage
 
 
 # pylint:disable=too-many-public-methods
-from tests.lib.test_openstack_query_email_base import OpenstackQueryEmailBaseTests
 
 
-class OpenstackImageTests(unittest.TestCase, OpenstackQueryEmailBaseTests):
+class OpenstackImageTests(unittest.TestCase):
     """
     Runs various tests to ensure we are using the Openstack
     Image module in the expected way
