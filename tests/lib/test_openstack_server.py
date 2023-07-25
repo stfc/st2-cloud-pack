@@ -9,11 +9,9 @@ from openstack.exceptions import HttpException
 
 from openstack_api.openstack_server import OpenstackServer
 
-from tests.lib.test_openstack_query_email_base import OpenstackQueryEmailBaseTests
-
 
 # pylint:disable=too-many-public-methods
-class OpenstackServerTests(unittest.TestCase, OpenstackQueryEmailBaseTests):
+class OpenstackServerTests(unittest.TestCase):
     """
     Runs various tests to ensure we are using the Openstack
     Servers module in the expected way

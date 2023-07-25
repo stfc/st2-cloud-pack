@@ -8,13 +8,12 @@ from openstack_api.dataclasses import (
 )
 
 from openstack_api.openstack_connection import OpenstackConnection
-from openstack_api.openstack_query_email_base import OpenstackQueryEmailBase
 from openstack_api.openstack_identity import OpenstackIdentity
-from openstack_api.dataclasses import EmailQueryParams
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
+from openstack_api.openstack_query_base import OpenstackQueryBase
 
 
-class OpenstackServer(OpenstackWrapperBase, OpenstackQueryEmailBase):
+class OpenstackServer(OpenstackWrapperBase, OpenstackQueryBase):
     # Lists all possible query client_side for server.list
     SEARCH_QUERY_PRESETS: List[str] = [
         "all_servers",
@@ -56,15 +55,7 @@ class OpenstackServer(OpenstackWrapperBase, OpenstackQueryEmailBase):
 
     def __init__(self, connection_cls=OpenstackConnection):
         OpenstackWrapperBase.__init__(self, connection_cls)
-        OpenstackQueryEmailBase.__init__(
-            self,
-            connection_cls,
-            EmailQueryParams(
-                required_email_property="user_email",
-                valid_search_queries=OpenstackServer.SEARCH_QUERY_PRESETS,
-                valid_search_queries_no_project=OpenstackServer.SEARCH_QUERY_PRESETS_NO_PROJECT,
-            ),
-        )
+        OpenstackQueryBase.__init__(self, connection_cls)
         self._identity_api = OpenstackIdentity(self._connection_cls)
 
     def get_query_property_funcs(
