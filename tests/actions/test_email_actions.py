@@ -14,6 +14,7 @@ class TestST2EmailActions(OpenstackActionTestBase):
     # pylint: disable=invalid-name
 
     def setUp(self):
+        """setup for tests"""
         super().setUp()
         self.action: ST2EmailActions = self.get_action_instance()
         self.mock_kwargs = {

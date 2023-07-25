@@ -10,6 +10,7 @@ from exceptions.email_template_error import EmailTemplateError
 class TemplateHandler:
     """
     TemplateHandler class is used to get template files and render them using jinja2 templating engine.
+    An email body is a string made up of one or more rendered jinja2 templates.
     """
 
     # Holds absolute filepath to email template metadata (from current dir)
@@ -29,6 +30,7 @@ class TemplateHandler:
     )
 
     def __init__(self):
+        """constructor class"""
         self._template_env = Environment(
             loader=FileSystemLoader(self.EMAIL_TEMPLATE_ROOT_DIR)
         )
@@ -36,7 +38,7 @@ class TemplateHandler:
 
     def _load_all_metadata(self) -> Dict:
         """
-        Static method which reads in email templates yaml file. This file holds metadata for each template name.
+        Method which reads in email templates yaml file. This file holds metadata for each template name.
         """
         with open(self.EMAIL_TEMPLATE_METADATA_FP, "r", encoding="utf-8") as stream:
             try:
@@ -99,8 +101,8 @@ class TemplateHandler:
         self, template_name: str, template_params: Optional[Dict[str, str]] = None
     ):
         """
-        method to get html email template, substitute given values from 'template_params' using jinja2 and return
-        rendered rendered string
+        Method to get html email template, substitute given values from 'template_params' using jinja2 and return
+        a rendered string
         :param template_name: name of template to render
         :param template_params: An Optional dictionary of params to substitute into template using jinja2
         """
@@ -115,8 +117,8 @@ class TemplateHandler:
         self, template_name: str, template_params: Optional[Dict[str, str]] = None
     ):
         """
-        method to get plaintext email template, substitute given values from 'template_params' using jinja2 and return
-        rendered string
+        Method to get plaintext email template, substitute given values from 'template_params' using jinja2 and return
+        a rendered string
         :param template_name: name of template to render
         :param template_params: An Optional dictionary of params to substitute into template using jinja2
         """
@@ -133,7 +135,7 @@ class TemplateHandler:
         template_params: Optional[Dict[str, str]] = None,
     ) -> str:
         """
-        helper method to render template
+        Helper method to render template
         :param template_name: name of template to render
         :param file_path_key: metadata dictionary key which holds the filepath pointing to template file
         :param template_params: An Optional dictionary of params to substitute into template using jinja2

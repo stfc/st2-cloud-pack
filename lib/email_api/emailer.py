@@ -13,8 +13,7 @@ from structs.smtp_account import SMTPAccount
 
 class Emailer:
     """
-    Emailer class is responsible for building and sending emails. Public methods can be used by EmailActions to send
-    emails
+    Emailer class is responsible for building and sending emails.
     """
 
     # Holds absolute dirpath to directory where email attachements files are stored
@@ -29,7 +28,7 @@ class Emailer:
 
     def send_emails(self, emails: Dict[Tuple[str], EmailParams], as_html: bool = True):
         """
-        send emails
+        send multiple emails
         :param emails: (Dict) keys are list of email addresses, values are configured EmailParams dataclass
         :param as_html: whether to send emails using html message body (if True), or plaintext (if False) (Default True)
         """
@@ -40,7 +39,7 @@ class Emailer:
         self, email_to: Tuple[str], email_params: EmailParams, as_html: bool = True
     ):
         """
-        send an email
+        send a single email
         :param email_params: An EmailParams Dataclass which holds all config info needed to build and send an email
         :param email_to: email addresses to send the email to
         :param as_html: whether to send email using html message body (if True), or plaintext (if False) (Default True)

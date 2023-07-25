@@ -15,8 +15,8 @@ from email_api.emailer import Emailer
 
 class EmailActions:
     """
-    Class that mirrors StackStorm ST2EmailActions. Each public method in this class can be used to handle jobs submitted
-    via a StackStorm Action - this is done so that unittests can be written
+    Class that mirrors StackStorm ST2EmailActions. Each public method in this class is mapped to one or more StackStorm
+    Action with the format 'email.*'
     """
 
     @staticmethod
@@ -54,7 +54,7 @@ class EmailActions:
         **kwargs
     ):
         """
-        Action to send a test email using 'test' template.
+        Method to send a test email using 'test' template - maps to email.test Action.
         :param smtp_account: (SMTPAccount): SMTP config
         :param email_to: Email addresses to send the email to
         :param username: name required for test template

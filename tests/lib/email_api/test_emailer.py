@@ -22,6 +22,10 @@ class TestEmailer(unittest.TestCase):
 
     @patch("email_api.emailer.Emailer.send_email")
     def test_send_emails(self, mock_send_email):
+        """
+        Tests that send_emails method works expectedly
+        Should iterate through emails dict and call send_email for each
+        """
         mock_email_param = MagicMock()
         mock_email_param2 = MagicMock()
         mock_emails_dict = {
@@ -47,6 +51,10 @@ class TestEmailer(unittest.TestCase):
     @patch("email_api.emailer.Emailer._setup_smtp")
     @patch("email_api.emailer.SMTP_SSL")
     def test_send_email(self, mock_smtp_ssl, mock_setup_smtp, mock_build_message):
+        """
+        Tests that send_email method works expectedly
+        Should build a email MiMEMultipart object with given values and send email
+        """
         mock_email_param = MagicMock()
         mock_email_to = ("example@example.com",)
 
@@ -82,6 +90,10 @@ class TestEmailer(unittest.TestCase):
         ]
     )
     def test_setup_smtp(self, _, secure_flag, smtp_auth_flag):
+        """
+        tests that setup_smtp method works expectedly
+        should return a configured SMTPAccount object using given parameter values
+        """
         mock_server = MagicMock()
         mock_smtp_account = MagicMock()
 
@@ -106,6 +118,10 @@ class TestEmailer(unittest.TestCase):
     def test_build_message_no_attachments(
         self, _, as_html_flag, mock_mime_text, mock_setup_email_metadata
     ):
+        """
+        Tests that build_message works expectedly when given no attachments to add
+        Should build message by setting up metadata, then building message body from templates
+        """
         mock_email_params = MagicMock()
         mock_email_params.attachment_filepaths.return_value = None
 
@@ -140,6 +156,10 @@ class TestEmailer(unittest.TestCase):
         mock_mime_text,
         mock_setup_email_metadata,
     ):
+        """
+        Tests that build_message works expectedly when given multiple attachments to add
+        Should build message by setting up metadata, then building message body from templates, then attaching files using internal method
+        """
         mock_email_params = MagicMock()
         mock_email_params.attachment_filepaths.return_value = ["fp1", "fp2"]
         mock_email_to = ("example@example.com",)
@@ -169,6 +189,10 @@ class TestEmailer(unittest.TestCase):
     @patch("email_api.emailer.formatdate")
     @patch("email_api.emailer.MIMEMultipart")
     def test_setup_metadata(self, mock_mime_multipart, mock_formatdate, mock_header):
+        """
+        Tests that setup_metadata function works expectedly
+        method should create MIMEMultipart instance and set values: subject, from, to, date and CCs
+        """
         mock_mime_multipart.return_value = {}
         res = self.instance._setup_email_metadata(
             email_to=("example@example.com",),
@@ -193,6 +217,10 @@ class TestEmailer(unittest.TestCase):
     @patch("builtins.open", new_callable=mock_open, read_data="data")
     @patch("email_api.emailer.MIMEApplication")
     def test_attach_files(self, mock_mime_application, mock_file):
+        """
+        Tests that attach_files method works expectedly - with valid filepaths
+        method should open file and add as attachment to given MIMEMultipart instance (msg)
+        """
         mock_msg = MagicMock()
         mock_filepaths = ["path/to/file1", "path/to/file2"]
 
@@ -233,6 +261,10 @@ class TestEmailer(unittest.TestCase):
     @raises(RuntimeError)
     @patch("builtins.open", side_effect=FileNotFoundError())
     def test_attach_files_invalid_fp(self, _):
+        """
+        Tests that attach_files method works expectedly - with invalid filepaths
+        should raise a RuntimeError
+        """
         mock_msg = MagicMock()
         mock_filepaths = ["invalid/path"]
         self.instance._attach_files(mock_msg, mock_filepaths)

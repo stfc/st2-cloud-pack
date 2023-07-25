@@ -108,8 +108,8 @@ class TestTemplateHandler(unittest.TestCase):
         self, _, mock_schema, mock_given_vals, expected_out
     ):
         """
-        Tests that parse_template_attrs method functions expectedly
-        parses schema and given values and returns a list of attributes to map
+        Tests that parse_template_attrs method functions expectedly - with valid params
+        should parse schema and given values and returns a list of attributes to map
         """
         res = self.instance._parse_template_attrs(
             template_name="mock-template",
@@ -126,6 +126,10 @@ class TestTemplateHandler(unittest.TestCase):
     )
     @raises(EmailTemplateError)
     def test_parse_template_attrs_invalid(self, _, mock_schema, mock_given_vals):
+        """
+        Tests that parse_template_attrs method functions expectedly - with invalid params
+        should raise error if given_vals have missing required params
+        """
         self.instance._parse_template_attrs(
             template_name="mock-template",
             template_schema=mock_schema,
@@ -133,6 +137,10 @@ class TestTemplateHandler(unittest.TestCase):
         )
 
     def test_get_template_file_valid(self):
+        """
+        Tests that get_template_file method functions expectedly - with valid filepath
+        should open file at given filepath and return jinja template file
+        """
         mock_template = NonCallableMock()
         mock_fp = "/path/to/file"
         self.mock_template_env.get_template.return_value = mock_template
@@ -143,17 +151,29 @@ class TestTemplateHandler(unittest.TestCase):
 
     @raises(EmailTemplateError)
     def test_get_template_file_invalid(self):
+        """
+        Tests that get_template_file method functions expectedly - with invalid filepath
+        should raise error if given an invalid filepath
+        """
         self.mock_template_env.get_template.side_effect = TemplateNotFound(
             "template-error"
         )
         self.instance._get_template_file("invalid-path")
 
     def test_get_template_metadata_valid(self):
+        """
+        Tests that get_template_metadata method functions expectedly - with valid template name
+        should get metadata info for a valid template name
+        """
         res = self.instance._get_template_metadata(template_name="mock-template")
         self.assertEqual(res, self.mock_template_metadata["mock-template"])
 
     @raises(EmailTemplateError)
     def test_get_template_metadata_invalid(self):
+        """
+        Tests that get_template_metadata method functions expectedly - with invalid template name
+        should raise error if given invalid template name
+        """
         self.instance._get_template_metadata(template_name="an-invalid-template-name")
 
     @parameterized.expand(
@@ -218,17 +238,29 @@ class TestTemplateHandler(unittest.TestCase):
     )
     @raises(EmailTemplateError)
     def test_render_template_missing_fp(self, _, file_path_key):
+        """
+        Tests that render_template method works expectedly - if metadata is missing config
+        should raise error if necessary filepath config missing
+        """
         self.instance._render_template(
             "mock-template-misconfigured", file_path_key=file_path_key
         )
 
     @raises(EmailTemplateError)
     def test_render_template_params_missing(self):
+        """
+        Tests that render_template method works expectedly - if template params missing when required
+        should raise error if given a template which requires template params but none given
+        """
         self.instance._render_template("mock-template", file_path_key="html_filepath")
 
     @raises(EmailTemplateError)
     @patch("email_api.template_handler.TemplateHandler._get_template_file")
     def test_render_template_jinja_failure(self, mock_get_template_file):
+        """
+        Tests that render_template method works expectedly - if jinja render() fails
+        should raise EmailTemplate error
+        """
         mock_get_template_file.return_value.render.side_effect = TemplateError()
         self.instance._render_template(
             "mock-template-no-schema",
@@ -237,6 +269,9 @@ class TestTemplateHandler(unittest.TestCase):
 
     @patch("email_api.template_handler.TemplateHandler._render_template")
     def test_render_html_template(self, mock_render_template):
+        """
+        Tests that render_html_template method works expectedly
+        """
         res = self.instance.render_html_template(
             template_name="mock-template",
             template_params={"attr1": "123", "attr2": "abc", "attr3": "def"},
@@ -251,6 +286,9 @@ class TestTemplateHandler(unittest.TestCase):
 
     @patch("email_api.template_handler.TemplateHandler._render_template")
     def test_render_plaintext_template(self, mock_render_template):
+        """
+        Tests that render_plaintext_template method works expectedly
+        """
         res = self.instance.render_plaintext_template(
             template_name="mock-template",
             template_params={"attr1": "123", "attr2": "abc", "attr3": "def"},

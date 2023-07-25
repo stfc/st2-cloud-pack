@@ -15,9 +15,11 @@ class EmailParams:
     Email parameters that hold config info on how to structure and send an email
     :param: subject: (String): Subject of the email
     :param: email_from (String): Sender Email, subject (String): Email Subject,
-    :param: email_cc (Tuple[String]): Email addresses to Cc
+    :param: email_cc (Tuple[String]): An Optional tuple of additional email addresses to Cc
     :param: body_html (String): Email body (HTML)
     :param: body_plaintext (String): Email body as plaintext
+    :param: attachment_filepaths: List(Strings): An Optional list of filepaths to files to attach to email
+        -must be relative filepaths which start from .../st2-cloud-pack/email_attachments
     """
 
     subject: str
@@ -30,7 +32,7 @@ class EmailParams:
     @staticmethod
     def from_dict(dictionary: Dict):
         """
-        Returns instance of this dataclass from a dictionary (when creating from template mappings)
+        Method which returns instance of this dataclass from a dictionary (when creating from template mappings)
         :param dictionary: dictionary to use to instantiate dataclass
         """
         field_set = {field.name for field in fields(EmailParams) if field.init}
@@ -42,12 +44,12 @@ class EmailParams:
     @staticmethod
     def from_template_mappings(template_mappings: TemplateMappings, **kwargs):
         """
-        Create instance of this dataclass - setting body_html and body_plaintext using
+        Method which creates instance of this dataclass - setting body_html and body_plaintext using
         a list of TemplateMappings.
 
-        This method iteratively builds html and plaintext strings for email body by taking
-        list of TemplateMappings. For each mapping, the method reads in the associated
-        template file and converts to string - replaces keywords with values given - and concatenating
+        This method iteratively builds html and plaintext email body strings by taking a
+        list of TemplateMappings. For each mapping in TemplateMappings, we read in the associated
+        template file and convert it to string and concatenate - replacing keywords args with values given
 
         :param template_mappings: A dictionary with template names as keys and a dictionary of schema args
         to replace as values

@@ -23,6 +23,10 @@ class TestEmailActions(unittest.TestCase):
 
     @patch("email_api.email_actions.EmailParams")
     def test_setup_email_params(self, mock_email_params):
+        """
+        Tests that _setup_email_params works expectedly
+        Should return an EmailParams dataclass which has attributes matching parameter values given
+        """
         mock_templates = {"template1": {"param1": "val1", "param2": "val2"}}
 
         mock_param_obj = NonCallableMock()
@@ -44,6 +48,11 @@ class TestEmailActions(unittest.TestCase):
     @patch("email_api.email_actions.Emailer")
     @patch("email_api.email_actions.EmailActions._setup_email_params")
     def test_send_test_email(self, mock_setup_email_params, mock_emailer):
+        """
+        Tests that send_test_email method works expectedly
+        Should create an appropriate EmailParams using test and footer templates, then send an email via an
+        Emailer object
+        """
         mock_smtp_account = NonCallableMock()
         mock_email_to = ["from@example.com"]
         mock_username = "user1"

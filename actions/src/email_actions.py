@@ -7,6 +7,12 @@ from st2common.runners.base_action import Action
 
 
 class ST2EmailActions(Action):
+    """
+    Stackstorm Action class that dynamically dispatches actions related to sending Emails
+    Actions that will be handled by this class follow the format email.*
+    Each action will map to one function in class EmailActions located in lib/email_api/email_actions.py
+    """
+
     def run(self, submodule: str, smtp_account_name: str, **kwargs):
         """
         Dynamically dispatches to the method wanted

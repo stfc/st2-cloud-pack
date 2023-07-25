@@ -4,6 +4,16 @@ from typing import Dict
 
 @dataclass
 class SMTPAccount:
+    """
+    SMTP Parameters dictating config info dictating how to send the email over Simple Mail Transfer Protocol.
+    :param username: Name of the Mailbox to use
+    :param password: Mailbox Password
+    :param server: Email server name to use
+    :param port: Port to connect to server on
+    :param secure: Whether to enable secure protocol. Default value is True.
+    :param smtp_auth: Whether to enable Authentication of username and password to send email. Default True
+    """
+
     username: str
     password: str
     server: str
