@@ -26,7 +26,9 @@ class Emailer:
     def __init__(self, smtp_account: SMTPAccount):
         self._smtp_account = smtp_account
 
-    def send_emails(self, emails: Dict[Tuple[str], EmailParams], as_html: bool = True):
+    def send_multiple_emails(
+        self, emails: Dict[Tuple[str], EmailParams], as_html: bool = True
+    ):
         """
         send multiple emails
         :param emails: (Dict) keys are list of email addresses, values are configured EmailParams dataclass

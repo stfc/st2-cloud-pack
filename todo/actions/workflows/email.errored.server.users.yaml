@@ -40,4 +40,4 @@ tasks:
     next:
       - when: <% succeeded() %>
         publish:
-          - result: <% task(send_emails).result %>
+          - result: <% task(send_multiple_emails).result %>

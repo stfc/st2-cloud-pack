@@ -21,9 +21,9 @@ class TestEmailer(unittest.TestCase):
         self.instance = Emailer(self.mock_smtp_account)
 
     @patch("email_api.emailer.Emailer.send_email")
-    def test_send_emails(self, mock_send_email):
+    def test_send_multiple_emails(self, mock_send_email):
         """
-        Tests that send_emails method works expectedly
+        Tests that send_multiple_emails method works expectedly
         Should iterate through emails dict and call send_email for each
         """
         mock_email_param = MagicMock()
@@ -33,7 +33,7 @@ class TestEmailer(unittest.TestCase):
             ("email-address3", "email-address4"): mock_email_param2,
         }
         as_html_flag = True
-        self.instance.send_emails(mock_emails_dict, as_html_flag)
+        self.instance.send_multiple_emails(mock_emails_dict, as_html_flag)
         mock_send_email.assert_has_calls(
             [
                 call(
