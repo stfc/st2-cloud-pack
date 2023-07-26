@@ -57,6 +57,11 @@ class TestEmailer(unittest.TestCase):
         """
         mock_email_param = MagicMock()
         mock_email_to = ("example@example.com",)
+        mock_email_from = "from@example.com"
+        mock_email_cc = ["cc@example.com", "cc2@example.com"]
+
+        mock_email_param.email_cc = mock_email_cc
+        mock_email_param.email_from = mock_email_from
 
         mock_email_msg = MagicMock()
         mock_build_message.return_value = mock_email_msg
@@ -76,7 +81,7 @@ class TestEmailer(unittest.TestCase):
         mock_setup_smtp.assert_called_once_with(mock_server, self.mock_smtp_account)
 
         mock_setup_server.sendmail.assert_called_once_with(
-            mock_email_param.email_from,
+            "from@example.com, cc@example.com, cc2@example.com",
             mock_email_to,
             mock_email_msg.as_string.return_value,
         )
@@ -135,7 +140,10 @@ class TestEmailer(unittest.TestCase):
         )
 
         mock_setup_email_metadata.assert_called_once_with(
-            mock_email_to, mock_email_params.email_from, mock_email_params.subject
+            mock_email_to,
+            mock_email_params.email_from,
+            mock_email_params.subject,
+            mock_email_params.email_cc,
         )
 
         if as_html_flag:
@@ -175,7 +183,10 @@ class TestEmailer(unittest.TestCase):
         )
 
         mock_setup_email_metadata.assert_called_once_with(
-            mock_email_to, mock_email_params.email_from, mock_email_params.subject
+            mock_email_to,
+            mock_email_params.email_from,
+            mock_email_params.subject,
+            mock_email_params.email_cc,
         )
 
         mock_mime_text.assert_called_once_with(mock_email_params.body_html, "html")

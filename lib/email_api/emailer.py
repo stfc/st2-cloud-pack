@@ -47,12 +47,17 @@ class Emailer:
         :param as_html: whether to send email using html message body (if True), or plaintext (if False) (Default True)
 
         """
+        send_to = email_params.email_from
+        if email_params.email_cc:
+            send_to += ", "
+            send_to += ", ".join(email_params.email_cc)
+
         msg = Emailer._build_message(email_params, email_to, as_html)
         with SMTP_SSL(
             self._smtp_account.server, self._smtp_account.port, timeout=60
         ) as server:
             server = Emailer._setup_smtp(server, self._smtp_account)
-            server.sendmail(email_params.email_from, email_to, msg.as_string())
+            server.sendmail(send_to, email_to, msg.as_string())
 
     @staticmethod
     def _setup_smtp(server, smtp_account):
@@ -79,7 +84,10 @@ class Emailer:
         """
 
         msg = Emailer._setup_email_metadata(
-            email_to, email_params.email_from, email_params.subject
+            email_to,
+            email_params.email_from,
+            email_params.subject,
+            email_params.email_cc,
         )
 
         if as_html:
