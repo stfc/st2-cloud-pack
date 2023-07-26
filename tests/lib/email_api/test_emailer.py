@@ -211,6 +211,7 @@ class TestEmailer(unittest.TestCase):
                 "To": "example@example.com",
                 "Date": mock_formatdate.return_value,
                 "Cc": "extra@example.com, extra2@example.com",
+                "reply-to": "from@example.com",
             },
         )
 

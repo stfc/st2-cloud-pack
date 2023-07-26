@@ -110,6 +110,7 @@ class Emailer:
         msg["From"] = email_from
         msg["To"] = ", ".join(email_to)
         msg["Date"] = formatdate(localtime=True)
+        msg["reply-to"] = email_from
         if email_cc:
             msg["Cc"] = ", ".join(email_cc)
         return msg
