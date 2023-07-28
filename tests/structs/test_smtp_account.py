@@ -1,6 +1,6 @@
 import unittest
 from nose.tools import raises
-from structs.smtp_account import SMTPAccount
+from structs.email.smtp_account import SMTPAccount
 
 
 class TestEmailParams(unittest.TestCase):

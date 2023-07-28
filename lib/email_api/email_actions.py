@@ -5,8 +5,8 @@ from custom_types.email_api.aliases import (
     EmailAddresses,
 )
 
-from structs.email_params import EmailParams
-from structs.smtp_account import SMTPAccount
+from structs.email.email_params import EmailParams
+from structs.email.smtp_account import SMTPAccount
 
 from email_api.emailer import Emailer
 

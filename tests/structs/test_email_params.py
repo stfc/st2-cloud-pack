@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, NonCallableMock, call
-from structs.email_params import EmailParams
+from structs.email.email_params import EmailParams
 
 
 class TestEmailParams(unittest.TestCase):
@@ -23,8 +23,8 @@ class TestEmailParams(unittest.TestCase):
         for key, val in mock_valid_kwargs.items():
             self.assertEqual(val, getattr(res, key))
 
-    @patch("structs.email_params.EmailParams.from_dict")
-    @patch("structs.email_params.TemplateHandler")
+    @patch("structs.email.email_params.EmailParams.from_dict")
+    @patch("structs.email.email_params.TemplateHandler")
     def test_from_template_mappings(self, mock_template_handler, mock_from_dict):
         mock_template_handler.return_value.render_html_template.side_effect = [
             "html rendered template for template-name1\n",

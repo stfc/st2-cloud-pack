@@ -7,8 +7,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
 
-from structs.email_params import EmailParams
-from structs.smtp_account import SMTPAccount
+from structs.email.email_params import EmailParams
+from structs.email.smtp_account import SMTPAccount
 
 
 class Emailer:
