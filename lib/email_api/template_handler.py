@@ -17,7 +17,7 @@ class TemplateHandler:
     # Holds absolute filepath to email template metadata (from current dir)
     # .../st2-cloud-pack/lib/email_api/email_templates.yaml
     EMAIL_TEMPLATE_METADATA_FP = (
-        Path(__file__).resolve().parent / "email_templates.yaml"
+        Path(__file__).resolve().parent / "email_template_schemas.yaml"
     )
 
     # Holds absolute dirpath to directory where email template files are stores
