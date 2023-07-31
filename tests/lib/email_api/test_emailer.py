@@ -1,5 +1,6 @@
 import os
 import unittest
+from pathlib import Path
 from unittest.mock import patch, call, NonCallableMock, MagicMock, mock_open
 
 from nose.tools import raises
@@ -241,20 +242,10 @@ class TestEmailer(unittest.TestCase):
         res = self.instance._attach_files(mock_msg, mock_filepaths)
         assert mock_file.call_args_list == [
             call(
-                os.path.normpath(
-                    os.path.join(
-                        self.instance.EMAIL_ATTACHMENTS_ROOT_DIR, "path/to/file1"
-                    )
-                ),
-                "rb",
+                Path(f"{self.instance.EMAIL_ATTACHMENTS_ROOT_DIR}/path/to/file1"), "rb"
             ),
             call(
-                os.path.normpath(
-                    os.path.join(
-                        self.instance.EMAIL_ATTACHMENTS_ROOT_DIR, "path/to/file2"
-                    )
-                ),
-                "rb",
+                Path(f"{self.instance.EMAIL_ATTACHMENTS_ROOT_DIR}/path/to/file2"), "rb"
             ),
         ]
 

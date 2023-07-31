@@ -1,6 +1,7 @@
 import os
 from typing import Tuple, Dict, List, Optional
 from smtplib import SMTP_SSL
+from pathlib import Path
 from email.header import Header
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
@@ -17,10 +18,8 @@ class Emailer:
     """
 
     # Holds absolute dirpath to directory where email attachements files are stored
-    EMAIL_ATTACHMENTS_ROOT_DIR = os.path.normpath(
-        os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "../email_attachments"
-        )
+    EMAIL_ATTACHMENTS_ROOT_DIR = (
+        Path(__file__).resolve().parent.parent / "email_attachments"
     )
 
     def __init__(self, smtp_account: SMTPAccount):
@@ -131,16 +130,11 @@ class Emailer:
         :param filepaths: Tuple containing relative filepaths of files to attach from EMAIL_ATTACHMENTS_ROOT_DIR
         """
         for rel_filepath in filepaths:
-            filename = os.path.basename(rel_filepath)
+            filepath = Emailer.EMAIL_ATTACHMENTS_ROOT_DIR / rel_filepath
             try:
-                with open(
-                    os.path.normpath(
-                        os.path.join(Emailer.EMAIL_ATTACHMENTS_ROOT_DIR, rel_filepath)
-                    ),
-                    "rb",
-                ) as file:
-                    part = MIMEApplication(file.read(), Name=filename)
-                part["Content-Disposition"] = f"attachment; filename={filename}"
+                with open(filepath, "rb") as file:
+                    part = MIMEApplication(file.read(), Name=filepath.name)
+                part["Content-Disposition"] = f"attachment; filename={filepath.name}"
                 msg.attach(part)
             except FileNotFoundError as exp:
                 raise RuntimeError(f"Failed to attach file to email: {exp}") from exp

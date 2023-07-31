@@ -1,5 +1,6 @@
 import os
 from typing import Dict, Optional
+from pathlib import Path
 
 from yaml import safe_load, YAMLError
 from jinja2 import Environment, FileSystemLoader, Template
@@ -15,19 +16,13 @@ class TemplateHandler:
 
     # Holds absolute filepath to email template metadata (from current dir)
     # .../st2-cloud-pack/lib/email_api/email_templates.yaml
-    EMAIL_TEMPLATE_METADATA_FP = os.path.normpath(
-        os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "./email_templates.yaml"
-        )
+    EMAIL_TEMPLATE_METADATA_FP = (
+        Path(__file__).resolve().parent / "email_templates.yaml"
     )
 
     # Holds absolute dirpath to directory where email template files are stores
     # .../st2-cloud-pack/email_templates
-    EMAIL_TEMPLATE_ROOT_DIR = os.path.normpath(
-        os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "../../email_templates"
-        )
-    )
+    EMAIL_TEMPLATE_ROOT_DIR = Path(__file__).resolve().parent.parent / "email_templates"
 
     def __init__(self):
         """constructor class"""
