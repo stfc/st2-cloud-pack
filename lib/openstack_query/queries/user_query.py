@@ -81,9 +81,9 @@ class UserQuery(QueryWrapper):
                 {QueryPresetsString.MATCHES_REGEX: [UserProperties.USER_EMAIL, UserProperties.USER_NAME]}
             ),
             # set datetime query preset mappings
-            datetime_handler=None
+            datetime_handler=None,
             # set integer query preset mappings
-            integer_handler=None,
+            integer_handler=None
         )
 
     def __init__(self):
