@@ -28,6 +28,7 @@ class EmailActions:
         smtp_account: SMTPAccount,
         username: str,
         test_message: Optional[str] = None,
+        cc_cloud_support: bool = False,
         **kwargs
     ):
         """
@@ -35,8 +36,14 @@ class EmailActions:
         :param smtp_account: (SMTPAccount): SMTP config
         :param username: name required for test template
         :param test_message: message body required for test template
+        :param cc_cloud_support: whether to cc in cloud support
         :param kwargs: see EmailParams dataclass class docstring
         """
+        if cc_cloud_support:
+            email_cc = kwargs.get("email_cc", tuple())
+            email_cc += ("cloud-support@stfc.ac.uk",)
+            kwargs.update({"email_cc": email_cc})
+
         email_params = self._setup_email_params(
             email_templates=[
                 EmailTemplateDetails(

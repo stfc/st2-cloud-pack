@@ -47,4 +47,9 @@ parameters:
     description: "Send email body as HTML"
     required: true
     default: true
+  cc_cloud_support:
+    type: boolean
+    description: "Flag if set, will cc in cloud-support@stfc.ac.uk automatically"
+    required: false
+    default: false
 runner_type: python-script
