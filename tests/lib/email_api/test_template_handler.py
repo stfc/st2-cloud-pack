@@ -8,6 +8,7 @@ from nose.tools import raises
 from jinja2.exceptions import TemplateError, TemplateNotFound
 from exceptions.email_template_error import EmailTemplateError
 from email_api.template_handler import TemplateHandler
+from structs.email.email_template_details import EmailTemplateDetails
 
 # pylint:disable=protected-access
 
@@ -51,10 +52,8 @@ class TestTemplateHandler(unittest.TestCase):
         safe_load_out = NonCallableMock()
         mock_yaml_load.return_value = safe_load_out
 
-        res = self.instance._load_all_metadata()
-        mock_file.assert_called_once_with(
-            self.instance.EMAIL_TEMPLATE_METADATA_FP, "r", encoding="utf-8"
-        )
+        res = self.instance._load_all_metadata("some-fp")
+        mock_file.assert_called_once_with("some-fp", "r", encoding="utf-8")
         mock_yaml_load.assert_called_once_with(mock_file.return_value)
         self.assertEqual(res, safe_load_out)
 
@@ -68,7 +67,7 @@ class TestTemplateHandler(unittest.TestCase):
         """
 
         mock_yaml_load.side_effect = YAMLError()
-        self.instance._load_all_metadata()
+        self.instance._load_all_metadata("some-fp")
 
     @parameterized.expand(
         [
@@ -112,9 +111,10 @@ class TestTemplateHandler(unittest.TestCase):
         should parse schema and given values and returns a list of attributes to map
         """
         res = self.instance._parse_template_attrs(
-            template_name="mock-template",
+            EmailTemplateDetails(
+                template_name="mock-template", template_params=mock_given_vals
+            ),
             template_schema=mock_schema,
-            given_vals=mock_given_vals,
         )
         self.assertEqual(res, expected_out)
 
@@ -130,10 +130,11 @@ class TestTemplateHandler(unittest.TestCase):
         Tests that parse_template_attrs method functions expectedly - with invalid params
         should raise error if given_vals have missing required params
         """
-        self.instance._parse_template_attrs(
-            template_name="mock-template",
+        res = self.instance._parse_template_attrs(
+            EmailTemplateDetails(
+                template_name="mock-template", template_params=mock_given_vals
+            ),
             template_schema=mock_schema,
-            given_vals=mock_given_vals,
         )
 
     def test_get_template_file_valid(self):
@@ -220,9 +221,10 @@ class TestTemplateHandler(unittest.TestCase):
         mock_template_file.render.return_value = mock_template_obj
 
         res = self.instance._render_template(
-            template_name=mock_template_name,
+            template_details=EmailTemplateDetails(
+                template_name=mock_template_name, template_params=mock_template_params
+            ),
             file_path_key=mock_file_path_key,
-            template_params=mock_template_params,
         )
         mock_get_template_file.assert_called_once_with(
             self.mock_template_metadata[mock_template_name][mock_file_path_key]
@@ -243,7 +245,10 @@ class TestTemplateHandler(unittest.TestCase):
         should raise error if necessary filepath config missing
         """
         self.instance._render_template(
-            "mock-template-misconfigured", file_path_key=file_path_key
+            template_details=EmailTemplateDetails(
+                template_name="mock-template-misconfigured"
+            ),
+            file_path_key=file_path_key,
         )
 
     @raises(EmailTemplateError)
@@ -252,7 +257,12 @@ class TestTemplateHandler(unittest.TestCase):
         Tests that render_template method works expectedly - if template params missing when required
         should raise error if given a template which requires template params but none given
         """
-        self.instance._render_template("mock-template", file_path_key="html_filepath")
+        self.instance._render_template(
+            template_details=EmailTemplateDetails(
+                template_name="mock-template-misconfigured"
+            ),
+            file_path_key="html_filepath",
+        )
 
     @raises(EmailTemplateError)
     @patch("email_api.template_handler.TemplateHandler._get_template_file")
@@ -263,7 +273,9 @@ class TestTemplateHandler(unittest.TestCase):
         """
         mock_get_template_file.return_value.render.side_effect = TemplateError()
         self.instance._render_template(
-            "mock-template-no-schema",
+            template_details=EmailTemplateDetails(
+                template_name="mock-template-no-schema",
+            ),
             file_path_key="html_filepath",
         )
 
@@ -272,14 +284,14 @@ class TestTemplateHandler(unittest.TestCase):
         """
         Tests that render_html_template method works expectedly
         """
-        res = self.instance.render_html_template(
+        mock_template_details = EmailTemplateDetails(
             template_name="mock-template",
             template_params={"attr1": "123", "attr2": "abc", "attr3": "def"},
         )
+        res = self.instance.render_html_template(mock_template_details)
         mock_render_template.assert_called_once_with(
-            template_name="mock-template",
+            template_details=mock_template_details,
             file_path_key="html_filepath",
-            template_params={"attr1": "123", "attr2": "abc", "attr3": "def"},
         )
         mock_render_template.return_value.replace.assert_called_once_with("\n", "")
         self.assertEqual(res, mock_render_template.return_value.replace.return_value)
@@ -289,13 +301,15 @@ class TestTemplateHandler(unittest.TestCase):
         """
         Tests that render_plaintext_template method works expectedly
         """
-        res = self.instance.render_plaintext_template(
+        mock_template_details = EmailTemplateDetails(
             template_name="mock-template",
             template_params={"attr1": "123", "attr2": "abc", "attr3": "def"},
         )
+
+        res = self.instance.render_plaintext_template(mock_template_details)
+
         mock_render_template.assert_called_once_with(
-            template_name="mock-template",
+            template_details=mock_template_details,
             file_path_key="plaintext_filepath",
-            template_params={"attr1": "123", "attr2": "abc", "attr3": "def"},
         )
         self.assertEqual(res, mock_render_template.return_value)

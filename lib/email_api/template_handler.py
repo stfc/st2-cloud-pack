@@ -7,6 +7,8 @@ from jinja2 import Environment, FileSystemLoader, Template
 from jinja2.exceptions import TemplateError, TemplateNotFound
 from exceptions.email_template_error import EmailTemplateError
 
+from structs.email.email_template_details import EmailTemplateDetails
+
 
 class TemplateHandler:
     """
@@ -22,20 +24,25 @@ class TemplateHandler:
 
     # Holds absolute dirpath to directory where email template files are stores
     # .../st2-cloud-pack/email_templates
-    EMAIL_TEMPLATE_ROOT_DIR = Path(__file__).resolve().parent.parent / "email_templates"
+    EMAIL_TEMPLATE_ROOT_DIR = (
+        Path(__file__).resolve().parent.parent.parent / "email_templates"
+    )
 
     def __init__(self):
-        """constructor class"""
         self._template_env = Environment(
             loader=FileSystemLoader(self.EMAIL_TEMPLATE_ROOT_DIR)
         )
-        self._template_metadata = self._load_all_metadata()
 
-    def _load_all_metadata(self) -> Dict:
+        self._template_metadata = self._load_all_metadata(
+            self.EMAIL_TEMPLATE_METADATA_FP
+        )
+
+    @staticmethod
+    def _load_all_metadata(metadata_fp) -> Dict:
         """
         Method which reads in email templates yaml file. This file holds metadata for each template name.
         """
-        with open(self.EMAIL_TEMPLATE_METADATA_FP, "r", encoding="utf-8") as stream:
+        with open(metadata_fp, "r", encoding="utf-8") as stream:
             try:
                 return safe_load(stream)
             except YAMLError as exc:
@@ -45,25 +52,32 @@ class TemplateHandler:
 
     @staticmethod
     def _parse_template_attrs(
-        template_name: str, template_schema: Dict[str, str], given_vals: Dict[str, str]
+        template_details: EmailTemplateDetails, template_schema: Dict[str, str]
     ) -> Dict[str, str]:
         """
         Static method which returns values for all attributes to replace for the template that has been provided.
         attribute values either set to mapped values in 'given_vals' or set to a default given by 'template_schema'
-        :param template_name: Name of the template
+        :param template_details: A dataclass containing info on templates
         :param template_schema: A dictionary holding required attribute names mapped to defaults
-        :parma given_vals: A dictionary of given values - overrides defaults if mapping exists
         """
-        given_vals = {key: val for key, val in given_vals.items() if val is not None}
+        template_params = {}
+        if template_details.template_params:
+            template_params = template_details.template_params
+
+        given_vals = {
+            key: val for key, val in template_params.items() if val is not None
+        }
         attrs = {
             key: given_vals.get(key, default)
             for key, default in template_schema.items()
         }
+
         missing_attrs = [key for key, val in attrs.items() if val is None]
         if missing_attrs:
             raise EmailTemplateError(
-                f"Missing attributes required for template {template_name}: {', '.join(missing_attrs)}"
+                f"Missing attributes required for template {template_details.template_name}: {', '.join(missing_attrs)}"
             )
+
         return attrs
 
     def _get_template_file(self, template_fp) -> Template:
@@ -75,8 +89,7 @@ class TemplateHandler:
             return self._template_env.get_template(template_fp)
         except TemplateNotFound as not_found_exp:
             raise EmailTemplateError(
-                "Could not find template with filepath "
-                f"{os.path.join(self.EMAIL_TEMPLATE_METADATA_FP, template_fp)}"
+                "Could not find template with filepath {self.EMAIL_TEMPLATE_ROOT_DIR / template_fp}"
             ) from not_found_exp
 
     def _get_template_metadata(self, template_name) -> Dict:
@@ -92,69 +105,57 @@ class TemplateHandler:
             )
         return metadata
 
-    def render_html_template(
-        self, template_name: str, template_params: Optional[Dict[str, str]] = None
-    ):
+    def render_html_template(self, template_details: EmailTemplateDetails):
         """
         Method to get html email template, substitute given values from 'template_params' using jinja2 and return
         a rendered string
-        :param template_name: name of template to render
-        :param template_params: An Optional dictionary of params to substitute into template using jinja2
+        :param template_details: dataclass representing user-defined values for template
         """
 
         return self._render_template(
-            template_name=template_name,
+            template_details=template_details,
             file_path_key="html_filepath",
-            template_params=template_params,
         ).replace("\n", "")
 
-    def render_plaintext_template(
-        self, template_name: str, template_params: Optional[Dict[str, str]] = None
-    ):
+    def render_plaintext_template(self, template_details: EmailTemplateDetails):
         """
         Method to get plaintext email template, substitute given values from 'template_params' using jinja2 and return
         a rendered string
-        :param template_name: name of template to render
-        :param template_params: An Optional dictionary of params to substitute into template using jinja2
+        :param template_details: dataclass representing user-defined values for template
         """
         return self._render_template(
-            template_name=template_name,
+            template_details=template_details,
             file_path_key="plaintext_filepath",
-            template_params=template_params,
         )
 
     def _render_template(
         self,
-        template_name: str,
+        template_details: EmailTemplateDetails,
         file_path_key: str,
-        template_params: Optional[Dict[str, str]] = None,
     ) -> str:
         """
         Helper method to render template
-        :param template_name: name of template to render
+        :param template_details: dataclass representing user-defined values for template
         :param file_path_key: metadata dictionary key which holds the filepath pointing to template file
-        :param template_params: An Optional dictionary of params to substitute into template using jinja2
         """
-        metadata = self._get_template_metadata(template_name)
+        metadata = self._get_template_metadata(template_details.template_name)
         try:
             template_fp = metadata[file_path_key]
         except KeyError as exp:
             raise EmailTemplateError(
-                f"Template {template_name} metadata is missing {file_path_key} entry"
+                f"Template {template_details.template_name} metadata is missing {file_path_key} entry"
             ) from exp
 
         template = self._get_template_file(template_fp)
         schema = metadata.get("schema", None)
-        if schema and not template_params:
+        if schema and not template_details.template_params:
             raise EmailTemplateError(
-                f"Template provided {template_name} requires following attributes: {list(schema.keys())}"
+                f"Template provided {template_details.template_name} requires following attributes: {list(schema.keys())}"
             )
 
-        attrs = (
-            self._parse_template_attrs(template_name, schema, template_params)
-            if schema
-            else {}
-        )
+        attrs = {}
+        if schema:
+            attrs = self._parse_template_attrs(template_details, schema)
 
         try:
             return template.render(**attrs)

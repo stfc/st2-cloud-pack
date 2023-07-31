@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch, NonCallableMock
 
 from email_api.email_actions import EmailActions
+from structs.email.email_template_details import EmailTemplateDetails
 
 # pylint:disable=protected-access
 
@@ -15,10 +16,12 @@ class TestEmailActions(unittest.TestCase):
         """setup for tests"""
         self.instance = EmailActions()
         self.mock_kwargs = {
+            "email_to": ("test@example.com",),
             "subject": "subject1",
             "email_from": "from@example.com",
             "email_cc": ["cc1@example.com", "cc2@example.com"],
             "attachment_filepaths": ["path/to/file1", "path/to/file2"],
+            "as_html": True,
         }
 
     @patch("email_api.email_actions.EmailParams")
@@ -27,22 +30,19 @@ class TestEmailActions(unittest.TestCase):
         Tests that _setup_email_params works expectedly
         Should return an EmailParams dataclass which has attributes matching parameter values given
         """
-        mock_templates = {"template1": {"param1": "val1", "param2": "val2"}}
+        mock_email_template1 = NonCallableMock()
+        mock_email_template2 = NonCallableMock()
 
         mock_param_obj = NonCallableMock()
-        mock_email_params.from_template_mappings.return_value = mock_param_obj
+        mock_email_params.from_dict.return_value = mock_param_obj
         res = self.instance._setup_email_params(
-            templates=mock_templates, **self.mock_kwargs
+            email_templates=[mock_email_template1, mock_email_template2],
+            **self.mock_kwargs
         )
 
-        mock_email_params.from_template_mappings.assert_called_once_with(
-            template_mappings=mock_templates,
-            subject="subject1",
-            email_from="from@example.com",
-            email_cc=("cc1@example.com", "cc2@example.com"),
-            attachment_filepaths=["path/to/file1", "path/to/file2"],
-        )
+        exp = {"email_templates": [mock_email_template1, mock_email_template2]}
 
+        mock_email_params.from_dict.assert_called_once_with({**exp, **self.mock_kwargs})
         self.assertEqual(res, mock_param_obj)
 
     @patch("email_api.email_actions.Emailer")
@@ -54,30 +54,33 @@ class TestEmailActions(unittest.TestCase):
         Emailer object
         """
         mock_smtp_account = NonCallableMock()
-        mock_email_to = ["from@example.com"]
         mock_username = "user1"
         mock_test_message = "This is a test email"
 
         self.instance.send_test_email(
             smtp_account=mock_smtp_account,
-            email_to=mock_email_to,
             username=mock_username,
             test_message=mock_test_message,
-            as_html=True,
             **self.mock_kwargs
         )
 
         mock_setup_email_params.assert_called_once_with(
-            templates={
-                "test": {"username": mock_username, "test_message": mock_test_message},
-                "footer": {},
-            },
+            email_templates=[
+                EmailTemplateDetails(
+                    template_name="test",
+                    template_params={
+                        "username": mock_username,
+                        "test_message": mock_test_message,
+                    },
+                ),
+                EmailTemplateDetails(
+                    template_name="footer",
+                ),
+            ],
             **self.mock_kwargs
         )
 
         mock_emailer.assert_called_once_with(mock_smtp_account)
-        mock_emailer.return_value.send_email.assert_called_once_with(
-            email_to=(mock_email_to[0],),
-            email_params=mock_setup_email_params.return_value,
-            as_html=True,
+        mock_emailer.return_value.send_emails.assert_called_once_with(
+            [mock_setup_email_params.return_value]
         )

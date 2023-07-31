@@ -1,5 +1,5 @@
-import os
-from typing import Tuple, Dict, List, Optional
+from typing import List
+from pathlib import Path
 from smtplib import SMTP_SSL
 from pathlib import Path
 from email.header import Header
@@ -8,8 +8,11 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
 
+from email_api.template_handler import TemplateHandler
+
 from structs.email.email_params import EmailParams
 from structs.email.smtp_account import SMTPAccount
+from structs.email.email_template_details import EmailTemplateDetails
 
 
 class Emailer:
@@ -19,118 +22,74 @@ class Emailer:
 
     # Holds absolute dirpath to directory where email attachements files are stored
     EMAIL_ATTACHMENTS_ROOT_DIR = (
-        Path(__file__).resolve().parent.parent / "email_attachments"
+        Path(__file__).resolve().parent.parent.parent / "email_attachments"
     )
 
     def __init__(self, smtp_account: SMTPAccount):
         self._smtp_account = smtp_account
+        self._template_handler = TemplateHandler()
 
-    def send_multiple_emails(
-        self, emails: Dict[Tuple[str], EmailParams], as_html: bool = True
-    ):
+    def send_emails(self, emails: List[EmailParams]):
         """
-        send multiple emails
-        :param emails: (Dict) keys are list of email addresses, values are configured EmailParams dataclass
-        :param as_html: whether to send emails using html message body (if True), or plaintext (if False) (Default True)
+        send emails via SMTP server relay
+        :param emails: A list of email config objects
         """
-        for email_to, email_params in emails.items():
-            self.send_email(email_to, email_params, as_html)
 
-    def send_email(
-        self, email_to: Tuple[str], email_params: EmailParams, as_html: bool = True
-    ):
-        """
-        send a single email
-        :param email_params: An EmailParams Dataclass which holds all config info needed to build and send an email
-        :param email_to: email addresses to send the email to
-        :param as_html: whether to send email using html message body (if True), or plaintext (if False) (Default True)
-
-        """
-        send_to = email_params.email_from
-        if email_params.email_cc:
-            send_to += ", "
-            send_to += ", ".join(email_params.email_cc)
-
-        msg = Emailer._build_message(email_params, email_to, as_html)
         with SMTP_SSL(
             self._smtp_account.server, self._smtp_account.port, timeout=60
         ) as server:
-            server = Emailer._setup_smtp(server, self._smtp_account)
-            server.sendmail(send_to, email_to, msg.as_string())
+            server.ehlo()
+            for email_params in emails:
+                send_to = (email_params.email_to,)
+                if email_params.email_cc:
+                    send_to += email_params.email_cc
 
-    @staticmethod
-    def _setup_smtp(server, smtp_account):
-        """
-        setup SMTP
-        :param smtp_account: SMTP config
-        """
-        server.ehlo()
-        if smtp_account.secure:
-            server.starttls()
-        if smtp_account.smtp_auth:
-            server.login(smtp_account.username, smtp_account.password)
-        return server
+                server.sendmail(
+                    email_params.email_from,
+                    send_to,
+                    self._build_email(email_params).as_string(),
+                )
 
-    @staticmethod
-    def _build_message(
-        email_params: EmailParams, email_to: Tuple[str], as_html: bool = True
-    ):
-        """
-        build message object for a single email
-        :param email_params: An EmailParams Dataclass which holds all config info needed to build and send an email
-        :param: email_to: Email addresses to send the email to
-        :param as_html: whether to build email message as html (if True), or plaintext (if False) (Default True)
-        """
-
-        msg = Emailer._setup_email_metadata(
-            email_to,
-            email_params.email_from,
-            email_params.subject,
-            email_params.email_cc,
+    def _build_email(self, email_params: EmailParams) -> MIMEMultipart:
+        msg = MIMEMultipart()
+        msg["Subject"] = Header(email_params.subject, "utf-8")
+        msg["From"] = email_params.email_from
+        msg["To"] = ", ".join(email_params.email_to)
+        msg["Date"] = formatdate(localtime=True)
+        msg["reply-to"] = email_params.email_from
+        if email_params.email_cc:
+            msg["Cc"] = ", ".join(email_params.email_cc)
+        msg.attach(
+            self._build_email_body(email_params.email_templates, email_params.as_html)
         )
+        if email_params.attachment_filepaths:
+            msg = self._attach_files(msg, email_params.attachment_filepaths)
+        return msg
+
+    def _build_email_body(self, templates: List[EmailTemplateDetails], as_html):
+        msg_body = ""
+        for template_details in templates:
+            if as_html:
+                msg_body += self._template_handler.render_html_template(
+                    template_details
+                )
+            else:
+                msg_body += self._template_handler.render_plaintext_template(
+                    template_details
+                )
 
         if as_html:
-            msg.attach(MIMEText(email_params.body_html, "html"))
-        else:
-            msg.attach(MIMEText(email_params.body_plaintext, "plain", "utf-8"))
+            return MIMEText(msg_body, "html")
+        return MIMEText(msg_body, "plain", "utf-8")
 
-        if email_params.attachment_filepaths:
-            msg = Emailer._attach_files(msg, email_params.attachment_filepaths)
-        return msg
-
-    @staticmethod
-    def _setup_email_metadata(
-        email_to: Tuple[str],
-        email_from: str,
-        subject: str,
-        email_cc: Optional[Tuple[str]] = None,
-    ):
-        """
-        Setup message object metadata
-        :param email_to: List of email addresses to send email to
-        :param email_from: email address to send email from
-        :param subject: email subject
-        :param email_cc: email addresses to cc into email
-        """
-        msg = MIMEMultipart()
-        msg["Subject"] = Header(subject, "utf-8")
-        msg["From"] = email_from
-        msg["To"] = ", ".join(email_to)
-        msg["Date"] = formatdate(localtime=True)
-        msg["reply-to"] = email_from
-        if email_cc:
-            msg["Cc"] = ", ".join(email_cc)
-        return msg
-
-    @staticmethod
-    def _attach_files(msg: MIMEMultipart, filepaths: List[str]) -> MIMEMultipart:
+    def _attach_files(self, msg: MIMEMultipart, filepaths: List[str]) -> MIMEMultipart:
         """
         Loads and adds attachments to an email message
         :param msg: The message object for the email
         :param filepaths: Tuple containing relative filepaths of files to attach from EMAIL_ATTACHMENTS_ROOT_DIR
         """
         for rel_filepath in filepaths:
-            filepath = Emailer.EMAIL_ATTACHMENTS_ROOT_DIR / rel_filepath
+            filepath = self.EMAIL_ATTACHMENTS_ROOT_DIR / rel_filepath
             try:
                 with open(filepath, "rb") as file:
                     part = MIMEApplication(file.read(), Name=filepath.name)

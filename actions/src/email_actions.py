@@ -1,6 +1,6 @@
 from typing import Callable
 from email_api.email_actions import EmailActions
-from structs.smtp_account import SMTPAccount
+from structs.email.smtp_account import SMTPAccount
 from st2common.runners.base_action import Action
 
 # pylint: disable=too-few-public-methods
