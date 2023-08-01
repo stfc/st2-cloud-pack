@@ -14,7 +14,7 @@ class UserProperties(PropEnum):
     USER_DESCRIPTION = auto()
     USER_EMAIL = auto()
     USER_NAME = auto()
-    
+
     @staticmethod
     def from_string(val: str):
         """

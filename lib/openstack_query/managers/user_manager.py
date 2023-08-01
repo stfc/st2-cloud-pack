@@ -16,6 +16,7 @@ from openstack_query.managers.query_manager import QueryManager
 from structs.query.query_preset_details import QueryPresetDetails
 from structs.query.query_output_details import QueryOutputDetails
 
+
 class UserManager(QueryManager):
     """
     Manager for querying Openstack user objects.
@@ -33,11 +34,9 @@ class UserManager(QueryManager):
         """
         return self._build_and_run_query(
             preset_details=None,
-            output_details=QueryOutputDetails.from_kwargs(
-                prop_cls=UserQuery, **kwargs
-            ),
+            output_details=QueryOutputDetails.from_kwargs(prop_cls=UserQuery, **kwargs),
         )
-        
+
     def search_by_property(
         self, search_mode: str, property_to_search_by: str, values: List[str], **kwargs
     ) -> QueryReturn:
@@ -62,7 +61,7 @@ class UserManager(QueryManager):
         if len(values) == 1:
             equal_to_preset = {
                 QueryPresetsString.ANY_IN: QueryPresetsGeneric.EQUAL_TO,
-                QueryPresetsString.NOT_ANY_IN: QueryPresetsGeneric.NOT_EQUAL_TO, #needs to be supported in user query - mapping required
+                QueryPresetsString.NOT_ANY_IN: QueryPresetsGeneric.NOT_EQUAL_TO,  # needs to be supported in user query - mapping required
             }.get(preset, None)
             if equal_to_preset:
                 preset = equal_to_preset
@@ -74,9 +73,7 @@ class UserManager(QueryManager):
                 prop=UserQuery.from_string(property_to_search_by),
                 args=args,
             ),
-            output_details=QueryOutputDetails.from_kwargs(
-                prop_cls=UserQuery, **kwargs
-            ),
+            output_details=QueryOutputDetails.from_kwargs(prop_cls=UserQuery, **kwargs),
         )
 
     def search_by_regex(self, property_to_search_by: str, pattern: str, **kwargs):
@@ -98,7 +95,5 @@ class UserManager(QueryManager):
                 prop=UserQuery.from_string(property_to_search_by),
                 args=args,
             ),
-            output_details=QueryOutputDetails.from_kwargs(
-                prop_cls=UserQuery, **kwargs
-            ),
+            output_details=QueryOutputDetails.from_kwargs(prop_cls=UserQuery, **kwargs),
         )

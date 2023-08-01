@@ -35,5 +35,3 @@ def test_user_name_serialization(val):
     Tests that variants of USER_NAME can be serialized
     """
     assert UserProperties.from_string(val) is UserProperties.USER_NAME
-
-
