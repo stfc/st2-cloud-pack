@@ -16,6 +16,8 @@ from openstack_query.managers.query_manager import QueryManager
 from structs.query.query_preset_details import QueryPresetDetails
 from structs.query.query_output_details import QueryOutputDetails
 
+from exceptions.parse_query_error import ParseQueryError
+
 
 class UserManager(QueryManager):
     """
@@ -99,3 +101,9 @@ class UserManager(QueryManager):
                 prop_cls=UserProperties, **kwargs
             ),
         )
+    def search_by_datetime(self, **kwargs):
+        """
+        Method to search by datetime.
+        For querying users this will raise an error as this is not possible
+        """
+        raise ParseQueryError("Cannot query by datatime with users")

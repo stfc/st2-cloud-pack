@@ -81,3 +81,4 @@ class RunnerTests(unittest.TestCase):
         """
         invalid_user = "invalid-user-obj"
         self.instance._parse_subset(self.conn, [invalid_user])
+

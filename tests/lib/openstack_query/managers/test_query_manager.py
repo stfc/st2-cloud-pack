@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import MagicMock, patch, NonCallableMock
 from parameterized import parameterized
 
+from nose.tools import raises
 from openstack_query.managers.query_manager import QueryManager
 from enums.query.query_output_types import QueryOutputTypes
 from enums.query.query_presets import (
@@ -11,6 +12,8 @@ from enums.query.query_presets import (
 )
 
 from structs.query.query_preset_details import QueryPresetDetails
+
+from lib.exceptions.parse_query_error import ParseQueryError
 from tests.lib.openstack_query.mocks.mocked_structs import (
     MOCKED_OUTPUT_DETAILS,
     MOCKED_PRESET_DETAILS,
@@ -283,3 +286,12 @@ class QueryManagerTests(unittest.TestCase):
         )
 
         self.assertEqual(res, mock_query_return)
+
+    @raises(ParseQueryError)
+    def test_search_datetime_raise_error(self):
+        """
+        Test that ParseQueryError is raised when someone tries to query
+        using datetime
+        """
+        mock_kwargs = {"date 1": '2023-08-01'}
+        self.instance.search_by_datetime(**mock_kwargs)
