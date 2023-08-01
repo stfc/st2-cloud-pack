@@ -61,7 +61,7 @@ class UserManager(QueryManager):
         if len(values) == 1:
             equal_to_preset = {
                 QueryPresetsString.ANY_IN: QueryPresetsGeneric.EQUAL_TO,
-                QueryPresetsString.NOT_ANY_IN: QueryPresetsGeneric.NOT_EQUAL_TO,  # needs to be supported in user query - mapping required
+                QueryPresetsString.NOT_ANY_IN: QueryPresetsGeneric.NOT_EQUAL_TO,
             }.get(preset, None)
             if equal_to_preset:
                 preset = equal_to_preset
@@ -70,7 +70,7 @@ class UserManager(QueryManager):
         return self._build_and_run_query(
             preset_details=QueryPresetDetails(
                 preset=preset,
-                prop=UserQuery.from_string(property_to_search_by),
+                prop=UserProperties.from_string(property_to_search_by),
                 args=args,
             ),
             output_details=QueryOutputDetails.from_kwargs(prop_cls=UserQuery, **kwargs),
@@ -92,8 +92,10 @@ class UserManager(QueryManager):
         return self._build_and_run_query(
             preset_details=QueryPresetDetails(
                 preset=QueryPresetsString.MATCHES_REGEX,
-                prop=UserQuery.from_string(property_to_search_by),
+                prop=UserProperties.from_string(property_to_search_by),
                 args=args,
             ),
-            output_details=QueryOutputDetails.from_kwargs(prop_cls=UserQuery, **kwargs),
+            output_details=QueryOutputDetails.from_kwargs(
+                prop_cls=UserProperties, **kwargs
+            ),
         )
