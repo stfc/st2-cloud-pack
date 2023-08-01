@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock, MagicMock, call, patch
 from nose.tools import raises
-
+from parameterized import parameterized
 from openstack_query.runners.user_runner import UserRunner
 
 from openstack.exceptions import ResourceNotFound
