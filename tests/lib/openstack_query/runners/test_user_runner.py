@@ -47,6 +47,37 @@ class RunnerTests(unittest.TestCase):
             "user2",
             "user3",
         ]
+        mock_user = self.conn.identity.v3.users
         res = self.instance._run_query(self.conn, filter_kwargs=mock_filter_kwargs)
         self.assertEqual(res, mock_user_list)
-        mock_user_list.assert_called_once_with(**mock_filter_kwargs)
+        if mock_filter_kwargs:
+            mock_user.assert_called_once_with(**mock_filter_kwargs)
+        else:
+            mock_user.assert_called_once_with(**{})
+
+    def test_parse_subset(self):
+        """
+        Tests _parse_subset works expectedly
+        method simply checks each value in 'subset' param is of the User type and returns it
+        """
+
+        # with one item
+        mock_user_1 = MagicMock()
+        mock_user_1.__class__ = User
+        res = self.instance._parse_subset(self.conn, [mock_user_1])
+        self.assertEqual(res, [mock_user_1])
+
+        # with two items
+        mock_user_2 = MagicMock()
+        mock_user_2.__class__ = User
+        res = self.instance._parse_subset(self.conn, [mock_user_1, mock_user_2])
+        self.assertEqual(res, [mock_user_1, mock_user_2])
+
+    @raises(ParseQueryError)
+    def test_parse_subset_invalid(self):
+        """
+        Tests _parse_subset works expectedly
+        method raises error when provided value which is not of User type
+        """
+        invalid_user = "invalid-user-obj"
+        self.instance._parse_subset(self.conn, [invalid_user])

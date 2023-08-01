@@ -155,7 +155,7 @@ class QueryManagerTests(unittest.TestCase):
         mock_build_and_run_query.assert_called_once_with(
             preset_details=QueryPresetDetails(
                 preset=QueryPresetsDateTime.OLDER_THAN,
-                prop=self.prop_cls.SERVER_CREATION_DATE,
+                prop=self.prop_cls.from_string.return_value,
                 args={
                     "days": 10,
                     "hours": 10,
@@ -199,7 +199,7 @@ class QueryManagerTests(unittest.TestCase):
         mock_build_and_run_query.assert_called_once_with(
             preset_details=QueryPresetDetails(
                 preset=QueryPresetsGeneric.EQUAL_TO,
-                prop=self.prop_cls.RESOURCE_ID,
+                prop=self.prop_cls.from_string.return_value,
                 args={"value": "image-id1"},
             ),
             output_details=mock_output_details,
@@ -236,7 +236,7 @@ class QueryManagerTests(unittest.TestCase):
         mock_build_and_run_query.assert_called_once_with(
             preset_details=QueryPresetDetails(
                 preset=QueryPresetsString.ANY_IN,
-                prop=self.prop_cls.RESOURCE_ID,
+                prop=self.prop_cls.from_string.return_value,
                 args={"values": ["image-id1", "image-id2"]},
             ),
             output_details=mock_output_details,
@@ -276,7 +276,7 @@ class QueryManagerTests(unittest.TestCase):
         mock_build_and_run_query.assert_called_once_with(
             preset_details=QueryPresetDetails(
                 preset=QueryPresetsString.MATCHES_REGEX,
-                prop=self.prop_cls.RESOURCE_NAME,
+                prop=self.prop_cls.from_string.return_value,
                 args={"regex_string": "some-regex-pattern"},
             ),
             output_details=mock_output_details,

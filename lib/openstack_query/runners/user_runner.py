@@ -39,3 +39,13 @@ class UserRunner(QueryRunner):
         if "domain_id" not in filter_kwargs.keys():
             filter_kwargs.update({"domain_id": self.STFC_DOMAIN_ID})
         return list(conn.identity.v3.users(**filter_kwargs))
+
+    def _parse_subset(self, _: OpenstackConnection, subset: List[User]) -> List[User]:
+        """
+        This method is a helper function that will check a list of users to ensure that they are valid Server
+        objects
+        :param subset: A list of openstack Server objects
+        """
+        if any(not isinstance(i, User) for i in subset):
+            raise ParseQueryError("'from_subset' only accepts User openstack objects")
+        return subset

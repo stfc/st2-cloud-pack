@@ -56,8 +56,8 @@ class UserQuery(QueryWrapper):
         return ServerSideHandler(
             {
                 QueryPresetsGeneric.EQUAL_TO: {
-                    UserProperties.DOMAIN_ID: lambda value: {"domain_id": value},
-                    UserProperties.NAME: lambda value: {"name": value},
+                    UserProperties.USER_DOMAIN_ID: lambda value: {"domain_id": value},
+                    UserProperties.USER_NAME: lambda value: {"name": value},
                 }
             }
         )
