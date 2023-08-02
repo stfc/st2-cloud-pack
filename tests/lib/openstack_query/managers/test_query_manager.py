@@ -293,5 +293,9 @@ class QueryManagerTests(unittest.TestCase):
         Test that ParseQueryError is raised when someone tries to query
         using datetime
         """
-        mock_kwargs = {"date 1": '2023-08-01'}
+        mock_kwargs = {
+            "search_mode": "mock_mode",
+            "property_to_search_by": "mock_prop",
+            "date 1": "2023-08-01",
+        }
         self.instance.search_by_datetime(**mock_kwargs)

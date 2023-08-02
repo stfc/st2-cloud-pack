@@ -101,7 +101,10 @@ class UserManager(QueryManager):
                 prop_cls=UserProperties, **kwargs
             ),
         )
-    def search_by_datetime(self, **kwargs):
+
+    def search_by_datetime(
+        self, search_mode: str, property_to_search_by: str, **kwargs
+    ):
         """
         Method to search by datetime.
         For querying users this will raise an error as this is not possible
