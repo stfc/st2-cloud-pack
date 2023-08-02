@@ -286,16 +286,3 @@ class QueryManagerTests(unittest.TestCase):
         )
 
         self.assertEqual(res, mock_query_return)
-
-    @raises(ParseQueryError)
-    def test_search_datetime_raise_error(self):
-        """
-        Test that ParseQueryError is raised when someone tries to query
-        using datetime
-        """
-        mock_kwargs = {
-            "search_mode": "mock_mode",
-            "property_to_search_by": "mock_prop",
-            "date 1": "2023-08-01",
-        }
-        self.instance.search_by_datetime(**mock_kwargs)

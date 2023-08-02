@@ -25,7 +25,7 @@ class UserRunner(QueryRunner):
         self,
         conn: OpenstackConnection,
         filter_kwargs: Optional[Dict[str, str]] = None,
-        from_domain: Optional[List[UserDomains]] = None,
+        from_domain: Optional[UserDomains] = None,
     ) -> List[User]:
         """
         This method runs the query by running openstacksdk commands
@@ -37,20 +37,19 @@ class UserRunner(QueryRunner):
 
 
         """
+        if not filter_kwargs:
+            filter_kwargs = {}
         if from_domain and "domain_id" in filter_kwargs.keys():
             raise ParseQueryError(
                 "This query uses a preset that requires searching on domain_ids "
                 "- but you've provided a domain using from_domain "
                 "- please use one or the other not both"
             )
-        if not filter_kwargs:
-            filter_kwargs = {}
+        domain_id = self._get_user_domain(conn, self.DEFAULT_DOMAIN_ID)
         if from_domain:
-            filter_kwargs.update({"domain_id": self._get_user_domain(from_domain)})
-        if "domain_id" not in filter_kwargs.keys():
-            filter_kwargs.update(
-                {"domain_id": self._get_user_domain(self.DEFAULT_DOMAIN_ID)}
-            )
+            domain_id = self.get_user_domain(conn, from_domain)
+        filter_kwargs.update({"domain_id": domain_id})
+
         return list(conn.identity.users(**filter_kwargs))
 
     def _get_user_domain(
@@ -60,13 +59,13 @@ class UserRunner(QueryRunner):
         Gets user domain string from UserDomains enum
         """
         try:
-            user_domain_dict = {
+            return {
                 UserDomains.DEFAULT: conn.identity.find_domain("default"),
                 UserDomains.STFC: conn.identity.find_domain("stfc"),
                 UserDomains.OPENID: conn.identiy.find_domain(
                     "openid"
                 ),  # irisiam domain became openid since Stein
-            }[user_domain]
+            }[user_domain]["id"]
         except KeyError as e:
             raise EnumMappingError(f"Mapping for domain {user_domain.name} not found")
 

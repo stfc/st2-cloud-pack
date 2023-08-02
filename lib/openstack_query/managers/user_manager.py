@@ -103,8 +103,15 @@ class UserManager(QueryManager):
         )
 
     def search_by_datetime(
-        self, search_mode: str, property_to_search_by: str, **kwargs
-    ):
+        self,
+        search_mode: str,
+        property_to_search_by: str,
+        days: int = 0,
+        hours: int = 0,
+        minutes: int = 0,
+        seconds: int = 0,
+        **kwargs,
+    ) -> QueryReturn:
         """
         Method to search by datetime.
         For querying users this will raise an error as this is not possible

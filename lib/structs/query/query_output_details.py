@@ -22,6 +22,12 @@ class QueryOutputDetails:
         :param prop_cls a PropEnum class to get enum from for properties to select
         :param kwargs: A set of kwargs to parse and use to set attributes to dataclass
         """
-        props = [prop_cls.from_string(prop) for prop in kwargs["properties_to_select"]]
-        output_type = QueryOutputTypes.from_string(kwargs["output_type"])
+        props = []
+        output_type = QueryOutputTypes.TO_OBJECT_LIST
+        if "properties_to_select" in kwargs.keys():
+            props = [
+                prop_cls.from_string(prop) for prop in kwargs["properties_to_select"]
+            ]
+        if "output_type" in kwargs.keys():
+            output_type = QueryOutputTypes.from_string(kwargs["output_type"])
         return QueryOutputDetails(properties_to_select=props, output_type=output_type)

@@ -60,13 +60,15 @@ class RunnerTests(unittest.TestCase):
                 **{"domain_id": mock_get_user_domain.return_value}
             )
 
-    @raises(EnumMappingError)
+    @raises(ParseQueryError)
     def test_run_query_with_from_domain_and_id_given(self):
         """
         Test error is raised when the domain name and domain id is provided at
         the same time
         """
-        self.instance._run_query(self.conn, filter_kwargs={"domain_id": 1}, from_domain=MagicMock())
+        self.instance._run_query(
+            self.conn, filter_kwargs={"domain_id": 1}, from_domain=MagicMock()
+        )
 
     @patch("openstack_query.runners.user_runner.UserRunner._get_user_domain")
     def test_run_query_with_from_domain(self, mock_get_user_domain):
@@ -83,8 +85,8 @@ class RunnerTests(unittest.TestCase):
         res = self.instance._run_query(self.conn, from_domain=mock_domain)
         mock_get_user_domain.assert_called_once_with(mock_domain)
         mock_user.assert_called_once_with(
-                **{"domain_id": mock_get_user_domain.return_value}
-            )
+            **{"domain_id": mock_get_user_domain.return_value}
+        )
         self.assertEqual(res, mock_user_list)
 
     @parameterized.expand(
@@ -94,15 +96,14 @@ class RunnerTests(unittest.TestCase):
         """
         Test that user domains have a mapping and no errors are raised
         """
-        self.instance._get_user_domain(domain)
+        self.instance._get_user_domain(self.conn, domain)
 
     @raises(EnumMappingError)
     def test_get_user_domain_error_raised(self):
         """
         Test that an error is raised if a domain mapping is not found
         """
-        self.instance._get_user_domain("missing_domain")
-
+        self.instance._get_user_domain(self.conn, MagicMock())
 
     def test_parse_subset(self):
         """
