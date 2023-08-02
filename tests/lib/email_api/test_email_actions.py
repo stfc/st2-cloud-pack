@@ -61,8 +61,21 @@ class TestEmailActions(unittest.TestCase):
             smtp_account=mock_smtp_account,
             username=mock_username,
             test_message=mock_test_message,
+            cc_cloud_support=True,
             **self.mock_kwargs
         )
+        expected_kwargs = {
+            "email_to": ("test@example.com",),
+            "subject": "subject1",
+            "email_from": "from@example.com",
+            "email_cc": [
+                "cc1@example.com",
+                "cc2@example.com",
+                "cloud-support@stfc.ac.uk",
+            ],
+            "attachment_filepaths": ["path/to/file1", "path/to/file2"],
+            "as_html": True,
+        }
 
         mock_setup_email_params.assert_called_once_with(
             email_templates=[
@@ -77,7 +90,7 @@ class TestEmailActions(unittest.TestCase):
                     template_name="footer",
                 ),
             ],
-            **self.mock_kwargs
+            **expected_kwargs
         )
 
         mock_emailer.assert_called_once_with(mock_smtp_account)

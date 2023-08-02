@@ -1,7 +1,6 @@
-import os
 import unittest
 from pathlib import Path
-from unittest.mock import patch, call, NonCallableMock, MagicMock, mock_open
+from unittest.mock import patch, call, MagicMock, mock_open
 
 from nose.tools import raises
 from parameterized import parameterized
@@ -20,6 +19,7 @@ class TestEmailer(unittest.TestCase):
     def setUp(self, mock_template_handler) -> None:
         """setup for tests"""
         self.mock_smtp_account = MagicMock()
+        self.template_handler = mock_template_handler
         self.instance = Emailer(self.mock_smtp_account)
 
     @patch("email_api.emailer.Emailer._build_email")
@@ -116,6 +116,46 @@ class TestEmailer(unittest.TestCase):
             self.assertEqual(res, mock_attach_files.return_value)
         else:
             self.assertEqual(res, mock_mime_multipart.return_value)
+
+    @parameterized.expand(
+        [("test_with_as_html_true", True), ("test_with_as_html_false", False)]
+    )
+    @patch("email_api.emailer.MIMEText")
+    def test_build_email_body(self, _, as_html, mock_mime_text):
+        template_details_1 = MagicMock()
+        template_details_2 = MagicMock()
+        template_list = [template_details_1, template_details_2]
+
+        self.instance._template_handler.render_html_template.side_effect = [
+            "template-render-html-1\n",
+            "template-render-html-2\n",
+        ]
+
+        self.instance._template_handler.render_plaintext_template.side_effect = [
+            "template-render-plaintext-1\n",
+            "template-render-plaintext-2\n",
+        ]
+
+        res = self.instance._build_email_body(template_list, as_html=as_html)
+        if as_html:
+            self.assertEqual(
+                self.instance._template_handler.render_html_template.call_args_list,
+                [call(template_details_1), call(template_details_2)],
+            )
+            mock_mime_text.assert_called_once_with(
+                "template-render-html-1\ntemplate-render-html-2\n", "html"
+            )
+        else:
+            self.assertEqual(
+                self.instance._template_handler.render_plaintext_template.call_args_list,
+                [call(template_details_1), call(template_details_2)],
+            )
+            mock_mime_text.assert_called_once_with(
+                "template-render-plaintext-1\ntemplate-render-plaintext-2\n",
+                "plain",
+                "utf-8",
+            )
+        self.assertEqual(res, mock_mime_text.return_value)
 
     @patch("builtins.open", new_callable=mock_open, read_data="data")
     @patch("email_api.emailer.MIMEApplication")
