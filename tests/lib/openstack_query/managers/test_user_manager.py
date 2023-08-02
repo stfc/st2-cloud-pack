@@ -23,7 +23,7 @@ class QueryManagerTests(unittest.TestCase):
 
         self.query = MagicMock()
         self.prop_cls = MagicMock()
-        self.instance = UserManager(cloud_account="test_account", query=self.query)
+        self.instance = UserManager(cloud_account="test_account")
 
     @raises(ParseQueryError)
     def test_search_datetime_raise_error(self):

@@ -25,7 +25,12 @@ class UserManager(QueryManager):
     """
 
     def __init__(self, cloud_account: CloudDomains):
-        QueryManager.__init__(self, query=UserQuery(), cloud_account=cloud_account)
+        QueryManager.__init__(
+            self,
+            query=UserQuery(),
+            cloud_account=cloud_account,
+            prop_cls=UserProperties,
+        )
 
     def search_all(self, **kwargs) -> QueryReturn:
         """

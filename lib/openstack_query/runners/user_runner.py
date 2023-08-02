@@ -1,7 +1,6 @@
 from typing import Optional, Dict, List
 
 from openstack.identity.v3.user import User
-from openstack.exceptions import ResourceNotFound
 
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_query.runners.query_runner import QueryRunner
@@ -10,7 +9,7 @@ from exceptions.parse_query_error import ParseQueryError
 from exceptions.enum_mapping_error import EnumMappingError
 
 # pylint:disable=too-few-public-methods
-from lib.enums.user_domains import UserDomains
+from enums.user_domains import UserDomains
 
 
 class UserRunner(QueryRunner):
@@ -45,9 +44,11 @@ class UserRunner(QueryRunner):
                 "- but you've provided a domain using from_domain "
                 "- please use one or the other not both"
             )
-        domain_id = self._get_user_domain(conn, self.DEFAULT_DOMAIN_ID)
         if from_domain:
-            domain_id = self.get_user_domain(conn, from_domain)
+            domain_id = self._get_user_domain(conn, from_domain)
+        else:
+            domain_id = self._get_user_domain(conn, self.DEFAULT_DOMAIN_ID)
+
         filter_kwargs.update({"domain_id": domain_id})
 
         return list(conn.identity.users(**filter_kwargs))
@@ -66,8 +67,10 @@ class UserRunner(QueryRunner):
                     "openid"
                 ),  # irisiam domain became openid since Stein
             }[user_domain]["id"]
-        except KeyError as e:
-            raise EnumMappingError(f"Mapping for domain {user_domain.name} not found")
+        except KeyError as exp:
+            raise EnumMappingError(
+                f"Mapping for domain {user_domain.name} not found"
+            ) from exp
 
     def _parse_subset(self, _: OpenstackConnection, subset: List[User]) -> List[User]:
         """

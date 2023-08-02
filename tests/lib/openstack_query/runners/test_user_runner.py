@@ -4,15 +4,13 @@ from nose.tools import raises
 from parameterized import parameterized
 from openstack_query.runners.user_runner import UserRunner
 
-from openstack.exceptions import ResourceNotFound
-from openstack.compute.v2.server import Server
 from openstack.identity.v3.user import User
 
 from exceptions.parse_query_error import ParseQueryError
 
 # pylint:disable=protected-access
-from lib.enums.user_domains import UserDomains
-from lib.exceptions.enum_mapping_error import EnumMappingError
+from enums.user_domains import UserDomains
+from exceptions.enum_mapping_error import EnumMappingError
 
 
 class RunnerTests(unittest.TestCase):
@@ -83,7 +81,7 @@ class RunnerTests(unittest.TestCase):
         mock_user = self.conn.identity.users
         mock_domain = MagicMock()
         res = self.instance._run_query(self.conn, from_domain=mock_domain)
-        mock_get_user_domain.assert_called_once_with(mock_domain)
+        mock_get_user_domain.assert_called_once_with(self.conn, mock_domain)
         mock_user.assert_called_once_with(
             **{"domain_id": mock_get_user_domain.return_value}
         )
