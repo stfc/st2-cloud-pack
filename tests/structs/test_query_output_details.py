@@ -1,10 +1,8 @@
 import unittest
-from unittest.mock import MagicMock
-
+from parameterized import parameterized
 from structs.query.query_output_details import QueryOutputDetails
-
-from tests.lib.openstack_query.mocks.mocked_props import MockProperties
-from tests.lib.openstack_query.mocks.mocked_structs import MOCKED_OUTPUT_DETAILS
+from enums.query.props.server_properties import ServerProperties
+from enums.query.query_output_types import QueryOutputTypes
 
 
 class QueryOutputDetailsTests(unittest.TestCase):
@@ -14,26 +12,41 @@ class QueryOutputDetailsTests(unittest.TestCase):
 
     def setUp(self) -> None:
         self.instance = QueryOutputDetails
+        self.mock_all_properties = [prop for prop in ServerProperties]
 
-    def test_from_kwargs(self):
+    @parameterized.expand(
+        [
+            ("no args use defaults", False, None),
+            ("properties given, not output type", True, None),
+            ("no properties given, output type given", False, "TO_OBJECT_LIST"),
+            ("properties and output type given", True, "TO_LIST"),
+        ]
+    )
+    def test_from_kwargs(self, _, set_mock_props, mock_output_type):
         """
         tests that from_kwargs static method works expectedly
         should iteratively convert properties into given enums class and output_type into output type enum.
         set correct attributes in QueryOutputDetails dataclass and return
         """
 
-        mock_prop_cls = MagicMock()
-        mock_prop_cls.from_string.side_effect = [
-            MockProperties.PROP_1,
-            MockProperties.PROP_2,
-        ]
+        expected_mock_props = [prop for prop in ServerProperties]
+        mock_props = [prop.name for prop in ServerProperties]
+        if set_mock_props:
+            expected_mock_props = [
+                ServerProperties.SERVER_ID,
+                ServerProperties.SERVER_NAME,
+            ]
+            mock_props = ["server_id", "server_name"]
+
+        expected_mock_output_type = QueryOutputTypes.TO_STR
+        if mock_output_type:
+            expected_mock_output_type = QueryOutputTypes[mock_output_type]
 
         res = QueryOutputDetails.from_kwargs(
-            prop_cls=mock_prop_cls,
-            properties_to_select=["prop1", "prop2"],
-            output_type="to_str",
+            prop_cls=ServerProperties,
+            properties_to_select=mock_props,
+            output_type=mock_output_type,
         )
-        assert set(res.properties_to_select) == set(
-            MOCKED_OUTPUT_DETAILS.properties_to_select
-        )
-        assert res.output_type == MOCKED_OUTPUT_DETAILS.output_type
+
+        assert set(res.properties_to_select) == set(expected_mock_props)
+        assert res.output_type == expected_mock_output_type

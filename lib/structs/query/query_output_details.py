@@ -12,8 +12,8 @@ class QueryOutputDetails:
     and how to output them to_html(), to_string() etc.
     """
 
-    properties_to_select: Optional[List[PropEnum]] = None
-    output_type: Optional[QueryOutputTypes] = None
+    properties_to_select: List[PropEnum]
+    output_type: QueryOutputTypes
 
     @staticmethod
     def from_kwargs(prop_cls: PropEnum, **kwargs):
@@ -22,12 +22,13 @@ class QueryOutputDetails:
         :param prop_cls a PropEnum class to get enum from for properties to select
         :param kwargs: A set of kwargs to parse and use to set attributes to dataclass
         """
-        props = []
-        output_type = QueryOutputTypes.TO_OBJECT_LIST
-        if "properties_to_select" in kwargs.keys():
+        props = [prop for prop in prop_cls]
+        output_type = QueryOutputTypes.TO_STR
+        if "properties_to_select" in kwargs.keys() and kwargs["properties_to_select"]:
             props = [
                 prop_cls.from_string(prop) for prop in kwargs["properties_to_select"]
             ]
-        if "output_type" in kwargs.keys():
+
+        if "output_type" in kwargs.keys() and kwargs["output_type"]:
             output_type = QueryOutputTypes.from_string(kwargs["output_type"])
         return QueryOutputDetails(properties_to_select=props, output_type=output_type)
