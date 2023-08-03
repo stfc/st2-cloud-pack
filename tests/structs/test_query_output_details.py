@@ -12,7 +12,6 @@ class QueryOutputDetailsTests(unittest.TestCase):
 
     def setUp(self) -> None:
         self.instance = QueryOutputDetails
-        self.mock_all_properties = [prop for prop in ServerProperties]
 
     @parameterized.expand(
         [
@@ -29,7 +28,7 @@ class QueryOutputDetailsTests(unittest.TestCase):
         set correct attributes in QueryOutputDetails dataclass and return
         """
 
-        expected_mock_props = [prop for prop in ServerProperties]
+        expected_mock_props = list(ServerProperties)
         mock_props = [prop.name for prop in ServerProperties]
         if set_mock_props:
             expected_mock_props = [

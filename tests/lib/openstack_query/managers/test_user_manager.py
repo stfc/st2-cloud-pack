@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch, NonCallableMock
+from unittest.mock import MagicMock
 
 from nose.tools import raises
 

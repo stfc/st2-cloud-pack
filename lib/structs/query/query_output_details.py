@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import List
 from enums.query.query_output_types import QueryOutputTypes
 from enums.query.props.prop_enum import PropEnum
 
@@ -22,13 +22,13 @@ class QueryOutputDetails:
         :param prop_cls a PropEnum class to get enum from for properties to select
         :param kwargs: A set of kwargs to parse and use to set attributes to dataclass
         """
-        props = [prop for prop in prop_cls]
+        props = list(prop_cls)
         output_type = QueryOutputTypes.TO_STR
-        if "properties_to_select" in kwargs.keys() and kwargs["properties_to_select"]:
+        if "properties_to_select" in kwargs and kwargs["properties_to_select"]:
             props = [
                 prop_cls.from_string(prop) for prop in kwargs["properties_to_select"]
             ]
 
-        if "output_type" in kwargs.keys() and kwargs["output_type"]:
+        if "output_type" in kwargs and kwargs["output_type"]:
             output_type = QueryOutputTypes.from_string(kwargs["output_type"])
         return QueryOutputDetails(properties_to_select=props, output_type=output_type)

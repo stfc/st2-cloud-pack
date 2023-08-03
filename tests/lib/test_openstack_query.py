@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 import datetime
 import unittest
-from typing import Dict
 from unittest import mock
-from unittest.mock import MagicMock, patch, NonCallableMock, Mock
+from unittest.mock import MagicMock, NonCallableMock, Mock
 
 import openstack
 
@@ -14,7 +13,6 @@ from openstack_api.dataclasses import (
 )
 
 from openstack_api.openstack_query import OpenstackQuery
-from structs.email_params import EmailParams
 
 
 class OpenstackQueryTests(unittest.TestCase):

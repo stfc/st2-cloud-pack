@@ -1,16 +1,7 @@
 import unittest
-from unittest.mock import MagicMock, patch, NonCallableMock
+from unittest.mock import MagicMock, patch
 
 from openstack_query.managers.server_manager import ServerManager
-
-from enums.query.query_presets import (
-    QueryPresetsDateTime,
-    QueryPresetsString,
-    QueryPresetsGeneric,
-)
-from enums.query.props.server_properties import ServerProperties
-from enums.query.query_output_types import QueryOutputTypes
-from structs.query.query_preset_details import QueryPresetDetails
 
 
 @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")

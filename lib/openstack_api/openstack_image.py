@@ -4,7 +4,6 @@ from openstack.image.v2.image import Image
 from openstack_api.dataclasses import (
     NonExistentCheckParams,
     NonExistentProjectCheckParams,
-    EmailQueryParams,
 )
 
 from openstack_api.openstack_connection import OpenstackConnection

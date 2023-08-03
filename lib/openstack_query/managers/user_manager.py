@@ -6,8 +6,9 @@ from enums.cloud_domains import CloudDomains
 from openstack_query.queries.user_query import UserQuery
 from openstack_query.managers.query_manager import QueryManager
 
-
 from exceptions.parse_query_error import ParseQueryError
+
+# pylint:disable=too-few-public-methods
 
 
 class UserManager(QueryManager):
@@ -23,16 +24,7 @@ class UserManager(QueryManager):
             prop_cls=UserProperties,
         )
 
-    def search_by_datetime(
-        self,
-        search_mode: str,
-        property_to_search_by: str,
-        days: int = 0,
-        hours: int = 0,
-        minutes: int = 0,
-        seconds: int = 0,
-        **kwargs,
-    ) -> QueryReturn:
+    def search_by_datetime(self, **kwargs) -> QueryReturn:
         """
         Method to search by datetime.
         For querying users this will raise an error as this is not possible

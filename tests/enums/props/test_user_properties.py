@@ -1,8 +1,6 @@
 from parameterized import parameterized
 
 from enums.query.props.user_properties import UserProperties
-from nose.tools import raises
-from exceptions.parse_query_error import ParseQueryError
 
 
 @parameterized(["user_domain_id", "User_Domain_ID", "UsEr_DoMaIn_iD"])

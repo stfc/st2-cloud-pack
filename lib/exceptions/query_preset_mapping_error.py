@@ -1,5 +1,7 @@
 from exceptions.enum_mapping_error import EnumMappingError
 
+# pylint:disable=too-few-public-methods
+
 
 class QueryPresetMappingError(EnumMappingError):
     """
