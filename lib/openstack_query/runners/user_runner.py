@@ -63,7 +63,7 @@ class UserRunner(QueryRunner):
             return {
                 UserDomains.DEFAULT: conn.identity.find_domain("default"),
                 UserDomains.STFC: conn.identity.find_domain("stfc"),
-                UserDomains.OPENID: conn.identiy.find_domain(
+                UserDomains.OPENID: conn.identity.find_domain(
                     "openid"
                 ),  # irisiam domain became openid since Stein
             }[user_domain]["id"]
