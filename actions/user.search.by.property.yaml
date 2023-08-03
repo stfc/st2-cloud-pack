@@ -23,7 +23,7 @@ parameters:
       - "user_domain_id"
       - "user_description"
       - "user_name"
-      - "user_id"
+      - "user_email"
     type: array
     description: "
     A comma-spaced list of user properties to display for the resulting users - leave empty for all properties. One of:
@@ -54,7 +54,6 @@ parameters:
     enum:
       - "user_description"
       - "user_name"
-      - "user_id"
     type: string
     required: true
   search_mode:
