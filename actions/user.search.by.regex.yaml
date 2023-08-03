@@ -1,0 +1,63 @@
+---
+description: Search for users property using regex pattern, or not matching given value(s)
+enabled: true
+entry_point: src/user_query_actions.py
+name: user.search.by.regex
+parameters:
+  timeout:
+    default: 5400
+  submodule:
+    default: "search_by_regex"
+    immutable: true
+    type: string
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  properties_to_select:
+    default:
+      - "user_domain_id"
+      - "user_description"
+      - "user_name"
+      - "user_email"
+    type: array
+    description: "
+    A comma-spaced list of user properties to display for the resulting users - leave empty for all properties. One of:
+      - 'user_description'
+      - 'user_name'
+      - 'user_id'
+      - 'domain_id'
+    Anything else will raise an error"
+    required: false
+  output_type:
+    default: "to_str"
+    type: string
+    enum:
+      - "to_html"
+      - "to_object_list"
+      - "to_list"
+      - "to_str"
+    description: "
+    A string representing how to return the results of the query
+      - 'to_html' - a tabulate table (in html)
+      - 'to_list' - properties dicts as a python list
+      - 'to_object_list - as a list of openstack resources
+      - 'to_str' - a tabulate table"
+    required: true
+  property_to_search_by:
+    default: "user_name"
+    description: "choose property to search by"
+    enum:
+    - "user_description"
+    - "user_name"
+    type: string
+    required: true
+  pattern:
+    description: "the regex pattern to use - must be compatible with python regex 're' module"
+    required: true
+    type: string
+runner_type: python-script

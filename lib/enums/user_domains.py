@@ -11,6 +11,7 @@ class UserDomains(_AutoName):
 
     DEFAULT = auto()
     STFC = auto()
+    OPENID = auto()  # irisiam - now openid since Stein
 
     @staticmethod
     def from_string(val: str):
