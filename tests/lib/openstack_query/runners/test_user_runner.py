@@ -1,16 +1,17 @@
 import unittest
-from unittest.mock import Mock, MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 from nose.tools import raises
 from parameterized import parameterized
-from openstack_query.runners.user_runner import UserRunner
 
+from openstack_query.runners.user_runner import UserRunner
 from openstack.identity.v3.user import User
 
 from exceptions.parse_query_error import ParseQueryError
+from exceptions.enum_mapping_error import EnumMappingError
+
+from enums.user_domains import UserDomains
 
 # pylint:disable=protected-access
-from enums.user_domains import UserDomains
-from exceptions.enum_mapping_error import EnumMappingError
 
 
 class RunnerTests(unittest.TestCase):

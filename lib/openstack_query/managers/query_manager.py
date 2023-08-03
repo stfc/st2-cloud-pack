@@ -1,20 +1,20 @@
 from typing import Optional, Set, List
+import re
 
 from enums.query.query_output_types import QueryOutputTypes
 from enums.query.props.prop_enum import PropEnum
 from enums.cloud_domains import CloudDomains
+from enums.query.query_presets import (
+    QueryPresetsString,
+    QueryPresetsGeneric,
+    QueryPresetsDateTime,
+)
 
 from structs.query.query_output_details import QueryOutputDetails
 from structs.query.query_preset_details import QueryPresetDetails
 
 from openstack_query.queries.query_wrapper import QueryWrapper
 from custom_types.openstack_query.aliases import QueryReturn
-import re
-from enums.query.query_presets import (
-    QueryPresetsString,
-    QueryPresetsGeneric,
-    QueryPresetsDateTime,
-)
 
 # pylint:disable=too-few-public-methods
 
@@ -170,6 +170,8 @@ class QueryManager:
             ),
         )
 
+    # maybe convert days, hours, minutes, seconds into a dataclass?
+    # pylint:disable=too-many-arguments
     def search_by_datetime(
         self,
         search_mode: str,

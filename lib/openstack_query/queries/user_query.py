@@ -17,7 +17,6 @@ from openstack_query.handlers.client_side_handler_string import ClientSideHandle
 from openstack_query.queries.query_wrapper import QueryWrapper
 from openstack_query.runners.user_runner import UserRunner
 
-from openstack_query.time_utils import TimeUtils
 
 # pylint:disable=too-few-public-methods
 

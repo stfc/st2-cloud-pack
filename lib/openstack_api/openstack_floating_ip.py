@@ -4,7 +4,6 @@ from openstack.network.v2.floating_ip import FloatingIP
 from openstack_api.dataclasses import (
     NonExistentCheckParams,
     NonExistentProjectCheckParams,
-    EmailQueryParams,
 )
 
 from openstack_api.openstack_connection import OpenstackConnection
