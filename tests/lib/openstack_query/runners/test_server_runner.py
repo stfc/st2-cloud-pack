@@ -1,12 +1,12 @@
 import unittest
-from unittest.mock import Mock, MagicMock, call, patch
+from unittest.mock import MagicMock, call, patch
 from nose.tools import raises
+from parameterized import parameterized
 
 from openstack_query.runners.server_runner import ServerRunner
 
 from openstack.exceptions import ResourceNotFound
 from openstack.compute.v2.server import Server
-from openstack.identity.v3.project import Project
 
 from exceptions.parse_query_error import ParseQueryError
 
@@ -27,134 +27,124 @@ class ServerRunnerTests(unittest.TestCase):
         self.instance = ServerRunner(connection_cls=self.mocked_connection)
         self.conn = self.mocked_connection.return_value.__enter__.return_value
 
-    def test_get_projects_get_all(self):
+    def test_parse_meta_params_with_from_projects(self):
         """
-        Tests _get_projects method works expectedly
-        method should return all projects when project param empty
-        """
-        self.conn.identity.projects.return_value = ["project1", "project2"]
-        res = self.instance._get_projects(self.conn)
-        self.conn.identity.projects.assert_called_once()
-        self.assertEqual(res, ["project1", "project2"])
-
-    def test_get_projects_with_valid_project_identifiers(self):
-        """
-        Tests _get_project method works expectedly - with valid project identifiers
+        Tests _parse_meta_params method works expectedly - with valid from_project argument
         method should iteratively call find_project() to find each project in list and return outputs
         """
 
         mock_project_identifiers = ["project_id1", "project_id2"]
         self.conn.identity.find_project.side_effect = [
-            "project1",
-            "project2",
+            {"id": "id1"},
+            {"id": "id2"},
         ]
 
-        res = self.instance._get_projects(self.conn, mock_project_identifiers)
+        res = self.instance._parse_meta_params(self.conn, mock_project_identifiers)
         self.conn.identity.find_project.assert_has_calls(
             [
                 call("project_id1", ignore_missing=False),
                 call("project_id2", ignore_missing=False),
             ]
         )
-        self.assertEqual(res, ["project1", "project2"])
+        self.assertListEqual(list(res.keys()), ["projects"])
+        self.assertListEqual(res["projects"], ["id1", "id2"])
 
     @raises(ParseQueryError)
-    def test_get_projects_with_invalid_project_identifier(self):
+    def test_parse_meta_params_with_invalid_project_identifier(self):
         """
-        Tests _get_project method works expectedly
+        Tests _parse_meta_parms method works expectedly - with invalid from_project argument
         method should raise ParseQueryError when an invalid project identifier is given
         (or when project cannot be found)
         """
         mock_project_identifiers = ["project_id3"]
         self.conn.identity.find_project.side_effect = [ResourceNotFound()]
-        self.instance._get_projects(self.conn, mock_project_identifiers)
+        self.instance._parse_meta_params(self.conn, mock_project_identifiers)
 
-    def test_get_projects_with_project_objects(self):
-        """
-        Tests _get_project method works expectedly - when projects param has openstack Projects objects
-        method should assume that openstack projects are valid and return them without doing anything else
-        """
-        mock_proj1 = Mock()
-        mock_proj1.__class__ = Project
-
-        mock_proj2 = Mock()
-        mock_proj2.__class__ = Project
-
-        mock_project_identifiers = [mock_proj1, mock_proj2]
-        res = self.instance._get_projects(self.conn, mock_project_identifiers)
-        self.assertEqual(res, [mock_proj1, mock_proj2])
-
-    @patch("openstack_query.runners.server_runner.ServerRunner._get_projects")
-    @patch("openstack_query.runners.server_runner.ServerRunner._run_query_on_projects")
-    def test_run_query_with_from_projects(
-        self, mock_run_query_on_projects, mock_get_projects
+    @parameterized.expand(
+        [
+            ("with server side filters", {"arg1": "val1"}),
+            ("with no server side filters", None),
+        ]
+    )
+    @patch("openstack_query.runners.server_runner.ServerRunner._run_paginated_query")
+    def test_run_query_with_meta_arg_projects(
+        self, _, mock_filter_kwargs, mock_run_paginated_query
     ):
         """
-        Tests _run_query method works expectedly - when from_projects extra param set
-        method should:
-            - run _get_projects passing through from_projects values to get list of projects
-            - then run _run_query_on_projects passing through list of projects and filer kwargs
-            - then output a list of servers flattening the dictionary run_query_on_projects returns
+        Tests _run_query method works expectedly - when meta arg projects given
+        method should for each project:
+            - update filter kwargs to include "project_id": <id of project>
+            - run _run_paginated_query with updated filter_kwargs
         """
-        mock_get_projects.return_value = ["project1", "project2"]
-        mock_run_query_on_projects.return_value = {
-            "project1": ["server1", "server2"],
-            "project2": ["server3", "server4"],
-        }
-
-        res = self.instance._run_query(
-            self.conn, filter_kwargs=None, from_projects=["project-id1", "project-id2"]
-        )
-        mock_get_projects.assert_called_once_with(
-            self.conn, ["project-id1", "project-id2"]
-        )
-        mock_run_query_on_projects.assert_called_once_with(
-            self.conn, ["project1", "project2"], None
-        )
-        self.assertEqual(res, ["server1", "server2", "server3", "server4"])
-
-    @patch("openstack_query.runners.server_runner.ServerRunner._run_query_on_project")
-    def test_run_query_from_projects(self, mock_run_query_on_project):
-        """
-        Tests _run_query_on_projects works expectedly
-        this method will build a dictionary by iterating through projects given.
-        The dictionary will have the format {project-id: 'results of running the query on the project'}
-        """
-        project1 = {"id": "project-id1"}
-        project2 = {"id": "project-id2"}
-        mock_project_list = [project1, project2]
-
-        # Mock the return value of _run_query_on_project
-        mock_run_query_on_project.side_effect = [
+        mock_run_paginated_query.side_effect = [
             ["server1", "server2"],
             ["server3", "server4"],
         ]
 
-        res = self.instance._run_query_on_projects(self.conn, mock_project_list)
-        mock_run_query_on_project.assert_has_calls(
-            [call(self.conn, project1, None), call(self.conn, project2, None)]
-        )
-        self.assertEqual(
-            res,
-            {
-                "project-id1": ["server1", "server2"],
-                "project-id2": ["server3", "server4"],
-            },
+        res = self.instance._run_query(
+            self.conn,
+            filter_kwargs=mock_filter_kwargs,
+            projects=["project-id1", "project-id2"],
         )
 
-    def test_run_query_on_project(self):
-        """
-        Tests _run_query_on_project works expectedly
-        method should run and return the results of the function conn.compute.servers with 'project_id' filter set to
-        the given project's id. This filter will limit the servers returned to be only those that belong to that project
-        """
-        mock_project = {"id": "project1"}
-        self.conn.compute.servers.return_value = [{"id": "server1"}, {"id": "server2"}]
-        res = self.instance._run_query_on_project(self.conn, mock_project)
-        self.conn.compute.servers.assert_called_once_with(
-            all_projects=False, project_id="project1", all_tenants=True
+        if not mock_filter_kwargs:
+            mock_filter_kwargs = {}
+
+        mock_run_paginated_query.asset_has_calls(
+            [
+                call(
+                    self.conn.compute.servers,
+                    {
+                        **mock_filter_kwargs,
+                        **{"all_tenants": True, "project_id": "project-id1"},
+                    },
+                ),
+                call(
+                    self.conn.compute.servers,
+                    {
+                        **mock_filter_kwargs,
+                        **{"all_tenants": True, "project_id": "project-id2"},
+                    },
+                ),
+            ]
         )
-        self.assertEqual(res, [{"id": "server1"}, {"id": "server2"}])
+        self.assertEqual(res, ["server1", "server2", "server3", "server4"])
+
+    @raises(ParseQueryError)
+    def test_run_query_project_meta_arg_preset_duplication(self):
+        """
+        Tests that an error is raised when run_query is called with filter kwargs which contains project_id and with
+        meta_params that also contain projects - i.e there's a mismatch in which projects to search
+        """
+        self.instance._run_query(
+            self.conn,
+            filter_kwargs={"project_id": "proj1"},
+            projects=["proj2", "proj3"],
+        )
+
+    @parameterized.expand(
+        [
+            ("with server side filters", {"arg1": "val1"}),
+            ("with no server side filters", None),
+        ]
+    )
+    @patch("openstack_query.runners.server_runner.ServerRunner._run_paginated_query")
+    def test_run_query_with_no_meta_args(
+        self, _, mock_filter_kwargs, mock_run_paginated_query
+    ):
+        mock_run_paginated_query.side_effect = [["server1", "server2"]]
+
+        res = self.instance._run_query(
+            self.conn, filter_kwargs=mock_filter_kwargs, projects=None
+        )
+
+        if not mock_filter_kwargs:
+            mock_filter_kwargs = {}
+
+        mock_run_paginated_query.asset_called_once_with(
+            self.conn.compute.servers, {**mock_filter_kwargs, **{"all_tenants": True}}
+        )
+        self.assertEqual(res, ["server1", "server2"])
 
     def test_parse_subset(self):
         """

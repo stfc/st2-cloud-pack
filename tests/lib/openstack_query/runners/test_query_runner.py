@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch
+from parameterized import parameterized
 
 from openstack_query.runners.query_runner import QueryRunner
 
@@ -19,12 +20,14 @@ class QueryRunnerTests(unittest.TestCase):
 
     @patch("openstack_query.runners.query_runner.QueryRunner._apply_client_side_filter")
     @patch("openstack_query.runners.query_runner.QueryRunner._run_query")
+    @patch("openstack_query.runners.query_runner.QueryRunner._parse_meta_params")
     def test_run_with_only_client_side_filter(
-        self, mock_run_query, mock_apply_client_side_filter
+        self, mock_parse_meta_params, mock_run_query, mock_apply_client_side_filter
     ):
         """
         Tests that run method functions expectedly - with only client_side_filter_func set
         method should call run_query and run apply_client_side_filter and return results
+        also tests with no meta-params set
         """
         mock_run_query.return_value = ["openstack-resource-1", "openstack-resource-2"]
         mock_apply_client_side_filter.return_value = ["openstack-resource-1"]
@@ -33,14 +36,15 @@ class QueryRunnerTests(unittest.TestCase):
         mock_cloud_domain = MagicMock()
         mock_cloud_domain.name = "test"
 
-        # test with no kwargs as we test with kwargs in server-side filter
         res = self.instance.run(
             cloud_account=mock_cloud_domain,
             client_side_filter_func=mock_client_side_filter_func,
         )
         self.mocked_connection.assert_called_once_with("test")
 
+        mock_parse_meta_params.assert_not_called()
         mock_run_query.assert_called_once_with(self.conn, None)
+
         mock_apply_client_side_filter.assert_called_once_with(
             ["openstack-resource-1", "openstack-resource-2"],
             mock_client_side_filter_func,
@@ -49,7 +53,8 @@ class QueryRunnerTests(unittest.TestCase):
         self.assertEqual(["openstack-resource-1"], res)
 
     @patch("openstack_query.runners.query_runner.QueryRunner._run_query")
-    def test_run_with_server_side_filters(self, mock_run_query):
+    @patch("openstack_query.runners.query_runner.QueryRunner._parse_meta_params")
+    def test_run_with_server_side_filters(self, mock_parse_meta_params, mock_run_query):
         """
         Tests that run method functions expectedly - with server_side_filters set
         method should call run_query and return results
@@ -61,6 +66,11 @@ class QueryRunnerTests(unittest.TestCase):
         mock_user_domain = MagicMock()
         mock_user_domain.name = "test"
 
+        mock_parse_meta_params.return_value = {
+            "parsed_arg1": "val1",
+            "parsed_arg2": "val2",
+        }
+
         res = self.instance.run(
             cloud_account=mock_user_domain,
             client_side_filter_func=mock_client_side_filter_func,
@@ -69,8 +79,14 @@ class QueryRunnerTests(unittest.TestCase):
         )
         self.mocked_connection.assert_called_once_with("test")
 
+        mock_parse_meta_params.assert_called_once_with(
+            self.conn, **{"arg1": "val1", "arg2": "val2"}
+        )
+
         mock_run_query.assert_called_once_with(
-            self.conn, mock_server_filters, **{"arg1": "val1", "arg2": "val2"}
+            self.conn,
+            mock_server_filters,
+            **{"parsed_arg1": "val1", "parsed_arg2": "val2"}
         )
 
         # if we have server-side filters, don't use client_side_filters
@@ -125,3 +141,54 @@ class QueryRunnerTests(unittest.TestCase):
             mock_items, mock_client_side_filter_func
         )
         self.assertEqual(["openstack-resource-2"], res)
+
+    @parameterized.expand(
+        [
+            ("call terminated with no rounds - (empty list)", [[]]),
+            (
+                "call terminates after one round",
+                [
+                    [
+                        {"id": "marker1"},
+                    ],
+                    [
+                        {"id": "out"},
+                    ],
+                    [],
+                ],
+            ),
+            (
+                "call terminates after two rounds",
+                [
+                    [
+                        {"id": "marker1"},
+                    ],
+                    [
+                        {"id": "marker2"},
+                    ],
+                    [
+                        {"id": "out"},
+                    ],
+                    [],
+                ],
+            ),
+        ]
+    )
+    def test_run_paginated_query(self, _, mock_out):
+        """
+        tests that run_paginated_query works expectedly - with no rounds, one round, and two rounds of pagination
+        mocked paginated call simulates the effect of retrieving a list of values up to a limit and then calling the
+        same call again with a "marker" set to the last seen item to continue reading
+        """
+        mock_paginated_call = MagicMock()
+        mock_paginated_call.side_effect = mock_out
+        expected_out = [item for sublist in mock_out for item in sublist]
+
+        # set round to 1, so new calls begins after returning one value
+        self.instance._LIMIT_FOR_PAGINATION = 1
+
+        mock_server_side_filters = {"arg1": "val1", "arg2": "val2"}
+        res = self.instance._run_paginated_query(
+            mock_paginated_call, mock_server_side_filters
+        )
+        self.assertEqual(res, expected_out)

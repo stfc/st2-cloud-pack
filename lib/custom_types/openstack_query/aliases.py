@@ -21,7 +21,7 @@ FilterFunc = Callable[[PropFunc, FilterParams], bool]
 ClientSideFilterFunc = Callable[[OpenstackResourceObj], bool]
 
 # A type alias for a dictionary of filters to pass to openstacksdk commands as filter params
-ServerSideFilters = Dict[str, Any]
+ServerSideFilters = Dict[str, Union[str, int, bool]]
 
 # A type alias for a function that takes a number of filter params and returns a set of server-side filters
 ServerSideFilterFunc = Callable[[FilterParams], ServerSideFilters]
