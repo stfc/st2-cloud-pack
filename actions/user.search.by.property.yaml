@@ -68,4 +68,13 @@ parameters:
     description: "a comma-spaced list of values to search for"
     required: true
     type: array
+  from_domain:
+    description: "The user domain to search in. STFC - for STFC users. DEFAULT - for admins. OPENID - for IRIS-IAM users"
+    default: "STFC"
+    type: string
+    required: true
+    enum:
+      - "STFC"
+      - "DEFAULT"
+      - "OPENID"
 runner_type: python-script
