@@ -1,10 +1,10 @@
-from typing import Any, List, Dict
+from typing import List, Dict, Union
 from tabulate import tabulate
 
 from enums.query.props.prop_enum import PropEnum
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 from openstack_query.handlers.prop_handler import PropHandler
-from custom_types.openstack_query.aliases import OpenstackResourceObj
+from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 
 
 class QueryOutput:
@@ -18,44 +18,51 @@ class QueryOutput:
     def __init__(self, prop_handler: PropHandler):
         self._prop_handler = prop_handler
         self._props = set()
-        self._results = []
-
-    @property
-    def results(self) -> List[OpenstackResourceObj]:
-        return self._results
 
     @property
     def selected_props(self) -> List[PropEnum]:
         return list(self._props)
 
-    def sort_by(self, sort_by: PropEnum, reverse=False) -> List[OpenstackResourceObj]:
-        """
-        Public method used to configure sorting results
-        :param sort_by: name of property to sort by
-        :param reverse: False is sort by ascending, True is sort by descending, default False
-        """
-        raise NotImplementedError
-
-    def group_by(self, group_by: PropEnum) -> List[Dict[str, OpenstackResourceObj]]:
-        """
-        Public method used to configure grouping results.
-        :param group_by: name of the property to group by
-        """
-        raise NotImplementedError
-
-    def to_string(self, **kwargs) -> str:
+    def to_string(self, results: Union[List, Dict], title=None, **kwargs):
         """
         method to return results as a table
-        :param kwargs: kwargs to pass to generate table
+        :param results: a list of parsed query results - either a list or a dict of grouped results
+        :param title: a title for the table(s) when it gets outputted
+        :param kwargs: kwargs to pass to _generate_table method
         """
-        return self._generate_table(self._results, return_html=False, **kwargs)
+        if isinstance(results, dict):
+            output = ""
+            if title:
+                output += "{title}\n"
 
-    def to_html(self, **kwargs) -> str:
+            for group_title, group in results.items():
+                output += self._generate_table(
+                    group, return_html=False, title=f"{group_title}\n", **kwargs
+                )
+            return output
+        return self._generate_table(results, return_html=False, title=title, **kwargs)
+
+    def to_html(self, results, title=None, **kwargs) -> str:
         """
         method to return results as html table
+        :param results: a list of parsed query results - either a list or a dict of grouped results
+        :param title: a title for the table(s) when it gets outputted
         :param kwargs: kwargs to pass to generate table
         """
-        return self._generate_table(self._results, return_html=True, **kwargs)
+        if isinstance(results, dict):
+            output = ""
+            if title:
+                output += "<b> {title} </b><br/>"
+
+            for group_title, group in results.items():
+                output += self._generate_table(
+                    group,
+                    return_html=False,
+                    title=f"<b> {group_title}: </b><br/>",
+                    **kwargs,
+                )
+            return output
+        return self._generate_table(results, return_html=False, title=None, **kwargs)
 
     def parse_select(self, *props: PropEnum, select_all=False) -> None:
         """
@@ -84,7 +91,7 @@ class QueryOutput:
 
     def generate_output(
         self, openstack_resources: List[OpenstackResourceObj]
-    ) -> List[Dict[str, str]]:
+    ) -> List[Dict[str, PropValue]]:
         """
         Generates a dictionary of queried properties from a list of openstack objects e.g. servers
         e.g. {['server_name': 'server1', 'server_id': 'server1_id'],
@@ -93,12 +100,11 @@ class QueryOutput:
         :param openstack_resources: List of openstack objects to obtain properties from - e.g. [Server1, Server2]
         :return: List containing dictionaries of the requested properties obtained from the items
         """
-        self._results = [self._parse_property(item) for item in openstack_resources]
-        return self._results
+        return [self._parse_property(item) for item in openstack_resources]
 
     def _parse_property(
         self, openstack_resource: OpenstackResourceObj
-    ) -> Dict[str, str]:
+    ) -> Dict[str, PropValue]:
         """
         Generates a dictionary of queried properties from a single openstack object
         :param openstack_resource: openstack resource item to obtain properties from
@@ -112,7 +118,7 @@ class QueryOutput:
 
     @staticmethod
     def _generate_table(
-        results: List[Dict[str, Any]], return_html: bool, **kwargs
+        results: List[Dict[str, PropValue]], return_html: bool, title=None, **kwargs
     ) -> str:
         """
         Returns a table from the result of 'self._parse_properties'
@@ -121,10 +127,16 @@ class QueryOutput:
         :param kwargs: kwargs to pass to tabulate
         :return: String (html or plaintext table of results)
         """
+        output = ""
+        if title:
+            output += title
+
         if results:
             headers = list(results[0].keys())
             rows = [list(row.values()) for row in results]
-            return tabulate(
+            output += tabulate(
                 rows, headers, tablefmt="html" if return_html else "grid", **kwargs
             )
-        return "No results found"
+        else:
+            output += "No results found"
+        return output
