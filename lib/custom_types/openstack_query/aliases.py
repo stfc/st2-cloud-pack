@@ -4,6 +4,8 @@ from enums.query.query_presets import QueryPresets
 
 from openstack.identity.v3.project import Project
 
+PropValue = Union[str, bool, int]
+
 # A type alias for a single openstack resource - i.e Server, Hypervisor etc
 OpenstackResourceObj = Any
 
@@ -14,14 +16,14 @@ PropFunc = Callable[[OpenstackResourceObj], Any]
 PropertyMappings = Dict[PropEnum, PropFunc]
 
 # A type alias for a dictionary of params to pass to either client_side or server_side filters
-FilterParams = Dict[str, Any]
+FilterParams = Dict[str, PropValue]
 FilterFunc = Callable[[PropFunc, FilterParams], bool]
 
 # A type alias for a client-side filter func
 ClientSideFilterFunc = Callable[[OpenstackResourceObj], bool]
 
 # A type alias for a dictionary of filters to pass to openstacksdk commands as filter params
-ServerSideFilters = Dict[str, Union[str, int, bool]]
+ServerSideFilters = Dict[str, PropValue]
 
 # A type alias for a function that takes a number of filter params and returns a set of server-side filters
 ServerSideFilterFunc = Callable[[FilterParams], ServerSideFilters]
