@@ -1,7 +1,6 @@
 from typing import List
 from pathlib import Path
 from smtplib import SMTP_SSL
-from pathlib import Path
 from email.header import Header
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
@@ -13,6 +12,8 @@ from email_api.template_handler import TemplateHandler
 from structs.email.email_params import EmailParams
 from structs.email.smtp_account import SMTPAccount
 from structs.email.email_template_details import EmailTemplateDetails
+
+# pylint:disable=too-few-public-methods
 
 
 class Emailer:

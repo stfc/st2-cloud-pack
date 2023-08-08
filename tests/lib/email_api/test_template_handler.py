@@ -130,7 +130,7 @@ class TestTemplateHandler(unittest.TestCase):
         Tests that parse_template_attrs method functions expectedly - with invalid params
         should raise error if given_vals have missing required params
         """
-        res = self.instance._parse_template_attrs(
+        self.instance._parse_template_attrs(
             EmailTemplateDetails(
                 template_name="mock-template", template_params=mock_given_vals
             ),

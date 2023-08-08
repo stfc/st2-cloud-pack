@@ -1,7 +1,6 @@
 from dataclasses import dataclass, fields
 from typing import Optional, Dict, List
 from custom_types.email_api.aliases import (
-    TemplateMappings,
     EmailAddress,
     EmailAddresses,
 )

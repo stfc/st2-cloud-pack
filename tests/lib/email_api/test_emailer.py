@@ -15,12 +15,12 @@ class TestEmailer(unittest.TestCase):
     Tests that methods in Emailer class work expectedly
     """
 
-    @patch("email_api.emailer.TemplateHandler")
-    def setUp(self, mock_template_handler) -> None:
+    def setUp(self) -> None:
         """setup for tests"""
         self.mock_smtp_account = MagicMock()
-        self.template_handler = mock_template_handler
-        self.instance = Emailer(self.mock_smtp_account)
+        with patch("email_api.emailer.TemplateHandler") as mock_template_handler:
+            self.template_handler = mock_template_handler
+            self.instance = Emailer(mock_template_handler)
 
     @patch("email_api.emailer.Emailer._build_email")
     @patch("email_api.emailer.SMTP_SSL")
@@ -40,7 +40,9 @@ class TestEmailer(unittest.TestCase):
 
         mock_server = mock_smtp_ssl.return_value.__enter__.return_value
 
-        self.instance.send_emails(emails=[mock_email_param, mock_email_param2])
+        self.instance.send_emails(
+            emails=[mock_email_param, mock_email_param2],
+        )
         mock_smtp_ssl.assert_called_once_with(
             self.instance._smtp_account.server,
             self.instance._smtp_account.port,
@@ -72,6 +74,8 @@ class TestEmailer(unittest.TestCase):
                 call().as_string(),
             ]
         )
+
+    # pylint:disable=too-many-arguments
 
     @parameterized.expand(
         [

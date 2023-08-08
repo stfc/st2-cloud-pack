@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Optional
+from typing import Dict
 from pathlib import Path
 
 from yaml import safe_load, YAMLError
@@ -150,7 +150,8 @@ class TemplateHandler:
         schema = metadata.get("schema", None)
         if schema and not template_details.template_params:
             raise EmailTemplateError(
-                f"Template provided {template_details.template_name} requires following attributes: {list(schema.keys())}"
+                f"Template provided {template_details.template_name} "
+                f"requires following attributes: {list(schema.keys())}"
             )
 
         attrs = {}

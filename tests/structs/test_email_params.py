@@ -1,5 +1,4 @@
 import unittest
-from unittest.mock import patch, NonCallableMock, call
 from structs.email.email_params import EmailParams
 from structs.email.email_template_details import EmailTemplateDetails
 
