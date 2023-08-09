@@ -7,6 +7,8 @@ from openstack_query.query_parser import QueryParser
 from exceptions.parse_query_error import ParseQueryError
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
+# pylint:disable=protected-access
+
 
 class QueryParserTests(unittest.TestCase):
     """

@@ -1,10 +1,10 @@
 from typing import List, Dict, Tuple, Union, Optional, Set, Callable
 
 from enums.query.props.prop_enum import PropEnum
-from exceptions.query_property_mapping_error import QueryPropertyMappingError
 from openstack_query.handlers.prop_handler import PropHandler
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 
+from exceptions.query_property_mapping_error import QueryPropertyMappingError
 from exceptions.parse_query_error import ParseQueryError
 
 
@@ -45,7 +45,7 @@ class QueryParser:
                     f"order specification given for sort-by '{order}' "
                     "is invalid, choose ASC (ascending) or DESC (descending)"
                 )
-            self._sort_by.add((prop_name, True if order == "DESC" else False))
+            self._sort_by.add((prop_name, order == "DESC"))
 
     def parse_group_by(
         self,
@@ -120,9 +120,10 @@ class QueryParser:
         obj_list: List[OpenstackResourceObj],
         sort_by_specs: Set[Tuple[PropEnum, bool]],
     ) -> List[OpenstackResourceObj]:
-        for key, reverse in reversed(tuple(sort_by_specs)):
+        for sort_key, reverse in reversed(tuple(sort_by_specs)):
             obj_list.sort(
-                key=lambda obj: self._prop_handler.get_prop(obj, key), reverse=reverse
+                key=lambda obj, sk=sort_key: self._prop_handler.get_prop(obj, sk),
+                reverse=reverse,
             )
         return obj_list
 

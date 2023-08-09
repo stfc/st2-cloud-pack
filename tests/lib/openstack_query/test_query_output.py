@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch, call, NonCallableMock
+from unittest.mock import MagicMock, patch, call
 from parameterized import parameterized
 from nose.tools import raises
 
@@ -103,7 +103,7 @@ class QueryOutputTests(unittest.TestCase):
         mock_generate_table.side_effect = ["1 out, ", "2 out"]
 
         self.instance._results = mocked_results
-        res = self.instance.to_string(results=mocked_results, title=mock_title)
+        self.instance.to_string(results=mocked_results, title=mock_title)
         mock_generate_table.assert_has_calls(
             [
                 call(["obj1", "obj2"], return_html=False, title="group1:\n"),
