@@ -168,7 +168,7 @@ class QueryMethods:
         if isinstance(parsed_results, dict):
             self._query_results = {}
             self._query_results_as_objects = {}
-            for name, group in parsed_results:
+            for name, group in parsed_results.items():
                 self._query_results.update(
                     {name: self.output.generate_output(group)}
                 )

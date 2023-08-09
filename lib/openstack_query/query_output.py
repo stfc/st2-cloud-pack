@@ -30,17 +30,20 @@ class QueryOutput:
         :param title: a title for the table(s) when it gets outputted
         :param kwargs: kwargs to pass to _generate_table method
         """
-        if isinstance(results, dict):
-            output = ""
-            if title:
-                output += "{title}\n"
+        output = ""
+        if title:
+            output += f"{title}:\n"
 
+        if isinstance(results, dict):
             for group_title, group in results.items():
                 output += self._generate_table(
-                    group, return_html=False, title=f"{group_title}\n", **kwargs
+                    group, return_html=False, title=f"{group_title}:\n", **kwargs
                 )
-            return output
-        return self._generate_table(results, return_html=False, title=title, **kwargs)
+        else:
+            output += self._generate_table(
+                results, return_html=False, title=None, **kwargs
+            )
+        return output
 
     def to_html(self, results, title=None, **kwargs) -> str:
         """
@@ -49,20 +52,23 @@ class QueryOutput:
         :param title: a title for the table(s) when it gets outputted
         :param kwargs: kwargs to pass to generate table
         """
-        if isinstance(results, dict):
-            output = ""
-            if title:
-                output += "<b> {title} </b><br/>"
+        output = ""
+        if title:
+            output += f"<b> {title} </b><br/>"
 
+        if isinstance(results, dict):
             for group_title, group in results.items():
                 output += self._generate_table(
                     group,
-                    return_html=False,
+                    return_html=True,
                     title=f"<b> {group_title}: </b><br/>",
                     **kwargs,
                 )
-            return output
-        return self._generate_table(results, return_html=False, title=None, **kwargs)
+        else:
+            output += self._generate_table(
+                results, return_html=True, title=None, **kwargs
+            )
+        return output
 
     def parse_select(self, *props: PropEnum, select_all=False) -> None:
         """
@@ -129,7 +135,7 @@ class QueryOutput:
         """
         output = ""
         if title:
-            output += title
+            output += f"{title}\n"
 
         if results:
             headers = list(results[0].keys())
