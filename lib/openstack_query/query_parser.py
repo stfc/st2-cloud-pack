@@ -1,11 +1,11 @@
-from typing import List, Dict, Tuple, Union
+from typing import List, Dict, Tuple, Union, Optional, Set, Callable
 
 from enums.query.props.prop_enum import PropEnum
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 from openstack_query.handlers.prop_handler import PropHandler
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 
-from lib.exceptions.parse_query_error import ParseQueryError
+from exceptions.parse_query_error import ParseQueryError
 
 
 class QueryParser:
@@ -36,47 +36,60 @@ class QueryParser:
         Public method used to configure sorting results
         :param sort_by: tuples of property name to sort by and order "asc or desc"
         """
+        self._sort_by = set()
         for prop_name, order in sort_by:
-            self._check_prop_valid(sort_by)
-            if order.upper() not in ["ASC", "DESC"]:
+            self._check_prop_valid(prop_name)
+            order = order.upper()
+            if order not in ["ASC", "DESC"]:
                 raise ParseQueryError(
                     f"order specification given for sort-by '{order}' "
                     "is invalid, choose ASC (ascending) or DESC (descending)"
                 )
-            self._sort_by.add((sort_by, True if order == "ASC" else False))
+            self._sort_by.add((prop_name, True if order == "DESC" else False))
 
     def parse_group_by(
         self,
         group_by: PropEnum,
-        group_ranges: Dict[str, List[PropValue]],
-        include_ungrouped_results: bool,
+        group_ranges: Optional[Dict[str, List[PropValue]]] = None,
+        include_missing: Optional[bool] = False,
     ) -> None:
         """
         Public method used to configure grouping results.
         :param group_by: name of the property to group by
         :param group_ranges: a dictionary containing names of the group and list of prop values
         to select for for that group
-        :param include_ungrouped_results: a flag which if set includes an extra grouping for values
+        :param include_missing: a flag which if set includes an extra grouping for values
         that don't fall into any group specified in group_ranges
         """
         self._check_prop_valid(group_by)
+        self._group_by = group_by
         all_prop_list = set()
-        for name, prop_list in group_ranges.items():
-            self._group_mappings.update(
-                {name: lambda obj: self._prop_handler.get_prop(group_by) in prop_list}
-            )
-            all_prop_list.update(prop_list)
 
-        # if ungrouped group wanted - filter for all not in any range specified
-        if include_ungrouped_results:
-            self._group_mappings.update(
-                {
-                    "ungrouped results": lambda obj: self._prop_handler.get_prop(
-                        group_by
-                    )
-                    not in all_prop_list
-                }
-            )
+        if group_ranges:
+            for name, prop_list in group_ranges.items():
+                group_vals = tuple(prop_list)
+                self._group_mappings.update(
+                    {
+                        name: (
+                            lambda obj, lst=group_vals: self._prop_handler.get_prop(
+                                obj, group_by
+                            )
+                            in lst
+                        )
+                    }
+                )
+                all_prop_list.update(prop_list)
+
+            # if ungrouped group wanted - filter for all not in any range specified
+            if include_missing:
+                self._group_mappings.update(
+                    {
+                        "ungrouped results": lambda obj: self._prop_handler.get_prop(
+                            obj, group_by
+                        )
+                        not in all_prop_list
+                    }
+                )
 
     def run_parser(
         self, obj_list: List[OpenstackResourceObj]
@@ -85,19 +98,64 @@ class QueryParser:
         Public method used to parse query runner output - performs specified sorting and grouping
         :param obj_list: a list of openstack resource objects to parse
         """
-        parsed_obj_list = obj_list
+        if not obj_list:
+            return obj_list
+
+        # we sort first - assuming sorting is commutative to grouping
         if self._sort_by:
-
-            def sort_function(item):
-                return [
-                    item[key] if order else -item[key] for key, order in self._sort_by
-                ]
-
-            parsed_obj_list = sorted(parsed_obj_list, key=sort_function)
+            obj_list = self._run_sort(obj_list, self._sort_by)
 
         if self._group_by:
-            parsed_obj_list = {
-                name: [item for item in obj_list if map_func(item)]
-                for name, map_func in self._group_mappings.items()
-            }
-        return parsed_obj_list
+            # if group mappings not specified - make a group for each unique value found for prop
+            if not self._group_mappings:
+                self._group_mappings = self._build_unique_val_groups(
+                    obj_list, group_by_prop=self._group_by
+                )
+            obj_list = self._run_group_by(obj_list, self._group_mappings)
+
+        return obj_list
+
+    def _run_sort(
+        self,
+        obj_list: List[OpenstackResourceObj],
+        sort_by_specs: Set[Tuple[PropEnum, bool]],
+    ) -> List[OpenstackResourceObj]:
+        for key, reverse in reversed(tuple(sort_by_specs)):
+            obj_list.sort(
+                key=lambda obj: self._prop_handler.get_prop(obj, key), reverse=reverse
+            )
+        return obj_list
+
+    def _build_unique_val_groups(
+        self,
+        obj_list: List[OpenstackResourceObj],
+        group_by_prop: PropEnum,
+    ) -> Dict[str, Callable[[OpenstackResourceObj], bool]]:
+
+        unique_vals = set(
+            self._prop_handler.get_prop(obj, group_by_prop) for obj in obj_list
+        )
+        group_mappings = {}
+
+        # build groups
+        for val in unique_vals:
+            group_mappings.update(
+                {
+                    f"{group_by_prop.name} with value {val}": lambda obj, test_val=val: self._prop_handler.get_prop(
+                        obj, group_by_prop
+                    )
+                    == test_val
+                }
+            )
+
+        return group_mappings
+
+    @staticmethod
+    def _run_group_by(
+        obj_list: List[OpenstackResourceObj],
+        group_mappings: Dict[str, Callable[[OpenstackResourceObj], bool]],
+    ) -> Dict[str, List[OpenstackResourceObj]]:
+        return {
+            name: [item for item in obj_list if map_func(item)]
+            for name, map_func in group_mappings.items()
+        }
