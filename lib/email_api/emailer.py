@@ -33,7 +33,7 @@ class Emailer:
     def send_emails(self, emails: List[EmailParams]):
         """
         send emails via SMTP server relay
-        :param emails: A list of email config objects
+        :param emails: A list of email param config objects
         """
 
         with SMTP_SSL(
@@ -52,6 +52,10 @@ class Emailer:
                 )
 
     def _build_email(self, email_params: EmailParams) -> MIMEMultipart:
+        """
+        Helper function to setup email as MIMEMultipart
+        :param email_params: A dataclass holding parameters for building an email
+        """
         msg = MIMEMultipart()
         msg["Subject"] = Header(email_params.subject, "utf-8")
         msg["From"] = email_params.email_from
@@ -68,6 +72,10 @@ class Emailer:
         return msg
 
     def _build_email_body(self, templates: List[EmailTemplateDetails], as_html):
+        """
+        Helper function to setup email body from templates
+        :param templates: A list of dataclasses holding template information to build emails from
+        """
         msg_body = ""
         for template_details in templates:
             if as_html:

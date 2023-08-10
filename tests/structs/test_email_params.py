@@ -9,6 +9,10 @@ class TestEmailParams(unittest.TestCase):
     """
 
     def test_from_dict(self):
+        """
+        Tests that from_dict() static method works properly
+        this method should build a EmailParams dataclass from a valid dictionary
+        """
         mock_valid_kwargs = {
             "subject": "subject1",
             "email_from": "from@example.com",
