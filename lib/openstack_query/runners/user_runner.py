@@ -82,25 +82,25 @@ class UserRunner(QueryRunner):
         if not filter_kwargs:
             filter_kwargs = {}
 
-        if meta_params["domain_id"]:
-            if "domain_id" in filter_kwargs.keys():
-                raise ParseQueryError(
-                    "This query uses a preset that requires searching on domain_ids "
-                    "- but you've provided a domain using from_domain "
-                    "- please use one or the other not both"
-                )
-            filter_kwargs.update({"domain_id": meta_params["domain_id"]})
+        if meta_params["domain_id"] and "domain_id" in filter_kwargs.keys():
+            raise ParseQueryError(
+                "This query uses a preset that requires searching on domain_ids "
+                "- but you've provided a domain using from_domain "
+                "- please use one or the other not both"
+            )
 
-        # set to default domain since neither given
-        elif "domain_id" not in filter_kwargs.keys():
+        filter_kwargs.update(
+            {"domain_id": self._get_user_domain(conn, self.DEFAULT_DOMAIN)}
+        )
+
+        if meta_params["domain_id"]:
+            filter_kwargs.update({"domain_id": meta_params["domain_id"]})
+        else:
             logger.info(
                 "no domain_id given, will use id for default user domain: '%s'",
                 self.DEFAULT_DOMAIN.name,
             )
-            filter_kwargs.update(
-                {"domain_id": self._get_user_domain(conn, self.DEFAULT_DOMAIN)}
-            )
-
+        
         logger.debug("searching for users using domain_id: '%s'", filter_kwargs['domain_id'])
         logger.debug(
             "running paginated openstacksdk command conn.identity.users (%s)",
