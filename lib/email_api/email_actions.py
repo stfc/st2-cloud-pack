@@ -14,14 +14,6 @@ class EmailActions:
     Action with the format 'email.*'
     """
 
-    @staticmethod
-    def _setup_email_params(**kwargs):
-        """
-        static helper method to setup EmailParams dataclass from template mappings.
-        See EmailParams for all expected values
-        """
-        return EmailParams.from_dict(kwargs)
-
     # pylint: disable=too-many-arguments
     def send_test_email(
         self,
@@ -39,23 +31,28 @@ class EmailActions:
         :param cc_cloud_support: whether to cc in cloud support
         :param kwargs: see EmailParams dataclass class docstring
         """
+
         if cc_cloud_support:
             email_cc = kwargs.get("email_cc", tuple())
             email_cc += ("cloud-support@stfc.ac.uk",)
             kwargs.update({"email_cc": email_cc})
 
-        email_params = self._setup_email_params(
-            email_templates=[
-                EmailTemplateDetails(
-                    template_name="test",
-                    template_params={
-                        "username": username,
-                        "test_message": test_message,
-                    },
-                ),
-                EmailTemplateDetails(template_name="footer"),
-            ],
-            **kwargs
+        email_params = EmailParams.from_dict(
+            {
+                **{
+                    "email_templates": [
+                        EmailTemplateDetails(
+                            template_name="test",
+                            template_params={
+                                "username": username,
+                                "test_message": test_message,
+                            },
+                        ),
+                        EmailTemplateDetails(template_name="footer"),
+                    ]
+                },
+                **kwargs,
+            }
         )
 
         Emailer(smtp_account).send_emails([email_params])

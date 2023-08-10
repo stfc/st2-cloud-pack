@@ -24,30 +24,9 @@ class TestEmailActions(unittest.TestCase):
             "as_html": True,
         }
 
-    @patch("email_api.email_actions.EmailParams")
-    def test_setup_email_params(self, mock_email_params):
-        """
-        Tests that _setup_email_params works expectedly
-        Should return an EmailParams dataclass which has attributes matching parameter values given
-        """
-        mock_email_template1 = NonCallableMock()
-        mock_email_template2 = NonCallableMock()
-
-        mock_param_obj = NonCallableMock()
-        mock_email_params.from_dict.return_value = mock_param_obj
-        res = self.instance._setup_email_params(
-            email_templates=[mock_email_template1, mock_email_template2],
-            **self.mock_kwargs
-        )
-
-        exp = {"email_templates": [mock_email_template1, mock_email_template2]}
-
-        mock_email_params.from_dict.assert_called_once_with({**exp, **self.mock_kwargs})
-        self.assertEqual(res, mock_param_obj)
-
     @patch("email_api.email_actions.Emailer")
-    @patch("email_api.email_actions.EmailActions._setup_email_params")
-    def test_send_test_email(self, mock_setup_email_params, mock_emailer):
+    @patch("email_api.email_actions.EmailParams")
+    def test_send_test_email(self, mock_email_params, mock_emailer):
         """
         Tests that send_test_email method works expectedly
         Should create an appropriate EmailParams using test and footer templates, then send an email via an
@@ -77,23 +56,27 @@ class TestEmailActions(unittest.TestCase):
             "as_html": True,
         }
 
-        mock_setup_email_params.assert_called_once_with(
-            email_templates=[
-                EmailTemplateDetails(
-                    template_name="test",
-                    template_params={
-                        "username": mock_username,
-                        "test_message": mock_test_message,
-                    },
-                ),
-                EmailTemplateDetails(
-                    template_name="footer",
-                ),
-            ],
-            **expected_kwargs
+        mock_email_params.from_dict.assert_called_once_with(
+            {
+                **{
+                    "email_templates": [
+                        EmailTemplateDetails(
+                            template_name="test",
+                            template_params={
+                                "username": mock_username,
+                                "test_message": mock_test_message,
+                            },
+                        ),
+                        EmailTemplateDetails(
+                            template_name="footer",
+                        ),
+                    ]
+                },
+                **expected_kwargs,
+            }
         )
 
         mock_emailer.assert_called_once_with(mock_smtp_account)
         mock_emailer.return_value.send_emails.assert_called_once_with(
-            [mock_setup_email_params.return_value]
+            [mock_email_params.from_dict.return_value]
         )
