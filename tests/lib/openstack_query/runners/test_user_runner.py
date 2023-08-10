@@ -32,7 +32,7 @@ class UserRunnerTests(unittest.TestCase):
     def test_parse_meta_params_with_from_domain(self, mock_get_user_domain):
         """
         Tests _parse_meta_params method works expectedly - with valid from_domain argument
-        method should iteratively call find_project() to find each project in list and return outputs
+        method should get domain id from a UserDomain enum by calling get_user_domain
         """
 
         mock_domain_enum = UserDomains.DEFAULT
@@ -106,6 +106,10 @@ class UserRunnerTests(unittest.TestCase):
     def test_run_query_no_meta_args(
         self, _, mock_filter_kwargs, mock_get_user_domain, mock_run_paginated_query
     ):
+        """
+        Tests that run_query functions expectedly - when no meta args given
+        method should use the default-domain-id
+        """
         mock_run_paginated_query.side_effect = [["user1", "user2"]]
         mock_get_user_domain.return_value = "default-domain-id"
 

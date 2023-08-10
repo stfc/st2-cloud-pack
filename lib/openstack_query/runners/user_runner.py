@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 
 class UserRunner(QueryRunner):
     """
-    Runner class for openstack Server resource.
-    ServerRunner encapsulates running any openstacksdk Server commands
+    Runner class for openstack User resource.
+    UserRunner encapsulates running any openstacksdk User commands
     """
 
     DEFAULT_DOMAIN = UserDomains.STFC
@@ -76,7 +76,7 @@ class UserRunner(QueryRunner):
 
         For UserQuery, this command gets all users by domain ID
         :param conn: An OpenstackConnection object - used to connect to openstacksdk
-        :param filter_kwargs: An Optional set of filter kwargs to pass to conn.compute.servers()
+        :param filter_kwargs: An Optional set of filter kwargs to pass to conn.identity.users()
         """
 
         if not filter_kwargs:
@@ -110,9 +110,9 @@ class UserRunner(QueryRunner):
 
     def _parse_subset(self, _: OpenstackConnection, subset: List[User]) -> List[User]:
         """
-        This method is a helper function that will check a list of users to ensure that they are valid Server
+        This method is a helper function that will check a list of users to ensure that they are valid User
         objects
-        :param subset: A list of openstack Server objects
+        :param subset: A list of openstack User objects
         """
         if any(not isinstance(i, User) for i in subset):
             raise ParseQueryError("'from_subset' only accepts User openstack objects")
