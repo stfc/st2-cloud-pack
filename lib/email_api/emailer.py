@@ -1,6 +1,9 @@
+import time
 from typing import List
 from pathlib import Path
 from smtplib import SMTP_SSL
+import logging
+
 from email.header import Header
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
@@ -14,6 +17,7 @@ from structs.email.smtp_account import SMTPAccount
 from structs.email.email_template_details import EmailTemplateDetails
 
 # pylint:disable=too-few-public-methods
+logger = logging.getLogger(__name__)
 
 
 class Emailer:
@@ -36,12 +40,34 @@ class Emailer:
         :param emails: A list of email param config objects
         """
 
+        logger.debug("connecting to SMTP server")
+
         with SMTP_SSL(
             self._smtp_account.server, self._smtp_account.port, timeout=60
         ) as server:
             server.ehlo()
+            logger.info("SMTP server connection established")
+            logger.info("sending %s email(s)", len(emails))
+            start = time.time()
             for email_params in emails:
-                send_to = (email_params.email_to,)
+
+                logger.debug(
+                    "sending email: "
+                    "\n\tto: %s"
+                    "\n\tcc'd: %s"
+                    "\n\tfrom: %s"
+                    "\n\twith templates: %s\n",
+                    ", ".join(email_params.email_to),
+                    ", ".join(
+                        email_params.email_cc if email_params.email_cc else ["<none>"]
+                    ),
+                    email_params.email_from,
+                    ", ".join(
+                        [f"{tmp.template_name}" for tmp in email_params.email_templates]
+                    ),
+                )
+
+                send_to = email_params.email_to
                 if email_params.email_cc:
                     send_to += email_params.email_cc
 
@@ -50,6 +76,10 @@ class Emailer:
                     send_to,
                     self._build_email(email_params).as_string(),
                 )
+
+            logger.info(
+                "sending complete - time elapsed: %s seconds", time.time() - start
+            )
 
     def _build_email(self, email_params: EmailParams) -> MIMEMultipart:
         """
@@ -97,6 +127,7 @@ class Emailer:
         :param msg: The message object for the email
         :param filepaths: Tuple containing relative filepaths of files to attach from EMAIL_ATTACHMENTS_ROOT_DIR
         """
+        logger.debug("attaching %s file(s) to email", len(filepaths))
         for rel_filepath in filepaths:
             filepath = self.EMAIL_ATTACHMENTS_ROOT_DIR / rel_filepath
             try:
@@ -104,6 +135,7 @@ class Emailer:
                     part = MIMEApplication(file.read(), Name=filepath.name)
                 part["Content-Disposition"] = f"attachment; filename={filepath.name}"
                 msg.attach(part)
+                logger.debug("attached file - %s", filepath.name)
             except FileNotFoundError as exp:
                 raise RuntimeError(f"Failed to attach file to email: {exp}") from exp
         return msg

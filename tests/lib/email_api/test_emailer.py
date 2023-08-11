@@ -30,13 +30,23 @@ class TestEmailer(unittest.TestCase):
         Should setup SMTP_SSL connection to web server, and
         iterate through list of EmailParams call sendmail for each
         """
+        mock_template_1 = MagicMock()
+        mock_template_1.template_name = "mock_template_1"
+
+        mock_template_2 = MagicMock()
+        mock_template_2.template_name = "mock_template_2"
+
         mock_email_param = MagicMock()
-        mock_email_param.email_to = "test1@example.com"
+        mock_email_param.email_to = ("test1@example.com",)
+        mock_email_param.email_from = "from@example.com"
         mock_email_param.email_cc = ("cc1@example.com", "cc2@example.com")
+        mock_email_param.email_templates = [mock_template_1, mock_template_2]
 
         mock_email_param2 = MagicMock()
-        mock_email_param2.email_to = "test2@example.com"
+        mock_email_param2.email_to = ("test2@example.com",)
+        mock_email_param2.email_from = "from@example.com"
         mock_email_param2.email_cc = None
+        mock_email_param2.email_templates = [mock_template_1]
 
         mock_server = mock_smtp_ssl.return_value.__enter__.return_value
 
@@ -169,17 +179,19 @@ class TestEmailer(unittest.TestCase):
         method should open file and add as attachment to given MIMEMultipart instance (msg)
         """
         mock_msg = MagicMock()
-        mock_filepaths = ["path/to/file1", "path/to/file2"]
+        mock_filepaths = ["path/to/file1.txt", "path/to/file2.md"]
 
         mock_mime_application.side_effect = [{}, {}]
 
         res = self.instance._attach_files(mock_msg, mock_filepaths)
         assert mock_file.call_args_list == [
             call(
-                Path(f"{self.instance.EMAIL_ATTACHMENTS_ROOT_DIR}/path/to/file1"), "rb"
+                Path(f"{self.instance.EMAIL_ATTACHMENTS_ROOT_DIR}/path/to/file1.txt"),
+                "rb",
             ),
             call(
-                Path(f"{self.instance.EMAIL_ATTACHMENTS_ROOT_DIR}/path/to/file2"), "rb"
+                Path(f"{self.instance.EMAIL_ATTACHMENTS_ROOT_DIR}/path/to/file2.md"),
+                "rb",
             ),
         ]
 
