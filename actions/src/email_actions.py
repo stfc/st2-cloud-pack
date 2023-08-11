@@ -17,9 +17,20 @@ class ST2EmailActions(Action):
         """
         Dynamically dispatches to the method wanted
         """
+        self.logger.info("Email Action Received - %s", submodule)
+        self.logger.debug(
+            "with Parameters: %s",
+            "\n".join([f"{key}: {val}" for key, val in kwargs.items()]),
+        )
+        self.logger.info(
+            "using SMTP config %s - see config.schema.yaml for details",
+            smtp_account_name,
+        )
+
         email_actions = EmailActions()
         func: Callable = getattr(email_actions, submodule)
-        return func(
-            smtp_account=SMTPAccount.from_pack_config(self.config, smtp_account_name),
-            **kwargs,
-        )
+        self.logger.info("Dispatching function call %s", func)
+        smtp_account = SMTPAccount.from_pack_config(self.config, smtp_account_name)
+        params = {**{"smtp_account": smtp_account}, **kwargs}
+        self.logger.debug("Params: (%s)", params)
+        return func(**params)
