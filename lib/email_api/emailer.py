@@ -50,7 +50,6 @@ class Emailer:
             logger.info("sending %s email(s)", len(emails))
             start = time.time()
             for email_params in emails:
-
                 logger.debug(
                     "sending email: "
                     "\n\tto: %s"

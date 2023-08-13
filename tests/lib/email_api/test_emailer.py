@@ -196,7 +196,7 @@ class TestEmailer(unittest.TestCase):
         ]
 
         mock_mime_application.assert_has_calls(
-            [call("data", Name="file1"), call("data", Name="file2")]
+            [call("data", Name="file1.txt"), call("data", Name="file2.md")]
         )
 
         mock_msg.attach.assert_has_calls(
