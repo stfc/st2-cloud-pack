@@ -143,6 +143,7 @@ class QueryOutput:
             output += tabulate(
                 rows, headers, tablefmt="html" if return_html else "grid", **kwargs
             )
+            output += "\n\n"
         else:
             output += "No results found"
         return output

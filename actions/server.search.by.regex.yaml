@@ -85,4 +85,40 @@ parameters:
     type: array
     default: null
     required: false
+  group_by:
+    description: "(Optional) server property to group unique results by"
+    type: string
+    required: false
+    default: null
+    enum:
+      - 'flavor_id'
+      - 'hypervisor_id'
+      - 'image_id'
+      - 'project_id'
+      - 'server_creation_date'
+      - 'server_description'
+      - 'server_id'
+      - 'server_last_updated_date'
+      - 'server_name'
+      - 'server_status'
+      - 'user_id'
+  sort_by:
+    description: "(Optional) comma-spaced list of server properties to sort by (by ascending only)
+    - multiple of the same property will be ignored.
+    Any of:
+      - 'flavor_id'
+      - 'hypervisor_id'
+      - 'image_id'
+      - 'project_id'
+      - 'server_creation_date'
+      - 'server_description'
+      - 'server_id'
+      - 'server_last_updated_date'
+      - 'server_name'
+      - 'server_status'
+      - 'user_id'
+    Anything else will raise an error"
+    type: array
+    required: false
+    default: null
 runner_type: python-script
