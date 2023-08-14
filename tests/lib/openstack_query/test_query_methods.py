@@ -208,3 +208,28 @@ class QueryMethodsTests(unittest.TestCase):
         self.instance.output = mock_query_output
         self.instance.output.to_html.return_value = "html-out"
         self.assertEqual(self.instance.to_html(), "html-out")
+
+    def test_sort_by(self):
+        """
+        Tests that sort_by method functions expectedly
+        method should call QueryParser object parse_sort_by() and return results
+        """
+        mock_sort_by = [("some-prop-enum", False), ("some-prop-enum-2", True)]
+        self.instance.sort_by(*mock_sort_by)
+        self.instance.parser.parse_sort_by.assert_called_once_with(*mock_sort_by)
+
+    def test_group_by(self):
+        """
+        Tests that group_by method functions expectedly
+        method should call QueryParser object parse_group_by() and return results
+        """
+        mock_group_by = "some-prop-enum"
+        mock_group_ranges = {"group1": ["val1", "val2"], "group2": ["val3"]}
+        mock_include_ungrouped_results = False
+
+        self.instance.group_by(
+            mock_group_by, mock_group_ranges, mock_include_ungrouped_results
+        )
+        self.instance.parser.parse_group_by.assert_called_once_with(
+            mock_group_by, mock_group_ranges, mock_include_ungrouped_results
+        )

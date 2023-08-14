@@ -101,23 +101,27 @@ class QueryMethods:
         self.builder.parse_where(preset, prop, kwargs)
         return self
 
-    def sort_by(self, *sort_by: Tuple[PropEnum, str]):
+    def sort_by(self, *sort_by: Tuple[PropEnum, bool]):
         """
         Public method used to configure sorting results
-        :param sort_by: Tuple of property enum to sort by and string representing sorting order
-            - ASC (ascending) or DESC (descending)
+        :param sort_by: Tuple of property enum to sort by and boolean representing sorting order
+            - False (ascending) or True (descending)
         """
         self.parser.parse_sort_by(*sort_by)
 
     def group_by(
         self,
         group_by: PropEnum,
-        group_ranges: Dict[str, List[PropValue]],
-        include_ungrouped_results: bool,
+        group_ranges: Optional[Dict[str, List[PropValue]]] = None,
+        include_ungrouped_results: bool = False,
     ):
         """
         Public method used to configure how to group results.
         :param group_by: name of the property to group by
+        :param group_ranges: a set of optional group mappings - group name to list of values of
+        selected group by property to be included in each group
+        :param include_ungrouped_results: an optional flag to include a "ungrouped" group to the output of values found that were
+        not specified in group mappings - ignored if group ranges not given
         """
         self.parser.parse_group_by(group_by, group_ranges, include_ungrouped_results)
 
