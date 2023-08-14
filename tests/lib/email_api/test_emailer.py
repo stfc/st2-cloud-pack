@@ -201,8 +201,8 @@ class TestEmailer(unittest.TestCase):
 
         mock_msg.attach.assert_has_calls(
             [
-                call({"Content-Disposition": "attachment; filename=file1"}),
-                call({"Content-Disposition": "attachment; filename=file2"}),
+                call({"Content-Disposition": "attachment; filename=file1.txt"}),
+                call({"Content-Disposition": "attachment; filename=file2.md"}),
             ]
         )
         self.assertEqual(res, mock_msg)
