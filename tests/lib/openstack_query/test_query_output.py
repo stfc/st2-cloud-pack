@@ -161,7 +161,8 @@ class QueryOutputTests(unittest.TestCase):
     def test_generate_table_with_vals(self, _, mock_title, mock_tabulate):
         """
         Tests that generate_table function works expectedly - with results
-        method should format results dict and call tabulate and return a string of the tabled results"""
+        method should format results dict and call tabulate and return a string of the tabled results
+        """
 
         results_dict_1 = [{"prop1": "val1"}, {"prop1": "val2"}]
         results_dict_2 = [{"prop1": "val1", "prop2": "val2"}]

@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple, Union, Optional, Callable, Set
+from typing import List, Dict, Tuple, Union, Optional, Callable
 from collections import OrderedDict
 from enums.query.props.prop_enum import PropEnum
 from openstack_query.handlers.prop_handler import PropHandler
@@ -131,7 +131,6 @@ class QueryParser:
         obj_list: List[OpenstackResourceObj],
         group_by_prop: PropEnum,
     ) -> Dict[str, Callable[[OpenstackResourceObj], bool]]:
-
         # ordered dict to mimic ordered set
         # this is to preserve order we see unique values in - in case a sort has been done already
         unique_vals = OrderedDict(

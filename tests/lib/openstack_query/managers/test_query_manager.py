@@ -88,8 +88,6 @@ class QueryManagerTests(unittest.TestCase):
             ("with both", MOCKED_PRESET_DETAILS, MOCKED_OUTPUT_DETAILS),
         ]
     )
-    @patch("openstack_query.managers.query_manager.QueryManager._populate_output_params")
-    @patch("openstack_query.managers.query_manager.QueryManager._get_query_output")
     @patch("openstack_query.managers.query_manager.QueryOutputDetails")
     def test_build_and_run_query(
         self,
@@ -97,8 +95,6 @@ class QueryManagerTests(unittest.TestCase):
         mock_preset_details,
         mock_output_details,
         mock_query_output_details,
-        mock_get_query_output,
-        mock_populate_output_params,
     ):
         """
         Tests that _build_and_run_query method functions expectedly
@@ -106,27 +102,37 @@ class QueryManagerTests(unittest.TestCase):
         Returns query result
         """
 
-        mock_query_return = NonCallableMock()
-        mock_get_query_output.return_value = mock_query_return
-
         if not mock_output_details:
             # just assume valid output details is made from calling from_kwargs
             mock_query_output_details.from_kwargs.return_value = MOCKED_OUTPUT_DETAILS
 
-        res = self.instance._build_and_run_query(
-            preset_details=mock_preset_details, output_details=mock_output_details
-        )
+        with patch(
+            "openstack_query.managers.query_manager.QueryManager._populate_output_params"
+        ) as mock_populate_output_params:
+            with patch(
+                "openstack_query.managers.query_manager.QueryManager._get_query_output"
+            ) as mock_get_query_output:
+                res = self.instance._build_and_run_query(
+                    preset_details=mock_preset_details,
+                    output_details=mock_output_details,
+                )
+                self.assertEqual(res, mock_get_query_output.return_value)
+                mock_get_query_output.assert_called_once_with(
+                    mock_output_details.output_type
+                )
 
-        if not mock_output_details:
-            mock_query_output_details.from_kwargs.assert_called_once_with(self.prop_cls)
-            mock_populate_output_params.assert_called_once_with(
-                output_details=mock_query_output_details.from_kwargs.return_value
-            )
-        else:
-            mock_query_output_details.from_kwargs.assert_not_called()
-            mock_populate_output_params.assert_called_once_with(
-                output_details=mock_output_details
-            )
+                if not mock_output_details:
+                    mock_query_output_details.from_kwargs.assert_called_once_with(
+                        self.prop_cls
+                    )
+                    mock_populate_output_params.assert_called_once_with(
+                        output_details=mock_query_output_details.from_kwargs.return_value
+                    )
+                else:
+                    mock_query_output_details.from_kwargs.assert_not_called()
+                    mock_populate_output_params.assert_called_once_with(
+                        output_details=mock_output_details
+                    )
 
         if mock_preset_details:
             self.query.where.assert_called_once_with(
@@ -138,8 +144,6 @@ class QueryManagerTests(unittest.TestCase):
             self.query.where.assert_not_called()
 
         self.query.run.assert_called_once_with("test_account")
-        mock_get_query_output.assert_called_once_with(mock_output_details.output_type)
-        self.assertEqual(res, mock_get_query_output.return_value)
 
     @parameterized.expand(
         [(f"test {outtype.name.lower()}", outtype) for outtype in QueryOutputTypes]

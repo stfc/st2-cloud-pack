@@ -174,9 +174,7 @@ class QueryMethods:
             self._query_results = {}
             self._query_results_as_objects = {}
             for name, group in parsed_results.items():
-                self._query_results.update(
-                    {name: self.output.generate_output(group)}
-                )
+                self._query_results.update({name: self.output.generate_output(group)})
                 self._query_results_as_objects.update({name: group})
 
         # if parsed results aren't grouped
