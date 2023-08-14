@@ -49,8 +49,8 @@ class QueryManager:
         """
         method to build the query, execute it, and return the results
         :param output_details: A dataclass containing config on how to output results of query
-        :param preset_details: A dataclass containing query preset config information
-        :param runner_params: A set of extra params to pass when calling run()
+        :param preset_details: An optional dataclass containing query preset config information
+        :param runner_params: An optional set of extra params to pass when calling run()
         """
         logging.info("Running Query")
         if preset_details:
@@ -77,18 +77,44 @@ class QueryManager:
                 props_to_select,
             )
 
-        self._populate_query(
-            preset_details=preset_details,
-            properties_to_select=output_details.properties_to_select,
-        )
         if not runner_params:
             runner_params = {}
+
+        self._populate_output_params(output_details=output_details)
+
+        if preset_details:
+            self._query.where(
+                preset=preset_details.preset,
+                prop=preset_details.prop,
+                **preset_details.args,
+            )
 
         self._query.run(self._cloud_account, **runner_params)
 
         return self._get_query_output(
             output_details.output_type,
         )
+
+    def _populate_output_params(self, output_details: QueryOutputDetails):
+        """
+        method that sets output parameters like group by, sort by and select parameters
+        :param output_details: A dataclass containing output parameters to use
+        """
+
+        # set select props
+        self._query.select(*output_details.properties_to_select)
+
+        # set sort by
+        if output_details.sort_by:
+            self._query.sort_by(*output_details.sort_by)
+
+        # set group by
+        if output_details.group_by:
+            self._query.group_by(
+                group_by=output_details.group_by,
+                group_ranges=output_details.group_ranges,
+                include_ungrouped_results=output_details.include_ungrouped_results,
+            )
 
     def _get_query_output(
         self,
