@@ -35,8 +35,8 @@ class QueryParserTests(unittest.TestCase):
         Tests parse_sort_by method works expectedly - one sort-by key
         should call check_prop_valid and add it to sort_by attribute
         """
-        self.instance.parse_sort_by((MockProperties.PROP_1, "ASC"))
-        self.assertEqual(self.instance._sort_by, {(MockProperties.PROP_1, False)})
+        self.instance.parse_sort_by((MockProperties.PROP_1, False))
+        self.assertEqual(dict(self.instance._sort_by), {MockProperties.PROP_1: False})
         mock_check_prop_valid.assert_called_once_with(MockProperties.PROP_1)
 
     @patch("openstack_query.query_parser.QueryParser._check_prop_valid")
@@ -46,24 +46,15 @@ class QueryParserTests(unittest.TestCase):
         should call check_prop_valid and add it to sort_by attribute
         """
         self.instance.parse_sort_by(
-            (MockProperties.PROP_1, "ASC"), (MockProperties.PROP_2, "desc")
+            (MockProperties.PROP_1, False), (MockProperties.PROP_2, True)
         )
         self.assertEqual(
-            self.instance._sort_by,
-            {(MockProperties.PROP_1, False), (MockProperties.PROP_2, True)},
+            dict(self.instance._sort_by),
+            {MockProperties.PROP_1: False, MockProperties.PROP_2: True},
         )
         mock_check_prop_valid.assert_has_calls(
             [call(MockProperties.PROP_1), call(MockProperties.PROP_2)]
         )
-
-    @raises(ParseQueryError)
-    @patch("openstack_query.query_parser.QueryParser._check_prop_valid")
-    def test_parse_sort_by_invalid_order(self, _):
-        """
-        Tests parse_sort_by method works expectedly - when given an invalid order flag
-        should raise ParseQueryError
-        """
-        self.instance.parse_sort_by((MockProperties.PROP_1, "invalid-order"))
 
     @parameterized.expand(
         [("no include missing", False), ("with include missing", True)]
@@ -203,7 +194,7 @@ class QueryParserTests(unittest.TestCase):
         [
             (
                 "string key ascending",
-                {("arg1", False)},
+                {"arg1": False},
                 [
                     {"arg1": "a", "arg2": 2},
                     {"arg1": "b", "arg2": 1},
@@ -213,7 +204,7 @@ class QueryParserTests(unittest.TestCase):
             ),
             (
                 "string key descending",
-                {("arg1", True)},
+                {"arg1": True},
                 [
                     {"arg1": "d", "arg2": 3},
                     {"arg1": "c", "arg2": 4},
@@ -223,7 +214,7 @@ class QueryParserTests(unittest.TestCase):
             ),
             (
                 "integer key ascending",
-                {("arg2", False)},
+                {"arg2": False},
                 [
                     {"arg1": "b", "arg2": 1},
                     {"arg1": "a", "arg2": 2},
@@ -233,7 +224,7 @@ class QueryParserTests(unittest.TestCase):
             ),
             (
                 "integer key descending",
-                {("arg2", True)},
+                {"arg2": True},
                 [
                     {"arg1": "c", "arg2": 4},
                     {"arg1": "d", "arg2": 3},
@@ -264,7 +255,7 @@ class QueryParserTests(unittest.TestCase):
         [
             (
                 "string key ascending, then age descending",
-                [("arg1", False), ("arg2", True)],
+                {"arg1": False, "arg2": True},
                 [
                     {"arg1": "a", "arg2": 2},
                     {"arg1": "a", "arg2": 1},
@@ -274,7 +265,7 @@ class QueryParserTests(unittest.TestCase):
             ),
             (
                 "string key descending, then age ascending",
-                [("arg1", True), ("arg2", False)],
+                {"arg1": True, "arg2": False},
                 [
                     {"arg1": "b", "arg2": 1},
                     {"arg1": "b", "arg2": 2},
@@ -284,7 +275,7 @@ class QueryParserTests(unittest.TestCase):
             ),
             (
                 "age key ascending, then string descending",
-                [("arg2", False), ("arg1", True)],
+                {"arg2": False, "arg1": True},
                 [
                     {"arg1": "b", "arg2": 1},
                     {"arg1": "a", "arg2": 1},
@@ -294,7 +285,7 @@ class QueryParserTests(unittest.TestCase):
             ),
             (
                 "age key descending, then string ascending",
-                [("arg2", True), ("arg1", False)],
+                {"arg2": True, "arg1": False},
                 [
                     {"arg1": "a", "arg2": 2},
                     {"arg1": "b", "arg2": 2},
@@ -325,7 +316,7 @@ class QueryParserTests(unittest.TestCase):
         [
             (
                 "boolean ascending",
-                {("enabled", False)},
+                {"enabled": False},
                 [
                     {"enabled": False},
                     {"enabled": True},
@@ -333,7 +324,7 @@ class QueryParserTests(unittest.TestCase):
             ),
             (
                 "boolean ascending",
-                {("enabled", True)},
+                {"enabled": True},
                 [
                     {"enabled": True},
                     {"enabled": False},
@@ -357,6 +348,12 @@ class QueryParserTests(unittest.TestCase):
         ]
     )
     def test_build_unique_val_groups(self, _, mock_group_by_prop, expected_unique_vals):
+        """
+        Tests that build_unique_val_groups method functions expectedly
+        method should find all unique values for a test object list for a given property and create appropriate
+        group_ranges to be used for group-by
+        """
+
         def mock_get_prop(obj, prop):
             return obj[prop.name]
 

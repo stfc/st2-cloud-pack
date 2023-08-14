@@ -24,3 +24,26 @@ MOCKED_OUTPUT_DETAILS_TO_OBJ_LIST = QueryOutputDetails(
     # should be ignored
     properties_to_select=[MockProperties.PROP_1, MockProperties.PROP_2],
 )
+
+MOCKED_OUTPUT_DETAILS_WITH_GROUP_BY = QueryOutputDetails(
+    properties_to_select=[MockProperties.PROP_1, MockProperties.PROP_2],
+    output_type=QueryOutputTypes.TO_STR,
+    group_by=MockProperties.PROP_1,
+    group_ranges={"group1": ["val1"], "group2": ["val2"]},
+    include_ungrouped_results=True,
+)
+
+MOCKED_OUTPUT_DETAILS_WITH_SORT_BY = QueryOutputDetails(
+    properties_to_select=[MockProperties.PROP_1, MockProperties.PROP_2],
+    output_type=QueryOutputTypes.TO_STR,
+    sort_by=[(MockProperties.PROP_1, False), (MockProperties.PROP_2, True)],
+)
+
+MOCKED_OUTPUT_DETAILS_WITH_ALL = QueryOutputDetails(
+    properties_to_select=[MockProperties.PROP_1, MockProperties.PROP_2],
+    output_type=QueryOutputTypes.TO_STR,
+    group_by=MockProperties.PROP_1,
+    group_ranges={"group1": ["val1"], "group2": ["val2"]},
+    include_ungrouped_results=True,
+    sort_by=[(MockProperties.PROP_1, False), (MockProperties.PROP_2, True)],
+)

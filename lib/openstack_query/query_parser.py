@@ -3,9 +3,7 @@ from collections import OrderedDict
 from enums.query.props.prop_enum import PropEnum
 from openstack_query.handlers.prop_handler import PropHandler
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
-
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
-from exceptions.parse_query_error import ParseQueryError
 
 
 class QueryParser:
@@ -16,7 +14,7 @@ class QueryParser:
 
     def __init__(self, prop_handler: PropHandler):
         self._prop_handler = prop_handler
-        self._sort_by = set()
+        self._sort_by = {}
         self._group_by = None
         self._group_mappings = {}
 
@@ -31,21 +29,15 @@ class QueryParser:
                 "Error: failed to get property mapping, property is not supported by prop_handler"
             )
 
-    def parse_sort_by(self, *sort_by: Tuple[PropEnum, str]) -> None:
+    def parse_sort_by(self, *sort_by: Tuple[PropEnum, bool]) -> None:
         """
         Public method used to configure sorting results
         :param sort_by: tuples of property name to sort by and order "asc or desc"
         """
-        self._sort_by = set()
+        self._sort_by = {}
         for prop_name, order in sort_by:
             self._check_prop_valid(prop_name)
-            order = order.upper()
-            if order not in ["ASC", "DESC"]:
-                raise ParseQueryError(
-                    f"order specification given for sort-by '{order}' "
-                    "is invalid, choose ASC (ascending) or DESC (descending)"
-                )
-            self._sort_by.add((prop_name, order == "DESC"))
+            self._sort_by.update({prop_name: order})
 
     def parse_group_by(
         self,
@@ -118,9 +110,16 @@ class QueryParser:
     def _run_sort(
         self,
         obj_list: List[OpenstackResourceObj],
-        sort_by_specs: Set[Tuple[PropEnum, bool]],
+        sort_by_specs: Dict[PropEnum, bool],
     ) -> List[OpenstackResourceObj]:
-        for sort_key, reverse in reversed(tuple(sort_by_specs)):
+        """
+        method which sorts a list of openstack objects based on a dictionary of sort_by specs
+        :param obj_list: A list of openstack objects to sort
+        :param sort_by_specs: A dictionary of property to sort by as key and value as boolean representing order
+            - descending - True, ascending - False
+        """
+
+        for sort_key, reverse in reversed(tuple(sort_by_specs.items())):
             obj_list.sort(
                 key=lambda obj, sk=sort_key: self._prop_handler.get_prop(obj, sk),
                 reverse=reverse,
@@ -133,13 +132,15 @@ class QueryParser:
         group_by_prop: PropEnum,
     ) -> Dict[str, Callable[[OpenstackResourceObj], bool]]:
 
-        unique_vals = set(
-            self._prop_handler.get_prop(obj, group_by_prop) for obj in obj_list
+        # ordered dict to mimic ordered set
+        # this is to preserve order we see unique values in - in case a sort has been done already
+        unique_vals = OrderedDict(
+            {self._prop_handler.get_prop(obj, group_by_prop): None for obj in obj_list}
         )
         group_mappings = {}
 
         # build groups
-        for val in unique_vals:
+        for val in unique_vals.keys():
             group_mappings.update(
                 {
                     f"{group_by_prop.name} with value {val}": lambda obj, test_val=val: self._prop_handler.get_prop(
