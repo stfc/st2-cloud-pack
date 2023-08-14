@@ -15,37 +15,48 @@ class QueryOutputDetailsTests(unittest.TestCase):
 
     @parameterized.expand(
         [
-            ("no args use defaults", False, None),
-            ("properties given, not output type", True, None),
-            ("no properties given, output type given", False, "TO_OBJECT_LIST"),
-            ("properties and output type given", True, "TO_LIST"),
+            ("none given", {}),
+            ("props given", {"properties_to_select": ["server_id", "server_name"]}),
+            ("output type given", {"output_type": "TO_LIST"}),
+            ("group by given", {"group_by": "server_name"}),
+            ("sort by given", {"sort_by": ["server_name", "server_id"]}),
         ]
     )
-    def test_from_kwargs(self, _, set_mock_props, mock_output_type):
+    def test_from_kwargs(self, _, mock_kwargs):
         """
         tests that from_kwargs static method works expectedly
-        should iteratively convert properties into given enums class and output_type into output type enum.
-        set correct attributes in QueryOutputDetails dataclass and return
+        method should create a QueryOutputDetails with default params
         """
+        out = self.instance.from_kwargs(prop_cls=ServerProperties, **mock_kwargs)
+        if "properties_to_select" not in mock_kwargs.keys():
+            self.assertEqual(out.properties_to_select, list(ServerProperties))
+        else:
+            self.assertEqual(
+                out.properties_to_select,
+                [ServerProperties.SERVER_ID, ServerProperties.SERVER_NAME],
+            )
 
-        expected_mock_props = list(ServerProperties)
-        mock_props = [prop.name for prop in ServerProperties]
-        if set_mock_props:
-            expected_mock_props = [
-                ServerProperties.SERVER_ID,
-                ServerProperties.SERVER_NAME,
-            ]
-            mock_props = ["server_id", "server_name"]
+        if "output_type" not in mock_kwargs.keys():
+            self.assertEqual(out.output_type, QueryOutputTypes.TO_STR)
+        else:
+            self.assertEqual(out.output_type, QueryOutputTypes.TO_LIST)
 
-        expected_mock_output_type = QueryOutputTypes.TO_STR
-        if mock_output_type:
-            expected_mock_output_type = QueryOutputTypes[mock_output_type]
+        if "group_by" not in mock_kwargs.keys():
+            self.assertEqual(out.group_by, None)
+        else:
+            self.assertEqual(out.group_by, ServerProperties.SERVER_NAME)
 
-        res = QueryOutputDetails.from_kwargs(
-            prop_cls=ServerProperties,
-            properties_to_select=mock_props,
-            output_type=mock_output_type,
-        )
+        if "sort_by" not in mock_kwargs.keys():
+            self.assertEqual(out.sort_by, None)
+        else:
+            self.assertEqual(
+                out.sort_by,
+                [
+                    (ServerProperties.SERVER_NAME, False),
+                    (ServerProperties.SERVER_ID, False),
+                ],
+            )
 
-        assert set(res.properties_to_select) == set(expected_mock_props)
-        assert res.output_type == expected_mock_output_type
+        # TODO allow setting these using form kwargs
+        self.assertEqual(out.group_ranges, None)
+        self.assertEqual(out.include_ungrouped_results, False)

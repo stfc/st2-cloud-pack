@@ -120,7 +120,8 @@ class QueryMethods:
         :param group_by: name of the property to group by
         :param group_ranges: a set of optional group mappings - group name to list of values of
         selected group by property to be included in each group
-        :param include_ungrouped_results: an optional flag to include a "ungrouped" group to the output of values found that were
+        :param include_ungrouped_results: an optional flag to include a "ungrouped" group to the
+        output of values found that were
         not specified in group mappings - ignored if group ranges not given
         """
         self.parser.parse_group_by(group_by, group_ranges, include_ungrouped_results)

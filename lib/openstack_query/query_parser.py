@@ -1,5 +1,5 @@
-from typing import List, Dict, Tuple, Union, Optional, Set, Callable
-
+from typing import List, Dict, Tuple, Union, Optional, Callable, Set
+from collections import OrderedDict
 from enums.query.props.prop_enum import PropEnum
 from openstack_query.handlers.prop_handler import PropHandler
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
