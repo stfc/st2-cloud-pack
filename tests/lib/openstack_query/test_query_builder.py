@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch, NonCallableMock
+from unittest.mock import MagicMock, patch
 from openstack_query.query_builder import QueryBuilder
 
 from nose.tools import raises

@@ -77,7 +77,6 @@ class ClientSideHandler(HandlerBase):
             filter_func = self._filter_functions.get(preset, None)
 
         if not filter_func:
-
             logger.error(
                 "Error: If you are here as a developer - "
                 "you have likely not forgotten to add a mapping for the preset %s and property %s pair.\n"

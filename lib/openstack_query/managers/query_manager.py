@@ -68,7 +68,7 @@ class QueryManager:
                 props_to_select = "all available props"
 
             logging.info(
-                "Outputting as:" "\n\t output_type: %s" "\n\t showing properties: %s",
+                "Outputting as:\n\t output_type: %s\n\t showing properties: %s",
                 output_details.output_type.name,
                 props_to_select,
             )
@@ -174,7 +174,7 @@ class QueryManager:
         logging.info(
             "This query will find all resources for which %s matches any of [%s]",
             prop.name,
-            [val for val in args["values"]],
+            args["values"],
         )
 
         # If values contains only one value - use EQUAL_TO/NOT_EQUAL_TO as the preset instead to speed up query
