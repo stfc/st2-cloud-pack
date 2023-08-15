@@ -33,16 +33,14 @@ class QueryRunnerTests(unittest.TestCase):
         mock_cloud_domain = MagicMock()
         mock_cloud_domain.name = "test"
 
+        # test with no kwargs as we test with kwargs in server-side filter
         res = self.instance.run(
             cloud_account=mock_cloud_domain,
             client_side_filter_func=mock_client_side_filter_func,
-            **{"arg1": "val1", "arg2": "val2"}
         )
         self.mocked_connection.assert_called_once_with("test")
 
-        mock_run_query.assert_called_once_with(
-            self.conn, None, **{"arg1": "val1", "arg2": "val2"}
-        )
+        mock_run_query.assert_called_once_with(self.conn, None)
         mock_apply_client_side_filter.assert_called_once_with(
             ["openstack-resource-1", "openstack-resource-2"],
             mock_client_side_filter_func,

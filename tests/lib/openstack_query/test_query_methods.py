@@ -1,8 +1,9 @@
 import unittest
 from unittest.mock import MagicMock, NonCallableMock
-from openstack_query.query_methods import QueryMethods
-
+from parameterized import parameterized
 from nose.tools import raises
+
+from openstack_query.query_methods import QueryMethods
 
 from exceptions.parse_query_error import ParseQueryError
 from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
@@ -102,7 +103,14 @@ class QueryMethodsTests(unittest.TestCase):
         )
         self.assertEqual(res, self.instance)
 
-    def test_run(self):
+    @parameterized.expand(
+        [
+            ("with kwargs", None, {"arg1": "val1", "arg2": "val2"}),
+            ("with from_subset", ["obj1", "obj2", "obj3"], None),
+            ("with no kwargs and no subset", None, None),
+        ]
+    )
+    def test_run(self, _, mock_from_subset, mock_kwargs):
         """
         Tests that run method works expectedly
         method should get client_side and server_side filters and forward them to query runner object
@@ -125,9 +133,16 @@ class QueryMethodsTests(unittest.TestCase):
         mock_query_results = NonCallableMock()
         mock_query_runner.run.return_value = mock_query_results
 
-        res = self.instance.run("test-account")
+        if not mock_kwargs:
+            mock_kwargs = {}
+
+        res = self.instance.run("test-account", mock_from_subset, **mock_kwargs)
         mock_query_runner.run.assert_called_once_with(
-            "test-account", mock_client_filter_func, mock_server_filters, None
+            "test-account",
+            mock_client_filter_func,
+            mock_server_filters,
+            mock_from_subset,
+            **mock_kwargs
         )
         mock_query_output.generate_output.assert_called_once_with(mock_query_results)
 

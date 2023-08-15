@@ -107,10 +107,10 @@ class QueryBuilder:
             )
         else:
             logger.info(
-                "Found server-side filters for preset '%s': prop '%s' pair: '%s'",
+                "Found server-side filters for preset '%s': prop '%s' pair: {%s}",
                 preset.name,
                 prop.name,
-                "\n\t".join(
+                ", ".join(
                     [
                         f"{key}: '{val}'"
                         for key, val in self._server_side_filters.items()

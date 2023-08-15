@@ -128,7 +128,7 @@ class QueryMethods:
             from_params_dict = {"from_subset": len(from_subset)} if from_subset else {}
             log_kwargs = {**kwargs, **from_params_dict}
             meta_param_log_str = ", ".join(
-                [f"{key}: '{val}'" for key, val in log_kwargs]
+                [f"{key}: '{val}'" for key, val in log_kwargs.items()]
             )
 
         logger.debug(

@@ -1,8 +1,9 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from openstack_query.query_builder import QueryBuilder
-
+from parameterized import parameterized
 from nose.tools import raises
+
+from openstack_query.query_builder import QueryBuilder
 
 from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_preset_mapping_error import QueryPresetMappingError
@@ -40,8 +41,16 @@ class QueryBuilderTests(unittest.TestCase):
             self.mock_server_side_handler,
         )
 
+    @parameterized.expand(
+        [
+            ("no server-side filter", None),
+            ("with server-side filter", {"filter1": "val1", "filter2": "val2"}),
+        ]
+    )
     @patch("openstack_query.query_builder.QueryBuilder._get_preset_handler")
-    def test_parse_where_valid(self, mock_get_preset_handler):
+    def test_parse_where_valid(
+        self, _, mock_server_side_filter, mock_get_preset_handler
+    ):
         """
         Tests that parse_where functions expectedly - where inputs valid
         method finds and sets client_side_filter and server_side_filters internal attributes
@@ -54,8 +63,7 @@ class QueryBuilderTests(unittest.TestCase):
         mock_client_filter_func = MagicMock()
         mock_client_side_handler.get_filter_func.return_value = mock_client_filter_func
 
-        mock_server_filters = {"server-filter1": "val1", "server-filter2": "val2"}
-        self.mock_server_side_handler.get_filters.return_value = mock_server_filters
+        self.mock_server_side_handler.get_filters.return_value = mock_server_side_filter
 
         mock_prop_func = MagicMock()
         self.mock_prop_handler.get_prop_func.return_value = mock_prop_func
@@ -81,7 +89,7 @@ class QueryBuilderTests(unittest.TestCase):
         )
 
         self.assertEqual(self.instance._client_side_filter, mock_client_filter_func)
-        self.assertEqual(self.instance._server_side_filters, mock_server_filters)
+        self.assertEqual(self.instance._server_side_filters, mock_server_side_filter)
 
     @raises(ParseQueryError)
     def test_parse_where_filter_already_set(self):
@@ -119,13 +127,29 @@ class QueryBuilderTests(unittest.TestCase):
         self.assertEqual(res, self.mock_client_handler_2)
 
     @raises(QueryPresetMappingError)
-    def test_get_preset_handler_invalid(self):
+    def test_get_preset_handler_invalid_prop(self):
         """
-        Tests that get_preset_handler functions expectedly - where inputs invalid
+        Tests that get_preset_handler functions expectedly - where preset valid but prop invalid
         method raises QueryPresetMappingError when no client-side handler available has mapping for preset-property pair
         """
+        self.mock_client_handler_1.preset_known.return_value = False
+        self.mock_client_handler_2.preset_known.return_value = True
+
         self.mock_client_handler_1.check_supported.return_value = False
         self.mock_client_handler_2.check_supported.return_value = False
+        self.instance._get_preset_handler(
+            MockQueryPresets.ITEM_1, MockProperties.PROP_1
+        )
+
+    @raises(QueryPresetMappingError)
+    def test_get_preset_handler_invalid_preset(self):
+        """
+        Tests that get_preset_handler functions expectedly - where preset invalid
+        method raises QueryPresetMappingError when no client-side handler available for preset
+        """
+        self.mock_client_handler_1.preset_known.return_value = False
+        self.mock_client_handler_2.preset_known.return_value = False
+
         self.instance._get_preset_handler(
             MockQueryPresets.ITEM_1, MockProperties.PROP_1
         )

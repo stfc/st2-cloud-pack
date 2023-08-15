@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Set, List
+from typing import Optional, List
 import re
 
 from enums.query.query_output_types import QueryOutputTypes
