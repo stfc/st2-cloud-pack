@@ -1,4 +1,5 @@
 from typing import Optional, Dict, List
+import logging
 
 from openstack.compute.v2.server import Server
 from openstack.identity.v3.project import Project
@@ -9,6 +10,9 @@ from openstack_query.runners.query_runner import QueryRunner
 
 from exceptions.parse_query_error import ParseQueryError
 from custom_types.openstack_query.aliases import ProjectIdentifier
+
+
+logger = logging.getLogger(__name__)
 
 # pylint:disable=too-few-public-methods
 
@@ -37,6 +41,7 @@ class ServerRunner(QueryRunner):
 
         """
         projects = self._get_projects(conn, from_projects)
+        logger.debug("running query on each project. Found %s projects", len(projects))
         query_res = self._run_query_on_projects(conn, projects, filter_kwargs).values()
         return [server for project_servers in query_res for server in project_servers]
 
@@ -52,6 +57,7 @@ class ServerRunner(QueryRunner):
         if None, gets all projects
         """
         if not projects:
+            logger.info("no projects given, query will run on all projects")
             return list(conn.identity.projects())
 
         all_projects = []
@@ -82,10 +88,18 @@ class ServerRunner(QueryRunner):
         :param projects: A list of openstacksdk projects to run query on
         :param filter_kwargs: An Optional set of filter kwargs to pass to conn.compute.servers()
         """
-        return {
-            project["id"]: self._run_query_on_project(conn, project, filter_kwargs)
-            for project in projects
-        }
+        total = len(projects)
+        query_res = {}
+        for i, project in enumerate(projects):
+            logger.debug("running query on project %s / %s", i + 1, total)
+            query_res.update(
+                {
+                    project["id"]: self._run_query_on_project(
+                        conn, project, filter_kwargs
+                    )
+                }
+            )
+        return query_res
 
     @staticmethod
     def _run_query_on_project(
@@ -101,6 +115,10 @@ class ServerRunner(QueryRunner):
         """
         server_filters = {"project_id": project["id"], "all_tenants": True}
         server_filters.update(filter_kwargs if filter_kwargs else {})
+        logger.debug(
+            "running openstacksdk command conn.compute.servers(all_projects=False, %s)",
+            ",".join([f"{key}={value}" for key, value in server_filters.items()]),
+        )
         return list(conn.compute.servers(all_projects=False, **server_filters))
 
     def _parse_subset(

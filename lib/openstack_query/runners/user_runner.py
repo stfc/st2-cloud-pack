@@ -1,3 +1,4 @@
+import logging
 from typing import Optional, Dict, List
 
 from openstack.identity.v3.user import User
@@ -8,8 +9,11 @@ from openstack_query.runners.query_runner import QueryRunner
 from exceptions.parse_query_error import ParseQueryError
 from exceptions.enum_mapping_error import EnumMappingError
 
-# pylint:disable=too-few-public-methods
 from enums.user_domains import UserDomains
+
+logger = logging.getLogger(__name__)
+
+# pylint:disable=too-few-public-methods
 
 
 class UserRunner(QueryRunner):
@@ -18,7 +22,7 @@ class UserRunner(QueryRunner):
     ServerRunner encapsulates running any openstacksdk Server commands
     """
 
-    DEFAULT_DOMAIN_ID = UserDomains.STFC
+    DEFAULT_DOMAIN = UserDomains.STFC
 
     def _run_query(
         self,
@@ -46,11 +50,21 @@ class UserRunner(QueryRunner):
             )
         if from_domain:
             domain_id = self._get_user_domain(conn, from_domain)
+            logger.info("searching in given user domain: '%s'", from_domain.name)
         else:
-            domain_id = self._get_user_domain(conn, self.DEFAULT_DOMAIN_ID)
+            domain_id = self._get_user_domain(conn, self.DEFAULT_DOMAIN)
+            logger.info(
+                "no domain_id given, will use id for default user domain: '%s'",
+                self.DEFAULT_DOMAIN.name,
+            )
 
+        logger.debug("searching for users using domain_id: '%s'", domain_id)
         filter_kwargs.update({"domain_id": domain_id})
 
+        logger.debug(
+            "running openstacksdk command conn.identity.users (%s)",
+            ",".join(f"{key}={value}" for key, value in filter_kwargs.items()),
+        )
         return list(conn.identity.users(**filter_kwargs))
 
     def _get_user_domain(
@@ -58,19 +72,29 @@ class UserRunner(QueryRunner):
     ) -> str:
         """
         Gets user domain string from UserDomains enum
+        :param conn: openstack connection object used to get domain id
+        :param user_domain: an enum representing the domain to search for users in
         """
-        try:
-            return {
-                UserDomains.DEFAULT: conn.identity.find_domain("default"),
-                UserDomains.STFC: conn.identity.find_domain("stfc"),
-                UserDomains.OPENID: conn.identity.find_domain(
-                    "openid"
-                ),  # irisiam domain became openid since Stein
-            }[user_domain]["id"]
-        except KeyError as exp:
-            raise EnumMappingError(
-                f"Mapping for domain {user_domain.name} not found"
-            ) from exp
+        # get user domain name from enum
+        domain_name_arg = {
+            UserDomains.DEFAULT: "default",
+            UserDomains.STFC: "stfc",
+            UserDomains.OPENID: "openid",  # irisiam domain became openid since Stein
+        }.get(user_domain, None)
+        if not domain_name_arg:
+            logging.error(
+                "Error: No function mapping found for UserDomain %s "
+                "- if you are here as a developer, you must add a mapping to an openstacksdk call "
+                "to get domain_id for the enum",
+                user_domain.name,
+            )
+            raise EnumMappingError(f"Mapping for domain {user_domain.name} not found")
+
+        logger.debug(
+            "running openstacksdk command conn.identity.find_domain(%s) to get domain",
+            domain_name_arg,
+        )
+        return conn.identity.find_domain(domain_name_arg)
 
     def _parse_subset(self, _: OpenstackConnection, subset: List[User]) -> List[User]:
         """

@@ -56,6 +56,7 @@ class QueryRunnerTests(unittest.TestCase):
         Tests that run method functions expectedly - with server_side_filters set
         method should call run_query and return results
         """
+        mock_server_filters = {"server_filter1": "abc", "server_filter2": False}
         mock_run_query.return_value = ["openstack-resource-1"]
         self.instance._run_query = mock_run_query
         mock_client_side_filter_func = MagicMock()
@@ -65,13 +66,13 @@ class QueryRunnerTests(unittest.TestCase):
         res = self.instance.run(
             cloud_account=mock_user_domain,
             client_side_filter_func=mock_client_side_filter_func,
-            server_side_filters="some-filter-kwargs",
+            server_side_filters=mock_server_filters,
             **{"arg1": "val1", "arg2": "val2"}
         )
         self.mocked_connection.assert_called_once_with("test")
 
         mock_run_query.assert_called_once_with(
-            self.conn, "some-filter-kwargs", **{"arg1": "val1", "arg2": "val2"}
+            self.conn, mock_server_filters, **{"arg1": "val1", "arg2": "val2"}
         )
 
         # if we have server-side filters, don't use client_side_filters
