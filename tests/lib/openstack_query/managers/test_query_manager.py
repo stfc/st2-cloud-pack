@@ -161,13 +161,19 @@ class QueryManagerTests(unittest.TestCase):
         mock_query_output_details.from_kwargs.return_value = mock_output_details
 
         mock_kwargs = {
-            "properties_to_select": ["generic_name", "generic_id"],
-            "output_type": QueryOutputTypes.TO_STR,
+            "meta_kwarg1": "val1",
+            "meta_kwarg2": "val2",
         }
 
-        res = self.instance.search_all(**mock_kwargs)
+        res = self.instance.search_all(
+            properties_to_select=["generic_name", "generic_id"],
+            output_type=QueryOutputTypes.TO_STR,
+            **mock_kwargs,
+        )
         mock_build_and_run_query.assert_called_once_with(
-            preset_details=None, output_details=mock_output_details
+            preset_details=None,
+            output_details=mock_output_details,
+            runner_params=mock_kwargs,
         )
 
         self.assertEqual(res, mock_query_return)
@@ -188,8 +194,8 @@ class QueryManagerTests(unittest.TestCase):
         mock_query_output_details.from_kwargs.return_value = mock_output_details
 
         mock_kwargs = {
-            "properties_to_select": ["generic_name", "generic_id"],
-            "output_type": QueryOutputTypes.TO_STR,
+            "meta_kwarg1": "val1",
+            "meta_kwarg2": "val2",
         }
 
         res = self.instance.search_by_datetime(
@@ -198,6 +204,8 @@ class QueryManagerTests(unittest.TestCase):
             days=10,
             hours=10,
             minutes=1,
+            properties_to_select=["generic_name", "generic_id"],
+            output_type=QueryOutputTypes.TO_STR,
             **mock_kwargs,
         )
 
@@ -213,6 +221,7 @@ class QueryManagerTests(unittest.TestCase):
                 },
             ),
             output_details=mock_output_details,
+            runner_params=mock_kwargs,
         )
         self.assertEqual(res, mock_query_return)
 
@@ -233,14 +242,16 @@ class QueryManagerTests(unittest.TestCase):
         mock_query_output_details.from_kwargs.return_value = mock_output_details
 
         mock_kwargs = {
-            "properties_to_select": ["generic_name", "generic_id"],
-            "output_type": QueryOutputTypes.TO_STR,
+            "meta_kwarg1": "val1",
+            "meta_kwarg2": "val2",
         }
 
         res = self.instance.search_by_property(
             search_mode="any_in",
             property_to_search_by="image_id",
             values=["image-id1"],
+            properties_to_select=["generic_name", "generic_id"],
+            output_type=QueryOutputTypes.TO_STR,
             **mock_kwargs,
         )
 
@@ -252,6 +263,7 @@ class QueryManagerTests(unittest.TestCase):
                 args={"value": "image-id1"},
             ),
             output_details=mock_output_details,
+            runner_params=mock_kwargs,
         )
         self.assertEqual(res, mock_query_return)
 
@@ -271,14 +283,16 @@ class QueryManagerTests(unittest.TestCase):
         mock_query_output_details.from_kwargs.return_value = mock_output_details
 
         mock_kwargs = {
-            "properties_to_select": ["generic_name", "generic_id"],
-            "output_type": QueryOutputTypes.TO_STR,
+            "meta_kwarg1": "val1",
+            "meta_kwarg2": "val2",
         }
 
         res = self.instance.search_by_property(
             search_mode="any_in",
             property_to_search_by="image_id",
             values=["image-id1", "image-id2"],
+            properties_to_select=["generic_name", "generic_id"],
+            output_type=QueryOutputTypes.TO_STR,
             **mock_kwargs,
         )
 
@@ -289,6 +303,7 @@ class QueryManagerTests(unittest.TestCase):
                 args={"values": ["image-id1", "image-id2"]},
             ),
             output_details=mock_output_details,
+            runner_params=mock_kwargs,
         )
         self.assertEqual(res, mock_query_return)
 
@@ -312,13 +327,15 @@ class QueryManagerTests(unittest.TestCase):
         mock_query_output_details.from_kwargs.return_value = mock_output_details
 
         mock_kwargs = {
-            "properties_to_select": ["generic_name", "generic_id"],
-            "output_type": QueryOutputTypes.TO_STR,
+            "meta_kwarg1": "val1",
+            "meta_kwarg2": "val2",
         }
 
         res = self.instance.search_by_regex(
             property_to_search_by="generic_name",
             pattern="some-regex-pattern",
+            properties_to_select=["generic_name", "generic_id"],
+            output_type=QueryOutputTypes.TO_STR,
             **mock_kwargs,
         )
 
@@ -329,6 +346,7 @@ class QueryManagerTests(unittest.TestCase):
                 args={"regex_string": "some-regex-pattern"},
             ),
             output_details=mock_output_details,
+            runner_params=mock_kwargs,
         )
 
         self.assertEqual(res, mock_query_return)
