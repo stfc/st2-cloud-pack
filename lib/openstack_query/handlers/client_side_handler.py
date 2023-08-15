@@ -184,11 +184,11 @@ class ClientSideHandler(HandlerBase):
         req_params = [
             param.name
             for param in parameters
-            if param.POSITIONAL_ONLY and param.default == inspect.Parameter.empty
+            if param.VAR_POSITIONAL and param.default == inspect.Parameter.empty
         ]
         log_all_req_params = "<none>"
         if req_params:
-            log_all_req_params = "\n\t".join(log_all_req_params)
+            log_all_req_params = "\n\t".join(req_params)
 
         logger.debug(
             "of those, the following params are required:\n\t%s", log_all_req_params
