@@ -1,3 +1,4 @@
+import logging
 from typing import Optional, Tuple
 from enums.query.query_presets import QueryPresets
 from enums.query.props.prop_enum import PropEnum
@@ -11,6 +12,8 @@ from custom_types.openstack_query.aliases import (
 
 from openstack_query.handlers.handler_base import HandlerBase
 from exceptions.query_preset_mapping_error import QueryPresetMappingError
+
+logger = logging.getLogger(__name__)
 
 
 class ServerSideHandler(HandlerBase):
@@ -68,6 +71,11 @@ class ServerSideHandler(HandlerBase):
         filter_func = self._get_mapping(preset, prop)
         if not filter_func:
             return None
+        logger.debug(
+            "found server-side filter function for preset %s: prop %s pair",
+            preset.name,
+            prop.name,
+        )
         res, reason = self._check_filter_mapping(filter_func, params)
         if not res:
             raise QueryPresetMappingError(
@@ -87,7 +95,22 @@ class ServerSideHandler(HandlerBase):
         :param filter_params: a dictionary of params to check if valid for filter func
         """
         try:
+            logger.debug(
+                "checking server-side filter function against provided parameters\n\t%s",
+                "\n\t".join(
+                    [f"{key}: '{value}'" for key, value in filter_params.items()]
+                ),
+            )
             filter_func(**filter_params)
+        except KeyError as err:
+            return (
+                False,
+                f"server-side filter function expected a keyword argument: '{err.args[0]}'",
+            )
         except TypeError as err:
-            return False, f"expected arg '{err.args[0]}' but not found"
+            # hacky way to get the arguments that are missing from TypeError error message
+            return (
+                False,
+                f"server-side filter function missing/unexpected positional argument: '{err.args[0]}'",
+            )
         return True, ""
