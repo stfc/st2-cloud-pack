@@ -1,3 +1,4 @@
+import logging
 from typing import Optional, Set, List
 import re
 
@@ -15,6 +16,10 @@ from structs.query.query_preset_details import QueryPresetDetails
 
 from openstack_query.queries.query_wrapper import QueryWrapper
 from custom_types.openstack_query.aliases import QueryReturn
+
+from exceptions.enum_mapping_error import EnumMappingError
+
+logger = logging.getLogger(__name__)
 
 # pylint:disable=too-few-public-methods
 
@@ -42,6 +47,31 @@ class QueryManager:
         :param preset_details: A dataclass containing query preset config information
         :param output_details: A dataclass containing config on how to output results of query
         """
+        logging.info("Running Query")
+        if preset_details:
+            preset_args = "\n\t".join(
+                [f"{key}: '{val}'" for key, val in preset_details.args.items()]
+            )
+            log_preset_out = f"{preset_details.prop.name} {preset_details.preset.name} with args {preset_args}"
+            logging.info("Query Details: %s", log_preset_out)
+        else:
+            logging.info("Query Details: Getting All")
+
+        if output_details.output_type == QueryOutputTypes.TO_OBJECT_LIST:
+            logging.info("Output Details: list of openstacksdk objects")
+        else:
+            if not output_details.properties_to_select:
+                props_to_select = ",".join(
+                    [prop.name for prop in output_details.properties_to_select]
+                )
+            else:
+                props_to_select = "all available props"
+
+            logging.info(
+                "Outputting as:" "\n\t output_type: %s" "\n\t showing properties: %s",
+                output_details.output_type.name,
+                props_to_select,
+            )
 
         self._populate_query(
             preset_details=preset_details,
@@ -60,14 +90,25 @@ class QueryManager:
         method that returns the output of query
         :param output_type: An Enum representing how to output query results
         """
-        return {
+        output_func = {
             QueryOutputTypes.TO_STR: self._query.to_string,
             QueryOutputTypes.TO_HTML: self._query.to_html,
             QueryOutputTypes.TO_LIST: self._query.to_list,
             QueryOutputTypes.TO_OBJECT_LIST: lambda: self._query.to_list(
                 as_objects=True
             ),
-        }.get(output_type, None)()
+        }.get(output_type, None)
+        if not output_func:
+            logging.error(
+                "Error: No function mapping found for output type %s "
+                "- if you are here as a developer, you must add a mapping in this method"
+                "for the enum to a public function in QueryMethods",
+                output_type.name,
+            )
+            raise EnumMappingError(
+                f"could not find a mapping for output type {output_type.name}"
+            )
+        return output_func()
 
     def _populate_query(
         self,
@@ -98,6 +139,7 @@ class QueryManager:
             - properties_to_select - list of strings representing which properties to select
             - output_type - string representing how to output the query
         """
+        logging.info("Running 'search all' query - will output all values")
         return self._build_and_run_query(
             preset_details=None,
             output_details=QueryOutputDetails.from_kwargs(
@@ -120,13 +162,26 @@ class QueryManager:
             - properties_to_select - list of strings representing which properties to select
             - output_type - string representing how to output the query
         """
-        args = {"values": values}
+        # convert user-given args into enums
+        logging.info("Running search by property query")
+        logging.debug("converting user-defined property string into enum")
         preset = (
             QueryPresetsString.ANY_IN if search_mode else QueryPresetsString.NOT_ANY_IN
+        )
+        prop = self._prop_cls.from_string(property_to_search_by)
+        args = {"values": values}
+
+        logging.info(
+            "This query will find all resources for which %s matches any of [%s]",
+            prop.name,
+            [val for val in args["values"]],
         )
 
         # If values contains only one value - use EQUAL_TO/NOT_EQUAL_TO as the preset instead to speed up query
         if len(values) == 1:
+            logging.info(
+                "query only contains one value - EQUAL_TO preset will be used to speed up query"
+            )
             equal_to_preset = {
                 QueryPresetsString.ANY_IN: QueryPresetsGeneric.EQUAL_TO,
                 QueryPresetsString.NOT_ANY_IN: QueryPresetsGeneric.NOT_EQUAL_TO,
@@ -134,11 +189,13 @@ class QueryManager:
             if equal_to_preset:
                 preset = equal_to_preset
                 args = {"value": values[0]}
+        else:
+            logging.info("query contains multiple values - ANY_IN preset will be used")
 
         return self._build_and_run_query(
             preset_details=QueryPresetDetails(
                 preset=preset,
-                prop=self._prop_cls.from_string(property_to_search_by),
+                prop=prop,
                 args=args,
             ),
             output_details=QueryOutputDetails.from_kwargs(
@@ -155,14 +212,26 @@ class QueryManager:
             - properties_to_select - list of strings representing which properties to select
             - output_type - string representing how to output the query
         """
+        logging.info("Running search by property query")
 
+        logging.debug("converting user-defined property string into enum")
+        prop = self._prop_cls.from_string(property_to_search_by)
+
+        logging.debug("checking that user-defined regex pattern is valid")
         re.compile(pattern)
+
         args = {"regex_string": pattern}
+
+        logging.info(
+            "This query will find all resources for which %s matches a regex pattern: '%s'",
+            prop.name,
+            pattern,
+        )
 
         return self._build_and_run_query(
             preset_details=QueryPresetDetails(
                 preset=QueryPresetsString.MATCHES_REGEX,
-                prop=self._prop_cls.from_string(property_to_search_by),
+                prop=prop,
                 args=args,
             ),
             output_details=QueryOutputDetails.from_kwargs(
@@ -197,15 +266,28 @@ class QueryManager:
             - properties_to_select - list of strings representing which properties to select
             - output_type - string representing how to output the query
         """
+        logging.info("Running search by property query")
+
+        logging.debug("converting user-defined property string into enum")
+        prop = self._prop_cls.from_string(property_to_search_by)
+        preset = QueryPresetsDateTime.from_string(search_mode)
+        args = {
+            "days": days,
+            "hours": hours,
+            "minutes": minutes,
+            "seconds": float(seconds),
+        }
+        logging.info(
+            "This query will run a relative datetime query %s %s with args %s",
+            prop.name,
+            preset.name,
+            ",".join(f"{key}: '{val}'" for key, val in args.items()),
+        )
+
         preset_details = QueryPresetDetails(
-            preset=QueryPresetsDateTime.from_string(search_mode),
-            prop=self._prop_cls.from_string(property_to_search_by),
-            args={
-                "days": days,
-                "hours": hours,
-                "minutes": minutes,
-                "seconds": float(seconds),
-            },
+            preset=preset,
+            prop=prop,
+            args=args,
         )
 
         return self._build_and_run_query(
