@@ -39,13 +39,13 @@ class QueryManager:
 
     def _build_and_run_query(
         self,
-        preset_details: QueryPresetDetails,
         output_details: QueryOutputDetails,
+        preset_details: Optional[QueryPresetDetails] = None,
     ) -> QueryReturn:
         """
         method to build the query, execute it, and return the results
-        :param preset_details: A dataclass containing query preset config information
         :param output_details: A dataclass containing config on how to output results of query
+        :param preset_details: A dataclass containing query preset config information
         """
         logging.info("Running Query")
         if preset_details:
@@ -58,17 +58,16 @@ class QueryManager:
             logging.info("Query Details: Getting All")
 
         if output_details.output_type == QueryOutputTypes.TO_OBJECT_LIST:
-            logging.info("Output Details: list of openstacksdk objects")
-        else:
-            if not output_details.properties_to_select:
-                props_to_select = ",".join(
-                    [prop.name for prop in output_details.properties_to_select]
-                )
-            else:
-                props_to_select = "all available props"
-
+            # properties to select will be ignored - hence don't log it
             logging.info(
-                "Outputting as:\n\t output_type: %s\n\t showing properties: %s",
+                "Output Details:\n\t output_type: %s", output_details.output_type.name
+            )
+        else:
+            props_to_select = ",".join(
+                [prop.name for prop in output_details.properties_to_select]
+            )
+            logging.info(
+                "Outputting as:\n\t output_type: %s\n\t with properties: %s",
                 output_details.output_type.name,
                 props_to_select,
             )
@@ -112,18 +111,16 @@ class QueryManager:
 
     def _populate_query(
         self,
+        properties_to_select: List[PropEnum],
         preset_details: Optional[QueryPresetDetails] = None,
-        properties_to_select: Optional[Set[PropEnum]] = None,
     ) -> None:
         """
         method that populates the query before executing.
-        :param preset_details: A dataclass containing query preset config information
         :param properties_to_select: A set of properties to get from each result when outputting
+        :param preset_details: A dataclass containing query preset config information
         """
-        if properties_to_select:
-            self._query.select(*properties_to_select)
-        else:
-            self._query.select_all()
+
+        self._query.select(*properties_to_select)
 
         if preset_details:
             self._query.where(
