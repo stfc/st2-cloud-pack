@@ -285,19 +285,20 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
     def test_check_filter_func_with_any_typing(self):
         """
         Tests that check_filter_func method works expectedly - for filter_func which takes a param with Any
-        returns True for any args which match
+        returns True for any args which match.
+        Also tests that variables with no type definition are also accepted (and type checking is ignored)
         """
 
         # pylint:disable=unused-argument
-        def mock_filter_func(prop, arg1: Any):
+        def mock_filter_func(prop, arg1, arg2, arg3: Any):
             return None
 
         res = self.instance._check_filter_func(
-            mock_filter_func, func_kwargs={"arg1": 123}
+            mock_filter_func, func_kwargs={"arg1": 1, "arg2": bool, "arg3": "string"}
         )
         self.assertEqual(True, res[0])
 
         res = self.instance._check_filter_func(
-            mock_filter_func, func_kwargs={"arg1": "string"}
+            mock_filter_func, func_kwargs={"arg1": 1, "arg2": bool, "arg3": "string"}
         )
         self.assertEqual(True, res[0])

@@ -181,14 +181,15 @@ class ClientSideHandler(HandlerBase):
             log_all_params,
         )
 
-        all_req_params = [
+        req_params = [
             param.name
             for param in parameters
             if param.POSITIONAL_ONLY and param.default == inspect.Parameter.empty
         ]
         log_all_req_params = "<none>"
-        if all_req_params:
+        if req_params:
             log_all_req_params = "\n\t".join(log_all_req_params)
+
         logger.debug(
             "of those, the following params are required:\n\t%s", log_all_req_params
         )
@@ -199,7 +200,10 @@ class ClientSideHandler(HandlerBase):
                 if param_name in func_kwargs:
                     kwargs_value = func_kwargs[param_name]
                     param_type = param.annotation
-                    if param_type != Any and not isinstance(kwargs_value, param_type):
+                    if param_type not in [
+                        Any,
+                        inspect.Parameter.empty,
+                    ] and not isinstance(kwargs_value, param_type):
                         return (
                             False,
                             f"{param_name} given has incorrect type, "
