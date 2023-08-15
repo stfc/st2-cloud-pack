@@ -1,4 +1,5 @@
 from typing import Optional, Dict, Any, List
+import logging
 
 from openstack_query.handlers.client_side_handler import ClientSideHandler
 from openstack_query.handlers.prop_handler import PropHandler
@@ -12,6 +13,8 @@ from exceptions.query_preset_mapping_error import QueryPresetMappingError
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 
 from custom_types.openstack_query.aliases import ClientSideFilterFunc, ServerSideFilters
+
+logger = logging.getLogger(__name__)
 
 
 class QueryBuilder:
@@ -62,12 +65,21 @@ class QueryBuilder:
         """
 
         if self._client_side_filter:
+            logging.error(
+                "Error: Chaining multiple where() functions currently not supported"
+            )
             raise ParseQueryError("Error: Already set a query preset")
 
         prop_func = self._prop_handler.get_prop_func(prop)
+
         if not prop_func:
-            # If you are here from a search, you have likely forgotten to add it to the
-            # client mapping variable in your Query object
+            logging.error(
+                "Error: If you are here as a developer"
+                "you have likely forgotten to add a prop mapping for the property '%s'"
+                "under queries/<resource>_query",
+                prop.name,
+            )
+
             raise QueryPropertyMappingError(
                 f"""
                 Error: failed to get property mapping, given property
@@ -82,9 +94,29 @@ class QueryBuilder:
             prop_func=prop_func,
             filter_func_kwargs=preset_kwargs,
         )
+
         self._server_side_filters = self._server_side_handler.get_filters(
             preset=preset, prop=prop, params=preset_kwargs
         )
+        if not self._server_side_filters:
+            logger.info(
+                "No server-side filters for preset '%s': prop '%s' pair "
+                "- using client-side filter - this may take longer",
+                preset.name,
+                prop.name,
+            )
+        else:
+            logger.info(
+                "Found server-side filters for preset '%s': prop '%s' pair: '%s'",
+                preset.name,
+                prop.name,
+                "\n\t".join(
+                    [
+                        f"{key}: '{val}'"
+                        for key, val in self._server_side_filters.items()
+                    ]
+                ),
+            )
 
     def _get_preset_handler(
         self, preset: QueryPresets, prop: PropEnum
@@ -98,16 +130,38 @@ class QueryBuilder:
         # Most likely we have forgotten to add a mapping for a preset at the client-side
         # All presets should have a client-side handler associated to it
         if not any(i.preset_known(preset) for i in self._client_side_handlers):
+            logger.error(
+                "Error: If you are here as a developer "
+                "you have likely not forgotten to instantiate a client-side handler for the "
+                "preset '%s'",
+                preset.name,
+            )
+
+            logger.error(
+                "Error: If you are here as a user - double check whether the preset '%s' is compatible"
+                "with the resource you're querying.\n "
+                "i.e. using LESS_THAN for querying Users "
+                "(as users holds no query-able properties which are of an integer type).\n "
+                "However, if you believe it should please raise an issue with the repo maintainer"
+            )
+
             raise QueryPresetMappingError(
-                "A preset with no known client side handler was passed. Please raise an issue with the repo maintainer"
+                f"No client-side handler found for preset '{preset.name}' - property '{prop.name}' pair "
+                f"- resource likely does not support querying using this preset"
             )
 
         for i in self._client_side_handlers:
             if i.check_supported(preset, prop):
                 return i
 
+        logger.error(
+            "Error: if you are here as a developer"
+            "you have likely forgotten to add client-side mappings for the preset '%s' "
+            "under queries/<resource>_query",
+            preset.name,
+        )
+
         raise QueryPresetMappingError(
-            f"Error: failed to get preset mapping, the preset '{preset.name}' cannot be "
-            f"used on the property '{prop.name}' given.\n"
-            f"If you believe it should, please raise an issue with repo maintainer"
+            f"No client-side handler found for preset '{preset.name}'"
+            "- this query is likely misconfigured/preset is not supported on resource"
         )

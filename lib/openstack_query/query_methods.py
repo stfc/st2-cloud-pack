@@ -1,4 +1,6 @@
 from typing import Union, List, Any, Optional, Dict
+import time
+import logging
 
 from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresets
@@ -10,6 +12,8 @@ from openstack_query.runners.server_runner import QueryRunner
 
 from exceptions.parse_query_error import ParseQueryError
 from custom_types.openstack_query.aliases import OpenstackResourceObj
+
+logger = logging.getLogger(__name__)
 
 
 class QueryMethods:
@@ -32,10 +36,14 @@ class QueryMethods:
 
         # is an idempotent function
         # an be called multiple times with should aggregate properties to select
+        logger.debug("select() called, with props: %s", [prop.name for prop in props])
         if not props:
             raise ParseQueryError("provide at least one property to select")
 
         self.output.parse_select(*props, select_all=False)
+        logger.debug(
+            "selected props are now: %s", [prop.name for prop in self.output.props]
+        )
         return self
 
     def select_all(self):
@@ -46,7 +54,12 @@ class QueryMethods:
         Overrides all currently selected properties
         returns list of properties currently selected
         """
+        logger.debug("select_all() called - getting all properties")
         self.output.parse_select(select_all=True)
+        logger.debug(
+            "selected props are now: %s",
+            [prop.name for prop in self.output.selected_props],
+        )
         return self
 
     def where(
@@ -59,6 +72,22 @@ class QueryMethods:
         :param kwargs: a set of optional arguments to pass along with the preset - property pair
             - these kwargs are dependent on the preset given
         """
+        kwargs_log_str = "<none>"
+        if kwargs:
+            kwargs_log_str = "\n\t\t".join(
+                [f"{key}: '{arg}'" for key, arg in kwargs.items()]
+            )
+
+        logger.debug(
+            "where() called, with args:"
+            "\n\t preset: %s"
+            "\n\t prop: %s"
+            "\n\t preset-args:\n\t\t%s",
+            preset.name,
+            prop.name,
+            kwargs_log_str,
+        )
+
         self.builder.parse_where(preset, prop, kwargs)
         return self
 
@@ -81,7 +110,7 @@ class QueryMethods:
         self,
         cloud_account: CloudDomains,
         from_subset: Optional[List[OpenstackResourceObj]] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Public method that runs the query provided and outputs
@@ -90,14 +119,36 @@ class QueryMethods:
         :param kwargs: keyword args that can be used to configure details of how query is run
             - valid kwargs specific to resource
         """
+
         local_filters = self.builder.client_side_filter
         server_filters = self.builder.server_side_filters
 
+        meta_param_log_str = "<none>"
+        if kwargs:
+            from_params_dict = {"from_subset": len(from_subset)} if from_subset else {}
+            log_kwargs = {**kwargs, **from_params_dict}
+            meta_param_log_str = ", ".join(
+                [f"{key}: '{val}'" for key, val in log_kwargs]
+            )
+
+        logger.debug(
+            "run called "
+            "\n\t with server_side_filters: '%s'"
+            "\n\t with client_side_filters: '%s'"
+            "\n\t with run meta args: '%s'",
+            "<none>" if not server_filters else server_filters,
+            "<none>" if not local_filters else local_filters,
+            meta_param_log_str,
+        )
+
+        logger.debug("run started")
+        start = time.time()
         self._query_results = self.runner.run(
             cloud_account, local_filters, server_filters, from_subset, **kwargs
         )
-        self.output.generate_output(self._query_results)
+        logger.debug("run completed - time elapsed: %s seconds", time.time() - start)
 
+        self.output.generate_output(self._query_results)
         return self
 
     def to_list(self, as_objects=False) -> Union[List[Any], List[Dict[str, str]]]:

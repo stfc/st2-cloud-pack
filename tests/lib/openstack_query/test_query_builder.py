@@ -54,7 +54,7 @@ class QueryBuilderTests(unittest.TestCase):
         mock_client_filter_func = MagicMock()
         mock_client_side_handler.get_filter_func.return_value = mock_client_filter_func
 
-        mock_server_filters = NonCallableMock()
+        mock_server_filters = {"server-filter1": "val1", "server-filter2": "val2"}
         self.mock_server_side_handler.get_filters.return_value = mock_server_filters
 
         mock_prop_func = MagicMock()

@@ -33,6 +33,15 @@ class QueryOutputTests(unittest.TestCase):
         """
         return f"{prop.name.lower()}-func"
 
+    def test_selected_props(self):
+        """
+        Tests that property method to get selected props works expectedly
+        method should return self._props as a list
+        """
+        self.instance._props = {"prop1", "prop2", "prop3"}
+        res = self.instance.selected_props
+        self.assertEqual(res, list({"prop1", "prop2", "prop3"}))
+
     @patch("openstack_query.query_output.QueryOutput._generate_table")
     def test_to_html(self, mock_generate_table):
         """
