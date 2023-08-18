@@ -17,6 +17,10 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
     Runs various tests to ensure that ClientSideHandlerBase class methods function expectedly
     """
 
+    @staticmethod
+    def _mock_filter_func(prop, *args, **kwargs):
+        pass
+
     def setUp(self):
         """
         Setup for tests
@@ -30,9 +34,7 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
         }
         self.instance = ClientSideHandler(_filter_function_mappings)
         self.instance._filter_functions = {
-            MockQueryPresets.ITEM_1: "item1_func",
-            MockQueryPresets.ITEM_2: "item2_func",
-            MockQueryPresets.ITEM_3: "item3_func",
+            MockQueryPresets.ITEM_1: self._mock_filter_func,
         }
 
     def test_check_supported_true(self):
@@ -103,9 +105,11 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
 
         # MockQueryPresets.ITEM_1 and MockProperties.PROP_1 are valid and should return 'item1_func'
         # - which represents a function mapping
-        mock_check_filter_func.assert_called_once_with("item1_func", mock_kwargs)
+        mock_check_filter_func.assert_called_once_with(
+            self._mock_filter_func, mock_kwargs
+        )
         mock_filter_func_wrapper.assert_called_once_with(
-            "test-openstack-res", "item1_func", mock_prop_func, mock_kwargs
+            "test-openstack-res", self._mock_filter_func, mock_prop_func, mock_kwargs
         )
 
         self.assertEqual(val, "a-boolean-value")
@@ -281,19 +285,20 @@ class ClientSideHandlerBaseTests(unittest.TestCase):
     def test_check_filter_func_with_any_typing(self):
         """
         Tests that check_filter_func method works expectedly - for filter_func which takes a param with Any
-        returns True for any args which match
+        returns True for any args which match.
+        Also tests that variables with no type definition are also accepted (and type checking is ignored)
         """
 
         # pylint:disable=unused-argument
-        def mock_filter_func(prop, arg1: Any):
+        def mock_filter_func(prop, arg1, arg2, arg3: Any):
             return None
 
         res = self.instance._check_filter_func(
-            mock_filter_func, func_kwargs={"arg1": 123}
+            mock_filter_func, func_kwargs={"arg1": 1, "arg2": bool, "arg3": "string"}
         )
         self.assertEqual(True, res[0])
 
         res = self.instance._check_filter_func(
-            mock_filter_func, func_kwargs={"arg1": "string"}
+            mock_filter_func, func_kwargs={"arg1": 1, "arg2": bool, "arg3": "string"}
         )
         self.assertEqual(True, res[0])

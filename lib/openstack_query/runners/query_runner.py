@@ -1,5 +1,7 @@
 from abc import abstractmethod
 from typing import Optional, List, Any
+import time
+import logging
 
 from enums.cloud_domains import CloudDomains
 
@@ -10,6 +12,8 @@ from custom_types.openstack_query.aliases import (
     ClientSideFilterFunc,
     OpenstackResourceObj,
 )
+
+logger = logging.getLogger(__name__)
 
 # pylint:disable=too-few-public-methods
 
@@ -29,7 +33,7 @@ class QueryRunner(OpenstackWrapperBase):
         client_side_filter_func: Optional[ClientSideFilterFunc] = None,
         server_side_filters: Optional[ServerSideFilters] = None,
         from_subset: Optional[List[Any]] = None,
-        **kwargs
+        **kwargs,
     ) -> List[OpenstackResourceObj]:
         """
         Public method that runs the query by querying openstacksdk and then applying a filter function.
@@ -43,18 +47,58 @@ class QueryRunner(OpenstackWrapperBase):
             - valid kwargs to _run_query is specific to the runner object - see docstrings for _run_query() on the
             runner of interest.
         """
-
+        logger.debug("making connection to openstack")
         with self._connection_cls(cloud_account.name.lower()) as conn:
-            resource_objects = (
-                self._parse_subset(conn, from_subset)
-                if from_subset
-                else self._run_query(conn, server_side_filters, **kwargs)
+            logger.debug(
+                "openstack connection established - using cloud account '%s'",
+                cloud_account.name.lower(),
             )
 
+            if from_subset:
+                logger.info("'from_subset' meta param given - parsing subset")
+                logger.debug("parsing subset of %s items", len(from_subset))
+                start = time.time()
+                resource_objects = self._parse_subset(conn, from_subset)
+                logger.debug(
+                    "parsing complete - time elapsed: %s seconds", time.time() - start
+                )
+            else:
+                logger.info("running query using openstacksdk and server-side filters")
+                server_side_filters_log_str = "none (getting all)"
+                kwarg_log_str = "none"
+                if server_side_filters:
+                    server_side_filters_log_str = "\n\t\t".join(
+                        [f"{key}: '{val}'" for key, val in server_side_filters.items()]
+                    )
+                if kwargs:
+                    kwarg_log_str = "\n\t\t".join(
+                        [f"{key}: '{val}'" for key, val in kwargs.items()]
+                    )
+
+                logger.debug(
+                    "calling run_query with parameters "
+                    "\n\tserver_side_filters: "
+                    "\n\t\t%s "
+                    "\n\trun_meta_kwargs: "
+                    "\n\t\t%s",
+                    server_side_filters_log_str,
+                    kwarg_log_str,
+                )
+                start = time.time()
+                resource_objects = self._run_query(conn, server_side_filters, **kwargs)
+                logger.info(
+                    "server-side query complete - time elapsed: %s seconds",
+                    time.time() - start,
+                )
+                logger.debug("server-side query found %s items", len(resource_objects))
+
         if client_side_filter_func and not server_side_filters:
+            logger.info("applying client side filters")
             resource_objects = self._apply_client_side_filter(
                 resource_objects, client_side_filter_func
             )
+
+        logger.info("found %s items in total", len(resource_objects))
         return resource_objects
 
     @staticmethod
@@ -75,7 +119,7 @@ class QueryRunner(OpenstackWrapperBase):
         self,
         conn: OpenstackConnection,
         filter_kwargs: Optional[ServerSideFilters] = None,
-        **kwargs
+        **kwargs,
     ) -> List[OpenstackResourceObj]:
         """
         This method runs the query by utilising openstacksdk commands. It will set get a list of all available

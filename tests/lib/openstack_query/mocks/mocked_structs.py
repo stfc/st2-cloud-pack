@@ -18,3 +18,9 @@ MOCKED_OUTPUT_DETAILS = QueryOutputDetails(
     properties_to_select=[MockProperties.PROP_1, MockProperties.PROP_2],
     output_type=QueryOutputTypes.TO_STR,
 )
+
+MOCKED_OUTPUT_DETAILS_TO_OBJ_LIST = QueryOutputDetails(
+    output_type=QueryOutputTypes.TO_OBJECT_LIST,
+    # should be ignored
+    properties_to_select=[MockProperties.PROP_1, MockProperties.PROP_2],
+)

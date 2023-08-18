@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch, NonCallableMock
 from parameterized import parameterized
+from nose.tools import raises
 
 from openstack_query.managers.query_manager import QueryManager
 from enums.query.query_output_types import QueryOutputTypes
@@ -12,8 +13,12 @@ from enums.query.query_presets import (
 
 from structs.query.query_preset_details import QueryPresetDetails
 
+from exceptions.enum_mapping_error import EnumMappingError
+
+
 from tests.lib.openstack_query.mocks.mocked_structs import (
     MOCKED_OUTPUT_DETAILS,
+    MOCKED_OUTPUT_DETAILS_TO_OBJ_LIST,
     MOCKED_PRESET_DETAILS,
 )
 
@@ -37,9 +42,27 @@ class QueryManagerTests(unittest.TestCase):
             cloud_account="test_account", query=self.query, prop_cls=self.prop_cls
         )
 
+    @parameterized.expand(
+        [
+            ("with no preset details", None, MOCKED_OUTPUT_DETAILS),
+            (
+                "with to_object_list output_type",
+                None,
+                MOCKED_OUTPUT_DETAILS_TO_OBJ_LIST,
+            ),
+            ("with both", MOCKED_PRESET_DETAILS, MOCKED_OUTPUT_DETAILS),
+        ]
+    )
     @patch("openstack_query.managers.query_manager.QueryManager._populate_query")
     @patch("openstack_query.managers.query_manager.QueryManager._get_query_output")
-    def test_build_and_run_query(self, mock_get_query_output, mock_populate_query):
+    def test_build_and_run_query(
+        self,
+        _,
+        mock_preset_details,
+        mock_output_details,
+        mock_get_query_output,
+        mock_populate_query,
+    ):
         """
         Tests that _build_and_run_query method functions expectedly
         Sets up a QueryResource object and runs a given query with appropriate inputs. Returns query result
@@ -48,14 +71,15 @@ class QueryManagerTests(unittest.TestCase):
         mock_get_query_output.return_value = mock_query_return
 
         res = self.instance._build_and_run_query(
-            MOCKED_PRESET_DETAILS, MOCKED_OUTPUT_DETAILS
+            mock_output_details,
+            mock_preset_details,
         )
         mock_populate_query.assert_called_once_with(
-            preset_details=MOCKED_PRESET_DETAILS,
-            properties_to_select=MOCKED_OUTPUT_DETAILS.properties_to_select,
+            preset_details=mock_preset_details,
+            properties_to_select=mock_output_details.properties_to_select,
         )
         self.query.run.assert_called_once_with("test_account")
-        mock_get_query_output.assert_called_once_with(MOCKED_OUTPUT_DETAILS.output_type)
+        mock_get_query_output.assert_called_once_with(mock_output_details.output_type)
         self.assertEqual(res, mock_query_return)
 
     @parameterized.expand(
@@ -67,6 +91,13 @@ class QueryManagerTests(unittest.TestCase):
         """
         self.assertIsNotNone(self.instance._get_query_output(outtype))
 
+    @raises(EnumMappingError)
+    def test_get_query_output_raises_error(self):
+        """
+        Tests that query output type raises error when given an enum which does not have a mapping
+        """
+        self.instance._get_query_output(MagicMock())
+
     def test_populate_query_with_properties(self):
         """
         Tests that _populate_query method functions expectedly with properties
@@ -74,25 +105,11 @@ class QueryManagerTests(unittest.TestCase):
         """
 
         self.instance._populate_query(
-            MOCKED_PRESET_DETAILS, MOCKED_OUTPUT_DETAILS.properties_to_select
+            MOCKED_OUTPUT_DETAILS.properties_to_select, MOCKED_PRESET_DETAILS
         )
         self.query.select.assert_called_once_with(
             *MOCKED_OUTPUT_DETAILS.properties_to_select
         )
-        self.query.where.assert_called_once_with(
-            preset=MOCKED_PRESET_DETAILS.preset,
-            prop=MOCKED_PRESET_DETAILS.prop,
-            **MOCKED_PRESET_DETAILS.args,
-        )
-
-    def test_populate_query_with_no_properties(self):
-        """
-        Tests that _populate_query method functions expectedly with no properties
-        method builds the query with appropriate inputs before executing - calls select_all() when given no properties
-        """
-
-        self.instance._populate_query(MOCKED_PRESET_DETAILS, None)
-        self.query.select_all.assert_called_once()
         self.query.where.assert_called_once_with(
             preset=MOCKED_PRESET_DETAILS.preset,
             prop=MOCKED_PRESET_DETAILS.prop,

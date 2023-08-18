@@ -1,3 +1,4 @@
+import logging
 import inspect
 from typing import Optional, Tuple, Any
 
@@ -14,6 +15,8 @@ from custom_types.openstack_query.aliases import (
 from enums.query.query_presets import QueryPresets
 from enums.query.props.prop_enum import PropEnum
 from exceptions.query_preset_mapping_error import QueryPresetMappingError
+
+logger = logging.getLogger(__name__)
 
 
 class ClientSideHandler(HandlerBase):
@@ -74,18 +77,46 @@ class ClientSideHandler(HandlerBase):
             filter_func = self._filter_functions.get(preset, None)
 
         if not filter_func:
+            logger.error(
+                "Error: If you are here as a developer - "
+                "you have likely not forgotten to add a mapping for the preset %s and property %s pair.\n"
+                "\t- check the _get_client_side_handlers in <Resource>Query class",
+                preset.name,
+                prop.name,
+            )
+
+            logger.error(
+                "Error: If you are here as a user - "
+                "double check whether the preset %s is compatible with the property %s you're querying by.\n"
+                "\t- i.e. using LESS_THAN on User property USER_NAME will not work since USER_NAME property "
+                "is not an integer.\n"
+                "\t- however, if you believe the preset should be compatible with the property please raise an "
+                "issue with the repo maintainer",
+                preset.name,
+                prop.name,
+            )
+
             raise QueryPresetMappingError(
                 "Preset Not Found: failed to find filter_function mapping for preset "
                 f"'{preset.name}' and property '{prop.name}'"
                 "does the preset work with property specified?"
             )
 
+        logger.debug(
+            "found client-side filter function '%s' for preset %s: prop %s pair",
+            filter_func.__name__,
+            preset.name,
+            prop.name,
+        )
+
         filter_func_valid, reason = self._check_filter_func(
             filter_func, filter_func_kwargs
         )
         if not filter_func_valid:
             raise QueryPresetMappingError(
-                f"Preset Argument Error: failed to build filter_function for preset '{preset.name}', reason: {reason}"
+                "Preset Argument Error: failed to build client-side filter function for preset:prop: "
+                f"'{preset.name}':'{prop.name}' "
+                f"reason: {reason}"
             )
 
         return lambda resource: self._filter_func_wrapper(
@@ -135,13 +166,44 @@ class ClientSideHandler(HandlerBase):
         has_varargs = any(param.kind == param.VAR_POSITIONAL for param in parameters)
         has_varkwargs = any(param.kind == param.VAR_KEYWORD for param in parameters)
 
+        logger.debug(
+            "checking client-side filter function against provided parameters\n\t%s",
+            "\n\t".join([f"{key}: '{value}'" for key, value in func_kwargs.items()]),
+        )
+
+        all_params = [param.name for param in parameters]
+        log_all_params = "<none>"
+        if all_params:
+            log_all_params = "\n\t".join(all_params)
+        logger.debug(
+            "client-side filter function '%s' has the following params:\n\t%s",
+            func.__name__,
+            log_all_params,
+        )
+
+        req_params = [
+            param.name
+            for param in parameters
+            if param.VAR_POSITIONAL and param.default == inspect.Parameter.empty
+        ]
+        log_all_req_params = "<none>"
+        if req_params:
+            log_all_req_params = "\n\t".join(req_params)
+
+        logger.debug(
+            "of those, the following params are required:\n\t%s", log_all_req_params
+        )
+
         for param in parameters:
             if param.kind == param.POSITIONAL_OR_KEYWORD:
                 param_name = param.name
                 if param_name in func_kwargs:
                     kwargs_value = func_kwargs[param_name]
                     param_type = param.annotation
-                    if param_type != Any and not isinstance(kwargs_value, param_type):
+                    if param_type not in [
+                        Any,
+                        inspect.Parameter.empty,
+                    ] and not isinstance(kwargs_value, param_type):
                         return (
                             False,
                             f"{param_name} given has incorrect type, "

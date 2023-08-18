@@ -24,6 +24,10 @@ class QueryOutput:
     def results(self) -> List[OpenstackResourceObj]:
         return self._results
 
+    @property
+    def selected_props(self) -> List[PropEnum]:
+        return list(self._props)
+
     def sort_by(self, sort_by: PropEnum, reverse=False) -> List[OpenstackResourceObj]:
         """
         Public method used to configure sorting results
