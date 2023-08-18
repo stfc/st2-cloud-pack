@@ -128,13 +128,22 @@ class QueryRunner(OpenstackWrapperBase):
 
         curr_marker = None
         while True:
-            for i, server in enumerate(paginated_call(**paginated_filters)):
-                query_res.append(server)
+            prev = None
+            for i, resource in enumerate(paginated_call(**paginated_filters)):
+
+                # Workaround for Endless loop error detected if querying for stfc users (via ldap)
+                # for loop doesn't seem to terminate - and outputs the same value when given "limit" and "marker"
+                if prev == resource:
+                    break
+
+                query_res.append(resource)
                 # openstacksdk calls break after going over pagination limit
                 if i == self._LIMIT_FOR_PAGINATION - 1:
                     # restart the for loop with marker set
-                    paginated_filters.update({"marker": server["id"]})
+                    paginated_filters.update({"marker": resource["id"]})
                     break
+
+                prev = resource
 
             # if marker hasn't changed, then has query terminated
             if not paginated_filters or paginated_filters["marker"] == curr_marker:
