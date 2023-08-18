@@ -100,7 +100,7 @@ class UserRunner(QueryRunner):
                 "no domain_id given, will use id for default user domain: '%s'",
                 self.DEFAULT_DOMAIN.name,
             )
-        
+
         logger.debug("searching for users using domain_id: '%s'", filter_kwargs['domain_id'])
         logger.debug(
             "running paginated openstacksdk command conn.identity.users (%s)",
