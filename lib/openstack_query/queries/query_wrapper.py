@@ -1,6 +1,5 @@
 from openstack_query.query_output import QueryOutput
 from openstack_query.query_builder import QueryBuilder
-from openstack_query.runners.server_runner import QueryRunner
 
 from openstack_query.query_methods import QueryMethods
 from openstack_query.query_base import QueryBase
@@ -15,10 +14,12 @@ class QueryWrapper(QueryMethods, QueryBase):
     QueryWrapper is a base class for all Query<Resource> subclasses
     """
 
-    def __init__(self, runner: QueryRunner):
+    def __init__(self, runner_cls):
         prop_handler = self._get_prop_handler()
 
-        self.runner = runner
+        self.runner = runner_cls(
+            marker_prop_func=lambda obj: prop_handler.get_prop(self.marker_enum)
+        )
         self._query_results = []
 
         self.output = QueryOutput(prop_handler)

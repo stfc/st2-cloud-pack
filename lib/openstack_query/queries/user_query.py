@@ -36,6 +36,7 @@ class UserQuery(QueryWrapper):
         """
         return PropHandler(
             {
+                UserProperties.USER_ID: lambda a: a["id"],
                 UserProperties.USER_DOMAIN_ID: lambda a: a["domain_id"],
                 UserProperties.USER_DESCRIPTION: lambda a: a["description"],
                 UserProperties.USER_EMAIL: lambda a: a["email"],
@@ -91,4 +92,5 @@ class UserQuery(QueryWrapper):
         )
 
     def __init__(self):
-        super().__init__(runner=UserRunner())
+        self.marker_enum = UserProperties.USER_ID
+        super().__init__(runner_cls=UserRunner)

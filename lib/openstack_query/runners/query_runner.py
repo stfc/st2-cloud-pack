@@ -8,6 +8,7 @@ from enums.cloud_domains import CloudDomains
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.openstack_connection import OpenstackConnection
 from custom_types.openstack_query.aliases import (
+    PropFunc,
     ServerSideFilters,
     ClientSideFilterFunc,
     OpenstackResourceObj,
@@ -27,8 +28,9 @@ class QueryRunner(OpenstackWrapperBase):
     # Sets the limit for getting values from openstack
     _LIMIT_FOR_PAGINATION = 1000
 
-    def __init__(self, connection_cls=OpenstackConnection):
+    def __init__(self, marker_prop_func: PropFunc, connection_cls=OpenstackConnection):
         OpenstackWrapperBase.__init__(self, connection_cls)
+        self.page_marker_prop_func = marker_prop_func
 
     def run(
         self,
@@ -140,7 +142,9 @@ class QueryRunner(OpenstackWrapperBase):
                 # openstacksdk calls break after going over pagination limit
                 if i == self._LIMIT_FOR_PAGINATION - 1:
                     # restart the for loop with marker set
-                    paginated_filters.update({"marker": resource["id"]})
+                    paginated_filters.update(
+                        {"marker": self.page_marker_prop_func(resource)}
+                    )
                     break
 
                 prev = resource

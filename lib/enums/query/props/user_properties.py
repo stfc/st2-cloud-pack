@@ -13,6 +13,7 @@ class UserProperties(PropEnum):
     USER_DOMAIN_ID = auto()
     USER_DESCRIPTION = auto()
     USER_EMAIL = auto()
+    USER_ID = auto()
     USER_NAME = auto()
 
     @staticmethod
