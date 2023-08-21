@@ -1,0 +1,9 @@
+
+
+Best regards,
+Cloud Operations Group
+
+If you have any questions or concerns relating to this message, please submit a support ticket by emailing cloud-support@stfc.ac.uk and we will respond within two business days.
+For STFC Cloud Documentation visit https://stfc-cloud-docs.readthedocs.io
+Please subscribe to our mailing list at: https://www.jiscmail.ac.uk/cgi-bin/webadmin?A0=STFC-CLOUD
+To receive fast notifications or to discuss usage of the cloud please join our Slack: https://stfc-cloud.slack.com
