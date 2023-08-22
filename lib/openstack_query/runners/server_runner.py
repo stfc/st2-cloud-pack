@@ -38,6 +38,9 @@ class ServerRunner(QueryRunner):
         project_list = []
         for proj in from_projects:
             try:
+                logger.debug(
+                    "running conn.identity.find_project(%s, ignore_missing=False)", proj
+                )
                 project = conn.identity.find_project(proj, ignore_missing=False)["id"]
             except ResourceNotFound as exp:
                 raise ParseQueryError(

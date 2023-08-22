@@ -31,7 +31,7 @@ class QueryRunner(OpenstackWrapperBase):
 
     def __init__(self, marker_prop_func: PropFunc, connection_cls=OpenstackConnection):
         OpenstackWrapperBase.__init__(self, connection_cls)
-        self.page_marker_prop_func = marker_prop_func
+        self._page_marker_prop_func = marker_prop_func
 
     def run(
         self,
@@ -132,8 +132,12 @@ class QueryRunner(OpenstackWrapperBase):
         curr_marker = None
         num_calls = 1
         while True:
+            logger.debug("starting page loop, completed %s loops", num_calls)
             num_calls += 1
             if num_calls > self._PAGINATION_CALL_LIMIT:
+                logger.warning(
+                    "max page loops reached %s - terminating early", num_calls
+                )
                 break
 
             prev = None
@@ -141,6 +145,9 @@ class QueryRunner(OpenstackWrapperBase):
                 # Workaround for Endless loop error detected if querying for stfc users (via ldap)
                 # for loop doesn't seem to terminate - and outputs the same value when given "limit" and "marker"
                 if prev == resource:
+                    logger.warning(
+                        "duplicate entries found, likely an endless page loop - terminating early"
+                    )
                     break
 
                 query_res.append(resource)
@@ -148,7 +155,12 @@ class QueryRunner(OpenstackWrapperBase):
                 if i == self._LIMIT_FOR_PAGINATION - 1:
                     # restart the for loop with marker set
                     paginated_filters.update(
-                        {"marker": self.page_marker_prop_func(resource)}
+                        {"marker": self._page_marker_prop_func(resource)}
+                    )
+                    logger.debug(
+                        "page limit reached: %s - setting new marker: %s",
+                        self._LIMIT_FOR_PAGINATION,
+                        paginated_filters["marker"],
                     )
                     break
 
@@ -156,6 +168,7 @@ class QueryRunner(OpenstackWrapperBase):
 
             # if marker hasn't changed, then has query terminated
             if not paginated_filters or paginated_filters["marker"] == curr_marker:
+                logger.debug("page loop terminated")
                 break
             # set marker as current
             curr_marker = paginated_filters["marker"]

@@ -187,9 +187,14 @@ class QueryRunnerTests(unittest.TestCase):
         mocked paginated call simulates the effect of retrieving a list of values up to a limit and then calling the
         same call again with a "marker" set to the last seen item to continue reading
         """
+
+        def _mock_prop_func(resource):
+            return resource["id"]
+
         mock_paginated_call = MagicMock()
         mock_paginated_call.side_effect = mock_out
         expected_out = [item for sublist in mock_out for item in sublist]
+        self.instance._page_marker_prop_func = MagicMock(wraps=_mock_prop_func)
 
         # set round to 1, so new calls begins after returning one value
         self.instance._LIMIT_FOR_PAGINATION = 1
