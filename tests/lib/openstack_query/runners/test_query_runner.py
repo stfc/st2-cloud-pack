@@ -193,6 +193,7 @@ class QueryRunnerTests(unittest.TestCase):
 
         # set round to 1, so new calls begins after returning one value
         self.instance._LIMIT_FOR_PAGINATION = 1
+        self.instance._PAGINATION_CALL_LIMIT = 10
 
         mock_server_side_filters = {"arg1": "val1", "arg2": "val2"}
         res = self.instance._run_paginated_query(

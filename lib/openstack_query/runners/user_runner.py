@@ -101,7 +101,9 @@ class UserRunner(QueryRunner):
                 self.DEFAULT_DOMAIN.name,
             )
 
-        logger.debug("searching for users using domain_id: '%s'", filter_kwargs['domain_id'])
+        logger.debug(
+            "searching for users using domain_id: '%s'", filter_kwargs["domain_id"]
+        )
         logger.debug(
             "running paginated openstacksdk command conn.identity.users (%s)",
             ",".join(f"{key}={value}" for key, value in filter_kwargs.items()),

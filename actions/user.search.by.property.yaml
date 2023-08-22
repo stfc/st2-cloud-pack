@@ -69,7 +69,7 @@ parameters:
     required: true
     type: array
   from_domain:
-    description: "The user domain to search in. STFC - for STFC users. DEFAULT - for admins. OPENID - for IRIS-IAM users"
+    description: "The user domain to search in. STFC - for STFC users. DEFAULT - for admins and service accounts. OPENID - for IRIS-IAM users"
     default: "STFC"
     type: string
     required: true

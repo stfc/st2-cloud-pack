@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict
 import logging
 
 from openstack.compute.v2.server import Server
@@ -9,7 +9,10 @@ from openstack_api.openstack_connection import OpenstackConnection
 from openstack_query.runners.query_runner import QueryRunner
 
 from exceptions.parse_query_error import ParseQueryError
-from custom_types.openstack_query.aliases import ProjectIdentifier, ServerSideFilters
+from custom_types.openstack_query.aliases import (
+    ProjectIdentifier,
+    ServerSideFilters,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -27,24 +30,23 @@ class ServerRunner(QueryRunner):
         self,
         conn: OpenstackConnection,
         from_projects: Optional[List[ProjectIdentifier]] = None,
-    ):
+    ) -> Dict:
         """
         This method is a helper function that will parse a set of query meta params related to openstack server queries.
         :param conn: An OpenstackConnection object - used to connect to openstack and parse meta params
         """
-        try:
-            return {
-                "projects": [
-                    conn.identity.find_project(proj, ignore_missing=False)["id"]
-                    for proj in from_projects
-                ]
-                if from_projects
-                else None,
-            }
-        except ResourceNotFound as exp:
-            raise ParseQueryError(
-                "Failed to execute query: Failed to parse meta params"
-            ) from exp
+        project_list = []
+        for proj in from_projects:
+            try:
+                project = conn.identity.find_project(proj, ignore_missing=False)["id"]
+            except ResourceNotFound as exp:
+                raise ParseQueryError(
+                    "Failed to execute query: Failed to parse meta params"
+                ) from exp
+            project_list.append(project)
+        if project_list:
+            return {"projects": project_list}
+        return {}
 
     def _run_query(
         self,
@@ -69,34 +71,36 @@ class ServerRunner(QueryRunner):
         # so we can search in all projects instead of default set in clouds.yaml
         filter_kwargs.update({"all_tenants": True})
 
-        query_res = []
-        if meta_params["projects"]:
-            if "project_id" in filter_kwargs.keys():
-                raise ParseQueryError(
-                    "This query uses a preset that requires searching on project_ids "
-                    "- but you've provided projects to search in using from_projects meta param"
-                    "- please use one or the other, not both"
-                )
-
-            project_num = len(meta_params['projects'])
-            logger.debug(f"running query on {project_num} projects")
-            for i, project_id in enumerate(meta_params["projects"], 1):
-                filter_kwargs.update({"project_id": project_id})
-                logger.debug(f"running query on project {i}/{project_num} : {'project_id'}")
-                logger.debug(
-                    "running openstacksdk command conn.compute.servers (%s)",
-                    ",".join(f"{key}={value}" for key, value in filter_kwargs.items()),
-                )
-                query_res.extend(
-                    self._run_paginated_query(conn.compute.servers, filter_kwargs)
-                )
-        else:
-            logger.debug(f"running query on all projects")
+        if not meta_params["projects"]:
+            logger.debug("running query on all projects")
             logger.debug(
                 "running openstacksdk command conn.compute.servers (%s)",
                 ",".join(f"{key}={value}" for key, value in filter_kwargs.items()),
             )
-            query_res = self._run_paginated_query(conn.compute.servers, filter_kwargs)
+            return self._run_paginated_query(conn.compute.servers, filter_kwargs)
+
+        if "project_id" in filter_kwargs.keys():
+            raise ParseQueryError(
+                "This query uses a preset that requires searching on project_ids "
+                "- but you've provided projects to search in using from_projects meta param"
+                "- please use one or the other, not both"
+            )
+
+        query_res = []
+        project_num = len(meta_params["projects"])
+        logger.debug("running query on %s projects", project_num)
+        for i, project_id in enumerate(meta_params["projects"], 1):
+            filter_kwargs.update({"project_id": project_id})
+            logger.debug(
+                "running query on project %s / %s (id: %s)", i, project_num, project_id
+            )
+            logger.debug(
+                "running openstacksdk command conn.compute.servers (%s)",
+                ",".join(f"{key}={value}" for key, value in filter_kwargs.items()),
+            )
+            query_res.extend(
+                self._run_paginated_query(conn.compute.servers, filter_kwargs)
+            )
         return query_res
 
     def _parse_subset(

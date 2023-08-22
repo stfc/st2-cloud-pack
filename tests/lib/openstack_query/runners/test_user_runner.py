@@ -25,7 +25,11 @@ class UserRunnerTests(unittest.TestCase):
         """
         super().setUp()
         self.mocked_connection = MagicMock()
-        self.instance = UserRunner(connection_cls=self.mocked_connection)
+        self.marker_prop_func = MagicMock()
+        self.instance = UserRunner(
+            marker_prop_func=self.marker_prop_func,
+            connection_cls=self.mocked_connection,
+        )
         self.conn = self.mocked_connection.return_value.__enter__.return_value
 
     @patch("openstack_query.runners.user_runner.UserRunner._get_user_domain")

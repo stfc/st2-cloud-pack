@@ -24,7 +24,11 @@ class ServerRunnerTests(unittest.TestCase):
         """
         super().setUp()
         self.mocked_connection = MagicMock()
-        self.instance = ServerRunner(connection_cls=self.mocked_connection)
+        self.marker_prop_func = MagicMock()
+        self.instance = ServerRunner(
+            marker_prop_func=self.marker_prop_func,
+            connection_cls=self.mocked_connection,
+        )
         self.conn = self.mocked_connection.return_value.__enter__.return_value
 
     def test_parse_meta_params_with_from_projects(self):

@@ -60,7 +60,7 @@ class QueryManagerTests(unittest.TestCase):
         res = self.instance._build_and_run_query(
             output_details=MOCKED_OUTPUT_DETAILS,
             preset_details=MOCKED_PRESET_DETAILS,
-            runner_params=mock_run_args
+            runner_params=mock_run_args,
         )
         mock_populate_query.assert_called_once_with(
             preset_details=MOCKED_PRESET_DETAILS,
@@ -83,7 +83,7 @@ class QueryManagerTests(unittest.TestCase):
                 None,
                 MOCKED_OUTPUT_DETAILS_TO_OBJ_LIST,
             ),
-            ("with both", MOCKED_PRESET_DETAILS, MOCKED_OUTPUT_DETAILS)
+            ("with both", MOCKED_PRESET_DETAILS, MOCKED_OUTPUT_DETAILS),
         ]
     )
     @patch("openstack_query.managers.query_manager.QueryManager._populate_query")
@@ -98,11 +98,11 @@ class QueryManagerTests(unittest.TestCase):
     ):
         """
         Tests that _build_and_run_query method functions expectedly
-        Sets up a QueryResource object and runs a given query with appropriate inputs (no runner params). Returns query result
+        Sets up a QueryResource object and runs a given query with appropriate inputs (no runner params).
+        Returns query result
         """
         res = self.instance._build_and_run_query(
-            mock_output_details,
-            mock_preset_details
+            mock_output_details, mock_preset_details
         )
 
         mock_populate_query.assert_called_once_with(

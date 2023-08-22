@@ -27,6 +27,7 @@ class QueryRunner(OpenstackWrapperBase):
 
     # Sets the limit for getting values from openstack
     _LIMIT_FOR_PAGINATION = 1000
+    _PAGINATION_CALL_LIMIT = 1000
 
     def __init__(self, marker_prop_func: PropFunc, connection_cls=OpenstackConnection):
         OpenstackWrapperBase.__init__(self, connection_cls)
@@ -129,10 +130,14 @@ class QueryRunner(OpenstackWrapperBase):
         query_res = []
 
         curr_marker = None
+        num_calls = 1
         while True:
+            num_calls += 1
+            if num_calls > self._PAGINATION_CALL_LIMIT:
+                break
+
             prev = None
             for i, resource in enumerate(paginated_call(**paginated_filters)):
-
                 # Workaround for Endless loop error detected if querying for stfc users (via ldap)
                 # for loop doesn't seem to terminate - and outputs the same value when given "limit" and "marker"
                 if prev == resource:
