@@ -226,6 +226,7 @@ class QueryMethodsTests(unittest.TestCase):
         mock_group_by = "some-prop-enum"
         mock_group_ranges = {"group1": ["val1", "val2"], "group2": ["val3"]}
         mock_include_ungrouped_results = False
+        self.mock_parser.group_by_prop = None
 
         self.instance.group_by(
             mock_group_by, mock_group_ranges, mock_include_ungrouped_results
@@ -233,3 +234,12 @@ class QueryMethodsTests(unittest.TestCase):
         self.instance.parser.parse_group_by.assert_called_once_with(
             mock_group_by, mock_group_ranges, mock_include_ungrouped_results
         )
+
+    @raises(ParseQueryError)
+    def test_group_by_already_set(self):
+        """
+        Tests that group_by method functions expectedly
+        Should raise error when attempting to set group by when already set
+        """
+        self.mock_parser.group_by_prop = "prop1"
+        self.instance.group_by("prop2")

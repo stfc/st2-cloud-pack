@@ -27,6 +27,13 @@ class QueryParserTests(unittest.TestCase):
         """simply return obj as prop value to compare"""
         return obj[prop]
 
+    def test_group_by_prop(self):
+        """
+        Tests that property getter function group_by_prop gets the hidden attribute QueryParser._group_by
+        """
+        self.instance._group_by = "prop1"
+        self.assertEqual(self.instance.group_by_prop, "prop1")
+
     @patch("openstack_query.query_parser.QueryParser._check_prop_valid")
     def test_parse_sort_by_one_key(self, mock_check_prop_valid):
         """
