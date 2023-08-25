@@ -13,49 +13,64 @@ class QueryOutputDetailsTests(unittest.TestCase):
     def setUp(self) -> None:
         self.instance = QueryOutputDetails
 
-    @parameterized.expand(
-        [
-            ("none given", {}),
-            ("props given", {"properties_to_select": ["server_id", "server_name"]}),
-            ("output type given", {"output_type": "TO_LIST"}),
-            ("group by given", {"group_by": "server_name"}),
-            ("sort by given", {"sort_by": ["server_name", "server_id"]}),
-        ]
-    )
-    def test_from_kwargs(self, _, mock_kwargs):
+    def _run_from_kwargs_case(self, kwargs):
         """
-        tests that from_kwargs static method works expectedly
+        Helper function for running from_kwargs test cases
+        """
+        return self.instance.from_kwargs(prop_cls=ServerProperties, **kwargs)
+
+    def test_from_kwargs_none_given(self):
+        """
+        tests that from_kwargs static method works expectedly - no kwargs given
         method should create a QueryOutputDetails with default params
         """
-        out = self.instance.from_kwargs(prop_cls=ServerProperties, **mock_kwargs)
-        if "properties_to_select" not in mock_kwargs.keys():
-            self.assertEqual(out.properties_to_select, list(ServerProperties))
-        else:
-            self.assertEqual(
-                out.properties_to_select,
-                [ServerProperties.SERVER_ID, ServerProperties.SERVER_NAME],
-            )
+        res = self._run_from_kwargs_case({})
+        self.assertEqual(res.properties_to_select, list(ServerProperties))
+        self.assertEqual(res.output_type, QueryOutputTypes.TO_STR)
+        self.assertEqual(res.group_by, None)
+        self.assertEqual(res.sort_by, None)
+        self.assertEqual(res.group_ranges, None)
+        self.assertEqual(res.include_ungrouped_results, False)
 
-        if "output_type" not in mock_kwargs.keys():
-            self.assertEqual(out.output_type, QueryOutputTypes.TO_STR)
-        else:
-            self.assertEqual(out.output_type, QueryOutputTypes.TO_LIST)
+    def test_from_kwargs_props_given(self):
+        """
+        tests that from_kwargs static method works expectedly - props given
+        method should create a QueryOutputDetails with props set
+        """
+        res = self._run_from_kwargs_case(
+            {"properties_to_select": ["server_id", "server_name"]}
+        )
+        self.assertEqual(
+            res.properties_to_select,
+            [ServerProperties.SERVER_ID, ServerProperties.SERVER_NAME],
+        )
 
-        if "group_by" not in mock_kwargs.keys():
-            self.assertEqual(out.group_by, None)
-        else:
-            self.assertEqual(out.group_by, ServerProperties.SERVER_NAME)
+    def test_from_kwargs_output_type_given(self):
+        """
+        tests that from_kwargs static method works expectedly - output type given
+        method should create a QueryOutputDetails with output type set
+        """
+        res = self._run_from_kwargs_case({"output_type": "TO_LIST"})
+        self.assertEqual(res.output_type, QueryOutputTypes.TO_LIST)
 
-        if "sort_by" not in mock_kwargs.keys():
-            self.assertEqual(out.sort_by, None)
-        else:
-            self.assertEqual(
-                out.sort_by,
-                [
-                    (ServerProperties.SERVER_NAME, False),
-                    (ServerProperties.SERVER_ID, False),
-                ],
-            )
+    def test_from_kwargs_group_by_given(self):
+        """
+        tests that from_kwargs static method works expectedly - group by given
+        method should create a QueryOutputDetails with group by set
+        """
+        res = self._run_from_kwargs_case({"group_by": "server_name"})
+        self.assertEqual(res.group_by, ServerProperties.SERVER_NAME)
 
-        self.assertEqual(out.group_ranges, None)
-        self.assertEqual(out.include_ungrouped_results, False)
+    def test_from_kwargs_sort_by_given(self):
+        """
+        tests that from_kwargs static method works expectedly - sort by given
+        method should create a QueryOutputDetails with sort by set
+        """
+        res = self._run_from_kwargs_case({"sort_by": ["server_name", "server_id"]})
+        self.assertEqual(
+            res.sort_by,
+            [
+                (ServerProperties.SERVER_NAME, False),
+                (ServerProperties.SERVER_ID, False),
+            ],
+        )
