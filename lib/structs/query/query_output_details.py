@@ -58,26 +58,20 @@ class QueryOutputDetails:
         }
 
         if properties_to_select:
-            output_details.update(
-                {
-                    "properties_to_select": [
-                        prop_cls.from_string(prop) for prop in properties_to_select
-                    ]
-                }
-            )
+            output_details["properties_to_select"] = [
+                prop_cls.from_string(prop) for prop in properties_to_select
+            ]
 
         if output_type:
-            output_details.update(
-                {"output_type": QueryOutputTypes.from_string(output_type)}
-            )
+            output_details["output_type"] = QueryOutputTypes.from_string(output_type)
 
         if group_by:
-            output_details.update({"group_by": prop_cls.from_string(group_by)})
+            output_details["group_by"] = prop_cls.from_string(group_by)
 
         if sort_by:
             # setting sort order to only be ascending for now
-            output_details.update(
-                {"sort_by": [(prop_cls.from_string(prop), False) for prop in sort_by]}
-            )
+            output_details["sort_by"] = [
+                (prop_cls.from_string(prop), False) for prop in sort_by
+            ]
 
         return QueryOutputDetails(**output_details)

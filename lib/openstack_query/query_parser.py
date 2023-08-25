@@ -117,37 +117,26 @@ class QueryParser:
 
         # we sort first - assuming sorting is commutative to grouping
         if self._sort_by:
-            obj_list = self._run_sort(obj_list, self._sort_by)
+            obj_list = self._run_sort(obj_list)
 
         if self._group_by:
-            # if group mappings not specified - make a group for each unique value found for prop
-            if not self._group_mappings:
-                logger.info(
-                    "no group ranges specified - grouping by unique values of %s property",
-                    self._group_by.name,
-                )
-                self._group_mappings = self._build_unique_val_groups(
-                    obj_list, group_by_prop=self._group_by
-                )
-            obj_list = self._run_group_by(obj_list, self._group_mappings)
-
+            obj_list = self._run_group_by(obj_list)
         return obj_list
 
     def _run_sort(
         self,
         obj_list: List[OpenstackResourceObj],
-        sort_by_specs: Dict[PropEnum, bool],
     ) -> List[OpenstackResourceObj]:
         """
         method which sorts a list of openstack objects based on a dictionary of sort_by specs
         :param obj_list: A list of openstack objects to sort
-        :param sort_by_specs: A dictionary of property to sort by as key and value as boolean representing order
             - descending - True, ascending - False
         """
+
         logger.debug("running multi-sort")
-        sort_num = len(sort_by_specs)
+        sort_num = len(self._sort_by)
         for i, (sort_key, reverse) in enumerate(
-            reversed(tuple(sort_by_specs.items())), 1
+            reversed(tuple(self._sort_by.items())), 1
         ):
             logger.debug("running sort %s / %s", i, sort_num)
             logger.debug("sorting by: %s, reverse=%s", sort_key, reverse)
@@ -160,19 +149,17 @@ class QueryParser:
     def _build_unique_val_groups(
         self,
         obj_list: List[OpenstackResourceObj],
-        group_by_prop: PropEnum,
     ) -> Dict[str, Callable[[OpenstackResourceObj], bool]]:
         """
         helper method to find all unique values for a given property in query results, and then,
         for each unique value, create a group mapping
         :param obj_list: A list of openstack objects to group
-        :param group_by_prop: A property enum to build unique-value group mappings for
         """
 
         # ordered dict to mimic ordered set
         # this is to preserve order we see unique values in - in case a sort has been done already
         unique_vals = OrderedDict(
-            {self._prop_handler.get_prop(obj, group_by_prop): None for obj in obj_list}
+            {self._prop_handler.get_prop(obj, self._group_by): None for obj in obj_list}
         )
         logger.debug(
             "unique values found %s - each will become a group",
@@ -183,29 +170,35 @@ class QueryParser:
 
         # build groups
         for val in unique_vals.keys():
-            group_mappings.update(
-                {
-                    f"{group_by_prop.name} with value {val}": lambda obj, test_val=val: self._prop_handler.get_prop(
-                        obj, group_by_prop
-                    )
-                    == test_val
-                }
+            group_key = f"{self._group_by.name} with value {val}"
+            group_mappings[group_key] = (
+                lambda obj, test_val=val: self._prop_handler.get_prop(
+                    obj, self._group_by
+                )
+                == test_val
             )
 
         return group_mappings
 
-    @staticmethod
     def _run_group_by(
+        self,
         obj_list: List[OpenstackResourceObj],
-        group_mappings: Dict[str, Callable[[OpenstackResourceObj], bool]],
     ) -> Dict[str, List[OpenstackResourceObj]]:
         """
         helper method apply a set of group mappings onto a list of openstack objects. Returns a dictionary of grouped
         values where the key is the group name and value is a list of openstack objects that belong to that group
         :param obj_list: list of openstack objects to group
-        :param group_mappings: a dictionary containing a group name as key and a group filter function as a value.
         """
+
+        # if group mappings not specified - make a group for each unique value found for prop
+        if not self._group_mappings:
+            logger.info(
+                "no group ranges specified - grouping by unique values of %s property",
+                self._group_by.name,
+            )
+            self._group_mappings = self._build_unique_val_groups(obj_list)
+
         return {
             name: [item for item in obj_list if map_func(item)]
-            for name, map_func in group_mappings.items()
+            for name, map_func in self._group_mappings.items()
         }

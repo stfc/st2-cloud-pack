@@ -126,52 +126,34 @@ class QueryParserTests(unittest.TestCase):
         Tests that run_parser functions expectedly - when giving only sort_by
         Should call run_sort method, and return result
         """
-        self.instance._sort_by = (MockProperties.PROP_1, False)
+        self.instance._sort_by = {MockProperties.PROP_1: False}
+        self.instance._group_by = None
+        self.instance._group_mappings = {}
+
         mock_run_sort.return_value = "sort-out"
         mock_obj_list = ["obj1", "obj2", "obj3"]
         res = self.instance.run_parser(mock_obj_list)
 
         self.assertEqual(res, "sort-out")
-        mock_run_sort.assert_called_once_with(mock_obj_list, self.instance._sort_by)
+        mock_run_sort.assert_called_once_with(mock_obj_list)
 
     @patch("openstack_query.query_parser.QueryParser._run_group_by")
-    def test_run_parser_with_group_mappings(self, mock_run_group_by):
+    def test_run_parser_no_sort_with_group_mappings(self, mock_run_group_by):
         """
         Tests that run_parser functions expectedly - when giving group_mappings
         Should call run_group_by with group mappings and return
         """
+        self.instance._sort_by = {}
         self.instance._group_by = MockProperties.PROP_1
         self.instance._group_mappings = {"group1": "some-mapping_func"}
+
         mock_obj_list = ["obj1", "obj2", "obj3"]
         mock_run_group_by.return_value = "group-out"
         self.instance._group_by = MockProperties.PROP_1
 
         res = self.instance.run_parser(mock_obj_list)
         self.assertEqual(res, "group-out")
-        mock_run_group_by.assert_called_once_with(
-            mock_obj_list, self.instance._group_mappings
-        )
-
-    @patch("openstack_query.query_parser.QueryParser._build_unique_val_groups")
-    @patch("openstack_query.query_parser.QueryParser._run_group_by")
-    def test_run_parser_with_no_group_mappings(
-        self, mock_run_group_by, mock_build_unique_val_groups
-    ):
-        """
-        Tests that run_parser functions expectedly - when giving group_by with no group_mappings
-        Should call build_unique_val_groups first to set group_mappings and then call run_group_by and return
-        """
-        self.instance._group_by = MockProperties.PROP_1
-        mock_obj_list = ["obj1", "obj2", "obj3"]
-        mock_build_unique_val_groups.return_value = "group-mapping-out"
-        mock_run_group_by.return_value = "group-out"
-
-        res = self.instance.run_parser(mock_obj_list)
-        self.assertEqual(res, "group-out")
-        mock_build_unique_val_groups.assert_called_once_with(
-            mock_obj_list, group_by_prop=MockProperties.PROP_1
-        )
-        mock_run_group_by.assert_called_once_with(mock_obj_list, "group-mapping-out")
+        mock_run_group_by.assert_called_once_with(mock_obj_list)
 
     @patch("openstack_query.query_parser.QueryParser._run_sort")
     @patch("openstack_query.query_parser.QueryParser._run_group_by")
@@ -180,7 +162,7 @@ class QueryParserTests(unittest.TestCase):
         Tests that run_parser functions expectedly - when giving both group_by and sort_by
         Should call run_sort method and then run_group_by on that output, then return
         """
-        self.instance._sort_by = (MockProperties.PROP_1, False)
+        self.instance._sort_by = {MockProperties.PROP_1: False}
         self.instance._group_by = MockProperties.PROP_1
         self.instance._group_mappings = {"group1": "some-mapping_func"}
         mock_obj_list = ["obj1", "obj2", "obj3"]
@@ -190,10 +172,8 @@ class QueryParserTests(unittest.TestCase):
 
         res = self.instance.run_parser(mock_obj_list)
         self.assertEqual(res, "group-out")
-        mock_run_sort.assert_called_once_with(mock_obj_list, self.instance._sort_by)
-        mock_run_group_by.assert_called_once_with(
-            "sort-out", self.instance._group_mappings
-        )
+        mock_run_sort.assert_called_once_with(mock_obj_list)
+        mock_run_group_by.assert_called_once_with("sort-out")
 
     @parameterized.expand(
         [
@@ -252,8 +232,8 @@ class QueryParserTests(unittest.TestCase):
             {"arg1": "d", "arg2": 3},
             {"arg1": "b", "arg2": 1},
         ]
-
-        res = self.instance._run_sort(mock_obj_list, sort_by_specs=mock_sort_by_specs)
+        self.instance._sort_by = mock_sort_by_specs
+        res = self.instance._run_sort(mock_obj_list)
         self.assertEqual(res, expected_res)
 
     @parameterized.expand(
@@ -313,8 +293,9 @@ class QueryParserTests(unittest.TestCase):
             {"arg1": "a", "arg2": 2},
             {"arg1": "b", "arg2": 2},
         ]
+        self.instance._sort_by = mock_sort_by_specs
 
-        res = self.instance._run_sort(mock_obj_list, sort_by_specs=mock_sort_by_specs)
+        res = self.instance._run_sort(mock_obj_list)
         self.assertEqual(res, expected_res)
 
     @parameterized.expand(
@@ -338,12 +319,17 @@ class QueryParserTests(unittest.TestCase):
         ]
     )
     def test_run_sort_with_boolean(self, _, mock_sort_by_specs, expected_res):
+        """
+        Tests that run_sort functions expectedly - sorting by boolean
+        Should call run_sort method which should get the appropriate sorting
+        key lambda function and sort dict accordingly
+        """
         mock_obj_list = [
             {"enabled": False},
             {"enabled": True},
         ]
-
-        res = self.instance._run_sort(mock_obj_list, sort_by_specs=mock_sort_by_specs)
+        self.instance._sort_by = mock_sort_by_specs
+        res = self.instance._run_sort(mock_obj_list)
         self.assertEqual(res, expected_res)
 
     @parameterized.expand(
@@ -371,10 +357,9 @@ class QueryParserTests(unittest.TestCase):
         ]
         mock_prop_enum = MagicMock()
         mock_prop_enum.name = mock_group_by_prop
-        res = self.instance._build_unique_val_groups(
-            obj_list,
-            mock_prop_enum,
-        )
+        self.instance._group_by = mock_prop_enum
+
+        res = self.instance._build_unique_val_groups(obj_list)
         expected_group_names = [
             f"{mock_group_by_prop} with value {val}" for val in expected_unique_vals
         ]
@@ -393,11 +378,21 @@ class QueryParserTests(unittest.TestCase):
                 else:
                     self.assertFalse(test_bool)
 
-    def test_run_group_by(self):
+    @patch("openstack_query.query_parser.QueryParser._build_unique_val_groups")
+    def test_run_group_by_no_group_mappings(self, mock_build_unique_val_groups):
+        """
+        Tests run group_by method functions expectedly - when using no group mappings
+        Should call build_unique_val_group and use the mappings returned to apply onto given object list
+        """
+        self.instance._group_mappings = {}
+        self.instance._group_by = MockProperties.PROP_1
+
         mock_group_mappings = {
             "group1": lambda obj: obj["arg1"] == "a",
-            "group2": lambda obj: obj["arg1"] in ["b", "c"],
+            "group2": lambda obj: obj["arg1"] == "b",
+            "group3": lambda obj: obj["arg1"] == "c",
         }
+        mock_build_unique_val_groups.return_value = mock_group_mappings
 
         mock_obj_list = [
             {"arg1": "a", "arg2": 1},
@@ -405,11 +400,45 @@ class QueryParserTests(unittest.TestCase):
             {"arg1": "c", "arg2": 3},
         ]
 
-        res = self.instance._run_group_by(mock_obj_list, mock_group_mappings)
+        res = self.instance._run_group_by(mock_obj_list)
+        mock_build_unique_val_groups.assert_called_once_with(mock_obj_list)
+
         self.assertEqual(
             res,
             {
                 "group1": [{"arg1": "a", "arg2": 1}],
-                "group2": [{"arg1": "b", "arg2": 2}, {"arg1": "c", "arg2": 3}],
+                "group2": [{"arg1": "b", "arg2": 2}],
+                "group3": [{"arg1": "c", "arg2": 3}],
+            },
+        )
+
+    @patch("openstack_query.query_parser.QueryParser._build_unique_val_groups")
+    def test_run_group_by_with_group_mappings(self, mock_build_unique_val_groups):
+        """
+        Tests run group_by method functions expectedly - when using group mappings
+        Should use the preset mappings and apply them onto given object list
+        """
+        self.instance._group_by = MockProperties.PROP_1
+
+        mock_group_mappings = {
+            "group1": lambda obj: obj["arg2"] in [1, 2],
+            "group2": lambda obj: obj["arg2"] in [3],
+        }
+        self.instance._group_mappings = mock_group_mappings
+
+        mock_obj_list = [
+            {"arg1": "a", "arg2": 1},
+            {"arg1": "b", "arg2": 2},
+            {"arg1": "c", "arg2": 3},
+        ]
+
+        res = self.instance._run_group_by(mock_obj_list)
+        mock_build_unique_val_groups.assert_not_called()
+
+        self.assertEqual(
+            res,
+            {
+                "group1": [{"arg1": "a", "arg2": 1}, {"arg1": "b", "arg2": 2}],
+                "group2": [{"arg1": "c", "arg2": 3}],
             },
         )
