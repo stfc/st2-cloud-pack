@@ -2,7 +2,6 @@ from typing import Optional, List, Dict
 import logging
 
 from openstack.compute.v2.server import Server
-
 from openstack.exceptions import ResourceNotFound
 
 from openstack_api.openstack_connection import OpenstackConnection

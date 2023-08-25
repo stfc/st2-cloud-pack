@@ -3,7 +3,6 @@ from tabulate import tabulate
 
 from enums.query.props.prop_enum import PropEnum
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
-from openstack_query.handlers.prop_handler import PropHandler
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 
 
@@ -15,9 +14,10 @@ class QueryOutput:
     TODO: Class should also handle grouping and sorting results
     """
 
-    def __init__(self, prop_handler: PropHandler):
-        self._prop_handler = prop_handler
+    def __init__(self, prop_enum_cls: PropEnum):
+        self._prop_enum_cls = prop_enum_cls
         self._props = set()
+        self.DEFAULT_OUT = "Not Found"
 
     @property
     def selected_props(self) -> List[PropEnum]:
@@ -78,7 +78,7 @@ class QueryOutput:
         :param props: any number of Enums representing properties to show
         """
         if select_all:
-            self._props = set(self._prop_handler.all_props())
+            self._props = set(self._prop_enum_cls)
         else:
             for prop in props:
                 self._check_prop_valid(prop)
@@ -90,7 +90,7 @@ class QueryOutput:
         self.prop_handler which takes a openstack resource and returns the corresponding property for that object
         :param prop: An enum representing the desired property
         """
-        if not self._prop_handler.check_supported(prop):
+        if prop not in self._prop_enum_cls:
             raise QueryPropertyMappingError(
                 "Error: failed to get property mapping, property is not supported by prop_handler"
             )
@@ -115,12 +115,15 @@ class QueryOutput:
         Generates a dictionary of queried properties from a single openstack object
         :param openstack_resource: openstack resource item to obtain properties from
         """
-        return {
-            prop.name.lower(): self._prop_handler.get_prop(
-                openstack_resource, prop, default_out="Not Found"
-            )
-            for prop in self._props
-        }
+        obj_dict = {}
+        for prop in self._props:
+            prop_func = self._prop_enum_cls.get_prop_func(prop)
+            try:
+                val = str(prop_func(openstack_resource))
+            except AttributeError:
+                val = self.DEFAULT_OUT
+            obj_dict[prop.name.lower()] = val
+        return obj_dict
 
     @staticmethod
     def _generate_table(

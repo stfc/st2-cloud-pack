@@ -2,7 +2,6 @@ from typing import List, Dict, Tuple, Union, Optional, Callable
 import logging
 from collections import OrderedDict
 from enums.query.props.prop_enum import PropEnum
-from openstack_query.handlers.prop_handler import PropHandler
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 
@@ -15,8 +14,8 @@ class QueryParser:
     Performs any sorting / grouping the user has specified
     """
 
-    def __init__(self, prop_handler: PropHandler):
-        self._prop_handler = prop_handler
+    def __init__(self, prop_enum_cls: PropEnum):
+        self._prop_enum_cls = prop_enum_cls
         self._sort_by = {}
         self._group_by = None
         self._group_mappings = {}
@@ -31,7 +30,7 @@ class QueryParser:
         self.prop_handler which takes a openstack resource and returns the corresponding property for that object
         :param prop: An enum representing the desired property
         """
-        if not self._prop_handler.check_supported(prop):
+        if prop not in self._prop_enum_cls:
             raise QueryPropertyMappingError(
                 "Error: failed to get property mapping, property is not supported by prop_handler"
             )
@@ -84,8 +83,10 @@ class QueryParser:
                 self._group_mappings.update(
                     {
                         name: (
-                            lambda obj, lst=group_vals: self._prop_handler.get_prop(
-                                obj, group_by
+                            lambda obj, lst=group_vals: self._prop_enum_cls.get_prop_func(
+                                group_by
+                            )(
+                                obj
                             )
                             in lst
                         )
@@ -98,8 +99,10 @@ class QueryParser:
                 logger.debug("creating filter function for ungrouped group")
                 self._group_mappings.update(
                     {
-                        "ungrouped results": lambda obj: self._prop_handler.get_prop(
-                            obj, group_by
+                        "ungrouped results": lambda obj: self._prop_enum_cls.get_prop_func(
+                            group_by
+                        )(
+                            obj
                         )
                         not in all_prop_list
                     }
@@ -141,7 +144,7 @@ class QueryParser:
             logger.debug("running sort %s / %s", i, sort_num)
             logger.debug("sorting by: %s, reverse=%s", sort_key, reverse)
             obj_list.sort(
-                key=lambda obj, sk=sort_key: self._prop_handler.get_prop(obj, sk),
+                key=lambda obj, sk=sort_key: self._prop_enum_cls.get_prop_func(sk)(obj),
                 reverse=reverse,
             )
         return obj_list
@@ -159,7 +162,10 @@ class QueryParser:
         # ordered dict to mimic ordered set
         # this is to preserve order we see unique values in - in case a sort has been done already
         unique_vals = OrderedDict(
-            {self._prop_handler.get_prop(obj, self._group_by): None for obj in obj_list}
+            {
+                self._prop_enum_cls.get_prop_func(self._group_by)(obj): None
+                for obj in obj_list
+            }
         )
         logger.debug(
             "unique values found %s - each will become a group",
@@ -172,8 +178,8 @@ class QueryParser:
         for val in unique_vals.keys():
             group_key = f"{self._group_by.name} with value {val}"
             group_mappings[group_key] = (
-                lambda obj, test_val=val: self._prop_handler.get_prop(
-                    obj, self._group_by
+                lambda obj, test_val=val: self._prop_enum_cls.get_prop(self._group_by)(
+                    obj
                 )
                 == test_val
             )
