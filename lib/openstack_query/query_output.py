@@ -3,6 +3,8 @@ from tabulate import tabulate
 
 from enums.query.props.prop_enum import PropEnum
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
+from exceptions.parse_query_error import ParseQueryError
+
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 
 
@@ -79,10 +81,15 @@ class QueryOutput:
         """
         if select_all:
             self._props = set(self._prop_enum_cls)
-        else:
-            for prop in props:
-                self._check_prop_valid(prop)
-                self._props.add(prop)
+            return
+
+        for prop in props:
+            if prop not in self._prop_enum_cls:
+                raise ParseQueryError(
+                    f"Error: Given property: {prop.name} is not supported by query"
+                )
+
+            self._props.add(prop)
 
     def _check_prop_valid(self, prop: PropEnum):
         """
@@ -91,9 +98,7 @@ class QueryOutput:
         :param prop: An enum representing the desired property
         """
         if prop not in self._prop_enum_cls:
-            raise QueryPropertyMappingError(
-                "Error: failed to get property mapping, property is not supported by prop_handler"
-            )
+            raise QueryPropertyMappingError()
 
     def generate_output(
         self, openstack_resources: List[OpenstackResourceObj]

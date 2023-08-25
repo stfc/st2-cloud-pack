@@ -1,7 +1,7 @@
+from typing import Callable, Any
 from abc import abstractmethod
 from enum import Enum
 from typing import Optional
-from custom_types.openstack_query.aliases import PropFunc
 
 
 class PropEnum(Enum):
@@ -11,7 +11,7 @@ class PropEnum(Enum):
 
     @staticmethod
     @abstractmethod
-    def get_prop_func(prop) -> Optional[PropFunc]:
+    def get_prop_func(prop) -> Optional[Callable[[Any], Any]]:
         """
         Method that returns the property function if function mapping exists for a given property Enum
         :param prop: A property Enum for which a function may exist for

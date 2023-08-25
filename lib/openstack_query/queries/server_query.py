@@ -7,7 +7,6 @@ from enums.query.query_presets import (
     QueryPresetsString,
 )
 from openstack_query.handlers.server_side_handler import ServerSideHandler
-from openstack_query.handlers.prop_handler import PropHandler
 
 
 from openstack_query.handlers.client_side_handler_generic import (
@@ -31,29 +30,6 @@ class ServerQuery(QueryWrapper):
     Query class for querying Openstack Server objects.
     Define property mappings, kwarg mappings and filter function mappings related to servers here
     """
-
-    def _get_prop_handler(self) -> PropHandler:
-        """
-        method to configure a property handler which can be used to get any valid property of a openstack Server object
-        valid properties are documented here:
-        https://docs.openstack.org/openstacksdk/latest/user/resources/compute/v2/server.html#openstack.compute.v2.server.Server
-
-        """
-        return PropHandler(
-            {
-                ServerProperties.USER_ID: lambda a: a["user_id"],
-                ServerProperties.HYPERVISOR_ID: lambda a: a["host_id"],
-                ServerProperties.SERVER_ID: lambda a: a["id"],
-                ServerProperties.SERVER_NAME: lambda a: a["name"],
-                ServerProperties.SERVER_DESCRIPTION: lambda a: a["description"],
-                ServerProperties.SERVER_STATUS: lambda a: a["status"],
-                ServerProperties.SERVER_CREATION_DATE: lambda a: a["created_at"],
-                ServerProperties.SERVER_LAST_UPDATED_DATE: lambda a: a["updated_at"],
-                ServerProperties.FLAVOR_ID: lambda a: a["flavor_id"],
-                ServerProperties.IMAGE_ID: lambda a: a["image_id"],
-                ServerProperties.PROJECT_ID: lambda a: a["location"]["project"]["id"],
-            }
-        )
 
     def _get_server_side_handler(self) -> ServerSideHandler:
         """
@@ -138,5 +114,6 @@ class ServerQuery(QueryWrapper):
         )
 
     def __init__(self):
-        self.marker_enum = ServerProperties.SERVER_ID
-        super().__init__(runner_cls=ServerRunner)
+        self.prop_enum_cls = ServerRunner
+        self.runner = ServerRunner(self.prop_enum_cls)
+        super().__init__()

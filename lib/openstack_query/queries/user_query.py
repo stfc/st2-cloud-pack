@@ -6,7 +6,6 @@ from enums.query.query_presets import (
     QueryPresetsString,
 )
 from openstack_query.handlers.server_side_handler import ServerSideHandler
-from openstack_query.handlers.prop_handler import PropHandler
 
 
 from openstack_query.handlers.client_side_handler_generic import (
@@ -26,23 +25,6 @@ class UserQuery(QueryWrapper):
     Query class for querying Openstack User objects.
     Define property mappings, kwarg mappings and filter function mappings related to users here
     """
-
-    def _get_prop_handler(self) -> PropHandler:
-        """
-        method to configure a property handler which can be used to get any valid property of a openstack User object
-        valid properties are documented here:
-        https://docs.openstack.org/openstacksdk/latest/user/resources/identity/v3/user.html#openstack.identity.v3.user.User
-
-        """
-        return PropHandler(
-            {
-                UserProperties.USER_ID: lambda a: a["id"],
-                UserProperties.USER_DOMAIN_ID: lambda a: a["domain_id"],
-                UserProperties.USER_DESCRIPTION: lambda a: a["description"],
-                UserProperties.USER_EMAIL: lambda a: a["email"],
-                UserProperties.USER_NAME: lambda a: a["name"],
-            }
-        )
 
     def _get_server_side_handler(self) -> ServerSideHandler:
         """
@@ -92,5 +74,6 @@ class UserQuery(QueryWrapper):
         )
 
     def __init__(self):
-        self.marker_enum = UserProperties.USER_ID
-        super().__init__(runner_cls=UserRunner)
+        self.prop_enum_cls = UserProperties
+        self.runner = UserRunner(self.prop_enum_cls)
+        super().__init__()

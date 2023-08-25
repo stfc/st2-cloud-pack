@@ -1,8 +1,7 @@
 from enum import auto
 from enums.query.props.prop_enum import PropEnum
 from exceptions.parse_query_error import ParseQueryError
-
-# pylint: disable=too-few-public-methods
+from exceptions.query_property_mapping_error import QueryPropertyMappingError
 
 
 class ServerProperties(PropEnum):
@@ -52,11 +51,20 @@ class ServerProperties(PropEnum):
             ServerProperties.SERVER_STATUS: lambda a: a["status"],
             ServerProperties.SERVER_CREATION_DATE: lambda a: a["created_at"],
             ServerProperties.SERVER_LAST_UPDATED_DATE: lambda a: a["updated_at"],
-            ServerProperties.FLAVOR_ID: lambda a: ["flavor_id"],
-            ServerProperties.IMAGE_ID: lambda a: ["image_id"],
+            ServerProperties.FLAVOR_ID: lambda a: a["flavor_id"],
+            ServerProperties.IMAGE_ID: lambda a: a["image_id"],
             ServerProperties.PROJECT_ID: lambda a: a["location"]["project"]["id"],
         }
         assert all(i in mapping for i in ServerProperties)
+        for i in ServerProperties:
+            assert (
+                i in mapping
+            ), f"Error: No prop mapping defined for ServerProperties.{i.name}"
+
+        if prop not in ServerProperties:
+            raise QueryPropertyMappingError(
+                "Error: failed to get property mapping, property is not supported in ServerProperties"
+            )
         return mapping[prop]
 
     @staticmethod

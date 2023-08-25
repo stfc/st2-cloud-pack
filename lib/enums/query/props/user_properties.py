@@ -1,8 +1,7 @@
 from enum import auto
 from enums.query.props.prop_enum import PropEnum
 from exceptions.parse_query_error import ParseQueryError
-
-# pylint: disable=too-few-public-methods
+from exceptions.query_property_mapping_error import QueryPropertyMappingError
 
 
 class UserProperties(PropEnum):
@@ -44,7 +43,15 @@ class UserProperties(PropEnum):
             UserProperties.USER_EMAIL: lambda a: a["email"],
             UserProperties.USER_NAME: lambda a: a["name"],
         }
-        assert all(i in mapping for i in UserProperties)
+        for i in UserProperties:
+            assert (
+                i in mapping
+            ), f"Error: No prop mapping defined for prop UserProperties.{i.name}"
+
+        if prop not in UserProperties:
+            raise QueryPropertyMappingError(
+                "Error: failed to get property mapping, property is not supported in UserProperties"
+            )
         return mapping[prop]
 
     @staticmethod
@@ -52,4 +59,4 @@ class UserProperties(PropEnum):
         """
         A getter method to return marker property function for pagination
         """
-        return UserProperties.get_prop_func(UserProperties.SERVER_ID)
+        return UserProperties.get_prop_func(UserProperties.USER_ID)

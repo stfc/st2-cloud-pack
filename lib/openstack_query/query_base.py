@@ -14,13 +14,6 @@ class QueryBase(ABC):
     """
 
     @abstractmethod
-    def _get_prop_handler(self) -> PropHandler:
-        """
-        Should return a property handler object which can be used to get valid properties from an openstack resource
-        object
-        """
-
-    @abstractmethod
     def _get_server_side_handler(self) -> ServerSideHandler:
         """
         Should return a server-side filter handler object. This object can be used to get filter params to pass to the
