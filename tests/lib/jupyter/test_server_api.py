@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, NonCallableMock, call
 
-from nose.tools import assert_raises_regexp, raises
+from nose.tools import raises
 
 from jupyter_api.api_endpoints import API_ENDPOINTS
 from jupyter_api.user_api import UserApi
@@ -70,7 +70,7 @@ class UserApiTests(unittest.TestCase):
         Tests that the start_servers method raises an error if the end_index is greater than start
         """
         user_names = JupyterUsers(name="test", start_index=2, end_index=1)
-        with assert_raises_regexp(RuntimeError, "must be less than"):
+        with self.assertRaisesRegex(RuntimeError, "must be less than"):
             self.api.start_servers("dev", "token", user_names)
 
     def test_start_servers_handles_error(self, requests):
@@ -141,7 +141,7 @@ class UserApiTests(unittest.TestCase):
         Tests that the stop_servers method raises an error if the end_index is greater than start
         """
         user_names = JupyterUsers(name="test", start_index=2, end_index=1)
-        with assert_raises_regexp(RuntimeError, "must be less than"):
+        with self.assertRaisesRegex(RuntimeError, "must be less than"):
             self.api.stop_servers("dev", "token", user_names)
 
     def test_stop_servers_handles_error(self, requests):
