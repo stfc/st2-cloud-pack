@@ -314,11 +314,29 @@ class QueryParserTests(unittest.TestCase):
 
     @parameterized.expand(
         [
-            ("group by arg1", "arg1", ["a", "b", "c"]),
-            ("group by arg2", "arg2", [1, 2, 3]),
+            (
+                "group by arg1",
+                "arg1",
+                {
+                    "arg1 with value a": [
+                        {"arg1": "a", "arg2": 1},
+                        {"arg1": "a", "arg2": 3},
+                    ],
+                    "arg1 with value b": [{"arg1": "b", "arg2": 2}],
+                },
+            ),
+            (
+                "group by arg2",
+                "arg2",
+                {
+                    "arg2 with value 1": [{"arg1": "a", "arg2": 1}],
+                    "arg2 with value 2": [{"arg1": "b", "arg2": 2}],
+                    "arg2 with value 3": [{"arg1": "a", "arg2": 3}],
+                },
+            ),
         ]
     )
-    def test_build_unique_val_groups(self, _, mock_group_by_prop, expected_unique_vals):
+    def test_build_unique_val_groups(self, _, mock_group_by_prop, expected_out):
         """
         Tests that build_unique_val_groups method functions expectedly
         method should find all unique values for a test object list for a given property and create appropriate
@@ -333,30 +351,21 @@ class QueryParserTests(unittest.TestCase):
         obj_list = [
             {"arg1": "a", "arg2": 1},
             {"arg1": "b", "arg2": 2},
-            {"arg1": "c", "arg2": 3},
+            {"arg1": "a", "arg2": 3},
         ]
         mock_prop_enum = MagicMock()
         mock_prop_enum.name = mock_group_by_prop
         self.instance._group_by = mock_prop_enum
 
         res = self.instance._build_unique_val_groups(obj_list)
-        expected_group_names = [
-            f"{mock_group_by_prop} with value {val}" for val in expected_unique_vals
-        ]
-        self.assertEqual(list(res.keys()), expected_group_names)
+        self.assertEqual(res.keys(), expected_out.keys())
 
-        # check that groups are unique
-        for i, key in enumerate(res.keys()):
-            for j, test_val in enumerate(expected_unique_vals):
-                test_bool = res[key]({mock_group_by_prop: test_val})
-
-                # if the function is run with prop matching expected val - should return True
-                if i == j:
-                    self.assertTrue(test_bool)
-
-                # if the function is run with prop not matching expected val - should return False
-                else:
-                    self.assertFalse(test_bool)
+        # now that we have the group mappings - check that using them produces expected results
+        grouped_out = {
+            name: [item for item in obj_list if map_func(item)]
+            for name, map_func in res.items()
+        }
+        self.assertEqual(grouped_out, expected_out)
 
     @patch("openstack_query.query_parser.QueryParser._build_unique_val_groups")
     def test_run_group_by_no_group_mappings(self, mock_build_unique_val_groups):
