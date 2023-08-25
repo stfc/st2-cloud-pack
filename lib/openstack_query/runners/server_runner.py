@@ -35,6 +35,9 @@ class ServerRunner(QueryRunner):
         This method is a helper function that will parse a set of query meta params related to openstack server queries.
         :param conn: An OpenstackConnection object - used to connect to openstack and parse meta params
         """
+        if not from_projects:
+            return {}
+
         project_list = []
         for proj in from_projects:
             try:
@@ -47,9 +50,7 @@ class ServerRunner(QueryRunner):
                     "Failed to execute query: Failed to parse meta params"
                 ) from exp
             project_list.append(project)
-        if project_list:
-            return {"projects": project_list}
-        return {}
+        return {"projects": project_list}
 
     def _run_query(
         self,
@@ -74,7 +75,7 @@ class ServerRunner(QueryRunner):
         # so we can search in all projects instead of default set in clouds.yaml
         filter_kwargs.update({"all_tenants": True})
 
-        if not meta_params["projects"]:
+        if "projects" not in meta_params:
             logger.debug("running query on all projects")
             logger.debug(
                 "running openstacksdk command conn.compute.servers (%s)",

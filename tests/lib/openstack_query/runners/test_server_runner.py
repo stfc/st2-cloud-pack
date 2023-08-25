@@ -138,9 +138,7 @@ class ServerRunnerTests(unittest.TestCase):
     ):
         mock_run_paginated_query.side_effect = [["server1", "server2"]]
 
-        res = self.instance._run_query(
-            self.conn, filter_kwargs=mock_filter_kwargs, projects=None
-        )
+        res = self.instance._run_query(self.conn, filter_kwargs=mock_filter_kwargs)
 
         if not mock_filter_kwargs:
             mock_filter_kwargs = {}
