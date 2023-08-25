@@ -18,7 +18,7 @@ class QueryWrapper(QueryMethods, QueryBase):
         prop_handler = self._get_prop_handler()
 
         self.runner = runner_cls(
-            marker_prop_func=lambda obj: prop_handler.get_prop(self.marker_enum)
+            marker_prop_func=lambda obj: prop_handler.get_prop(obj, self.marker_enum)
         )
         self._query_results = []
 
