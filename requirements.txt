@@ -6,3 +6,7 @@ python-openstackclient == 5.7.0
 tabulate
 requests
 dataclasses; python_version < '3.7'
+
+# for tests
+nose
+parameterized
