@@ -180,46 +180,22 @@ class QueryParserTests(unittest.TestCase):
             (
                 "string key ascending",
                 {"arg1": False},
-                [
-                    {"arg1": "a", "arg2": 2},
-                    {"arg1": "b", "arg2": 1},
-                    {"arg1": "c", "arg2": 4},
-                    {"arg1": "d", "arg2": 3},
-                ],
             ),
             (
                 "string key descending",
                 {"arg1": True},
-                [
-                    {"arg1": "d", "arg2": 3},
-                    {"arg1": "c", "arg2": 4},
-                    {"arg1": "b", "arg2": 1},
-                    {"arg1": "a", "arg2": 2},
-                ],
             ),
             (
                 "integer key ascending",
                 {"arg2": False},
-                [
-                    {"arg1": "b", "arg2": 1},
-                    {"arg1": "a", "arg2": 2},
-                    {"arg1": "d", "arg2": 3},
-                    {"arg1": "c", "arg2": 4},
-                ],
             ),
             (
                 "integer key descending",
                 {"arg2": True},
-                [
-                    {"arg1": "c", "arg2": 4},
-                    {"arg1": "d", "arg2": 3},
-                    {"arg1": "a", "arg2": 2},
-                    {"arg1": "b", "arg2": 1},
-                ],
             ),
         ]
     )
-    def test_run_sort_with_one_key(self, _, mock_sort_by_specs, expected_res):
+    def test_run_sort_with_one_key(self, _, mock_sort_by_specs):
         """
         Tests that run_sort functions expectedly - with one sorting key
         Should call run_sort method which should get the appropriate sorting
@@ -232,9 +208,15 @@ class QueryParserTests(unittest.TestCase):
             {"arg1": "d", "arg2": 3},
             {"arg1": "b", "arg2": 1},
         ]
+        mock_prop_name = list(mock_sort_by_specs.keys())[0]
+        reverse = mock_sort_by_specs[mock_prop_name]
+
+        expected_list = sorted(
+            mock_obj_list, key=lambda k: k[mock_prop_name], reverse=reverse
+        )
         self.instance._sort_by = mock_sort_by_specs
         res = self.instance._run_sort(mock_obj_list)
-        self.assertEqual(res, expected_res)
+        self.assertEqual(res, expected_list)
 
     @parameterized.expand(
         [
@@ -303,22 +285,14 @@ class QueryParserTests(unittest.TestCase):
             (
                 "boolean ascending",
                 {"enabled": False},
-                [
-                    {"enabled": False},
-                    {"enabled": True},
-                ],
             ),
             (
                 "boolean ascending",
                 {"enabled": True},
-                [
-                    {"enabled": True},
-                    {"enabled": False},
-                ],
             ),
         ]
     )
-    def test_run_sort_with_boolean(self, _, mock_sort_by_specs, expected_res):
+    def test_run_sort_with_boolean(self, _, mock_sort_by_specs):
         """
         Tests that run_sort functions expectedly - sorting by boolean
         Should call run_sort method which should get the appropriate sorting
@@ -329,8 +303,14 @@ class QueryParserTests(unittest.TestCase):
             {"enabled": True},
         ]
         self.instance._sort_by = mock_sort_by_specs
+        mock_prop_name = list(mock_sort_by_specs.keys())[0]
+        reverse = mock_sort_by_specs[mock_prop_name]
+
+        expected_list = sorted(
+            mock_obj_list, key=lambda k: k[mock_prop_name], reverse=reverse
+        )
         res = self.instance._run_sort(mock_obj_list)
-        self.assertEqual(res, expected_res)
+        self.assertEqual(res, expected_list)
 
     @parameterized.expand(
         [
