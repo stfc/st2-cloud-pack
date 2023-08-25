@@ -25,8 +25,9 @@ logger = logging.getLogger(__name__)
 
 
 # these search methods map to stackstorm actions which just pass
-# user-inputted strings straight here - hence there's a lot of parameters
+# user-inputted strings straight here - hence there's a lot of parameters and local variables
 # pylint:disable=too-many-arguments
+# pylint:disable=too-many-locals
 class QueryManager:
     """
     This class is the base class for all managers.
