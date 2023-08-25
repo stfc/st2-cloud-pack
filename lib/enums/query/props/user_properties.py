@@ -28,3 +28,28 @@ class UserProperties(PropEnum):
                 f"Could not find User Property {val}. "
                 f"Available properties are {','.join([prop.name for prop in UserProperties])}"
             ) from err
+
+    @staticmethod
+    def get_prop_func(prop):
+        """
+        Method that returns the property function if function mapping exists for a given UserProperty Enum
+        how to get specified property from an openstacksdk Server object is documented here:
+        https://docs.openstack.org/openstacksdk/latest/user/resources/identity/v3/user.html#openstack.identity.v3.user.User
+        :param prop: A UserProperty Enum for which a function may exist for
+        """
+        mapping = {
+            UserProperties.USER_ID: lambda a: a["id"],
+            UserProperties.USER_DOMAIN_ID: lambda a: a["domain_id"],
+            UserProperties.USER_DESCRIPTION: lambda a: a["description"],
+            UserProperties.USER_EMAIL: lambda a: a["email"],
+            UserProperties.USER_NAME: lambda a: a["name"],
+        }
+        assert all(i in mapping for i in UserProperties)
+        return mapping[prop]
+
+    @staticmethod
+    def get_marker_prop_func():
+        """
+        A getter method to return marker property function for pagination
+        """
+        return UserProperties.get_prop_func(UserProperties.SERVER_ID)
