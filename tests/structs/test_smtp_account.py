@@ -1,5 +1,7 @@
 import unittest
-from nose.tools import raises
+
+import pytest
+
 from structs.email.smtp_account import SMTPAccount
 
 
@@ -65,18 +67,18 @@ class TestEmailParams(unittest.TestCase):
         for key, val in expected_attrs.items():
             self.assertEqual(val, getattr(res, key))
 
-    @raises(KeyError)
     def test_from_pack_config_invalid_name(self):
         """
         Tests that from_pack_config() method works properly - when given an invalid smtp_account_name
         should raise an error if pack config does not contain entry matching smtp_account_name
         """
-        SMTPAccount.from_pack_config(self.mock_pack_config, "invalid-config")
+        with pytest.raises(KeyError):
+            SMTPAccount.from_pack_config(self.mock_pack_config, "invalid-config")
 
-    @raises(ValueError)
     def test_from_pack_config_invalid_pack(self):
         """
         Tests that from_pack_config() method works properly - when given an invalid pack_config
         should raise an error if pack config could not be found
         """
-        SMTPAccount.from_pack_config({}, "config1")
+        with pytest.raises(ValueError):
+            SMTPAccount.from_pack_config({}, "config1")

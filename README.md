@@ -30,7 +30,7 @@ Many steps are available to run locally with the following setup:
   on commit and in the future run many automated tests.
 - If you are on Linux a helper script is included to setup and run Stackstorm unit tests.
   This is done by running `./run_tests.sh`
-- Additionally, tests can be run locally using `nose` through the IDE or CLI.
+- Additionally, tests can be run locally using `pytest` through the IDE or CLI.
 
 ## General Development Notes
 
