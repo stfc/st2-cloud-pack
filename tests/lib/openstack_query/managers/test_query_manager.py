@@ -51,7 +51,9 @@ class QueryManagerTests(unittest.TestCase):
             ("test with no args", None),
         ]
     )
-    @patch("openstack_query.managers.query_manager.QueryManager._populate_output_params")
+    @patch(
+        "openstack_query.managers.query_manager.QueryManager._populate_output_params"
+    )
     @patch("openstack_query.managers.query_manager.QueryManager._get_query_output")
     def test_build_and_run_query_with_runner_params(
         self, _, mock_run_args, mock_get_query_output, mock_populate_output_params

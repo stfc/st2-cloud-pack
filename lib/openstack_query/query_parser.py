@@ -39,7 +39,8 @@ class QueryParser:
     def parse_sort_by(self, *sort_by: Tuple[PropEnum, bool]) -> None:
         """
         Public method used to configure sorting results
-        :param sort_by: tuples of property name to sort by and order "asc or desc"
+        :param sort_by: one or more tuples of property name to sort by and order
+            - set order to True for descending, False for ascending
         """
         self._sort_by = {}
         for prop, order in sort_by:
@@ -68,7 +69,7 @@ class QueryParser:
         Public method used to configure grouping results.
         :param group_by: name of the property to group by
         :param group_ranges: a dictionary containing names of the group and list of prop values
-        to select for for that group
+        to select for that group
         :param include_missing: a flag which if set includes an extra grouping for values
         that don't fall into any group specified in group_ranges
         """
@@ -161,6 +162,13 @@ class QueryParser:
         obj_list: List[OpenstackResourceObj],
         group_by_prop: PropEnum,
     ) -> Dict[str, Callable[[OpenstackResourceObj], bool]]:
+        """
+        helper method to find all unique values for a given property in query results, and then,
+        for each unique value, create a group mapping
+        :param obj_list: A list of openstack objects to group
+        :param group_by_prop: A property enum to build unique-value group mappings for
+        """
+
         # ordered dict to mimic ordered set
         # this is to preserve order we see unique values in - in case a sort has been done already
         unique_vals = OrderedDict(
@@ -191,6 +199,12 @@ class QueryParser:
         obj_list: List[OpenstackResourceObj],
         group_mappings: Dict[str, Callable[[OpenstackResourceObj], bool]],
     ) -> Dict[str, List[OpenstackResourceObj]]:
+        """
+        helper method apply a set of group mappings onto a list of openstack objects. Returns a dictionary of grouped
+        values where the key is the group name and value is a list of openstack objects that belong to that group
+        :param obj_list: list of openstack objects to group
+        :param group_mappings: a dictionary containing a group name as key and a group filter function as a value.
+        """
         return {
             name: [item for item in obj_list if map_func(item)]
             for name, map_func in group_mappings.items()

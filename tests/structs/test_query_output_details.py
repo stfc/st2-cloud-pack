@@ -57,6 +57,5 @@ class QueryOutputDetailsTests(unittest.TestCase):
                 ],
             )
 
-        # TODO allow setting these using form kwargs
         self.assertEqual(out.group_ranges, None)
         self.assertEqual(out.include_ungrouped_results, False)
