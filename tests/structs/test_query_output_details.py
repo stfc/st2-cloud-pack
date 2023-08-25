@@ -1,5 +1,4 @@
 import unittest
-from parameterized import parameterized
 from structs.query.query_output_details import QueryOutputDetails
 from enums.query.props.server_properties import ServerProperties
 from enums.query.query_output_types import QueryOutputTypes
