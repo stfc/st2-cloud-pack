@@ -144,36 +144,20 @@ class QueryManager:
             )
         return output_func()
 
-    def _populate_query(
-        self,
-        properties_to_select: List[PropEnum],
-        preset_details: Optional[QueryPresetDetails] = None,
-    ) -> None:
-        """
-        method that populates the query before executing.
-        :param properties_to_select: A set of properties to get from each result when outputting
-        :param preset_details: A dataclass containing query preset config information
-        """
-
-        self._query.select(*properties_to_select)
-
-        if preset_details:
-            self._query.where(
-                preset=preset_details.preset,
-                prop=preset_details.prop,
-                **preset_details.args,
-            )
-
     def search_all(
         self,
         properties_to_select: Optional[List[str]] = None,
         output_type: Optional[str] = None,
+        group_by: Optional[str] = None,
+        sort_by: Optional[List[str]] = None,
         **kwargs,
     ) -> QueryReturn:
         """
         method that returns a list of all resources
         :param properties_to_select: list of strings representing which properties to select
         :param output_type: string representing how to output the query
+        :param group_by: an optional string representing a property to group results by
+        :param sort_by: an optional set of tuples representing way which properties to sort results by
         :param kwargs: A set of optional meta params to pass to the query
 
         """
@@ -182,6 +166,8 @@ class QueryManager:
             prop_cls=self._prop_cls,
             properties_to_select=properties_to_select,
             output_type=output_type,
+            group_by=group_by,
+            sort_by=sort_by,
         )
 
         return self._build_and_run_query(
@@ -195,6 +181,8 @@ class QueryManager:
         values: List[str],
         properties_to_select: Optional[List[str]] = None,
         output_type: Optional[str] = None,
+        group_by: Optional[str] = None,
+        sort_by: Optional[List[str]] = None,
         **kwargs,
     ) -> QueryReturn:
         """
@@ -207,6 +195,8 @@ class QueryManager:
         :param values: A list of string values to compare server property against
         :param properties_to_select: list of strings representing which properties to select
         :param output_type: string representing how to output the query
+        :param group_by: an optional string representing a property to group results by
+        :param sort_by: an optional set of tuples representing way which properties to sort results by
         :param kwargs: A set of optional meta params to pass to the query
         """
         # convert user-given args into enums
@@ -243,6 +233,8 @@ class QueryManager:
             prop_cls=self._prop_cls,
             properties_to_select=properties_to_select,
             output_type=output_type,
+            group_by=group_by,
+            sort_by=sort_by,
         )
 
         return self._build_and_run_query(
@@ -261,6 +253,8 @@ class QueryManager:
         pattern: str,
         properties_to_select: Optional[List[str]] = None,
         output_type: Optional[str] = None,
+        group_by: Optional[str] = None,
+        sort_by: Optional[List[str]] = None,
         **kwargs,
     ):
         """
@@ -269,6 +263,8 @@ class QueryManager:
         :param pattern: A string representing a regex pattern
         :param properties_to_select: list of strings representing which properties to select
         :param output_type: string representing how to output the query
+        :param group_by: an optional string representing a property to group results by
+        :param sort_by: an optional set of tuples representing way which properties to sort results by
         :param kwargs: A set of optional meta params to pass to the query
         """
         logging.info("Running search by property query")
@@ -291,6 +287,8 @@ class QueryManager:
             prop_cls=self._prop_cls,
             properties_to_select=properties_to_select,
             output_type=output_type,
+            group_by=group_by,
+            sort_by=sort_by,
         )
 
         return self._build_and_run_query(
@@ -313,6 +311,8 @@ class QueryManager:
         seconds: int = 0,
         properties_to_select: Optional[List[str]] = None,
         output_type: Optional[str] = None,
+        group_by: Optional[str] = None,
+        sort_by: Optional[List[str]] = None,
         **kwargs,
     ) -> QueryReturn:
         """
@@ -328,6 +328,8 @@ class QueryManager:
         :param seconds: (Optional) Number of relative seconds in the past from now to use as threshold
         :param properties_to_select: list of strings representing which properties to select
         :param output_type: string representing how to output the query
+        :param group_by: an optional string representing a property to group results by
+        :param sort_by: an optional set of tuples representing way which properties to sort results by
         :param kwargs: A set of optional meta params to pass to the query
         """
         logging.info("Running search by property query")
@@ -358,6 +360,8 @@ class QueryManager:
             prop_cls=self._prop_cls,
             properties_to_select=properties_to_select,
             output_type=output_type,
+            group_by=group_by,
+            sort_by=sort_by,
         )
 
         return self._build_and_run_query(
