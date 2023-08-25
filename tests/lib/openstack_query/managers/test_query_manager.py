@@ -53,7 +53,6 @@ class QueryManagerTests(unittest.TestCase):
             with patch(
                 "openstack_query.managers.query_manager.QueryManager._get_query_output"
             ) as mock_get_query_output:
-
                 res = self.instance._build_and_run_query(
                     output_details=output_details,
                     preset_details=preset_details,

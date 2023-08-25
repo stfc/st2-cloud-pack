@@ -126,7 +126,7 @@ class QueryMethodsTests(unittest.TestCase):
         if not mock_kwargs:
             mock_kwargs = {}
 
-        _ = self.instance.run("test-account", mock_from_subset, **mock_kwargs)
+        res = self.instance.run("test-account", mock_from_subset, **mock_kwargs)
         self.mock_runner.run.assert_called_once_with(
             "test-account",
             mock_client_filter_func,
@@ -138,34 +138,22 @@ class QueryMethodsTests(unittest.TestCase):
             self.mock_runner.run.return_value
         )
         self.mock_output.generate_output.assert_called_once_with(["obj1", "obj2"])
+        self.assertEqual(res, self.instance)
 
-    @parameterized.expand(
-        [
-            ("parser outputs grouped results", True),
-            ("parser outputs list results", False),
-        ]
-    )
-    def test_run_with_parsing(self, _, parse_output_as_dict):
+    def test_run_with_parsing_grouped(self):
         """
-        Tests that run method works expectedly - with parsing - grouping and sorting
+        Tests that run method works expectedly - with parsing - i.e. grouping into dict
         Should call run_parser to get items - either dict of lists or list and handle them properly
-
         """
         self.mock_parser.run_parser.return_value = ["obj1", "obj2"]
-        if parse_output_as_dict:
-            self.mock_parser.run_parser.return_value = {
-                "group1": ["obj1", "obj2"],
-                "group2": ["obj3", "obj4"],
-            }
-
+        self.mock_parser.run_parser.return_value = {
+            "group1": ["obj1", "obj2"],
+            "group2": ["obj3", "obj4"],
+        }
         self.instance.run("cloud_account")
-
-        if parse_output_as_dict:
-            self.mock_output.generate_output.assert_has_calls(
-                [call(["obj1", "obj2"]), call(["obj3", "obj4"])]
-            )
-        else:
-            self.mock_output.generate_output.assert_called_once_with(["obj1", "obj2"])
+        self.mock_output.generate_output.assert_has_calls(
+            [call(["obj1", "obj2"]), call(["obj3", "obj4"])]
+        )
 
     def test_to_list_as_objects_false(self):
         """
