@@ -4,10 +4,6 @@ from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 
 class TimeUtils:
     @staticmethod
-    def get_current_time() -> datetime:
-        return datetime.now()
-
-    @staticmethod
     def get_timestamp_in_seconds(
         days: int = 0, hours: int = 0, minutes: int = 0, seconds: int = 0
     ) -> float:
@@ -23,7 +19,7 @@ class TimeUtils:
                 "requires at least 1 argument for function to be non-zero"
             )
 
-        current_time = TimeUtils.get_current_time().timestamp()
+        current_time = datetime.now().timestamp()
         prop_time_in_seconds = timedelta(
             days=days, hours=hours, minutes=minutes, seconds=float(seconds)
         ).total_seconds()

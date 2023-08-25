@@ -1,5 +1,5 @@
 from unittest.mock import patch, NonCallableMock
-from parameterized import parameterized
+
 from enums.cloud_domains import CloudDomains
 
 from src.user_query_actions import UserQueryActions
@@ -25,7 +25,7 @@ class TestServerQueryActions(OpenstackActionTestBase):
             "kwarg2": NonCallableMock(),
         }
 
-    @parameterized.expand(
+    @pytest.mark.parametrize("val",
         [
             "search_all",
             "search_by_property",

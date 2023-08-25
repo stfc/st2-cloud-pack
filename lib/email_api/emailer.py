@@ -30,9 +30,9 @@ class Emailer:
         Path(__file__).resolve().parent.parent.parent / "email_attachments"
     )
 
-    def __init__(self, smtp_account: SMTPAccount):
+    def __init__(self, smtp_account: SMTPAccount, template_handler = TemplateHandler()):
         self._smtp_account = smtp_account
-        self._template_handler = TemplateHandler()
+        self._template_handler = template_handler
 
     def send_emails(self, emails: List[EmailParams]):
         """
@@ -73,14 +73,14 @@ class Emailer:
                 server.sendmail(
                     email_params.email_from,
                     send_to,
-                    self._build_email(email_params).as_string(),
+                    self.build_email_header(email_params).as_string(),
                 )
 
             logger.info(
                 "sending complete - time elapsed: %s seconds", time.time() - start
             )
 
-    def _build_email(self, email_params: EmailParams) -> MIMEMultipart:
+    def build_email_header(self, email_params: EmailParams) -> MIMEMultipart:
         """
         Helper function to setup email as MIMEMultipart
         :param email_params: A dataclass holding parameters for building an email
@@ -88,19 +88,18 @@ class Emailer:
         msg = MIMEMultipart()
         msg["Subject"] = Header(email_params.subject, "utf-8")
         msg["From"] = email_params.email_from
-        msg["To"] = ", ".join(email_params.email_to)
+        msg["To"] = ", ".join(email_params.email_to) if email_params.email_to else None
+        msg["Cc"] = ", ".join(email_params.email_cc) if email_params.email_cc else None
         msg["Date"] = formatdate(localtime=True)
         msg["reply-to"] = email_params.email_from
-        if email_params.email_cc:
-            msg["Cc"] = ", ".join(email_params.email_cc)
         msg.attach(
-            self._build_email_body(email_params.email_templates, email_params.as_html)
+            self.build_email_body(email_params.email_templates, email_params.as_html)
         )
         if email_params.attachment_filepaths:
             msg = self._attach_files(msg, email_params.attachment_filepaths)
         return msg
 
-    def _build_email_body(self, templates: List[EmailTemplateDetails], as_html):
+    def build_email_body(self, templates: List[EmailTemplateDetails], as_html):
         """
         Helper function to setup email body from templates
         :param templates: A list of dataclasses holding template information to build emails from

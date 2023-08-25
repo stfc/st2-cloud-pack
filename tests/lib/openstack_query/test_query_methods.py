@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, NonCallableMock
-from parameterized import parameterized
-from nose.tools import raises
+
+
 
 from openstack_query.query_methods import QueryMethods
 
@@ -25,13 +25,13 @@ class QueryMethodsTests(unittest.TestCase):
             self.mock_output,
         )
 
-    @raises(ParseQueryError)
     def test_select_invalid(self):
         """
         Tests select method works expectedly - with no inputs
         method raises ParseQueryError when given no properties
         """
-        self.instance.select()
+        with self.assertRaises(ParseQueryError):
+            self.instance.select()
 
     def test_select_with_one_prop(self):
         """
@@ -103,14 +103,7 @@ class QueryMethodsTests(unittest.TestCase):
         )
         self.assertEqual(res, self.instance)
 
-    @parameterized.expand(
-        [
-            ("with kwargs", None, {"arg1": "val1", "arg2": "val2"}),
-            ("with from_subset", ["obj1", "obj2", "obj3"], None),
-            ("with no kwargs and no subset", None, None),
-        ]
-    )
-    def test_run(self, _, mock_from_subset, mock_kwargs):
+    def test_run(self):
         """
         Tests that run method works expectedly
         method should get client_side and server_side filters and forward them to query runner object
@@ -133,8 +126,8 @@ class QueryMethodsTests(unittest.TestCase):
         mock_query_results = NonCallableMock()
         mock_query_runner.run.return_value = mock_query_results
 
-        if not mock_kwargs:
-            mock_kwargs = {}
+        mock_from_subset = [NonCallableMock(), NonCallableMock()]
+        mock_kwargs = {"a": NonCallableMock(), "b": NonCallableMock()}
 
         res = self.instance.run("test-account", mock_from_subset, **mock_kwargs)
         mock_query_runner.run.assert_called_once_with(

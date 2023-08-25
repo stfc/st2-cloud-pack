@@ -1,11 +1,12 @@
-from parameterized import parameterized
+import pytest
+
 
 from enums.query.props.server_properties import ServerProperties
-from nose.tools import raises
+
 from exceptions.parse_query_error import ParseQueryError
 
 
-@parameterized(["flavor_id", "Flavor_ID", "FlAvOr_Id"])
+@pytest.mark.parametrize("val", ["flavor_id", "Flavor_ID", "FlAvOr_Id"])
 def test_flavor_id_serialization(val):
     """
     Tests that variants of FLAVOR_ID can be serialized
@@ -13,7 +14,7 @@ def test_flavor_id_serialization(val):
     assert ServerProperties.from_string(val) is ServerProperties.FLAVOR_ID
 
 
-@parameterized(["hypervisor_id", "Hypervisor_ID", "HyPerVisor_ID"])
+@pytest.mark.parametrize("val", ["hypervisor_id", "Hypervisor_ID", "HyPerVisor_ID"])
 def test_hypervisor_id_serialization(val):
     """
     Tests that variants of HYPERVISOR_ID can be serialized
@@ -21,7 +22,7 @@ def test_hypervisor_id_serialization(val):
     assert ServerProperties.from_string(val) is ServerProperties.HYPERVISOR_ID
 
 
-@parameterized(["image_id", "Image_ID", "ImaGe_iD"])
+@pytest.mark.parametrize("val", ["image_id", "Image_ID", "ImaGe_iD"])
 def test_image_id_serialization(val):
     """
     Tests that variants of IMAGE_ID can be serialized
@@ -29,7 +30,7 @@ def test_image_id_serialization(val):
     assert ServerProperties.from_string(val) is ServerProperties.IMAGE_ID
 
 
-@parameterized(["project_id", "Project_Id", "PrOjEcT_Id"])
+@pytest.mark.parametrize("val", ["project_id", "Project_Id", "PrOjEcT_Id"])
 def test_project_id_serialization(val):
     """
     Tests that variants of PROJECT_ID can be serialized
@@ -37,7 +38,7 @@ def test_project_id_serialization(val):
     assert ServerProperties.from_string(val) is ServerProperties.PROJECT_ID
 
 
-@parameterized(["server_creation_date", "Server_Creation_Date", "SeRvEr_CrEaTiOn_DAte"])
+@pytest.mark.parametrize("val", ["server_creation_date", "Server_Creation_Date", "SeRvEr_CrEaTiOn_DAte"])
 def test_server_creation_date_serialization(val):
     """
     Tests that variants of SERVER_CREATION_DATE can be serialized
@@ -45,7 +46,7 @@ def test_server_creation_date_serialization(val):
     assert ServerProperties.from_string(val) is ServerProperties.SERVER_CREATION_DATE
 
 
-@parameterized(["server_description", "Server_Description", "SeRvEr_DeScrIpTion"])
+@pytest.mark.parametrize("val", ["server_description", "Server_Description", "SeRvEr_DeScrIpTion"])
 def test_server_description_serialization(val):
     """
     Tests that variants of SERVER_DESCRIPTION can be serialized
@@ -53,7 +54,7 @@ def test_server_description_serialization(val):
     assert ServerProperties.from_string(val) is ServerProperties.SERVER_DESCRIPTION
 
 
-@parameterized(["server_id", "Server_Id", "SeRvEr_iD"])
+@pytest.mark.parametrize("val", ["server_id", "Server_Id", "SeRvEr_iD"])
 def test_server_id_serialization(val):
     """
     Tests that variants of SERVER_ID can be serialized
@@ -61,7 +62,7 @@ def test_server_id_serialization(val):
     assert ServerProperties.from_string(val) is ServerProperties.SERVER_ID
 
 
-@parameterized(
+@pytest.mark.parametrize("val", 
     ["server_last_updated_date", "Server_Last_Updated_Date", "SerVer_LasT_UpDatED_DaTe"]
 )
 def test_server_last_updated_date_serialization(val):
@@ -73,7 +74,7 @@ def test_server_last_updated_date_serialization(val):
     )
 
 
-@parameterized(["server_name", "Server_NaMe", "Server_Name"])
+@pytest.mark.parametrize("val", ["server_name", "Server_NaMe", "Server_Name"])
 def test_server_name_serialization(val):
     """
     Tests that variants of SERVER_NAME can be serialized
@@ -81,7 +82,7 @@ def test_server_name_serialization(val):
     assert ServerProperties.from_string(val) is ServerProperties.SERVER_NAME
 
 
-@parameterized(["server_status", "Server_Status", "SerVer_StAtUs"])
+@pytest.mark.parametrize("val", ["server_status", "Server_Status", "SerVer_StAtUs"])
 def test_server_status_serialization(val):
     """
     Tests that variants of SERVER_STATUS can be serialized
@@ -89,7 +90,7 @@ def test_server_status_serialization(val):
     assert ServerProperties.from_string(val) is ServerProperties.SERVER_STATUS
 
 
-@parameterized(["user_id", "User_Id", "UsEr_iD"])
+@pytest.mark.parametrize("val", ["user_id", "User_Id", "UsEr_iD"])
 def test_user_id_serialization(val):
     """
     Tests that variants of USER_ID can be serialized
@@ -97,9 +98,9 @@ def test_user_id_serialization(val):
     assert ServerProperties.from_string(val) is ServerProperties.USER_ID
 
 
-@raises(ParseQueryError)
 def test_invalid_serialization():
     """
     Tests that error is raised when passes invalid string to all preset classes
     """
-    ServerProperties.from_string("some-invalid-string")
+    with pytest.raises(ParseQueryError):
+        ServerProperties.from_string("some-invalid-string")

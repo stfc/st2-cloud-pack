@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import MagicMock, patch, call
 from openstack_query.query_output import QueryOutput
 
-from nose.tools import raises
+
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
@@ -135,7 +135,6 @@ class QueryOutputTests(unittest.TestCase):
         self.mock_prop_handler.check_supported.return_value = True
         self.instance._check_prop_valid(MockProperties.PROP_1)
 
-    @raises(QueryPropertyMappingError)
     def test_check_prop_invalid(self):
         """
         Tests that check_prop_valid works expectedly
@@ -144,7 +143,8 @@ class QueryOutputTests(unittest.TestCase):
 
         # when prop_handler not found
         self.mock_prop_handler.check_supported.return_value = False
-        self.instance._check_prop_valid(MockProperties.PROP_1)
+        with self.assertRaises(QueryPropertyMappingError):
+            self.instance._check_prop_valid(MockProperties.PROP_1)
 
     def test_generate_output_no_items(self):
         """

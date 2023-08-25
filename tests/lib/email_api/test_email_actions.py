@@ -4,8 +4,6 @@ from unittest.mock import patch, NonCallableMock
 from email_api.email_actions import EmailActions
 from structs.email.email_template_details import EmailTemplateDetails
 
-# pylint:disable=protected-access
-
 
 class TestEmailActions(unittest.TestCase):
     """

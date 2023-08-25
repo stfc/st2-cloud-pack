@@ -6,8 +6,8 @@ python-openstackclient == 5.7.0
 tabulate
 requests
 python-dateutil
+jinja2
 dataclasses; python_version < '3.7'
 
 # for tests
-nose
-parameterized
+pytest

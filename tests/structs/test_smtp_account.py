@@ -1,5 +1,5 @@
 import unittest
-from nose.tools import raises
+
 from structs.email.smtp_account import SMTPAccount
 
 

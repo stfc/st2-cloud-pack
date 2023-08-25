@@ -2,7 +2,7 @@ import ipaddress
 import unittest
 from unittest.mock import NonCallableMock, Mock, ANY, MagicMock, patch
 
-from nose.tools import raises
+
 from openstack.exceptions import ResourceNotFound
 
 from enums.network_providers import NetworkProviders
@@ -30,13 +30,13 @@ class OpenstackNetworkTests(unittest.TestCase):
             self.mocked_connection.return_value.__enter__.return_value.network
         )
 
-    @raises(ItemNotFoundError)
     def test_allocate_floating_ip_raises_network_not_found(self):
         """
         Tests that allocating a floating IP will raise if the network was not found
         """
         self.instance.find_network = Mock(return_value=None)
-        self.instance.allocate_floating_ips(
+        with self.assertRaises(ItemNotFoundError):
+            self.instance.allocate_floating_ips(
             NonCallableMock(), NonCallableMock(), NonCallableMock(), NonCallableMock()
         )
 
@@ -95,12 +95,12 @@ class OpenstackNetworkTests(unittest.TestCase):
         # a new object each time
         assert returned == [expected, expected]
 
-    @raises(MissingMandatoryParamError)
     def test_get_floating_ip_throws_missing_address(self):
         """
         Tests that get floating IP will throw for a missing address
         """
-        self.instance.get_floating_ip(NonCallableMock(), " \t")
+        with self.assertRaises(MissingMandatoryParamError):
+            self.instance.get_floating_ip(NonCallableMock(), " \t")
 
     def test_get_floating_ip_call_success(self):
         """
@@ -122,12 +122,13 @@ class OpenstackNetworkTests(unittest.TestCase):
         returned = self.instance.get_floating_ip(cloud, ip_address)
         assert returned is None
 
-    @raises(MissingMandatoryParamError)
+
     def test_find_network_raises_for_missing_param(self):
         """
         Tests that find network will raise if the identifier is missing
         """
-        self.instance.find_network(NonCallableMock(), " ")
+        with self.assertRaises(MissingMandatoryParamError):
+            self.instance.find_network(NonCallableMock(), " ")
 
     def test_find_network_with_found_result(self):
         """
@@ -158,14 +159,14 @@ class OpenstackNetworkTests(unittest.TestCase):
         )
         assert result == list(self.network_api.rbac_policies.return_value)
 
-    @raises(MissingMandatoryParamError)
     def test_create_network_no_name(self):
         """
         Tests that create network with no new network name throws
         """
         mocked_details = NonCallableMock()
         mocked_details.name = " \t"
-        self.instance.create_network(NonCallableMock(), mocked_details)
+        with self.assertRaises(MissingMandatoryParamError):
+            self.instance.create_network(NonCallableMock(), mocked_details)
 
     def test_create_network_serialises_enum(self):
         """
@@ -206,13 +207,13 @@ class OpenstackNetworkTests(unittest.TestCase):
         )
         assert returned == self.network_api.create_network.return_value
 
-    @raises(ItemNotFoundError)
     def test_create_network_rbac_network_not_found(self):
         """
         Tests that create RBAC (network) will throw if a network isn't found
         """
         self.instance.find_network = Mock(return_value=None)
-        self.instance.create_network_rbac(NonCallableMock(), NonCallableMock())
+        with self.assertRaises(ItemNotFoundError):
+            self.instance.create_network_rbac(NonCallableMock(), NonCallableMock())
 
     def test_create_rbac_uses_found_project_and_network(self):
         """
@@ -234,14 +235,14 @@ class OpenstackNetworkTests(unittest.TestCase):
         )
         assert returned == self.network_api.create_rbac_policy.return_value
 
-    @raises(KeyError)
     def test_create_rbac_unknown_key(self):
         """
         Tests a key error is thrown in an unknown var is passed to the serialisation logic
         """
         rbac_details = NonCallableMock()
         rbac_details.action = "unknown"
-        self.instance.create_network_rbac(NonCallableMock(), rbac_details)
+        with self.assertRaises(KeyError):
+            self.instance.create_network_rbac(NonCallableMock(), rbac_details)
 
     def test_create_rbac_serialises_enum_correctly(self):
         """
@@ -324,14 +325,14 @@ class OpenstackNetworkTests(unittest.TestCase):
         )
         self.network_api.delete_rbac_policy.assert_not_called()
 
-    @raises(ItemNotFoundError)
     def test_create_router_missing_ext_network(self):
         """
         Tests that create router will throw if the specified ext network
         was not found
         """
         self.instance.find_network = Mock(return_value=None)
-        self.instance.create_router(NonCallableMock(), NonCallableMock())
+        with self.assertRaises(ItemNotFoundError):
+            self.instance.create_router(NonCallableMock(), NonCallableMock())
 
     def test_create_router_successful_call(self):
         """
@@ -361,18 +362,18 @@ class OpenstackNetworkTests(unittest.TestCase):
         )
         assert returned == self.network_api.create_router.return_value
 
-    @raises(ItemNotFoundError)
     def test_add_interface_to_router_router_not_found(self):
         """
         Tests that add interface to router will throw if the router
         was not found
         """
         self.instance.get_router = Mock(return_value=None)
-        self.instance.add_interface_to_router(
+        with self.assertRaises(ItemNotFoundError):
+            self.instance.add_interface_to_router(
             NonCallableMock(), NonCallableMock(), NonCallableMock(), NonCallableMock()
         )
 
-    @raises(ItemNotFoundError)
+
     def test_add_interface_to_router_network_not_found(self):
         """
         Tests that add interface to router will throw if the network
@@ -380,7 +381,8 @@ class OpenstackNetworkTests(unittest.TestCase):
         """
         self.instance.get_router = Mock()
         self.instance.find_subnet = Mock(return_value=None)
-        self.instance.add_interface_to_router(
+        with self.assertRaises(ItemNotFoundError):
+            self.instance.add_interface_to_router(
             NonCallableMock(),
             NonCallableMock(),
             NonCallableMock(),
@@ -428,14 +430,14 @@ class OpenstackNetworkTests(unittest.TestCase):
         )
         assert returned == self.network_api.find_router.return_value
 
-    @raises(ItemNotFoundError)
     def test_get_used_subnet_nets_throws_missing_network(self):
         """
         Tests the ItemNotFound error is thrown if a non-existent network is specified
         """
         cloud, network = NonCallableMock(), NonCallableMock()
         self.instance.find_network = Mock(return_value=None)
-        self.instance.get_used_subnet_nets(cloud, network)
+        with self.assertRaises(ItemNotFoundError):
+            self.instance.get_used_subnet_nets(cloud, network)
 
     def test_get_used_subnet_nets(self):
         """
@@ -511,7 +513,6 @@ class OpenstackNetworkTests(unittest.TestCase):
             mocked_choice.assert_called_once()
             assert used_networks not in mocked_choice.call_args[0][0]
 
-    @raises(ItemNotFoundError)
     def test_select_random_subnet_no_subnets(self):
         """
         Tests select random subnet throws ItemNotFoundError if not subnets are found
@@ -520,7 +521,8 @@ class OpenstackNetworkTests(unittest.TestCase):
             ipaddress.ip_network(f"192.168.{i}.0/24") for i in range(1, 255)
         ]
         self.instance.get_used_subnet_nets = Mock(return_value=used_subnets)
-        self.instance.select_random_subnet(NonCallableMock(), NonCallableMock())
+        with self.assertRaises(ItemNotFoundError):
+            self.instance.select_random_subnet(NonCallableMock(), NonCallableMock())
 
     def test_create_subnet(self):
         """
@@ -555,13 +557,13 @@ class OpenstackNetworkTests(unittest.TestCase):
 
         assert returned == self.network_api.create_subnet.return_value
 
-    @raises(ItemNotFoundError)
     def test_create_subnet_network_not_found(self):
         """
         Tests that create subnet throws if the network specified does not exist
         """
         self.instance.find_network = Mock(return_value=None)
-        self.instance.create_subnet(
+        with self.assertRaises(ItemNotFoundError):
+            self.instance.create_subnet(
             NonCallableMock(),
             NonCallableMock(),
             NonCallableMock(),

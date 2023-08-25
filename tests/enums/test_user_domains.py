@@ -1,9 +1,10 @@
-from parameterized import parameterized
+import pytest
+
 
 from enums.user_domains import UserDomains
 
 
-@parameterized(["stfc", "StFC", "STFC"])
+@pytest.mark.parametrize("val", ["stfc", "StFC", "STFC"])
 def test_stfc_serialization(val):
     """
     Tests that variants of STFC can be serialized
@@ -11,7 +12,7 @@ def test_stfc_serialization(val):
     assert UserDomains.from_string(val) is UserDomains.STFC
 
 
-@parameterized(["default", "deFauLt", "DEFAULT"])
+@pytest.mark.parametrize("val", ["default", "deFauLt", "DEFAULT"])
 def test_default_serialization(val):
     """
     Tests that variants of DEFAULT can be serialized

@@ -1,7 +1,7 @@
 from unittest.mock import create_autospec, Mock, NonCallableMock, NonCallableMagicMock
 
-from nose.tools import raises
-from parameterized import parameterized
+
+
 
 from jupyter_api.user_api import UserApi
 from src.jupyter import Jupyter
@@ -27,7 +27,7 @@ class TestJupyterActions(OpenstackActionTestBase):
         config = {"user_api": self.user_mock, "jupyter": self.jupyter_keys}
         self.action: Jupyter = self.get_action_instance(config=config)
 
-    @parameterized.expand(["prod", "dev", "training"])
+    @pytest.mark.parametrize("val",["prod", "dev", "training"])
     def test_user_delete_gets_correct_key(self, endpoint):
         token = self.jupyter_keys[endpoint]
 
@@ -48,7 +48,7 @@ class TestJupyterActions(OpenstackActionTestBase):
     def test_user_delete_throws_unknown_env(self):
         self.action.user_delete("unknown", NonCallableMock())
 
-    @parameterized.expand(["prod", "dev", "training"])
+    @pytest.mark.parametrize("val",["prod", "dev", "training"])
     def test_user_create_gets_correct_key(self, endpoint):
         token = self.jupyter_keys[endpoint]
 
@@ -65,6 +65,6 @@ class TestJupyterActions(OpenstackActionTestBase):
             endpoint=endpoint, auth_token=token, users=expected
         )
 
-    @raises(KeyError)
     def test_user_create_throws_unknown_env(self):
-        self.action.user_create("unknown", NonCallableMock())
+        with self.assertRaises(KeyError):
+            self.action.user_create("unknown", NonCallableMock())
