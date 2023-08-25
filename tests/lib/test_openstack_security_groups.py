@@ -8,9 +8,6 @@ from unittest.mock import (
     ANY,
 )
 
-from nose.tools import assert_raises, raises
-from parameterized import parameterized
-
 from enums.protocol import Protocol
 from exceptions.item_not_found_error import ItemNotFoundError
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
@@ -34,16 +31,16 @@ class OpenstackSecurityGroupsTests(unittest.TestCase):
             self.mocked_connection.return_value.__enter__.return_value.network
         )
 
-    @raises(MissingMandatoryParamError)
     def test_find_security_group_raises_for_missing_identifier(self):
         """
         Tests that find security group raises if no identifier is provided
         """
-        self.instance.find_security_group(
-            NonCallableMock(),
-            project_identifier=NonCallableMock(),
-            security_group_identifier=" \t",
-        )
+        with self.assertRaises(MissingMandatoryParamError):
+            self.instance.find_security_group(
+                NonCallableMock(),
+                project_identifier=NonCallableMock(),
+                security_group_identifier=" \t",
+            )
 
     def test_find_security_group_forwards_result(self):
         """
@@ -85,17 +82,17 @@ class OpenstackSecurityGroupsTests(unittest.TestCase):
         )
         assert return_val == list(self.network_api.security_groups.return_value)
 
-    @raises(MissingMandatoryParamError)
     def test_create_security_group_missing_name_raises(self):
         """
         Test that the security group identifier is correctly checked
         """
-        self.instance.create_security_group(
-            cloud_account=NonCallableMock(),
-            group_description=NonCallableMock(),
-            project_identifier=NonCallableMock(),
-            group_name=" \t",
-        )
+        with self.assertRaises(MissingMandatoryParamError):
+            self.instance.create_security_group(
+                cloud_account=NonCallableMock(),
+                group_description=NonCallableMock(),
+                project_identifier=NonCallableMock(),
+                group_name=" \t",
+            )
 
     def test_create_security_group_forwards_result(self):
         """
@@ -115,42 +112,48 @@ class OpenstackSecurityGroupsTests(unittest.TestCase):
         )
         assert result == self.network_api.create_security_group.return_value
 
-    @raises(ItemNotFoundError)
     def test_create_rule_group_not_found_raises(self):
         """
         Tests that create security group rule raises if not security group is found
         """
         self.instance.find_security_group = Mock(return_value=None)
-        self.instance.create_security_group_rule(NonCallableMock(), NonCallableMock())
+        with self.assertRaises(ItemNotFoundError):
+            self.instance.create_security_group_rule(
+                NonCallableMock(), NonCallableMock()
+            )
 
-    @parameterized.expand([(1, ""), ("", 1)])
-    def test_create_rule_throws_for_missing_port(self, start_port, end_port):
+    def test_create_rule_throws_for_missing_port(self):
         """
         Tests that missing port starting values throw
         """
         mocked_details = NonCallableMock()
-        mocked_details.port_range = (start_port, end_port)
-        with assert_raises(ValueError):
-            self.instance.create_security_group_rule(NonCallableMock(), mocked_details)
+        for start, end in (0, None), (None, 0), (None, None):
+            mocked_details.port_range = (start, end)
+            with self.assertRaises(ValueError):
+                self.instance.create_security_group_rule(
+                    NonCallableMock(), mocked_details
+                )
 
-    @raises(ValueError)
     def test_create_rule_throws_for_missing_port_end(self):
         """
         Tests that missing port final values throw
         """
         mocked_details = NonCallableMock()
         mocked_details.port_range = (1, None)
-        self.instance.create_security_group_rule(NonCallableMock(), mocked_details)
+        with self.assertRaises(ValueError):
+            self.instance.create_security_group_rule(NonCallableMock(), mocked_details)
 
-    @parameterized.expand([(1, "a"), ("d", 2), ("*a", "a"), ("*", "*1")])
-    def test_create_rule_throws_non_numeric(self, start_port, end_port):
+    def test_create_rule_throws_non_numeric(self):
         """
         Tests that non-numeric inputs throw
         """
         mocked_details = NonCallableMock()
-        mocked_details.port_range = (start_port, end_port)
-        with assert_raises(ValueError):
-            self.instance.create_security_group_rule(NonCallableMock(), mocked_details)
+        for start, end in (1, "a"), ("d", 2), ("*a", "a"), ("*", "*1"):
+            mocked_details.port_range = (start, end)
+            with self.assertRaises(ValueError):
+                self.instance.create_security_group_rule(
+                    NonCallableMock(), mocked_details
+                )
 
     def test_create_rule_forwards_result(self):
         """

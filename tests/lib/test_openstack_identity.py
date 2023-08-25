@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import NonCallableMock, ANY, Mock, MagicMock
 
-from nose.tools import raises
+
 from openstack.exceptions import ConflictException
 
 from enums.user_domains import UserDomains
@@ -36,38 +36,39 @@ class OpenstackIdentityTests(unittest.TestCase):
             self.mocked_connection.return_value.__enter__.return_value.identity
         )
 
-    @raises(MissingMandatoryParamError)
     def test_create_project_name_missing_throws(self):
         """
         Tests calling the API wrapper without a domain will throw
         """
-        self.instance.create_project(
-            "",
-            ProjectDetails(
-                name="", description="", email="Test@Test.com", is_enabled=False
-            ),
-        )
+        with self.assertRaises(MissingMandatoryParamError):
+            self.instance.create_project(
+                "",
+                ProjectDetails(
+                    name="", description="", email="Test@Test.com", is_enabled=False
+                ),
+            )
 
-    @raises(MissingMandatoryParamError)
     def test_create_project_email_missing_throws(self):
         """
         Tests calling the API wrapper without an email will throw
         """
-        self.instance.create_project(
-            "", ProjectDetails(name="Test", email="", description="", is_enabled=False)
-        )
+        with self.assertRaises(MissingMandatoryParamError):
+            self.instance.create_project(
+                "",
+                ProjectDetails(name="Test", email="", description="", is_enabled=False),
+            )
 
-    @raises(ValueError)
     def test_create_project_invalid_email_throws(self):
         """
         Tests calling the API wrapper with an invalid email will throw
         """
-        self.instance.create_project(
-            "",
-            ProjectDetails(
-                name="Test", email="NotAnEmail", description="", is_enabled=False
-            ),
-        )
+        with self.assertRaises(ValueError):
+            self.instance.create_project(
+                "",
+                ProjectDetails(
+                    name="Test", email="NotAnEmail", description="", is_enabled=False
+                ),
+            )
 
     def test_create_project_forwards_result(self):
         """
@@ -124,7 +125,6 @@ class OpenstackIdentityTests(unittest.TestCase):
             tags=[expected_details.email, "immutable"],
         )
 
-    @raises(ConflictException)
     def test_create_project_forwards_conflict_exception(self):
         """
         Tests that a conflict exception doesn't get lost from Openstack
@@ -137,16 +137,16 @@ class OpenstackIdentityTests(unittest.TestCase):
             description=NonCallableMock(),
             is_enabled=NonCallableMock(),
         )
-        self.instance.create_project(NonCallableMock(), project_details)
+        with self.assertRaises(ConflictException):
+            self.instance.create_project(NonCallableMock(), project_details)
 
-    @staticmethod
-    @raises(MissingMandatoryParamError)
-    def test_delete_project_throws_whitespace_args():
+    def test_delete_project_throws_whitespace_args(self):
         """
         Test that if the user doesn't provide meaningful args to delete we throw
         """
         # Intentional spaces
-        OpenstackIdentity().delete_project("", project_identifier=" \t")
+        with self.assertRaises(MissingMandatoryParamError):
+            OpenstackIdentity().delete_project("", project_identifier=" \t")
 
     def test_delete_project_calls_find_project(self):
         """
@@ -198,7 +198,6 @@ class OpenstackIdentityTests(unittest.TestCase):
         result = self.instance.delete_project("", project_identifier="test")
         assert result is False
 
-    @raises(ValueError)
     def test_delete_immutable_project_throws(self):
         """
         Tests that trying to deleting an immutable project raises an error
@@ -206,19 +205,19 @@ class OpenstackIdentityTests(unittest.TestCase):
         mock_project = self.MockProject(tags=["immutable"])
         self.identity_api.find_project.return_value = mock_project
 
-        self.instance.delete_project(
-            cloud_account="test",
-            project_identifier="ProjectID",
-        )
+        with self.assertRaises(ValueError):
+            self.instance.delete_project(
+                cloud_account="test",
+                project_identifier="ProjectID",
+            )
 
-    @raises(MissingMandatoryParamError)
     def test_find_project_raises_missing_project_identifier(self):
         """
         Tests that a missing mandatory parameter is missing if a whitespace
         or empty string is passed
         """
-
-        self.instance.find_project("set", " ")
+        with self.assertRaises(MissingMandatoryParamError):
+            self.instance.find_project("set", "")
 
     def test_find_project_forwards_result(self):
         """
@@ -248,13 +247,13 @@ class OpenstackIdentityTests(unittest.TestCase):
         self.instance.find_project.assert_called_once_with(*args)
         assert returned == self.instance.find_project.return_value
 
-    @raises(ItemNotFoundError)
     def test_find_mandatory_project_raises_for_missing(self):
         """
         Check that a missing project will raise correctly
         """
         self.instance.find_project = Mock(return_value=None)
-        self.instance.find_mandatory_project(NonCallableMock(), NonCallableMock())
+        with self.assertRaises(ItemNotFoundError):
+            self.instance.find_mandatory_project(NonCallableMock(), NonCallableMock())
 
     def test_list_projects(self):
         """
@@ -265,12 +264,12 @@ class OpenstackIdentityTests(unittest.TestCase):
         self.mocked_connection.assert_called_once_with("test")
         self.api.list_projects.assert_called_once()
 
-    @raises(MissingMandatoryParamError)
     def test_find_user_missing_identifier(self):
         """
         Checks a missing user identifier will raise correctly
         """
-        self.instance.find_user(NonCallableMock(), " \t", NonCallableMock())
+        with self.assertRaises(MissingMandatoryParamError):
+            self.instance.find_user(NonCallableMock(), " \t", NonCallableMock())
 
     def test_find_user_returns_result(self):
         """
@@ -291,12 +290,12 @@ class OpenstackIdentityTests(unittest.TestCase):
         expected = self.identity_api.find_user.return_value
         assert returned == expected
 
-    @raises(MissingMandatoryParamError)
     def test_find_user_all_domains_missing_identifier(self):
         """
         Checks a missing user identifier will raise correctly
         """
-        self.instance.find_user_all_domains(NonCallableMock(), " \t")
+        with self.assertRaises(MissingMandatoryParamError):
+            self.instance.find_user_all_domains(NonCallableMock(), " \t")
 
     def test_find_user_all_domains_returns_result(self):
         """
@@ -357,18 +356,18 @@ class OpenstackIdentityTests(unittest.TestCase):
         )
         self.assertEqual(expected_email, found)
 
-    @raises(ValueError)
     def test_update_project_invalid_email_throws(self):
         """
         Tests calling the API wrapper with an invalid email will throw
         """
-        self.instance.update_project(
-            "",
-            "",
-            ProjectDetails(
-                name="Test", email="NotAnEmail", description="", is_enabled=False
-            ),
-        )
+        with self.assertRaises(ValueError):
+            self.instance.update_project(
+                "",
+                "",
+                ProjectDetails(
+                    name="Test", email="NotAnEmail", description="", is_enabled=False
+                ),
+            )
 
     def test_update_project_without_tags(self):
         """
@@ -477,7 +476,6 @@ class OpenstackIdentityTests(unittest.TestCase):
             tags=[],
         )
 
-    @raises(ValueError)
     def test_update_immutable_project_throws(self):
         """
         Tests that trying to update an immutable project raises an error
@@ -485,17 +483,18 @@ class OpenstackIdentityTests(unittest.TestCase):
         mock_project = self.MockProject(tags=["immutable"])
         self.identity_api.find_project.return_value = mock_project
 
-        self.instance.update_project(
-            cloud_account="test",
-            project_identifier="ProjectID",
-            project_details=ProjectDetails(
-                name="",
-                email="Test",
-                description="",
-                is_enabled=None,
-                immutable=False,
-            ),
-        )
+        with self.assertRaises(ValueError):
+            self.instance.update_project(
+                cloud_account="test",
+                project_identifier="ProjectID",
+                project_details=ProjectDetails(
+                    name="",
+                    email="Test",
+                    description="",
+                    is_enabled=None,
+                    immutable=False,
+                ),
+            )
 
     def test_update_project_email(self):
         """

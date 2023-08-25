@@ -1,7 +1,8 @@
 import unittest
 from unittest.mock import MagicMock, patch, NonCallableMock
+
+import pytest
 from parameterized import parameterized
-from nose.tools import raises
 
 from openstack_query.managers.query_manager import QueryManager
 from enums.query.query_output_types import QueryOutputTypes
@@ -119,12 +120,12 @@ class QueryManagerTests(unittest.TestCase):
         """
         self.assertIsNotNone(self.instance._get_query_output(outtype))
 
-    @raises(EnumMappingError)
     def test_get_query_output_raises_error(self):
         """
         Tests that query output type raises error when given an enum which does not have a mapping
         """
-        self.instance._get_query_output(MagicMock())
+        with pytest.raises(EnumMappingError):
+            self.instance._get_query_output(MagicMock())
 
     def _run_populate_output_params_check(self, mock_output_details):
         self.instance._populate_output_params(output_details=mock_output_details)

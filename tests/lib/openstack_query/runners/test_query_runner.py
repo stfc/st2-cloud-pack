@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from parameterized import parameterized
+
 
 from openstack_query.runners.query_runner import QueryRunner
 
@@ -82,7 +82,7 @@ class QueryRunnerTests(unittest.TestCase):
             cloud_account=mock_user_domain,
             client_side_filter_func=mock_client_side_filter_func,
             server_side_filters=mock_server_filters,
-            **{"arg1": "val1", "arg2": "val2"}
+            **{"arg1": "val1", "arg2": "val2"},
         )
         self.mocked_connection.assert_called_once_with("test")
 
@@ -93,7 +93,7 @@ class QueryRunnerTests(unittest.TestCase):
         mock_run_query.assert_called_once_with(
             self.conn,
             mock_server_filters,
-            **{"parsed_arg1": "val1", "parsed_arg2": "val2"}
+            **{"parsed_arg1": "val1", "parsed_arg2": "val2"},
         )
 
         # if we have server-side filters, don't use client_side_filters
@@ -149,52 +149,28 @@ class QueryRunnerTests(unittest.TestCase):
         )
         self.assertEqual(["openstack-resource-2"], res)
 
-    @parameterized.expand(
-        [
-            ("call terminated with no rounds - (empty list)", [[]]),
-            (
-                "call terminates after one round",
-                [
-                    [
-                        {"id": "marker1"},
-                    ],
-                    [
-                        {"id": "out"},
-                    ],
-                    [],
-                ],
-            ),
-            (
-                "call terminates after two rounds",
-                [
-                    [
-                        {"id": "marker1"},
-                    ],
-                    [
-                        {"id": "marker2"},
-                    ],
-                    [
-                        {"id": "out"},
-                    ],
-                    [],
-                ],
-            ),
-        ]
-    )
-    def test_run_paginated_query(self, _, mock_out):
+    def _run_paginated_query_case(self, number_iterations):
         """
-        tests that run_paginated_query works expectedly - with no rounds, one round, and two rounds of pagination
+        tests that run_paginated_query works expectedly - with one round or more of pagination
         mocked paginated call simulates the effect of retrieving a list of values up to a limit and then calling the
         same call again with a "marker" set to the last seen item to continue reading
         """
+        pagination_order = []
+        expected_out = []
 
-        def _mock_prop_func(resource):
-            return resource["id"]
+        for i in range(min(0, number_iterations - 1)):
+            # Generate markers, it's a list of results with an ID
+            marker = {"id": f"marker{i}"}
+            expected_out.append(marker)
+            pagination_order.append([marker])
+
+        pagination_order.append([])
 
         mock_paginated_call = MagicMock()
-        mock_paginated_call.side_effect = mock_out
-        expected_out = [item for sublist in mock_out for item in sublist]
-        self.instance._page_marker_prop_func = MagicMock(wraps=_mock_prop_func)
+        mock_paginated_call.side_effect = pagination_order
+        self.instance._page_marker_prop_func = MagicMock(
+            wraps=lambda resource: resource["id"]
+        )
 
         # set round to 1, so new calls begins after returning one value
         self.instance._LIMIT_FOR_PAGINATION = 1
@@ -205,3 +181,11 @@ class QueryRunnerTests(unittest.TestCase):
             mock_paginated_call, mock_server_side_filters
         )
         self.assertEqual(res, expected_out)
+
+    def test_run_pagination_query_gt_0(self):
+        """
+        Calls the testing case with various numbers of iterations
+        to ensure pagination is working
+        """
+        for i in range(1, 3):
+            self._run_paginated_query_case(i)

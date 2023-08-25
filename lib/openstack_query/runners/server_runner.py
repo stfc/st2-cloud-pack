@@ -1,3 +1,4 @@
+import copy
 from typing import Optional, List, Dict
 import logging
 
@@ -94,6 +95,10 @@ class ServerRunner(QueryRunner):
         project_num = len(meta_params["projects"])
         logger.debug("running query on %s projects", project_num)
         for i, project_id in enumerate(meta_params["projects"], 1):
+            # Workaround the dict being passed by reference and breaking the unit test
+            # assertion where the dict effectively has the last project for all of its keys
+            # despite being called correctly in the method
+            filter_kwargs = copy.deepcopy(filter_kwargs)
             filter_kwargs.update({"project_id": project_id})
             logger.debug(
                 "running query on project %s / %s (id: %s)", i, project_num, project_id

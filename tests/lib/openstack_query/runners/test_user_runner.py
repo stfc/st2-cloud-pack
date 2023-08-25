@@ -1,15 +1,13 @@
 import unittest
-from unittest.mock import MagicMock, patch
-from nose.tools import raises
-from parameterized import parameterized
+from unittest.mock import MagicMock, patch, NonCallableMock
 
-from openstack_query.runners.user_runner import UserRunner
 from openstack.identity.v3.user import User
 
-from exceptions.parse_query_error import ParseQueryError
-from exceptions.enum_mapping_error import EnumMappingError
-
 from enums.user_domains import UserDomains
+from exceptions.enum_mapping_error import EnumMappingError
+from exceptions.parse_query_error import ParseQueryError
+from openstack_query.runners.user_runner import UserRunner
+
 
 # pylint:disable=protected-access
 
@@ -47,15 +45,9 @@ class UserRunnerTests(unittest.TestCase):
 
         self.assertEqual(res, {"domain_id": "default-domain-id"})
 
-    @parameterized.expand(
-        [
-            ("with server side filters", {"arg1": "val1", "arg2": "val2"}),
-            ("with no server side filters", None),
-        ]
-    )
     @patch("openstack_query.runners.user_runner.UserRunner._run_paginated_query")
-    def test_run_query_with_meta_arg_domain_id(
-        self, _, mock_filter_kwargs, mock_run_paginated_query
+    def test_run_query_with_meta_arg_domain_id_with_server_side_filters(
+        self, mock_run_paginated_query
     ):
         """
         Tests the _run_query method works expectedly - when meta arg domain id given
@@ -69,46 +61,61 @@ class UserRunnerTests(unittest.TestCase):
             "user2",
             "user3",
         ]
+        mock_filter_kwargs = {"arg1": "val1", "arg2": "val2"}
+        mock_domain_id = "domain-id1"
+
+        res = self.instance._run_query(
+            self.conn, filter_kwargs=mock_filter_kwargs, domain_id=mock_domain_id
+        )
+
+        self.assertEqual(res, mock_user_list)
+        mock_run_paginated_query.assert_called_once_with(
+            self.conn.identity.users,
+            {**{"domain_id": mock_domain_id}, **mock_filter_kwargs},
+        )
+        self.assertEqual(res, mock_user_list)
+
+    @patch("openstack_query.runners.user_runner.UserRunner._run_paginated_query")
+    def test_run_query_with_meta_arg_domain_id_with_no_server_filters(
+        self, mock_run_paginated_query
+    ):
+        """
+        Tests the _run_query method works expectedly with no server side filters
+        """
+
+        mock_user_list = mock_run_paginated_query.return_value = [
+            "user1",
+            "user2",
+            "user3",
+        ]
+        mock_filter_kwargs = None
         mock_domain_id = "domain-id1"
         res = self.instance._run_query(
             self.conn, filter_kwargs=mock_filter_kwargs, domain_id=mock_domain_id
         )
 
         self.assertEqual(res, mock_user_list)
-
-        if mock_filter_kwargs:
-            mock_run_paginated_query.assert_called_once_with(
-                self.conn.identity.users,
-                {**{"domain_id": mock_domain_id}, **mock_filter_kwargs},
-            )
-        else:
-            mock_run_paginated_query.assert_called_once_with(
-                self.conn.identity.users, {"domain_id": mock_domain_id}
-            )
+        mock_run_paginated_query.assert_called_once_with(
+            self.conn.identity.users, {"domain_id": mock_domain_id}
+        )
         self.assertEqual(res, mock_user_list)
 
-    @raises(ParseQueryError)
     def test_run_query_domain_id_meta_arg_preset_duplication(self):
         """
         Tests that an error is raised when run_query is called with filter kwargs which contians domain_id and with meta
         params that also contains a domain id - i.e. there's a mismatch in which domain to search
         """
-        self.instance._run_query(
-            self.conn,
-            filter_kwargs={"domain_id": "some-domain"},
-            domain_id=["some-other-domain"],
-        )
+        with self.assertRaises(ParseQueryError):
+            self.instance._run_query(
+                self.conn,
+                filter_kwargs={"domain_id": "some-domain"},
+                domain_id=["some-other-domain"],
+            )
 
-    @parameterized.expand(
-        [
-            ("with server side filters", {"arg1": "val1", "arg2": "val2"}),
-            ("with no server side filters", None),
-        ]
-    )
     @patch("openstack_query.runners.user_runner.UserRunner._run_paginated_query")
     @patch("openstack_query.runners.user_runner.UserRunner._get_user_domain")
     def test_run_query_no_meta_args(
-        self, _, mock_filter_kwargs, mock_get_user_domain, mock_run_paginated_query
+        self, mock_get_user_domain, mock_run_paginated_query
     ):
         """
         Tests that run_query functions expectedly - when no meta args given
@@ -116,13 +123,11 @@ class UserRunnerTests(unittest.TestCase):
         """
         mock_run_paginated_query.side_effect = [["user1", "user2"]]
         mock_get_user_domain.return_value = "default-domain-id"
+        mock_filter_kwargs = {"test_arg": NonCallableMock()}
 
         res = self.instance._run_query(
             self.conn, filter_kwargs=mock_filter_kwargs, domain_id=None
         )
-
-        if not mock_filter_kwargs:
-            mock_filter_kwargs = {}
 
         mock_get_user_domain.assert_called_once_with(
             self.conn, self.instance.DEFAULT_DOMAIN
@@ -131,37 +136,36 @@ class UserRunnerTests(unittest.TestCase):
             self.conn.identity.users,
             {
                 **mock_filter_kwargs,
-                **{"all_tenants": True, "domain_id": "default-domain-id"},
+                "all_tenants": True,
+                "domain_id": "default-domain-id",
             },
         )
 
         self.assertEqual(res, ["user1", "user2"])
 
-    @raises(ParseQueryError)
     def test_run_query_with_from_domain_and_id_given(self):
         """
         Test error is raised when the domain name and domain id is provided at
         the same time
         """
-        self.instance._run_query(
-            self.conn, filter_kwargs={"domain_id": 1}, domain_id="domain-id2"
-        )
+        with self.assertRaises(ParseQueryError):
+            self.instance._run_query(
+                self.conn, filter_kwargs={"domain_id": 1}, domain_id="domain-id2"
+            )
 
-    @parameterized.expand(
-        [(f"test {domain.name.lower()}", domain) for domain in UserDomains]
-    )
-    def test_get_user_domain(self, _, domain):
+    def test_get_user_domain(self):
         """
         Test that user domains have a mapping and no errors are raised
         """
-        self.instance._get_user_domain(self.conn, domain)
+        for domain in UserDomains:
+            self.instance._get_user_domain(self.conn, domain)
 
-    @raises(EnumMappingError)
     def test_get_user_domain_error_raised(self):
         """
         Test that an error is raised if a domain mapping is not found
         """
-        self.instance._get_user_domain(self.conn, MagicMock())
+        with self.assertRaises(EnumMappingError):
+            self.instance._get_user_domain(self.conn, MagicMock())
 
     def test_parse_subset(self):
         """
@@ -181,11 +185,11 @@ class UserRunnerTests(unittest.TestCase):
         res = self.instance._parse_subset(self.conn, [mock_user_1, mock_user_2])
         self.assertEqual(res, [mock_user_1, mock_user_2])
 
-    @raises(ParseQueryError)
     def test_parse_subset_invalid(self):
         """
         Tests _parse_subset works expectedly
         method raises error when provided value which is not of User type
         """
         invalid_user = "invalid-user-obj"
-        self.instance._parse_subset(self.conn, [invalid_user])
+        with self.assertRaises(ParseQueryError):
+            self.instance._parse_subset(self.conn, [invalid_user])

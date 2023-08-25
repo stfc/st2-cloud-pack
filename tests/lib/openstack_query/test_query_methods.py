@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, NonCallableMock, call
-from parameterized import parameterized
-from nose.tools import raises
+
+import pytest
 
 from openstack_query.query_methods import QueryMethods
 
@@ -27,13 +27,13 @@ class QueryMethodsTests(unittest.TestCase):
             self.mock_output,
         )
 
-    @raises(ParseQueryError)
     def test_select_invalid(self):
         """
         Tests select method works expectedly - with no inputs
         method raises ParseQueryError when given no properties
         """
-        self.instance.select()
+        with pytest.raises(ParseQueryError):
+            self.instance.select()
 
     def test_select_with_one_prop(self):
         """
@@ -105,18 +105,9 @@ class QueryMethodsTests(unittest.TestCase):
         )
         self.assertEqual(res, self.instance)
 
-    @parameterized.expand(
-        [
-            ("with kwargs", None, {"arg1": "val1", "arg2": "val2"}),
-            ("with from_subset", ["obj1", "obj2", "obj3"], None),
-            ("with no kwargs and no subset", None, None),
-        ]
-    )
-    def test_run_with_optional_params(self, _, mock_from_subset, mock_kwargs):
+    def _run_case_with_various_params(self, data_subset, mock_kwargs):
         """
-        Tests that run method works expectedly - with subset and/or meta_params kwargs
-        method should get client_side and server_side filters and forward them to query runner object
-
+        Runs a test case with various params preset
         """
         mock_client_filter_func = self.mock_builder.client_side_filter
         mock_server_filters = self.mock_builder.server_side_filters
@@ -126,12 +117,12 @@ class QueryMethodsTests(unittest.TestCase):
         if not mock_kwargs:
             mock_kwargs = {}
 
-        res = self.instance.run("test-account", mock_from_subset, **mock_kwargs)
+        res = self.instance.run("test-account", data_subset, **mock_kwargs)
         self.mock_runner.run.assert_called_once_with(
             "test-account",
             mock_client_filter_func,
             mock_server_filters,
-            mock_from_subset,
+            data_subset,
             **mock_kwargs
         )
         self.mock_parser.run_parser.assert_called_once_with(
@@ -139,6 +130,45 @@ class QueryMethodsTests(unittest.TestCase):
         )
         self.mock_output.generate_output.assert_called_once_with(["obj1", "obj2"])
         self.assertEqual(res, self.instance)
+
+    def test_run_with_optional_params(self):
+        """
+        Tests that run method works expectedly - with subset meta_params kwargs
+        method should get client_side and server_side filters and forward them to query runner object
+
+        """
+        self._run_case_with_various_params(
+            data_subset=["obj1", "obj2", "obj3"], mock_kwargs=None
+        )
+
+    def test_run_with_kwargs(self):
+        """
+        Tests that run method works expectedly - with subset kwargs
+        method should get client_side and server_side filters and forward them to query runner object
+
+        """
+        self._run_case_with_various_params(
+            data_subset=None, mock_kwargs={"arg1": "val1", "arg2": "val2"}
+        )
+
+    def test_run_with_nothing(self):
+        """
+        Tests that run method works expectedly - with subset kwargs
+        method should get client_side and server_side filters and forward them to query runner object
+
+        """
+        self._run_case_with_various_params(None, None)
+
+    def test_run_with_kwargs_and_subset(self):
+        """
+        Tests that run method works expectedly - with subset kwargs
+        method should get client_side and server_side filters and forward them to query runner object
+
+        """
+        self._run_case_with_various_params(
+            data_subset=["obj1", "obj2", "obj3"],
+            mock_kwargs={"arg1": "val1", "arg2": "val2"},
+        )
 
     def test_run_with_parsing_grouped(self):
         """
@@ -223,11 +253,11 @@ class QueryMethodsTests(unittest.TestCase):
             mock_group_by, mock_group_ranges, mock_include_ungrouped_results
         )
 
-    @raises(ParseQueryError)
     def test_group_by_already_set(self):
         """
         Tests that group_by method functions expectedly
         Should raise error when attempting to set group by when already set
         """
         self.mock_parser.group_by_prop = "prop1"
-        self.instance.group_by("prop2")
+        with pytest.raises(ParseQueryError):
+            self.instance.group_by("prop2")

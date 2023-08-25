@@ -1,6 +1,6 @@
 import unittest
 
-from parameterized import parameterized
+
 from openstack_query.queries.user_query import UserQuery
 from enums.query.props.user_properties import UserProperties
 
@@ -19,12 +19,11 @@ class TestServerQuery(unittest.TestCase):
         super().setUp()
         self.instance = UserQuery()
 
-    @parameterized.expand(
-        [(f"test {prop.name.lower()}", prop) for prop in UserProperties]
-    )
-    def test_get_prop_handler(self, _, prop):
+    def test_get_prop_handler(self):
         """
         Tests that all user properties have a property function mapping
         """
         prop_handler = self.instance._get_prop_handler()
-        prop_handler.check_supported(prop)
+
+        for prop in UserProperties:
+            prop_handler.check_supported(prop)

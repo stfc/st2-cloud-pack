@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import patch, NonCallableMock, call
 
-from nose.tools import raises
 
 from jupyter_api.api_endpoints import API_ENDPOINTS
 from jupyter_api.user_api import UserApi
@@ -49,21 +48,21 @@ class UserApiTests(unittest.TestCase):
             )
         assert requests.post.call_count == (end_index - start_index + 1)
 
-    @raises(RuntimeError)
     def test_start_servers_missing_start_index(self, _):
         """
         Tests that the start_servers method raises an error if the start_index is not provided
         """
         user_names = JupyterUsers(name="test", start_index=None, end_index=1)
-        self.api.start_servers("dev", "token", user_names)
+        with self.assertRaises(RuntimeError):
+            self.api.start_servers("dev", "token", user_names)
 
-    @raises(RuntimeError)
     def test_start_servers_missing_end_index(self, _):
         """
         Tests that the start_servers method raises an error if the end_index is not provided
         """
         user_names = JupyterUsers(name="test", start_index=1, end_index=None)
-        self.api.start_servers("dev", "token", user_names)
+        with self.assertRaises(RuntimeError):
+            self.api.start_servers("dev", "token", user_names)
 
     def test_start_servers_incorrect_order(self, _):
         """
@@ -120,21 +119,21 @@ class UserApiTests(unittest.TestCase):
             )
         assert requests.delete.call_count == (end_index - start_index + 1)
 
-    @raises(RuntimeError)
     def test_stop_servers_missing_start_index(self, _):
         """
         Tests that the stop_servers method raises an error if the start_index is not provided
         """
         user_names = JupyterUsers(name="test", start_index=None, end_index=1)
-        self.api.stop_servers("dev", "token", user_names)
+        with self.assertRaises(RuntimeError):
+            self.api.stop_servers("dev", "token", user_names)
 
-    @raises(RuntimeError)
     def test_stop_servers_missing_end_index(self, _):
         """
         Tests that the stop_servers method raises an error if the end_index is not provided
         """
         user_names = JupyterUsers(name="test", start_index=1, end_index=None)
-        self.api.stop_servers("dev", "token", user_names)
+        with self.assertRaises(RuntimeError):
+            self.api.stop_servers("dev", "token", user_names)
 
     def test_stop_servers_incorrect_order(self, _):
         """

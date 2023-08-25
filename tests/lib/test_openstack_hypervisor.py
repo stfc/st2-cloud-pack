@@ -2,7 +2,6 @@ import unittest
 from dataclasses import dataclass
 from unittest.mock import MagicMock
 
-from nose.tools import raises
 
 from openstack_api.openstack_hypervisor import OpenstackHypervisor
 
@@ -87,15 +86,13 @@ class OpenstackHypervisorTests(unittest.TestCase, OpenstackQueryBaseTests):
         result = property_funcs["local_gb_usage"](item)
         self.assertEqual(result, f"{item.local_gb_used}/{item.local_gb}")
 
-    @raises(NotImplementedError)
     def test_property_func_uptime_raises(self):
         """
         Tests the 'uptime' function returned by get_query_property_funcs raises
         """
         item = _HypervisorMock()
-        property_funcs = self.instance.get_query_property_funcs("test")
-
-        property_funcs["uptime"](item)
+        with self.assertRaises(NotImplementedError):
+            self.instance.get_query_property_funcs("test")["uptime"](item)
 
     def test_search_all_hvs(self):
         """

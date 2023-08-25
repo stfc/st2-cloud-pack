@@ -28,13 +28,15 @@ class TemplateHandler:
         Path(__file__).resolve().parent.parent.parent / "email_templates"
     )
 
-    def __init__(self):
+    def __init__(self, template_metadata=None):
         self._template_env = Environment(
             loader=FileSystemLoader(self.EMAIL_TEMPLATE_ROOT_DIR)
         )
 
-        self._template_metadata = self._load_all_metadata(
-            self.EMAIL_TEMPLATE_METADATA_FP
+        self._template_metadata = (
+            template_metadata
+            if template_metadata
+            else self._load_all_metadata(self.EMAIL_TEMPLATE_METADATA_FP)
         )
 
     @staticmethod
