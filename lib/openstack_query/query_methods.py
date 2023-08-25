@@ -42,7 +42,8 @@ class QueryMethods:
 
         self.output.parse_select(*props, select_all=False)
         logger.debug(
-            "selected props are now: %s", [prop.name for prop in self.output.props]
+            "selected props are now: %s",
+            [prop.name for prop in self.output.selected_props],
         )
         return self
 

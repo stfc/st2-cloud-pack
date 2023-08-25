@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 import re
 
 from enums.query.query_output_types import QueryOutputTypes
@@ -24,6 +24,9 @@ logger = logging.getLogger(__name__)
 # pylint:disable=too-few-public-methods
 
 
+# these search methods map to stackstorm actions which just pass
+# user-inputted strings straight here - hence there's a lot of parameters
+# pylint:disable=too-many-arguments
 class QueryManager:
     """
     This class is the base class for all managers.
@@ -41,11 +44,13 @@ class QueryManager:
         self,
         output_details: QueryOutputDetails,
         preset_details: Optional[QueryPresetDetails] = None,
+        runner_params: Optional[Dict[str, Any]] = None,
     ) -> QueryReturn:
         """
         method to build the query, execute it, and return the results
         :param output_details: A dataclass containing config on how to output results of query
         :param preset_details: A dataclass containing query preset config information
+        :param runner_params: A set of extra params to pass when calling run()
         """
         logging.info("Running Query")
         if preset_details:
@@ -76,7 +81,11 @@ class QueryManager:
             preset_details=preset_details,
             properties_to_select=output_details.properties_to_select,
         )
-        self._query.run(self._cloud_account)
+        if not runner_params:
+            runner_params = {}
+
+        self._query.run(self._cloud_account, **runner_params)
+
         return self._get_query_output(
             output_details.output_type,
         )
@@ -129,23 +138,38 @@ class QueryManager:
                 **preset_details.args,
             )
 
-    def search_all(self, **kwargs) -> QueryReturn:
+    def search_all(
+        self,
+        properties_to_select: Optional[List[str]] = None,
+        output_type: Optional[str] = None,
+        **kwargs,
+    ) -> QueryReturn:
         """
         method that returns a list of all resources
-        :param kwargs: A set of optional kwargs to pass to the query
-            - properties_to_select - list of strings representing which properties to select
-            - output_type - string representing how to output the query
+        :param properties_to_select: list of strings representing which properties to select
+        :param output_type: string representing how to output the query
+        :param kwargs: A set of optional meta params to pass to the query
+
         """
         logging.info("Running 'search all' query - will output all values")
+        output_details = QueryOutputDetails.from_kwargs(
+            prop_cls=self._prop_cls,
+            properties_to_select=properties_to_select,
+            output_type=output_type,
+        )
+
         return self._build_and_run_query(
-            preset_details=None,
-            output_details=QueryOutputDetails.from_kwargs(
-                prop_cls=self._prop_cls, **kwargs
-            ),
+            preset_details=None, output_details=output_details, runner_params=kwargs
         )
 
     def search_by_property(
-        self, search_mode: str, property_to_search_by: str, values: List[str], **kwargs
+        self,
+        search_mode: str,
+        property_to_search_by: str,
+        values: List[str],
+        properties_to_select: Optional[List[str]] = None,
+        output_type: Optional[str] = None,
+        **kwargs,
     ) -> QueryReturn:
         """
         method that builds and runs a query to find generic resource with a selected property
@@ -155,9 +179,9 @@ class QueryManager:
         if False - use the preset NOT_ANY_IN/NOT_EQUAL_TO
         :param property_to_search_by: A string representing a datetime property Enum that the preset will be used on
         :param values: A list of string values to compare server property against
-        :param kwargs: A set of optional kwargs to pass to the query
-            - properties_to_select - list of strings representing which properties to select
-            - output_type - string representing how to output the query
+        :param properties_to_select: list of strings representing which properties to select
+        :param output_type: string representing how to output the query
+        :param kwargs: A set of optional meta params to pass to the query
         """
         # convert user-given args into enums
         logging.info("Running search by property query")
@@ -189,25 +213,37 @@ class QueryManager:
         else:
             logging.info("query contains multiple values - ANY_IN preset will be used")
 
+        output_details = QueryOutputDetails.from_kwargs(
+            prop_cls=self._prop_cls,
+            properties_to_select=properties_to_select,
+            output_type=output_type,
+        )
+
         return self._build_and_run_query(
             preset_details=QueryPresetDetails(
                 preset=preset,
                 prop=prop,
                 args=args,
             ),
-            output_details=QueryOutputDetails.from_kwargs(
-                prop_cls=self._prop_cls, **kwargs
-            ),
+            output_details=output_details,
+            runner_params=kwargs,
         )
 
-    def search_by_regex(self, property_to_search_by: str, pattern: str, **kwargs):
+    def search_by_regex(
+        self,
+        property_to_search_by: str,
+        pattern: str,
+        properties_to_select: Optional[List[str]] = None,
+        output_type: Optional[str] = None,
+        **kwargs,
+    ):
         """
         method that builds and runs a query to find generic resource with a property matching regex.
         :param property_to_search_by: A string representing a string property Enum that the preset will be used on
         :param pattern: A string representing a regex pattern
-        :param kwargs: A set of optional kwargs to pass to the query
-            - properties_to_select - list of strings representing which properties to select
-            - output_type - string representing how to output the query
+        :param properties_to_select: list of strings representing which properties to select
+        :param output_type: string representing how to output the query
+        :param kwargs: A set of optional meta params to pass to the query
         """
         logging.info("Running search by property query")
 
@@ -225,19 +261,22 @@ class QueryManager:
             pattern,
         )
 
+        output_details = QueryOutputDetails.from_kwargs(
+            prop_cls=self._prop_cls,
+            properties_to_select=properties_to_select,
+            output_type=output_type,
+        )
+
         return self._build_and_run_query(
             preset_details=QueryPresetDetails(
                 preset=QueryPresetsString.MATCHES_REGEX,
                 prop=prop,
                 args=args,
             ),
-            output_details=QueryOutputDetails.from_kwargs(
-                prop_cls=self._prop_cls, **kwargs
-            ),
+            output_details=output_details,
+            runner_params=kwargs,
         )
 
-    # maybe convert days, hours, minutes, seconds into a dataclass?
-    # pylint:disable=too-many-arguments
     def search_by_datetime(
         self,
         search_mode: str,
@@ -246,6 +285,8 @@ class QueryManager:
         hours: int = 0,
         minutes: int = 0,
         seconds: int = 0,
+        properties_to_select: Optional[List[str]] = None,
+        output_type: Optional[str] = None,
         **kwargs,
     ) -> QueryReturn:
         """
@@ -259,9 +300,9 @@ class QueryManager:
         :param hours: (Optional) Number of relative hours in the past from now to use as threshold
         :param minutes: (Optional) Number of relative minutes in the past from now to use as threshold
         :param seconds: (Optional) Number of relative seconds in the past from now to use as threshold
-        :param kwargs: A set of optional kwargs to pass to the query
-            - properties_to_select - list of strings representing which properties to select
-            - output_type - string representing how to output the query
+        :param properties_to_select: list of strings representing which properties to select
+        :param output_type: string representing how to output the query
+        :param kwargs: A set of optional meta params to pass to the query
         """
         logging.info("Running search by property query")
 
@@ -287,9 +328,14 @@ class QueryManager:
             args=args,
         )
 
+        output_details = QueryOutputDetails.from_kwargs(
+            prop_cls=self._prop_cls,
+            properties_to_select=properties_to_select,
+            output_type=output_type,
+        )
+
         return self._build_and_run_query(
             preset_details=preset_details,
-            output_details=QueryOutputDetails.from_kwargs(
-                prop_cls=self._prop_cls, **kwargs
-            ),
+            output_details=output_details,
+            runner_params=kwargs,
         )

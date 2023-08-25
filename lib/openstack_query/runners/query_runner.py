@@ -1,13 +1,14 @@
 from abc import abstractmethod
-from typing import Optional, List, Any
 import time
 import logging
+from typing import Optional, List, Any, Dict, Callable
 
 from enums.cloud_domains import CloudDomains
 
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 from openstack_api.openstack_connection import OpenstackConnection
 from custom_types.openstack_query.aliases import (
+    PropFunc,
     ServerSideFilters,
     ClientSideFilterFunc,
     OpenstackResourceObj,
@@ -24,8 +25,13 @@ class QueryRunner(OpenstackWrapperBase):
     Runner classes encapsulate running any openstacksdk commands
     """
 
-    def __init__(self, connection_cls=OpenstackConnection):
+    # Sets the limit for getting values from openstack
+    _LIMIT_FOR_PAGINATION = 1000
+    _PAGINATION_CALL_LIMIT = 1000
+
+    def __init__(self, marker_prop_func: PropFunc, connection_cls=OpenstackConnection):
         OpenstackWrapperBase.__init__(self, connection_cls)
+        self._page_marker_prop_func = marker_prop_func
 
     def run(
         self,
@@ -85,7 +91,12 @@ class QueryRunner(OpenstackWrapperBase):
                     kwarg_log_str,
                 )
                 start = time.time()
-                resource_objects = self._run_query(conn, server_side_filters, **kwargs)
+                query_meta_params = {}
+                if kwargs:
+                    query_meta_params = self._parse_meta_params(conn, **kwargs)
+                resource_objects = self._run_query(
+                    conn, server_side_filters, **query_meta_params
+                )
                 logger.info(
                     "server-side query complete - time elapsed: %s seconds",
                     time.time() - start,
@@ -100,6 +111,68 @@ class QueryRunner(OpenstackWrapperBase):
 
         logger.info("found %s items in total", len(resource_objects))
         return resource_objects
+
+    def _run_paginated_query(
+        self,
+        paginated_call: Callable,
+        server_side_filters: Optional[ServerSideFilters] = None,
+    ):
+        """
+        Helper method for running a query using pagination - openstacksdk calls usually return a maximum number of
+        values - (set by limit) and to continue getting values we can pass a "marker" value of the last item seen to
+        continue the query - this speeds up the time needed to run queries
+        :param paginated_call: A lambda function which takes a openstacksdk call which allows limit and marker to be set
+        :param server_side_filters: A set of filters to pass to openstacksdk call
+        """
+
+        paginated_filters = {"limit": self._LIMIT_FOR_PAGINATION, "marker": None}
+        paginated_filters.update(server_side_filters)
+        query_res = []
+
+        curr_marker = None
+        num_calls = 1
+        while True:
+            logger.debug("starting page loop, completed %s loops", num_calls)
+            num_calls += 1
+            if num_calls > self._PAGINATION_CALL_LIMIT:
+                logger.warning(
+                    "max page loops reached %s - terminating early", num_calls
+                )
+                break
+
+            prev = None
+            for i, resource in enumerate(paginated_call(**paginated_filters)):
+                # Workaround for Endless loop error detected if querying for stfc users (via ldap)
+                # for loop doesn't seem to terminate - and outputs the same value when given "limit" and "marker"
+                if prev == resource:
+                    logger.warning(
+                        "duplicate entries found, likely an endless page loop - terminating early"
+                    )
+                    break
+
+                query_res.append(resource)
+                # openstacksdk calls break after going over pagination limit
+                if i == self._LIMIT_FOR_PAGINATION - 1:
+                    # restart the for loop with marker set
+                    paginated_filters.update(
+                        {"marker": self._page_marker_prop_func(resource)}
+                    )
+                    logger.debug(
+                        "page limit reached: %s - setting new marker: %s",
+                        self._LIMIT_FOR_PAGINATION,
+                        paginated_filters["marker"],
+                    )
+                    break
+
+                prev = resource
+
+            # if marker hasn't changed, then has query terminated
+            if not paginated_filters or paginated_filters["marker"] == curr_marker:
+                logger.debug("page loop terminated")
+                break
+            # set marker as current
+            curr_marker = paginated_filters["marker"]
+        return query_res
 
     @staticmethod
     def _apply_client_side_filter(
@@ -126,8 +199,8 @@ class QueryRunner(OpenstackWrapperBase):
         resources in question and returns them
         :param conn: An OpenstackConnection object - used to connect to openstacksdk
         :param filter_kwargs: An Optional set of filter kwargs to limit the results by when querying openstacksdk
-        :param kwargs: An extra set of kwargs to pass to internal _run_query method that changes what/how the
-        openstacksdk query is run
+        :param kwargs: An extra set of meta params to pass to internal _run_query method that changes what/how the
+        openstacksdk query is run - these kwargs are specific to the resource runner.
         """
 
     @abstractmethod
@@ -138,4 +211,11 @@ class QueryRunner(OpenstackWrapperBase):
         This method is a helper function that will check a subset of openstack objects and check their validity
         :param conn: An OpenstackConnection object - used to connect to openstacksdk
         :param subset: A list of openstack objects to parse
+        """
+
+    @abstractmethod
+    def _parse_meta_params(self, conn: OpenstackConnection, **kwargs) -> Dict[str, str]:
+        """
+        This method is a helper function that will parse a set of meta params specific to the resource and
+        return a set of parsed meta-params to pass to _run_query
         """

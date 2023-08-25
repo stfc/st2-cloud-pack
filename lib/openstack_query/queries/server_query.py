@@ -138,4 +138,5 @@ class ServerQuery(QueryWrapper):
         )
 
     def __init__(self):
-        super().__init__(runner=ServerRunner())
+        self.marker_enum = ServerProperties.SERVER_ID
+        super().__init__(runner_cls=ServerRunner)

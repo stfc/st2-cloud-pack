@@ -17,5 +17,5 @@ class ServerManager(QueryManager):
             self,
             query=ServerQuery(),
             cloud_account=cloud_account,
-            prop_cls=ServerProperties(),
+            prop_cls=ServerProperties,
         )

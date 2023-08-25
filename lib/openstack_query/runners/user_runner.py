@@ -18,62 +18,31 @@ logger = logging.getLogger(__name__)
 
 class UserRunner(QueryRunner):
     """
-    Runner class for openstack Server resource.
-    ServerRunner encapsulates running any openstacksdk Server commands
+    Runner class for openstack User resource.
+    UserRunner encapsulates running any openstacksdk User commands
     """
 
     DEFAULT_DOMAIN = UserDomains.STFC
 
-    def _run_query(
-        self,
-        conn: OpenstackConnection,
-        filter_kwargs: Optional[Dict[str, str]] = None,
-        from_domain: Optional[UserDomains] = None,
-    ) -> List[User]:
+    def _parse_meta_params(
+        self, conn: OpenstackConnection, from_domain: Optional[UserDomains] = None
+    ) -> Dict:
         """
-        This method runs the query by running openstacksdk commands
-
-        For UserQuery, this command gets all users by domain ID
-        :param conn: An OpenstackConnection object - used to connect to openstacksdk
-        :param filter_kwargs: An Optional set of filter kwargs to pass to conn.compute.servers()
-            to limit number of users returned.
-
-
+        This method is a helper function that will parse a set of query meta params related to openstack user queries
+        :param conn: An OpenstackConnection object - used to connect to openstack and parse meta params
         """
-        if not filter_kwargs:
-            filter_kwargs = {}
-        if from_domain and "domain_id" in filter_kwargs.keys():
-            raise ParseQueryError(
-                "This query uses a preset that requires searching on domain_ids "
-                "- but you've provided a domain using from_domain "
-                "- please use one or the other not both"
-            )
         if from_domain:
-            domain_id = self._get_user_domain(conn, from_domain)
             logger.info("searching in given user domain: '%s'", from_domain.name)
-        else:
-            domain_id = self._get_user_domain(conn, self.DEFAULT_DOMAIN)
-            logger.info(
-                "no domain_id given, will use id for default user domain: '%s'",
-                self.DEFAULT_DOMAIN.name,
-            )
-
-        logger.debug("searching for users using domain_id: '%s'", domain_id)
-        filter_kwargs.update({"domain_id": domain_id})
-
-        logger.debug(
-            "running openstacksdk command conn.identity.users (%s)",
-            ",".join(f"{key}={value}" for key, value in filter_kwargs.items()),
-        )
-        return list(conn.identity.users(**filter_kwargs))
+            return {"domain_id": self._get_user_domain(conn, from_domain)}
+        return {}
 
     def _get_user_domain(
         self, conn: OpenstackConnection, user_domain: UserDomains
     ) -> str:
         """
-        Gets user domain string from UserDomains enum
-        :param conn: openstack connection object used to get domain id
-        :param user_domain: an enum representing the domain to search for users in
+        Helper function to get user domain id from a given UserDomains enum
+        :param conn: An OpenstackConnection object - used to connect to openstacksdk
+        :param user_domain: An enum that represents possible user domains
         """
         # get user domain name from enum
         domain_name_arg = {
@@ -96,11 +65,56 @@ class UserRunner(QueryRunner):
         )
         return conn.identity.find_domain(domain_name_arg)
 
+    def _run_query(
+        self,
+        conn: OpenstackConnection,
+        filter_kwargs: Optional[Dict[str, str]] = None,
+        **meta_params,
+    ) -> List[User]:
+        """
+        This method runs the query by running openstacksdk commands
+
+        For UserQuery, this command gets all users by domain ID
+        :param conn: An OpenstackConnection object - used to connect to openstacksdk
+        :param filter_kwargs: An Optional set of filter kwargs to pass to conn.identity.users()
+        """
+
+        if not filter_kwargs:
+            filter_kwargs = {}
+
+        if meta_params["domain_id"] and "domain_id" in filter_kwargs.keys():
+            raise ParseQueryError(
+                "This query uses a preset that requires searching on domain_ids "
+                "- but you've provided a domain using from_domain "
+                "- please use one or the other not both"
+            )
+
+        filter_kwargs.update(
+            {"domain_id": self._get_user_domain(conn, self.DEFAULT_DOMAIN)}
+        )
+
+        if meta_params["domain_id"]:
+            filter_kwargs.update({"domain_id": meta_params["domain_id"]})
+        else:
+            logger.info(
+                "no domain_id given, will use id for default user domain: '%s'",
+                self.DEFAULT_DOMAIN.name,
+            )
+
+        logger.debug(
+            "searching for users using domain_id: '%s'", filter_kwargs["domain_id"]
+        )
+        logger.debug(
+            "running paginated openstacksdk command conn.identity.users (%s)",
+            ",".join(f"{key}={value}" for key, value in filter_kwargs.items()),
+        )
+        return self._run_paginated_query(conn.identity.users, filter_kwargs)
+
     def _parse_subset(self, _: OpenstackConnection, subset: List[User]) -> List[User]:
         """
-        This method is a helper function that will check a list of users to ensure that they are valid Server
+        This method is a helper function that will check a list of users to ensure that they are valid User
         objects
-        :param subset: A list of openstack Server objects
+        :param subset: A list of openstack User objects
         """
         if any(not isinstance(i, User) for i in subset):
             raise ParseQueryError("'from_subset' only accepts User openstack objects")

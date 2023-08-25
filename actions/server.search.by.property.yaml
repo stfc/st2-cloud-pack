@@ -88,4 +88,9 @@ parameters:
     description: "a comma-spaced list of values to search for"
     required: true
     type: array
+  from_projects:
+    description: "(Optional) comma-spaced list of projects id/names to limit query to, if not provided, runs against all projects"
+    type: array
+    default: null
+    required: false
 runner_type: python-script
