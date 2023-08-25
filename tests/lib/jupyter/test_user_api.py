@@ -5,7 +5,7 @@ from unittest.mock import patch, NonCallableMock, Mock, call
 import pytz
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
-from nose.tools import assert_raises_regexp, raises
+from nose.tools import raises
 from parameterized import parameterized
 
 from jupyter_api.api_endpoints import API_ENDPOINTS
@@ -161,7 +161,7 @@ class UserApiTests(unittest.TestCase):
         Tests that the delete_users method raises an error if the end_index is greater than start
         """
         user_names = JupyterUsers(name="test", start_index=2, end_index=1)
-        with assert_raises_regexp(RuntimeError, "must be less than"):
+        with self.assertRaisesRegex(RuntimeError, "must be less than"):
             self.api.delete_users("dev", "token", user_names)
 
     def test_create_users_single_user(self, requests):
@@ -221,5 +221,5 @@ class UserApiTests(unittest.TestCase):
         Tests that the create_users method raises an error if the end_index is greater than start
         """
         user_names = JupyterUsers(name="test", start_index=2, end_index=1)
-        with assert_raises_regexp(RuntimeError, "must be less than"):
+        with self.assertRaisesRegex(RuntimeError, "must be less than"):
             self.api.create_users("dev", "token", user_names)
