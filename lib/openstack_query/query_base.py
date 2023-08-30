@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from structs.query.query_client_side_handlers import QueryClientSideHandlers
 
-from openstack_query.handlers.prop_handler import PropHandler
 from openstack_query.handlers.server_side_handler import ServerSideHandler
 
 # pylint:disable=too-few-public-methods

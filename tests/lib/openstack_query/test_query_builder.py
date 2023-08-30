@@ -25,8 +25,7 @@ class QueryBuilderTests(unittest.TestCase):
         Setup for tests
         """
         super().setUp()
-        self.mock_prop_handler = MagicMock()
-
+        self.prop_enum_cls = MockProperties
         self.mock_client_handler_1 = MagicMock()
         self.mock_client_handler_2 = MagicMock()
 
@@ -36,7 +35,7 @@ class QueryBuilderTests(unittest.TestCase):
         ]
         self.mock_server_side_handler = MagicMock()
         self.instance = QueryBuilder(
-            self.mock_prop_handler,
+            self.prop_enum_cls,
             self.mock_client_side_handlers,
             self.mock_server_side_handler,
         )
@@ -64,14 +63,12 @@ class QueryBuilderTests(unittest.TestCase):
         mock_client_side_handler.get_filter_func.return_value = mock_client_filter_func
 
         self.mock_server_side_handler.get_filters.return_value = mock_server_side_filter
-
-        mock_prop_func = MagicMock()
-        self.mock_prop_handler.get_prop_func.return_value = mock_prop_func
-
         mock_kwargs = {"arg1": "val1", "arg2": "val2"}
-        self.instance.parse_where(
-            MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_kwargs
-        )
+
+        with patch.object(MockProperties, "get_prop_func") as mock_prop_func:
+            self.instance.parse_where(
+                MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_kwargs
+            )
 
         mock_get_preset_handler.assert_called_once_with(
             MockQueryPresets.ITEM_1, MockProperties.PROP_1
@@ -79,7 +76,7 @@ class QueryBuilderTests(unittest.TestCase):
         mock_client_side_handler.get_filter_func.assert_called_once_with(
             preset=MockQueryPresets.ITEM_1,
             prop=MockProperties.PROP_1,
-            prop_func=mock_prop_func,
+            prop_func=mock_prop_func.return_value,
             filter_func_kwargs=mock_kwargs,
         )
         self.mock_server_side_handler.get_filters.assert_called_once_with(
@@ -109,8 +106,10 @@ class QueryBuilderTests(unittest.TestCase):
         """
         # test if prop_mapping doesn't exist
         self.instance._client_side_filter = None
-        self.mock_prop_handler.get_prop_func.return_value = None
-        self.instance.parse_where(MockQueryPresets.ITEM_1, MockProperties.PROP_1)
+        with patch.object(MockProperties, "get_prop_func") as mock_prop_func:
+            mock_prop_func.return_value = None
+            self.instance.parse_where(MockQueryPresets.ITEM_1, MockProperties.PROP_1)
+            mock_prop_func.assert_called_once_with(MockProperties.PROP_1)
 
     def test_get_preset_handler_valid(self):
         """

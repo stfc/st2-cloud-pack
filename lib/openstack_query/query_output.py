@@ -16,10 +16,12 @@ class QueryOutput:
     TODO: Class should also handle grouping and sorting results
     """
 
+    # what value to output if property is not found for an openstack object
+    DEFAULT_OUT = "Not Found"
+
     def __init__(self, prop_enum_cls: PropEnum):
         self._prop_enum_cls = prop_enum_cls
         self._props = set()
-        self.DEFAULT_OUT = "Not Found"
 
     @property
     def selected_props(self) -> List[PropEnum]:
@@ -86,7 +88,7 @@ class QueryOutput:
         for prop in props:
             if prop not in self._prop_enum_cls:
                 raise ParseQueryError(
-                    f"Error: Given property: {prop.name} is not supported by query"
+                    f"Error: Given property to select: {prop.name} is not supported by query"
                 )
 
             self._props.add(prop)

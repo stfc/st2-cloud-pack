@@ -9,7 +9,7 @@ from openstack_query.runners.query_runner import QueryRunner
 from exceptions.parse_query_error import ParseQueryError
 from exceptions.enum_mapping_error import EnumMappingError
 
-from enums.query.props.server_properties import ServerProperties
+from enums.query.props.user_properties import UserProperties
 from enums.user_domains import UserDomains
 
 logger = logging.getLogger(__name__)

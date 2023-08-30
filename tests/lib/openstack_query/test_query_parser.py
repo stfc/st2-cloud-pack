@@ -3,6 +3,10 @@ from unittest.mock import MagicMock, call, patch
 from parameterized import parameterized
 
 from openstack_query.query_parser import QueryParser
+from nose.tools import raises
+
+from exceptions.parse_query_error import ParseQueryError
+from enums.query.props.server_properties import ServerProperties
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 # pylint:disable=protected-access
@@ -18,14 +22,18 @@ class QueryParserTests(unittest.TestCase):
         Setup for tests
         """
         super().setUp()
-        self.mock_prop_handler = MagicMock()
-        self.mock_prop_handler.get_prop = MagicMock(wraps=self.mock_get_prop)
-        self.instance = QueryParser(self.mock_prop_handler)
+        self.mock_get_cls = MockProperties
+        self.instance = QueryParser(self.mock_get_cls)
+
+    def _get_prop_func(self, prop):
+        return MagicMock(wraps=lambda obj: self._prop_func(obj, prop))
 
     @staticmethod
-    def mock_get_prop(obj, prop):
-        """simply return obj as prop value to compare"""
-        return obj[prop]
+    def _prop_func(obj, prop):
+        """
+        mock a property func assuming the property function was to get a property corresponding to 'prop_1'
+        """
+        return obj[prop.name.lower()]
 
     def test_group_by_prop(self):
         """
@@ -34,18 +42,15 @@ class QueryParserTests(unittest.TestCase):
         self.instance._group_by = "prop1"
         self.assertEqual(self.instance.group_by_prop, "prop1")
 
-    @patch("openstack_query.query_parser.QueryParser._check_prop_valid")
-    def test_parse_sort_by_one_key(self, mock_check_prop_valid):
+    def test_parse_sort_by_one_key(self):
         """
         Tests parse_sort_by method works expectedly - one sort-by key
         should call check_prop_valid and add it to sort_by attribute
         """
         self.instance.parse_sort_by((MockProperties.PROP_1, False))
         self.assertEqual(dict(self.instance._sort_by), {MockProperties.PROP_1: False})
-        mock_check_prop_valid.assert_called_once_with(MockProperties.PROP_1)
 
-    @patch("openstack_query.query_parser.QueryParser._check_prop_valid")
-    def test_parse_sort_by_many_keys(self, mock_check_prop_valid):
+    def test_parse_sort_by_many_keys(self):
         """
         Tests parse_sort_by method works expectedly - two sort-by keys
         should call check_prop_valid and add it to sort_by attribute
@@ -57,67 +62,63 @@ class QueryParserTests(unittest.TestCase):
             dict(self.instance._sort_by),
             {MockProperties.PROP_1: False, MockProperties.PROP_2: True},
         )
-        mock_check_prop_valid.assert_has_calls(
-            [call(MockProperties.PROP_1), call(MockProperties.PROP_2)]
-        )
 
-    @parameterized.expand(
-        [("no include missing", False), ("with include missing", True)]
-    )
-    @patch("openstack_query.query_parser.QueryParser._check_prop_valid")
-    def test_parse_group_by_with_group_ranges(
-        self, _, include_missing, mock_check_prop_valid
-    ):
+    @raises(ParseQueryError)
+    def test_parse_sort_by_invalid(self):
+        self.instance.parse_sort_by((ServerProperties.SERVER_ID, True))
+
+    def _run_group_by_with_ranges_tests(self, group_ranges, include_missing):
         """
-        Tests parse_group_by method works expectedly - with valid group ranges defined
+        Helper function for running group by tests
+        """
+        mock_group_by = MockProperties.PROP_1
+
+        with patch.object(
+            MockProperties, "get_prop_func", wraps=self._get_prop_func
+        ) as mock_get_prop_func:
+            self.instance.parse_group_by(
+                group_by=mock_group_by,
+                group_ranges=group_ranges,
+                include_missing=include_missing,
+            )
+            mock_get_prop_func.assert_called_once_with(mock_group_by)
+
+        self.assertTrue(self.instance._group_mappings["group1"]({"prop_1": "val1"}))
+        self.assertFalse(self.instance._group_mappings["group2"]({"prop_1": "val1"}))
+
+    def test_parse_group_by_with_group_ranges_and_no_missing_group(self):
+        """
+        Tests parse_group_by method works expectedly - with valid group ranges defined and include missing = False
         should create a dictionary with group names mapped to lambda functions
-            - which return True or False if a given resource false into group
         """
-
         mock_group_ranges = {"group1": ["val1", "val2", "val3"], "group2": ["val4"]}
+        self._run_group_by_with_ranges_tests(mock_group_ranges, include_missing=False)
+        self.assertEqual(self.instance._group_mappings.keys(), mock_group_ranges.keys())
 
-        self.instance.parse_group_by(
-            group_by="prop1",
-            group_ranges=mock_group_ranges,
-            include_missing=include_missing,
+    def test_parse_group_by_with_group_ranges_and_missing_group(self):
+        """
+        Tests parse_group_by method works expectedly - with valid group ranges defined and include missing = True
+        should create a dictionary with group names mapped to lambda functions
+        """
+        mock_group_ranges = {"group1": ["val1", "val2", "val3"], "group2": ["val4"]}
+        self._run_group_by_with_ranges_tests(mock_group_ranges, include_missing=True)
+        self.assertEqual(
+            list(self.instance._group_mappings.keys()),
+            (list(mock_group_ranges.keys()) + ["ungrouped results"]),
+        )
+        self.assertTrue(
+            self.instance._group_mappings["ungrouped results"]({"prop_1": "val5"})
+        )
+        self.assertFalse(
+            self.instance._group_mappings["ungrouped results"]({"prop_1": "val1"})
         )
 
-        mock_check_prop_valid.assert_called_once_with("prop1")
-        if not include_missing:
-            self.assertEqual(
-                self.instance._group_mappings.keys(), mock_group_ranges.keys()
-            )
-        else:
-            self.assertEqual(
-                list(self.instance._group_mappings.keys()),
-                (list(mock_group_ranges.keys()) + ["ungrouped results"]),
-            )
-
-        # test that group_mappings contain a callable lambda that uses _get_prop() func
-        self.assertTrue(self.instance._group_mappings["group1"]({"prop1": "val1"}))
-        self.assertFalse(self.instance._group_mappings["group2"]({"prop1": "val1"}))
-
-        self.mock_prop_handler.get_prop.assert_has_calls(
-            [call({"prop1": "val1"}, "prop1"), call({"prop1": "val1"}, "prop1")]
-        )
-
-        # test that include_missing group contains callable lambda
-        if include_missing:
-            self.assertTrue(
-                self.instance._group_mappings["ungrouped results"]({"prop1": "val5"})
-            )
-            self.assertFalse(
-                self.instance._group_mappings["ungrouped results"]({"prop1": "val1"})
-            )
-
-    @patch("openstack_query.query_parser.QueryParser._check_prop_valid")
-    def test_parse_group_by_no_ranges(self, mock_check_prop_valid):
+    def test_parse_group_by_no_ranges(self):
         """
         Tests parse_group_by functions expectedly - with no ranges
         Should simply set the group_by property as prop given
         """
         self.instance.parse_group_by(MockProperties.PROP_1)
-        mock_check_prop_valid.assert_called_once_with(MockProperties.PROP_1)
         self.assertEqual(self.instance._group_by, MockProperties.PROP_1)
 
     @patch("openstack_query.query_parser.QueryParser._run_sort")
@@ -175,23 +176,34 @@ class QueryParserTests(unittest.TestCase):
         mock_run_sort.assert_called_once_with(mock_obj_list)
         mock_run_group_by.assert_called_once_with("sort-out")
 
+    def _run_sort_by_tests(self, obj_list, sort_by_specs, expected_list):
+        self.instance._sort_by = sort_by_specs
+        with patch.object(
+            MockProperties, "get_prop_func", wraps=self._get_prop_func
+        ) as mock_get_prop_func:
+            res = self.instance._run_sort(obj_list)
+            self.assertEqual(res, expected_list)
+            mock_get_prop_func.assert_has_calls(
+                [call(sort_key) for sort_key in reversed(sort_by_specs.keys())]
+            )
+
     @parameterized.expand(
         [
             (
                 "string key ascending",
-                {"arg1": False},
+                {MockProperties.PROP_1: False},
             ),
             (
                 "string key descending",
-                {"arg1": True},
+                {MockProperties.PROP_1: True},
             ),
             (
                 "integer key ascending",
-                {"arg2": False},
+                {MockProperties.PROP_2: False},
             ),
             (
                 "integer key descending",
-                {"arg2": True},
+                {MockProperties.PROP_2: True},
             ),
         ]
     )
@@ -203,66 +215,66 @@ class QueryParserTests(unittest.TestCase):
         """
 
         mock_obj_list = [
-            {"arg1": "a", "arg2": 2},
-            {"arg1": "c", "arg2": 4},
-            {"arg1": "d", "arg2": 3},
-            {"arg1": "b", "arg2": 1},
+            {"prop_1": "a", "prop_2": 2},
+            {"prop_1": "c", "prop_2": 4},
+            {"prop_1": "d", "prop_2": 3},
+            {"prop_1": "b", "prop_2": 1},
         ]
-        mock_prop_name = list(mock_sort_by_specs.keys())[0]
-        reverse = mock_sort_by_specs[mock_prop_name]
 
+        # sorting by only one property so get first key in sort specs
+        mock_enum = list(mock_sort_by_specs.keys())[0]
+        reverse = mock_sort_by_specs[mock_enum]
+        mock_prop_name = mock_enum.name.lower()
         expected_list = sorted(
             mock_obj_list, key=lambda k: k[mock_prop_name], reverse=reverse
         )
-        self.instance._sort_by = mock_sort_by_specs
-        res = self.instance._run_sort(mock_obj_list)
-        self.assertEqual(res, expected_list)
+        self._run_sort_by_tests(mock_obj_list, mock_sort_by_specs, expected_list)
 
     @parameterized.expand(
         [
             (
                 "string key ascending, then age descending",
-                {"arg1": False, "arg2": True},
+                {MockProperties.PROP_1: False, MockProperties.PROP_2: True},
                 [
-                    {"arg1": "a", "arg2": 2},
-                    {"arg1": "a", "arg2": 1},
-                    {"arg1": "b", "arg2": 2},
-                    {"arg1": "b", "arg2": 1},
+                    {"prop_1": "a", "prop_2": 2},
+                    {"prop_1": "a", "prop_2": 1},
+                    {"prop_1": "b", "prop_2": 2},
+                    {"prop_1": "b", "prop_2": 1},
                 ],
             ),
             (
                 "string key descending, then age ascending",
-                {"arg1": True, "arg2": False},
+                {MockProperties.PROP_1: True, MockProperties.PROP_2: False},
                 [
-                    {"arg1": "b", "arg2": 1},
-                    {"arg1": "b", "arg2": 2},
-                    {"arg1": "a", "arg2": 1},
-                    {"arg1": "a", "arg2": 2},
+                    {"prop_1": "b", "prop_2": 1},
+                    {"prop_1": "b", "prop_2": 2},
+                    {"prop_1": "a", "prop_2": 1},
+                    {"prop_1": "a", "prop_2": 2},
                 ],
             ),
             (
                 "age key ascending, then string descending",
-                {"arg2": False, "arg1": True},
+                {MockProperties.PROP_2: False, MockProperties.PROP_1: True},
                 [
-                    {"arg1": "b", "arg2": 1},
-                    {"arg1": "a", "arg2": 1},
-                    {"arg1": "b", "arg2": 2},
-                    {"arg1": "a", "arg2": 2},
+                    {"prop_1": "b", "prop_2": 1},
+                    {"prop_1": "a", "prop_2": 1},
+                    {"prop_1": "b", "prop_2": 2},
+                    {"prop_1": "a", "prop_2": 2},
                 ],
             ),
             (
                 "age key descending, then string ascending",
-                {"arg2": True, "arg1": False},
+                {MockProperties.PROP_2: True, MockProperties.PROP_1: False},
                 [
-                    {"arg1": "a", "arg2": 2},
-                    {"arg1": "b", "arg2": 2},
-                    {"arg1": "a", "arg2": 1},
-                    {"arg1": "b", "arg2": 1},
+                    {"prop_1": "a", "prop_2": 2},
+                    {"prop_1": "b", "prop_2": 2},
+                    {"prop_1": "a", "prop_2": 1},
+                    {"prop_1": "b", "prop_2": 1},
                 ],
             ),
         ]
     )
-    def test_run_sort_with_multiple_key(self, _, mock_sort_by_specs, expected_res):
+    def test_run_sort_with_multiple_key(self, _, mock_sort_by_specs, expected_list):
         """
         Tests that run_sort functions expectedly - with one sorting key
         Should call run_sort method which should get the appropriate sorting
@@ -270,25 +282,22 @@ class QueryParserTests(unittest.TestCase):
         """
 
         mock_obj_list = [
-            {"arg1": "a", "arg2": 1},
-            {"arg1": "b", "arg2": 1},
-            {"arg1": "a", "arg2": 2},
-            {"arg1": "b", "arg2": 2},
+            {"prop_1": "a", "prop_2": 1},
+            {"prop_1": "b", "prop_2": 1},
+            {"prop_1": "a", "prop_2": 2},
+            {"prop_1": "b", "prop_2": 2},
         ]
-        self.instance._sort_by = mock_sort_by_specs
-
-        res = self.instance._run_sort(mock_obj_list)
-        self.assertEqual(res, expected_res)
+        self._run_sort_by_tests(mock_obj_list, mock_sort_by_specs, expected_list)
 
     @parameterized.expand(
         [
             (
                 "boolean ascending",
-                {"enabled": False},
+                {MockProperties.PROP_1: False},
             ),
             (
                 "boolean ascending",
-                {"enabled": True},
+                {MockProperties.PROP_1: True},
             ),
         ]
     )
@@ -299,66 +308,62 @@ class QueryParserTests(unittest.TestCase):
         key lambda function and sort dict accordingly
         """
         mock_obj_list = [
-            {"enabled": False},
-            {"enabled": True},
+            {"prop_1": False},
+            {"prop_1": True},
         ]
         self.instance._sort_by = mock_sort_by_specs
-        mock_prop_name = list(mock_sort_by_specs.keys())[0]
-        reverse = mock_sort_by_specs[mock_prop_name]
+        mock_enum = list(mock_sort_by_specs.keys())[0]
+        reverse = mock_sort_by_specs[mock_enum]
+        mock_prop_name = mock_enum.name.lower()
 
         expected_list = sorted(
             mock_obj_list, key=lambda k: k[mock_prop_name], reverse=reverse
         )
-        res = self.instance._run_sort(mock_obj_list)
-        self.assertEqual(res, expected_list)
+        self._run_sort_by_tests(mock_obj_list, mock_sort_by_specs, expected_list)
 
     @parameterized.expand(
         [
             (
-                "group by arg1",
-                "arg1",
+                "group by prop_1",
+                MockProperties.PROP_1,
                 {
-                    "arg1 with value a": [
-                        {"arg1": "a", "arg2": 1},
-                        {"arg1": "a", "arg2": 3},
+                    "PROP_1 with value a": [
+                        {"prop_1": "a", "prop_2": 1},
+                        {"prop_1": "a", "prop_2": 3},
                     ],
-                    "arg1 with value b": [{"arg1": "b", "arg2": 2}],
+                    "PROP_1 with value b": [{"prop_1": "b", "prop_2": 2}],
                 },
             ),
             (
-                "group by arg2",
-                "arg2",
+                "group by prop_2",
+                MockProperties.PROP_2,
                 {
-                    "arg2 with value 1": [{"arg1": "a", "arg2": 1}],
-                    "arg2 with value 2": [{"arg1": "b", "arg2": 2}],
-                    "arg2 with value 3": [{"arg1": "a", "arg2": 3}],
+                    "PROP_2 with value 1": [{"prop_1": "a", "prop_2": 1}],
+                    "PROP_2 with value 2": [{"prop_1": "b", "prop_2": 2}],
+                    "PROP_2 with value 3": [{"prop_1": "a", "prop_2": 3}],
                 },
             ),
         ]
     )
-    def test_build_unique_val_groups(self, _, mock_group_by_prop, expected_out):
+    def test_build_unique_val_groups(self, _, mock_group_by, expected_out):
         """
         Tests that build_unique_val_groups method functions expectedly
         method should find all unique values for a test object list for a given property and create appropriate
         group_ranges to be used for group-by
         """
 
-        def mock_get_prop(obj, prop):
-            return obj[prop.name]
-
-        self.mock_prop_handler.get_prop = MagicMock(wraps=mock_get_prop)
-
         obj_list = [
-            {"arg1": "a", "arg2": 1},
-            {"arg1": "b", "arg2": 2},
-            {"arg1": "a", "arg2": 3},
+            {"prop_1": "a", "prop_2": 1},
+            {"prop_1": "b", "prop_2": 2},
+            {"prop_1": "a", "prop_2": 3},
         ]
-        mock_prop_enum = MagicMock()
-        mock_prop_enum.name = mock_group_by_prop
-        self.instance._group_by = mock_prop_enum
+        self.instance._group_by = mock_group_by
 
-        res = self.instance._build_unique_val_groups(obj_list)
-        self.assertEqual(res.keys(), expected_out.keys())
+        with patch.object(
+            MockProperties, "get_prop_func", wraps=self._get_prop_func
+        ) as mock_get_prop_func:
+            res = self.instance._build_unique_val_groups(obj_list)
+            self.assertEqual(res.keys(), expected_out.keys())
 
         # now that we have the group mappings - check that using them produces expected results
         grouped_out = {
@@ -377,16 +382,16 @@ class QueryParserTests(unittest.TestCase):
         self.instance._group_by = MockProperties.PROP_1
 
         mock_group_mappings = {
-            "group1": lambda obj: obj["arg1"] == "a",
-            "group2": lambda obj: obj["arg1"] == "b",
-            "group3": lambda obj: obj["arg1"] == "c",
+            "group1": lambda obj: obj["prop_1"] == "a",
+            "group2": lambda obj: obj["prop_1"] == "b",
+            "group3": lambda obj: obj["prop_1"] == "c",
         }
         mock_build_unique_val_groups.return_value = mock_group_mappings
 
         mock_obj_list = [
-            {"arg1": "a", "arg2": 1},
-            {"arg1": "b", "arg2": 2},
-            {"arg1": "c", "arg2": 3},
+            {"prop_1": "a", "prop_2": 1},
+            {"prop_1": "b", "prop_2": 2},
+            {"prop_1": "c", "prop_2": 3},
         ]
 
         res = self.instance._run_group_by(mock_obj_list)
@@ -395,9 +400,9 @@ class QueryParserTests(unittest.TestCase):
         self.assertEqual(
             res,
             {
-                "group1": [{"arg1": "a", "arg2": 1}],
-                "group2": [{"arg1": "b", "arg2": 2}],
-                "group3": [{"arg1": "c", "arg2": 3}],
+                "group1": [{"prop_1": "a", "prop_2": 1}],
+                "group2": [{"prop_1": "b", "prop_2": 2}],
+                "group3": [{"prop_1": "c", "prop_2": 3}],
             },
         )
 
@@ -410,15 +415,15 @@ class QueryParserTests(unittest.TestCase):
         self.instance._group_by = MockProperties.PROP_1
 
         mock_group_mappings = {
-            "group1": lambda obj: obj["arg2"] in [1, 2],
-            "group2": lambda obj: obj["arg2"] in [3],
+            "group1": lambda obj: obj["prop_2"] in [1, 2],
+            "group2": lambda obj: obj["prop_2"] in [3],
         }
         self.instance._group_mappings = mock_group_mappings
 
         mock_obj_list = [
-            {"arg1": "a", "arg2": 1},
-            {"arg1": "b", "arg2": 2},
-            {"arg1": "c", "arg2": 3},
+            {"prop_1": "a", "prop_2": 1},
+            {"prop_1": "b", "prop_2": 2},
+            {"prop_1": "c", "prop_2": 3},
         ]
 
         res = self.instance._run_group_by(mock_obj_list)
@@ -427,7 +432,7 @@ class QueryParserTests(unittest.TestCase):
         self.assertEqual(
             res,
             {
-                "group1": [{"arg1": "a", "arg2": 1}, {"arg1": "b", "arg2": 2}],
-                "group2": [{"arg1": "c", "arg2": 3}],
+                "group1": [{"prop_1": "a", "prop_2": 1}, {"prop_1": "b", "prop_2": 2}],
+                "group2": [{"prop_1": "c", "prop_2": 3}],
             },
         )

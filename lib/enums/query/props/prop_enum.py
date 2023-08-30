@@ -1,7 +1,6 @@
-from typing import Callable, Any
 from abc import abstractmethod
 from enum import Enum
-from typing import Optional
+from typing import Callable, Any, Optional
 
 
 class PropEnum(Enum):
@@ -19,7 +18,7 @@ class PropEnum(Enum):
 
     @staticmethod
     @abstractmethod
-    def get_marker_prop_func(self):
+    def get_marker_prop_func():
         """
         A getter method to return marker property function for pagination
         """

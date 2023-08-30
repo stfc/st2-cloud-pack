@@ -1,8 +1,38 @@
+from unittest.mock import patch
 from parameterized import parameterized
 
 from enums.query.props.server_properties import ServerProperties
 from nose.tools import raises
+
 from exceptions.parse_query_error import ParseQueryError
+from exceptions.query_property_mapping_error import QueryPropertyMappingError
+from tests.lib.openstack_query.mocks.mocked_props import MockProperties
+
+
+@parameterized(list(ServerProperties))
+def test_get_prop_func(prop):
+    """
+    Tests that all server properties have a property function mapping
+    """
+    ServerProperties.get_prop_func(prop)
+
+
+@raises(QueryPropertyMappingError)
+def test_get_prop_func_invalid():
+    """
+    Tests that get_prop_func_invalid returns Error if property not supported
+    """
+    ServerProperties.get_prop_func(MockProperties.PROP_1)
+
+
+@patch("enums.query.props.server_properties.ServerProperties.get_prop_func")
+def test_get_marker_prop_func(mock_get_prop_func):
+    """
+    Tests that marker_prop_func returns get_prop_func called with SERVER_ID
+    """
+    val = ServerProperties.get_marker_prop_func()
+    mock_get_prop_func.assert_called_once_with(ServerProperties.SERVER_ID)
+    assert val == mock_get_prop_func.return_value
 
 
 @parameterized(["flavor_id", "Flavor_ID", "FlAvOr_Id"])
