@@ -26,8 +26,8 @@ class UserQuery(QueryWrapper):
     Define property mappings, kwarg mappings and filter function mappings related to users here
     """
 
-    PROP_ENUM_CLS = UserProperties
-    RUNNER_CLS = UserRunner
+    prop_enum_cls = UserProperties
+    runner_cls = UserRunner
 
     def _get_server_side_handler(self) -> ServerSideHandler:
         """

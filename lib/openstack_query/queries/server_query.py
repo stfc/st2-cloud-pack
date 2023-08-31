@@ -31,8 +31,8 @@ class ServerQuery(QueryWrapper):
     Define property mappings, kwarg mappings and filter function mappings related to servers here
     """
 
-    PROP_ENUM_CLS = ServerProperties
-    RUNNER_CLS = ServerRunner
+    prop_enum_cls = ServerProperties
+    runner_cls = ServerRunner
 
     def _get_server_side_handler(self) -> ServerSideHandler:
         """

@@ -17,9 +17,9 @@ class QueryWrapper(QueryMethods, QueryBase):
 
     def __init__(self):
         self._query_results = []
-        self.runner = self.RUNNER_CLS(self.PROP_ENUM_CLS)
-        self.output = QueryOutput(self.PROP_ENUM_CLS)
-        self.parser = QueryParser(self.PROP_ENUM_CLS)
+        self.runner = self.runner_cls(self.prop_enum_cls)
+        self.output = QueryOutput(self.prop_enum_cls)
+        self.parser = QueryParser(self.prop_enum_cls)
         self.builder = QueryBuilder(
             self.prop_enum_cls,
             self._get_client_side_handlers().to_list(),

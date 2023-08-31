@@ -31,11 +31,13 @@ class QueryParser:
             - set order to True for descending, False for ascending
         """
         self._sort_by = {}
-        for prop, order in sort_by:
-            if prop not in self._prop_enum_cls:
+        for user_selected_prop, _ in sort_by:
+            if user_selected_prop not in self._sort_by:
                 raise ParseQueryError(
-                    f"Error: Given property to sort by: {prop.name} is not supported by query"
+                    f"Error: Given property to sort by: {user_selected_prop.name} is not supported by query"
                 )
+
+        for prop, order in sort_by:
             order_log_str = "DESC" if order else "ASC"
             logging.debug(
                 "adding sorting params: %s, order: %s", prop.name, order_log_str
@@ -68,25 +70,40 @@ class QueryParser:
             raise ParseQueryError(
                 f"Error: Given property to group by: {group_by.name} is not supported by query"
             )
+
         self._group_by = group_by
-        all_prop_list = set()
 
         if group_ranges:
-            logger.debug("creating filter functions for specified group ranges")
-            prop_func = self._prop_enum_cls.get_prop_func(group_by)
-            for name, prop_list in group_ranges.items():
-                group_vals = tuple(prop_list)
-                self._group_mappings[name] = (
-                    lambda obj, lst=group_vals: prop_func(obj) in lst
-                )
-                all_prop_list.update(prop_list)
+            self._parse_group_ranges(group_ranges)
 
-            # if ungrouped group wanted - filter for all not in any range specified
-            if include_missing:
-                logger.debug("creating filter function for ungrouped group")
-                self._group_mappings["ungrouped results"] = (
-                    lambda obj: prop_func(obj) not in all_prop_list
-                )
+        if include_missing:
+            self._add_include_missing_group(group_ranges)
+
+    def _parse_group_ranges(self, group_ranges: Optional[Dict[str, List[PropValue]]]):
+        """
+        helper method for parsing group ranges
+        :param group_ranges: a dictionary containing names of the group and list of prop values
+        to select for that group
+        """
+        logger.debug("creating filter functions for specified group ranges")
+        prop_func = self._prop_enum_cls.get_prop_func(self._group_by)
+        for name, prop_list in group_ranges.items():
+            group_vals = tuple(prop_list)
+            self._group_mappings[name] = (
+                lambda obj, lst=group_vals: prop_func(obj) in lst
+            )
+
+    def _add_include_missing_group(self, group_ranges):
+        # if ungrouped group wanted - filter for all not in any range specified
+        all_prop_list = set()
+        for _, prop_list in group_ranges.items():
+            all_prop_list.update(set(prop_list))
+
+        prop_func = self._prop_enum_cls.get_prop_func(self._group_by)
+        logger.debug("creating filter function for ungrouped group")
+        self._group_mappings["ungrouped results"] = (
+            lambda obj: prop_func(obj) not in all_prop_list
+        )
 
     def run_parser(
         self, obj_list: List[OpenstackResourceObj]

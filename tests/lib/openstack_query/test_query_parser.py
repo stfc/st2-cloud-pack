@@ -67,52 +67,6 @@ class QueryParserTests(unittest.TestCase):
     def test_parse_sort_by_invalid(self):
         self.instance.parse_sort_by((ServerProperties.SERVER_ID, True))
 
-    def _run_group_by_with_ranges_tests(self, group_ranges, include_missing):
-        """
-        Helper function for running group by tests
-        """
-        mock_group_by = MockProperties.PROP_1
-
-        with patch.object(
-            MockProperties, "get_prop_func", wraps=self._get_prop_func
-        ) as mock_get_prop_func:
-            self.instance.parse_group_by(
-                group_by=mock_group_by,
-                group_ranges=group_ranges,
-                include_missing=include_missing,
-            )
-            mock_get_prop_func.assert_called_once_with(mock_group_by)
-
-        self.assertTrue(self.instance._group_mappings["group1"]({"prop_1": "val1"}))
-        self.assertFalse(self.instance._group_mappings["group2"]({"prop_1": "val1"}))
-
-    def test_parse_group_by_with_group_ranges_and_no_missing_group(self):
-        """
-        Tests parse_group_by method works expectedly - with valid group ranges defined and include missing = False
-        should create a dictionary with group names mapped to lambda functions
-        """
-        mock_group_ranges = {"group1": ["val1", "val2", "val3"], "group2": ["val4"]}
-        self._run_group_by_with_ranges_tests(mock_group_ranges, include_missing=False)
-        self.assertEqual(self.instance._group_mappings.keys(), mock_group_ranges.keys())
-
-    def test_parse_group_by_with_group_ranges_and_missing_group(self):
-        """
-        Tests parse_group_by method works expectedly - with valid group ranges defined and include missing = True
-        should create a dictionary with group names mapped to lambda functions
-        """
-        mock_group_ranges = {"group1": ["val1", "val2", "val3"], "group2": ["val4"]}
-        self._run_group_by_with_ranges_tests(mock_group_ranges, include_missing=True)
-        self.assertEqual(
-            list(self.instance._group_mappings.keys()),
-            (list(mock_group_ranges.keys()) + ["ungrouped results"]),
-        )
-        self.assertTrue(
-            self.instance._group_mappings["ungrouped results"]({"prop_1": "val5"})
-        )
-        self.assertFalse(
-            self.instance._group_mappings["ungrouped results"]({"prop_1": "val1"})
-        )
-
     def test_parse_group_by_no_ranges(self):
         """
         Tests parse_group_by functions expectedly - with no ranges
@@ -120,6 +74,73 @@ class QueryParserTests(unittest.TestCase):
         """
         self.instance.parse_group_by(MockProperties.PROP_1)
         self.assertEqual(self.instance._group_by, MockProperties.PROP_1)
+
+    @patch("openstack_query.query_parser.QueryParser._parse_group_ranges")
+    def test_parse_group_by_with_group_ranges(self, mock_parse_group_ranges):
+        """
+        Tests parse_group_by functions expectedly - with group ranges
+        Should set group_by and call parse_group_ranges
+        """
+        mock_group_ranges = {"group1": ["val1", "val2", "val3"], "group2": ["val4"]}
+        self.instance.parse_group_by(MockProperties.PROP_1, mock_group_ranges)
+        self.assertEqual(self.instance._group_by, MockProperties.PROP_1)
+        mock_parse_group_ranges.assert_called_once_with(mock_group_ranges)
+
+    @patch("openstack_query.query_parser.QueryParser._parse_group_ranges")
+    @patch("openstack_query.query_parser.QueryParser._add_include_missing_group")
+    def test_parse_group_by_with_group_ranges_and_include_missing(
+        self, mock_add_include_missing_group, mock_parse_group_ranges
+    ):
+        """
+        Tests parse_group_by functions expectedly - with group ranges
+        Should set group_by and call parse_group_ranges
+        """
+        mock_group_ranges = {"group1": ["val1", "val2", "val3"], "group2": ["val4"]}
+        self.instance.parse_group_by(
+            MockProperties.PROP_1, mock_group_ranges, include_missing=True
+        )
+        self.assertEqual(self.instance._group_by, MockProperties.PROP_1)
+        mock_parse_group_ranges.assert_called_once_with(mock_group_ranges)
+        mock_add_include_missing_group.assert_called_once_with(mock_group_ranges)
+
+    def test_run_parse_group_ranges(self):
+        """
+        Tests parse_group_ranges functions expectedly
+        Should setup groups based on given group mappings
+        """
+        mock_group_by = MockProperties.PROP_1
+        self.instance._group_by = mock_group_by
+        mock_group_ranges = {"group1": ["val1", "val2", "val3"], "group2": ["val4"]}
+
+        with patch.object(
+            MockProperties, "get_prop_func", wraps=self._get_prop_func
+        ) as mock_get_prop_func:
+            self.instance._parse_group_ranges(group_ranges=mock_group_ranges)
+            mock_get_prop_func.assert_called_once_with(mock_group_by)
+
+        self.assertTrue(self.instance._group_mappings["group1"]({"prop_1": "val1"}))
+        self.assertFalse(self.instance._group_mappings["group2"]({"prop_1": "val1"}))
+
+    def test_add_include_missing_group(self):
+        mock_group_by = MockProperties.PROP_1
+        self.instance._group_by = mock_group_by
+        mock_group_ranges = {"group1": ["val1", "val2", "val3"], "group2": ["val4"]}
+
+        with patch.object(
+            MockProperties, "get_prop_func", wraps=self._get_prop_func
+        ) as mock_get_prop_func:
+            self.instance._add_include_missing_group(mock_group_ranges)
+            mock_get_prop_func.assert_called_once_with(mock_group_by)
+
+        self.assertTrue(
+            self.instance._group_mappings["ungrouped results"]({"prop_1": "val5"})
+        )
+        self.assertFalse(
+            self.instance._group_mappings["ungrouped results"]({"prop_1": "val1"})
+        )
+        self.assertFalse(
+            self.instance._group_mappings["ungrouped results"]({"prop_1": "val4"})
+        )
 
     @patch("openstack_query.query_parser.QueryParser._run_sort")
     def test_run_parser_with_sort_by(self, mock_run_sort):
