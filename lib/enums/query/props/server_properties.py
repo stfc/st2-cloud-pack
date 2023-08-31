@@ -55,17 +55,12 @@ class ServerProperties(PropEnum):
             ServerProperties.IMAGE_ID: lambda a: a["image_id"],
             ServerProperties.PROJECT_ID: lambda a: a["location"]["project"]["id"],
         }
-        assert all(i in mapping for i in ServerProperties)
-        for i in ServerProperties:
-            assert (
-                i in mapping
-            ), f"Error: No prop mapping defined for ServerProperties.{i.name}"
-
-        if prop not in ServerProperties:
+        try:
+            return mapping[prop]
+        except KeyError as exp:
             raise QueryPropertyMappingError(
-                "Error: failed to get property mapping, property is not supported in ServerProperties"
-            )
-        return mapping[prop]
+                "Error: failed to get property mapping, property {prop.name} is not supported in ServerProperties"
+            ) from exp
 
     @staticmethod
     def get_marker_prop_func():

@@ -2,6 +2,8 @@ from abc import abstractmethod
 from enum import Enum
 from typing import Callable, Any, Optional
 
+PropFunc = Callable[[Any], Any]
+
 
 class PropEnum(Enum):
     """
@@ -10,7 +12,7 @@ class PropEnum(Enum):
 
     @staticmethod
     @abstractmethod
-    def get_prop_func(prop) -> Optional[Callable[[Any], Any]]:
+    def get_prop_func(prop) -> Optional[PropFunc]:
         """
         Method that returns the property function if function mapping exists for a given property Enum
         :param prop: A property Enum for which a function may exist for

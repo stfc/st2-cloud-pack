@@ -26,6 +26,9 @@ class UserQuery(QueryWrapper):
     Define property mappings, kwarg mappings and filter function mappings related to users here
     """
 
+    PROP_ENUM_CLS = UserProperties
+    RUNNER_CLS = UserRunner
+
     def _get_server_side_handler(self) -> ServerSideHandler:
         """
         method to configure a server handler which can be used to get 'filter' keyword arguments that
@@ -72,8 +75,3 @@ class UserQuery(QueryWrapper):
             # set integer query preset mappings
             integer_handler=None,
         )
-
-    def __init__(self):
-        self.prop_enum_cls = UserProperties
-        self.runner = UserRunner(self.prop_enum_cls)
-        super().__init__()

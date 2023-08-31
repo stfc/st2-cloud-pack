@@ -31,6 +31,9 @@ class ServerQuery(QueryWrapper):
     Define property mappings, kwarg mappings and filter function mappings related to servers here
     """
 
+    PROP_ENUM_CLS = ServerProperties
+    RUNNER_CLS = ServerRunner
+
     def _get_server_side_handler(self) -> ServerSideHandler:
         """
         method to configure a server handler which can be used to get 'filter' keyword arguments that
@@ -112,8 +115,3 @@ class ServerQuery(QueryWrapper):
             # set integer query preset mappings
             integer_handler=None,
         )
-
-    def __init__(self):
-        self.prop_enum_cls = ServerRunner
-        self.runner = ServerRunner(self.prop_enum_cls)
-        super().__init__()
