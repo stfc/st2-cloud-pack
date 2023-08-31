@@ -364,6 +364,7 @@ class QueryParserTests(unittest.TestCase):
         ) as mock_get_prop_func:
             res = self.instance._build_unique_val_groups(obj_list)
             self.assertEqual(res.keys(), expected_out.keys())
+            mock_get_prop_func.assert_called_once_with(mock_group_by)
 
         # now that we have the group mappings - check that using them produces expected results
         grouped_out = {
