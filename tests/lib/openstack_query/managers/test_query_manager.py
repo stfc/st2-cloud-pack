@@ -18,8 +18,10 @@ from exceptions.enum_mapping_error import EnumMappingError
 
 from tests.lib.openstack_query.mocks.mocked_structs import (
     MOCKED_OUTPUT_DETAILS,
-    MOCKED_OUTPUT_DETAILS_TO_OBJ_LIST,
     MOCKED_PRESET_DETAILS,
+    MOCKED_OUTPUT_DETAILS_WITH_SORT_BY,
+    MOCKED_OUTPUT_DETAILS_WITH_GROUP_BY,
+    MOCKED_OUTPUT_DETAILS_WITH_ALL,
 )
 
 # pylint:disable=protected-access,
@@ -42,76 +44,71 @@ class QueryManagerTests(unittest.TestCase):
             cloud_account="test_account", query=self.query, prop_cls=self.prop_cls
         )
 
-    @parameterized.expand(
-        [
-            ("test with run() args", {"arg1": "val1", "arg2": "val2"}),
-            ("test with no args", None),
-        ]
-    )
-    @patch("openstack_query.managers.query_manager.QueryManager._populate_query")
-    @patch("openstack_query.managers.query_manager.QueryManager._get_query_output")
-    def test_build_and_run_query_with_runner_params(
-        self, _, mock_run_args, mock_get_query_output, mock_populate_query
+    def _run_build_and_run_query_case(
+        self, output_details, preset_details, runner_params
     ):
+        with patch(
+            "openstack_query.managers.query_manager.QueryManager._populate_output_params"
+        ) as mock_populate_output_params:
+            with patch(
+                "openstack_query.managers.query_manager.QueryManager._get_query_output"
+            ) as mock_get_query_output:
+                res = self.instance._build_and_run_query(
+                    output_details=output_details,
+                    preset_details=preset_details,
+                    runner_params=runner_params,
+                )
+                mock_populate_output_params.assert_called_once_with(
+                    output_details=output_details
+                )
+                mock_get_query_output.assert_called_once_with(
+                    output_details.output_type
+                )
+                self.assertEqual(res, mock_get_query_output.return_value)
+
+    def test_build_and_run_query_with_no_optional_params(self):
         """
-        Tests that _build_and_run_query method functions expectedly
-        Sets up a QueryResource object and runs a given query with appropriate inputs (with runner params).
+        Tests that _build_and_run_query method functions expectedly - with no preset or runner params
+        Should setup a QueryResource object and set output details, then call run() with no runner params
         """
-        res = self.instance._build_and_run_query(
+        self._run_build_and_run_query_case(
+            output_details=MOCKED_OUTPUT_DETAILS,
+            preset_details=None,
+            runner_params=None,
+        )
+        self.instance._query.where.assert_not_called()
+        self.query.run.assert_called_once_with("test_account")
+
+    def test_build_and_run_query_with_runner_params(self):
+        """
+        Tests that _build_and_run_query method functions expectedly - with runner params, no preset params
+        Should setup a QueryResource object and set output details, then call run() with mock runner params
+        """
+        mock_runner_params = {"arg1": "val1", "arg2": "val2"}
+        self._run_build_and_run_query_case(
+            output_details=MOCKED_OUTPUT_DETAILS,
+            preset_details=None,
+            runner_params=mock_runner_params,
+        )
+        self.instance._query.where.assert_not_called()
+        self.query.run.assert_called_once_with("test_account", **mock_runner_params)
+
+    def test_build_and_run_query_with_preset_details(self):
+        """
+        Tests that _build_and_run_query method functions expectedly - with preset params
+        Should setup a QueryResource object and set output details, then call where() with preset details,
+        then finally call run() with no runner params
+        """
+        self._run_build_and_run_query_case(
             output_details=MOCKED_OUTPUT_DETAILS,
             preset_details=MOCKED_PRESET_DETAILS,
-            runner_params=mock_run_args,
+            runner_params=None,
         )
-        mock_populate_query.assert_called_once_with(
-            preset_details=MOCKED_PRESET_DETAILS,
-            properties_to_select=MOCKED_OUTPUT_DETAILS.properties_to_select,
+        self.query.where.assert_called_once_with(
+            preset=MOCKED_PRESET_DETAILS.preset,
+            prop=MOCKED_PRESET_DETAILS.prop,
+            **MOCKED_PRESET_DETAILS.args,
         )
-
-        if mock_run_args:
-            self.query.run.assert_called_once_with("test_account", **mock_run_args)
-        else:
-            self.query.run.assert_called_once_with("test_account")
-
-        mock_get_query_output.assert_called_once_with(MOCKED_OUTPUT_DETAILS.output_type)
-        self.assertEqual(res, mock_get_query_output.return_value)
-
-    @parameterized.expand(
-        [
-            ("with no preset details", None, MOCKED_OUTPUT_DETAILS),
-            (
-                "with to_object_list output_type",
-                None,
-                MOCKED_OUTPUT_DETAILS_TO_OBJ_LIST,
-            ),
-            ("with both", MOCKED_PRESET_DETAILS, MOCKED_OUTPUT_DETAILS),
-        ]
-    )
-    @patch("openstack_query.managers.query_manager.QueryManager._populate_query")
-    @patch("openstack_query.managers.query_manager.QueryManager._get_query_output")
-    def test_build_and_run_query(
-        self,
-        _,
-        mock_preset_details,
-        mock_output_details,
-        mock_get_query_output,
-        mock_populate_query,
-    ):
-        """
-        Tests that _build_and_run_query method functions expectedly
-        Sets up a QueryResource object and runs a given query with appropriate inputs (no runner params).
-        Returns query result
-        """
-        res = self.instance._build_and_run_query(
-            mock_output_details, mock_preset_details
-        )
-
-        mock_populate_query.assert_called_once_with(
-            preset_details=mock_preset_details,
-            properties_to_select=mock_output_details.properties_to_select,
-        )
-        self.query.run.assert_called_once_with("test_account")
-        mock_get_query_output.assert_called_once_with(mock_output_details.output_type)
-        self.assertEqual(res, mock_get_query_output.return_value)
 
     @parameterized.expand(
         [(f"test {outtype.name.lower()}", outtype) for outtype in QueryOutputTypes]
@@ -129,23 +126,59 @@ class QueryManagerTests(unittest.TestCase):
         """
         self.instance._get_query_output(MagicMock())
 
-    def test_populate_query_with_properties(self):
-        """
-        Tests that _populate_query method functions expectedly with properties
-        method builds the query with appropriate inputs before executing - calls select() with given properties
-        """
-
-        self.instance._populate_query(
-            MOCKED_OUTPUT_DETAILS.properties_to_select, MOCKED_PRESET_DETAILS
-        )
+    def _run_populate_output_params_check(self, mock_output_details):
+        self.instance._populate_output_params(output_details=mock_output_details)
         self.query.select.assert_called_once_with(
-            *MOCKED_OUTPUT_DETAILS.properties_to_select
+            *mock_output_details.properties_to_select
         )
-        self.query.where.assert_called_once_with(
-            preset=MOCKED_PRESET_DETAILS.preset,
-            prop=MOCKED_PRESET_DETAILS.prop,
-            **MOCKED_PRESET_DETAILS.args,
+
+    def test_populate_output_params_with_all_provided(self):
+        """
+        Tests populate_output_params works properly - with group_by and sort_by in output_details
+        Should call QueryMethods sort_by and group_by methods appropriately
+        """
+        mock_output_details = MOCKED_OUTPUT_DETAILS_WITH_ALL
+        self._run_populate_output_params_check(mock_output_details)
+        self.query.sort_by.assert_called_once_with(*mock_output_details.sort_by)
+        self.query.group_by.assert_called_once_with(
+            group_by=mock_output_details.group_by,
+            group_ranges=mock_output_details.group_ranges,
+            include_ungrouped_results=mock_output_details.include_ungrouped_results,
         )
+
+    def test_populate_output_params_with_group_by(self):
+        """
+        Tests populate_output_params works properly - with group_by in output_details
+        Should call QueryMethods group_by method appropriately
+        """
+        mock_output_details = MOCKED_OUTPUT_DETAILS_WITH_GROUP_BY
+        self._run_populate_output_params_check(mock_output_details)
+        self.query.sort_by.assert_not_called()
+        self.query.group_by.assert_called_once_with(
+            group_by=mock_output_details.group_by,
+            group_ranges=mock_output_details.group_ranges,
+            include_ungrouped_results=mock_output_details.include_ungrouped_results,
+        )
+
+    def test_populate_output_params_with_sort_by(self):
+        """
+        Tests populate_output_params works properly - with sort_by in output_details
+        Should call QueryMethods sort_by method appropriately
+        """
+        mock_output_details = MOCKED_OUTPUT_DETAILS_WITH_SORT_BY
+        self._run_populate_output_params_check(mock_output_details)
+        self.query.sort_by.assert_called_once_with(*mock_output_details.sort_by)
+        self.query.group_by.assert_not_called()
+
+    def test_populate_output_params_with_neither(self):
+        """
+        Tests populate_output_params works properly - with neither group_by or sort_by in output_details
+        Should do nothing
+        """
+        mock_output_details = MOCKED_OUTPUT_DETAILS
+        self._run_populate_output_params_check(mock_output_details)
+        self.query.sort_by.assert_not_called()
+        self.query.group_by.assert_not_called()
 
     @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
     @patch("openstack_query.managers.query_manager.QueryOutputDetails")

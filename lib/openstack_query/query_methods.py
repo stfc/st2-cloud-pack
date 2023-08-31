@@ -1,6 +1,6 @@
-from typing import Union, List, Any, Optional, Dict
 import time
 import logging
+from typing import Union, List, Any, Optional, Dict, Tuple
 
 from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresets
@@ -8,10 +8,11 @@ from enums.cloud_domains import CloudDomains
 
 from openstack_query.query_output import QueryOutput
 from openstack_query.query_builder import QueryBuilder
+from openstack_query.query_parser import QueryParser
 from openstack_query.runners.server_runner import QueryRunner
 
 from exceptions.parse_query_error import ParseQueryError
-from custom_types.openstack_query.aliases import OpenstackResourceObj
+from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 
 logger = logging.getLogger(__name__)
 
@@ -21,11 +22,19 @@ class QueryMethods:
     Interface for Query Classes. This class exposes all public methods for query api.
     """
 
-    def __init__(self, builder: QueryBuilder, runner: QueryRunner, output: QueryOutput):
+    def __init__(
+        self,
+        builder: QueryBuilder,
+        runner: QueryRunner,
+        parser: QueryParser,
+        output: QueryOutput,
+    ):
         self.builder = builder
         self.runner = runner
+        self.parser = parser
         self.output = output
-        self._query_results = []
+        self._query_results = None
+        self._query_results_as_objects = None
 
     def select(self, *props: PropEnum):
         """
@@ -92,20 +101,33 @@ class QueryMethods:
         self.builder.parse_where(preset, prop, kwargs)
         return self
 
-    def sort_by(self, sort_by: PropEnum, reverse=False):
+    def sort_by(self, *sort_by: Tuple[PropEnum, bool]):
         """
         Public method used to configure sorting results
-        :param sort_by: name of property to sort by
-        :param reverse: False is sort by ascending, True is sort by descending, default False
+        :param sort_by: Tuple of property enum to sort by and boolean representing sorting order
+            - False (ascending) or True (descending)
         """
-        raise NotImplementedError
+        self.parser.parse_sort_by(*sort_by)
 
-    def group_by(self, group_by: PropEnum):
+    def group_by(
+        self,
+        group_by: PropEnum,
+        group_ranges: Optional[Dict[str, List[PropValue]]] = None,
+        include_ungrouped_results: bool = False,
+    ):
         """
-        Public method used to configure grouping results.
+        Public method used to configure how to group results.
         :param group_by: name of the property to group by
+        :param group_ranges: a set of optional group mappings - group name to list of values of
+        selected group by property to be included in each group
+        :param include_ungrouped_results: an optional flag to include a "ungrouped" group to the
+        output of values found that were
+        not specified in group mappings - ignored if group ranges not given
         """
-        raise NotImplementedError
+        if self.parser.group_by_prop:
+            raise ParseQueryError("group by already set")
+
+        self.parser.parse_group_by(group_by, group_ranges, include_ungrouped_results)
 
     def run(
         self,
@@ -144,34 +166,48 @@ class QueryMethods:
 
         logger.debug("run started")
         start = time.time()
-        self._query_results = self.runner.run(
+        results = self.runner.run(
             cloud_account, local_filters, server_filters, from_subset, **kwargs
         )
         logger.debug("run completed - time elapsed: %s seconds", time.time() - start)
 
-        self.output.generate_output(self._query_results)
+        parsed_results = self.parser.run_parser(results)
+        # if parsed results are grouped results
+        if isinstance(parsed_results, dict):
+            self._query_results = {}
+            self._query_results_as_objects = {}
+            for name, group in parsed_results.items():
+                self._query_results.update({name: self.output.generate_output(group)})
+                self._query_results_as_objects.update({name: group})
+
+        # if parsed results aren't grouped
+        else:
+            self._query_results = self.output.generate_output(parsed_results)
+            self._query_results_as_objects = parsed_results
         return self
 
     def to_list(self, as_objects=False) -> Union[List[Any], List[Dict[str, str]]]:
         """
-        Public method to return results as a list
-        :param as_objects: whether to return a list of openstack objects, or a list of dictionaries containing selected
-        properties
+        Public method to return results as a list/dict
+        :param as_objects: if true return result as openstack objects,
+        else return result as dictionaries containing selected properties
         """
         if as_objects:
-            return self._query_results
-        return self.output.results
+            return self._query_results_as_objects
+        return self._query_results
 
-    def to_string(self, **kwargs) -> str:
+    def to_string(self, title: Optional[str] = None, **kwargs) -> str:
         """
-        Public method to return results as a table
+        Public method to return results as table(s)
+        :param title: an optional title for the table(s)
         :param kwargs: kwargs to pass to generate table
         """
-        return self.output.to_string(**kwargs)
+        return self.output.to_string(self._query_results, title, **kwargs)
 
-    def to_html(self, **kwargs) -> str:
+    def to_html(self, title: Optional[str] = None, **kwargs) -> str:
         """
         Public method to return results as html table
+        :param title: an optional title for the table(s) - will be converted to html automatically
         :param kwargs: kwargs to pass to generate table
         """
-        return self.output.to_html(**kwargs)
+        return self.output.to_html(self._query_results, title, **kwargs)

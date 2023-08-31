@@ -25,8 +25,9 @@ logger = logging.getLogger(__name__)
 
 
 # these search methods map to stackstorm actions which just pass
-# user-inputted strings straight here - hence there's a lot of parameters
+# user-inputted strings straight here - hence there's a lot of parameters and local variables
 # pylint:disable=too-many-arguments
+# pylint:disable=too-many-locals
 class QueryManager:
     """
     This class is the base class for all managers.
@@ -49,8 +50,8 @@ class QueryManager:
         """
         method to build the query, execute it, and return the results
         :param output_details: A dataclass containing config on how to output results of query
-        :param preset_details: A dataclass containing query preset config information
-        :param runner_params: A set of extra params to pass when calling run()
+        :param preset_details: An optional dataclass containing query preset config information
+        :param runner_params: An optional set of extra params to pass when calling run()
         """
         logging.info("Running Query")
         if preset_details:
@@ -77,18 +78,44 @@ class QueryManager:
                 props_to_select,
             )
 
-        self._populate_query(
-            preset_details=preset_details,
-            properties_to_select=output_details.properties_to_select,
-        )
         if not runner_params:
             runner_params = {}
+
+        self._populate_output_params(output_details=output_details)
+
+        if preset_details:
+            self._query.where(
+                preset=preset_details.preset,
+                prop=preset_details.prop,
+                **preset_details.args,
+            )
 
         self._query.run(self._cloud_account, **runner_params)
 
         return self._get_query_output(
             output_details.output_type,
         )
+
+    def _populate_output_params(self, output_details: QueryOutputDetails):
+        """
+        method that sets output parameters like group by, sort by and select parameters
+        :param output_details: A dataclass containing output parameters to use
+        """
+
+        # set select props
+        self._query.select(*output_details.properties_to_select)
+
+        # set sort by
+        if output_details.sort_by:
+            self._query.sort_by(*output_details.sort_by)
+
+        # set group by
+        if output_details.group_by:
+            self._query.group_by(
+                group_by=output_details.group_by,
+                group_ranges=output_details.group_ranges,
+                include_ungrouped_results=output_details.include_ungrouped_results,
+            )
 
     def _get_query_output(
         self,
@@ -118,36 +145,20 @@ class QueryManager:
             )
         return output_func()
 
-    def _populate_query(
-        self,
-        properties_to_select: List[PropEnum],
-        preset_details: Optional[QueryPresetDetails] = None,
-    ) -> None:
-        """
-        method that populates the query before executing.
-        :param properties_to_select: A set of properties to get from each result when outputting
-        :param preset_details: A dataclass containing query preset config information
-        """
-
-        self._query.select(*properties_to_select)
-
-        if preset_details:
-            self._query.where(
-                preset=preset_details.preset,
-                prop=preset_details.prop,
-                **preset_details.args,
-            )
-
     def search_all(
         self,
         properties_to_select: Optional[List[str]] = None,
         output_type: Optional[str] = None,
+        group_by: Optional[str] = None,
+        sort_by: Optional[List[str]] = None,
         **kwargs,
     ) -> QueryReturn:
         """
         method that returns a list of all resources
         :param properties_to_select: list of strings representing which properties to select
         :param output_type: string representing how to output the query
+        :param group_by: an optional string representing a property to group results by
+        :param sort_by: an optional set of tuples representing way which properties to sort results by
         :param kwargs: A set of optional meta params to pass to the query
 
         """
@@ -156,6 +167,8 @@ class QueryManager:
             prop_cls=self._prop_cls,
             properties_to_select=properties_to_select,
             output_type=output_type,
+            group_by=group_by,
+            sort_by=sort_by,
         )
 
         return self._build_and_run_query(
@@ -169,6 +182,8 @@ class QueryManager:
         values: List[str],
         properties_to_select: Optional[List[str]] = None,
         output_type: Optional[str] = None,
+        group_by: Optional[str] = None,
+        sort_by: Optional[List[str]] = None,
         **kwargs,
     ) -> QueryReturn:
         """
@@ -181,6 +196,8 @@ class QueryManager:
         :param values: A list of string values to compare server property against
         :param properties_to_select: list of strings representing which properties to select
         :param output_type: string representing how to output the query
+        :param group_by: an optional string representing a property to group results by
+        :param sort_by: an optional set of tuples representing way which properties to sort results by
         :param kwargs: A set of optional meta params to pass to the query
         """
         # convert user-given args into enums
@@ -217,6 +234,8 @@ class QueryManager:
             prop_cls=self._prop_cls,
             properties_to_select=properties_to_select,
             output_type=output_type,
+            group_by=group_by,
+            sort_by=sort_by,
         )
 
         return self._build_and_run_query(
@@ -235,6 +254,8 @@ class QueryManager:
         pattern: str,
         properties_to_select: Optional[List[str]] = None,
         output_type: Optional[str] = None,
+        group_by: Optional[str] = None,
+        sort_by: Optional[List[str]] = None,
         **kwargs,
     ):
         """
@@ -243,6 +264,8 @@ class QueryManager:
         :param pattern: A string representing a regex pattern
         :param properties_to_select: list of strings representing which properties to select
         :param output_type: string representing how to output the query
+        :param group_by: an optional string representing a property to group results by
+        :param sort_by: an optional set of tuples representing way which properties to sort results by
         :param kwargs: A set of optional meta params to pass to the query
         """
         logging.info("Running search by property query")
@@ -265,6 +288,8 @@ class QueryManager:
             prop_cls=self._prop_cls,
             properties_to_select=properties_to_select,
             output_type=output_type,
+            group_by=group_by,
+            sort_by=sort_by,
         )
 
         return self._build_and_run_query(
@@ -287,6 +312,8 @@ class QueryManager:
         seconds: int = 0,
         properties_to_select: Optional[List[str]] = None,
         output_type: Optional[str] = None,
+        group_by: Optional[str] = None,
+        sort_by: Optional[List[str]] = None,
         **kwargs,
     ) -> QueryReturn:
         """
@@ -302,6 +329,8 @@ class QueryManager:
         :param seconds: (Optional) Number of relative seconds in the past from now to use as threshold
         :param properties_to_select: list of strings representing which properties to select
         :param output_type: string representing how to output the query
+        :param group_by: an optional string representing a property to group results by
+        :param sort_by: an optional set of tuples representing way which properties to sort results by
         :param kwargs: A set of optional meta params to pass to the query
         """
         logging.info("Running search by property query")
@@ -332,6 +361,8 @@ class QueryManager:
             prop_cls=self._prop_cls,
             properties_to_select=properties_to_select,
             output_type=output_type,
+            group_by=group_by,
+            sort_by=sort_by,
         )
 
         return self._build_and_run_query(

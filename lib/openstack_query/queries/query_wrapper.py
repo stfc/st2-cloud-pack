@@ -1,5 +1,6 @@
 from openstack_query.query_output import QueryOutput
 from openstack_query.query_builder import QueryBuilder
+from openstack_query.query_parser import QueryParser
 
 from openstack_query.query_methods import QueryMethods
 from openstack_query.query_base import QueryBase
@@ -23,6 +24,7 @@ class QueryWrapper(QueryMethods, QueryBase):
         self._query_results = []
 
         self.output = QueryOutput(prop_handler)
+        self.parser = QueryParser(prop_handler)
         self.builder = QueryBuilder(
             prop_handler,
             self._get_client_side_handlers().to_list(),

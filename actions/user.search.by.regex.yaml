@@ -69,4 +69,32 @@ parameters:
       - "STFC"
       - "DEFAULT"
       - "OPENID"
+  group_by:
+    description: "(Optional) server property to group unique results by
+    One of:
+      - 'user_description'
+      - 'user_name'
+      - 'user_id'
+      - 'domain_id'
+    Anything else will raise an error"
+    type: string
+    required: false
+    default: null
+    enum:
+      - "user_domain_id"
+      - "user_description"
+      - "user_name"
+      - "user_email"
+  sort_by:
+    description: "(Optional) comma-spaced list of user properties to sort by (by ascending only)
+    - multiple of the same property will be ignored.
+    Any of:
+      - 'user_description'
+      - 'user_name'
+      - 'user_id'
+      - 'domain_id'
+    Anything else will raise an error"
+    type: array
+    required: false
+    default: null
 runner_type: python-script

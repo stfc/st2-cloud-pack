@@ -1,8 +1,9 @@
 import unittest
 from unittest.mock import MagicMock, patch, call
-from openstack_query.query_output import QueryOutput
-
+from parameterized import parameterized
 from nose.tools import raises
+
+from openstack_query.query_output import QueryOutput
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
@@ -42,64 +43,139 @@ class QueryOutputTests(unittest.TestCase):
         res = self.instance.selected_props
         self.assertEqual(res, list({"prop1", "prop2", "prop3"}))
 
+    @parameterized.expand([("no title", None), ("with title", "test title")])
     @patch("openstack_query.query_output.QueryOutput._generate_table")
-    def test_to_html(self, mock_generate_table):
+    def test_to_html_with_grouped_results(self, _, mock_title, mock_generate_table):
         """
-        Tests that to_html function works expectedly
-        method should call generate_table with return_html = True and return results
+        Tests that to_html function works expectedly - when given grouped results
+        method should call generate_table with return_html for each group
         """
-        mocked_results = "some_result"
-        expected_out = "some_output_string"
-        mock_generate_table.return_value = "some_output_string"
+        mocked_results = {"group1": ["obj1", "obj2"], "group2": ["obj3", "obj4"]}
+        mock_generate_table.side_effect = ["1 out, ", "2 out"]
 
         self.instance._results = mocked_results
-        res = self.instance.to_html()
+        res = self.instance.to_html(results=mocked_results, title=mock_title)
+        mock_generate_table.assert_has_calls(
+            [
+                call(["obj1", "obj2"], return_html=True, title="<b> group1: </b><br/>"),
+                call(["obj3", "obj4"], return_html=True, title="<b> group2: </b><br/>"),
+            ]
+        )
 
-        mock_generate_table.assert_called_once_with(mocked_results, return_html=True)
+        expected_out = ""
+        if mock_title:
+            expected_out = f"<b> {mock_title} </b><br/>"
+        expected_out += "1 out, 2 out"
 
         self.assertEqual(expected_out, res)
 
+    @parameterized.expand([("no title", None), ("with title", "test title")])
     @patch("openstack_query.query_output.QueryOutput._generate_table")
-    def test_to_string(self, mock_generate_table):
+    def test_to_html_with_list_results(self, _, mock_title, mock_generate_table):
         """
-        Tests that to_string function works expectedly
-        method should call generate_table with return_html = False and return results
+        Tests that to_html function works expectedly - when given list as results
+        method should call generate_table with return_html once
         """
-        mocked_results = "some_result"
-        expected_out = "some_output_string"
-        mock_generate_table.return_value = "some_output_string"
+        mocked_results = ["obj1", "obj2"]
+        mock_generate_table.return_value = "mock out"
 
         self.instance._results = mocked_results
-        res = self.instance.to_string()
+        res = self.instance.to_html(results=mocked_results, title=mock_title)
+        mock_generate_table.assert_called_once_with(
+            mocked_results, return_html=True, title=None
+        )
 
-        mock_generate_table.assert_called_once_with(mocked_results, return_html=False)
+        expected_out = ""
+        if mock_title:
+            expected_out = f"<b> {mock_title} </b><br/>"
+        expected_out += "mock out"
 
         self.assertEqual(expected_out, res)
 
+    @parameterized.expand([("no title", None), ("with title", "test title")])
+    @patch("openstack_query.query_output.QueryOutput._generate_table")
+    def test_to_string_with_grouped_results(self, _, mock_title, mock_generate_table):
+        """
+        Tests that to_string function works expectedly - when given grouped results
+        method should call generate_table with return_html set to false for each group
+        """
+        mocked_results = {"group1": ["obj1", "obj2"], "group2": ["obj3", "obj4"]}
+        mock_generate_table.side_effect = ["1 out, ", "2 out"]
+
+        self.instance._results = mocked_results
+        self.instance.to_string(results=mocked_results, title=mock_title)
+        mock_generate_table.assert_has_calls(
+            [
+                call(["obj1", "obj2"], return_html=False, title="group1:\n"),
+                call(["obj3", "obj4"], return_html=False, title="group2:\n"),
+            ]
+        )
+
+        expected_out = ""
+        if mock_title:
+            expected_out = f"{mock_title}:\n"
+        expected_out += "1 out, 2 out"
+
+    @parameterized.expand([("no title", None), ("with title", "test title")])
+    @patch("openstack_query.query_output.QueryOutput._generate_table")
+    def test_to_string_with_list_results(self, _, mock_title, mock_generate_table):
+        """
+        Tests that to_string function works expectedly - when given list as results
+        method should call generate_table with return_html set to false once
+        """
+        mocked_results = ["obj1", "obj2"]
+        mock_generate_table.return_value = "mock out"
+
+        self.instance._results = mocked_results
+        res = self.instance.to_string(results=mocked_results, title=mock_title)
+        mock_generate_table.assert_called_once_with(
+            mocked_results, return_html=False, title=None
+        )
+
+        expected_out = ""
+        if mock_title:
+            expected_out = f"{mock_title}:\n"
+        expected_out += "mock out"
+
+        self.assertEqual(expected_out, res)
+
+    @parameterized.expand([("no title", None), ("with title", "test title")])
     @patch("openstack_query.query_output.tabulate")
-    def test_generate_table(self, mock_tabulate):
+    def test_generate_table_no_vals(self, _, mock_title, mock_tabulate):
         """
-        Tests that generate_table function works expectedly
-        method should format results dict and call tabulate and return a string of the tabled results
+        Tests that generate_table function works expectedly - when results empty
+        method should return No results found
         """
         results_dict_0 = []
 
-        results_dict_1 = [{"prop1": "val1"}, {"prop1": "val2"}]
+        no_out = self.instance._generate_table(
+            results_dict_0, title=mock_title, return_html=False
+        )
+        if mock_title:
+            self.assertEqual(no_out, f"{mock_title}\nNo results found")
+        else:
+            self.assertEqual(no_out, "No results found")
 
+    @parameterized.expand([("no title", None), ("with title", "test title")])
+    @patch("openstack_query.query_output.tabulate")
+    def test_generate_table_with_vals(self, _, mock_title, mock_tabulate):
+        """
+        Tests that generate_table function works expectedly - with results
+        method should format results dict and call tabulate and return a string of the tabled results
+        """
+
+        results_dict_1 = [{"prop1": "val1"}, {"prop1": "val2"}]
         results_dict_2 = [{"prop1": "val1", "prop2": "val2"}]
 
-        no_out = self.instance._generate_table(results_dict_0, return_html=False)
-        self.assertEqual(no_out, "No results found")
+        _ = self.instance._generate_table(results_dict_1, return_html=False, title=None)
+        _ = self.instance._generate_table(results_dict_2, return_html=True, title=None)
 
-        _ = self.instance._generate_table(results_dict_1, return_html=False)
-
-        _ = self.instance._generate_table(results_dict_2, return_html=True)
-
-        mock_tabulate.assert_has_calls(
+        self.assertEqual(
+            mock_tabulate.call_args_list,
             [
                 call([["val1"], ["val2"]], ["prop1"], tablefmt="grid"),
                 call([["val1", "val2"]], ["prop1", "prop2"], tablefmt="html"),
-            ]
+            ],
         )
 
     def test_parse_select_with_select_all(self):
@@ -211,12 +287,3 @@ class QueryOutputTests(unittest.TestCase):
         self.instance._props = {MockProperties.PROP_1, MockProperties.PROP_2}
         res = self.instance._parse_property("openstack-item")
         self.assertEqual(res, {"prop_1": "prop_1-func", "prop_2": "prop_2-func"})
-
-    def test_results(self):
-        """
-        Tests that property method returns results value
-        """
-
-        self.instance._results = "some-results"
-        res = self.instance.results
-        self.assertEqual(res, "some-results")

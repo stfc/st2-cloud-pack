@@ -49,8 +49,8 @@ class ServerQuery(QueryWrapper):
                 ServerProperties.SERVER_STATUS: lambda a: a["status"],
                 ServerProperties.SERVER_CREATION_DATE: lambda a: a["created_at"],
                 ServerProperties.SERVER_LAST_UPDATED_DATE: lambda a: a["updated_at"],
-                ServerProperties.FLAVOR_ID: lambda a: ["flavor_id"],
-                ServerProperties.IMAGE_ID: lambda a: ["image_id"],
+                ServerProperties.FLAVOR_ID: lambda a: a["flavor_id"],
+                ServerProperties.IMAGE_ID: lambda a: a["image_id"],
                 ServerProperties.PROJECT_ID: lambda a: a["location"]["project"]["id"],
             }
         )
