@@ -69,7 +69,7 @@ class QueryBuilder:
             )
             raise ParseQueryError("Error: Already set a query preset")
 
-        prop_func = self._prop_enum_cls.get_prop_func(prop)
+        prop_func = self._prop_enum_cls.get_prop_mapping(prop)
 
         if not prop_func:
             logging.error(

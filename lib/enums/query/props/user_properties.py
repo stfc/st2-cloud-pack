@@ -29,7 +29,7 @@ class UserProperties(PropEnum):
             ) from err
 
     @staticmethod
-    def get_prop_func(prop):
+    def get_prop_mapping(prop):
         """
         Method that returns the property function if function mapping exists for a given UserProperty Enum
         how to get specified property from an openstacksdk Server object is documented here:
@@ -59,4 +59,4 @@ class UserProperties(PropEnum):
         """
         A getter method to return marker property function for pagination
         """
-        return UserProperties.get_prop_func(UserProperties.USER_ID)
+        return UserProperties.get_prop_mapping(UserProperties.USER_ID)

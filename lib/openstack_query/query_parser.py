@@ -86,7 +86,7 @@ class QueryParser:
         to select for that group
         """
         logger.debug("creating filter functions for specified group ranges")
-        prop_func = self._prop_enum_cls.get_prop_func(self._group_by)
+        prop_func = self._prop_enum_cls.get_prop_mapping(self._group_by)
         for name, prop_list in group_ranges.items():
             group_vals = tuple(prop_list)
             self._group_mappings[name] = (
@@ -99,7 +99,7 @@ class QueryParser:
         for _, prop_list in group_ranges.items():
             all_prop_list.update(set(prop_list))
 
-        prop_func = self._prop_enum_cls.get_prop_func(self._group_by)
+        prop_func = self._prop_enum_cls.get_prop_mapping(self._group_by)
         logger.debug("creating filter function for ungrouped group")
         self._group_mappings["ungrouped results"] = (
             lambda obj: prop_func(obj) not in all_prop_list
@@ -140,7 +140,7 @@ class QueryParser:
         ):
             logger.debug("running sort %s / %s", i, sort_num)
             logger.debug("sorting by: %s, reverse=%s", sort_key, reverse)
-            prop_func = self._prop_enum_cls.get_prop_func(sort_key)
+            prop_func = self._prop_enum_cls.get_prop_mapping(sort_key)
             obj_list.sort(key=prop_func, reverse=reverse)
         return obj_list
 
@@ -153,7 +153,7 @@ class QueryParser:
         for each unique value, create a group mapping
         :param obj_list: A list of openstack objects to group
         """
-        prop_func = self._prop_enum_cls.get_prop_func(self._group_by)
+        prop_func = self._prop_enum_cls.get_prop_mapping(self._group_by)
         # ordered dict to mimic ordered set
         # this is to preserve order we see unique values in - in case a sort has been done already
         unique_vals = OrderedDict({prop_func(obj): None for obj in obj_list})

@@ -12,7 +12,7 @@ class PropEnum(Enum):
 
     @staticmethod
     @abstractmethod
-    def get_prop_func(prop) -> Optional[PropFunc]:
+    def get_prop_mapping(prop) -> Optional[PropFunc]:
         """
         Method that returns the property function if function mapping exists for a given property Enum
         :param prop: A property Enum for which a function may exist for

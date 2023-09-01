@@ -114,7 +114,7 @@ class QueryOutput:
         """
         obj_dict = {}
         for prop in self._props:
-            prop_func = self._prop_enum_cls.get_prop_func(prop)
+            prop_func = self._prop_enum_cls.get_prop_mapping(prop)
             try:
                 val = str(prop_func(openstack_resource))
             except AttributeError:

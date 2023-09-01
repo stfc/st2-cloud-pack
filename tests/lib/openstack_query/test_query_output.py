@@ -243,11 +243,11 @@ class QueryOutputTests(unittest.TestCase):
         method should return an empty dict
         """
 
-        # mock get_prop_func to return a func string appropriate for that prop
+        # mock get_prop_mapping to return a func string appropriate for that prop
         self.instance._props = set()
         self.assertEqual(self.instance._parse_property("openstack-item"), {})
 
-    @patch.object(MockProperties, "get_prop_func")
+    @patch.object(MockProperties, "get_prop_mapping")
     def test_parse_property_one_prop(self, mock_get_prop_func):
         """
         Tests that parse_property function works expectedly with 0 prop_funcs to apply
@@ -285,7 +285,7 @@ class QueryOutputTests(unittest.TestCase):
             return None
 
         with patch.object(
-            MockProperties, "get_prop_func", wraps=_mock_get_prop_func
+            MockProperties, "get_prop_mapping", wraps=_mock_get_prop_func
         ) as mock_get_prop_func:
             self.instance._props = {MockProperties.PROP_1, MockProperties.PROP_2}
             res = self.instance._parse_property("openstack-item")

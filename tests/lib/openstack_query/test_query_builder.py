@@ -65,7 +65,7 @@ class QueryBuilderTests(unittest.TestCase):
         self.mock_server_side_handler.get_filters.return_value = mock_server_side_filter
         mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
-        with patch.object(MockProperties, "get_prop_func") as mock_prop_func:
+        with patch.object(MockProperties, "get_prop_mapping") as mock_prop_func:
             self.instance.parse_where(
                 MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_kwargs
             )
@@ -106,7 +106,7 @@ class QueryBuilderTests(unittest.TestCase):
         """
         # test if prop_mapping doesn't exist
         self.instance._client_side_filter = None
-        with patch.object(MockProperties, "get_prop_func") as mock_prop_func:
+        with patch.object(MockProperties, "get_prop_mapping") as mock_prop_func:
             mock_prop_func.return_value = None
             self.instance.parse_where(MockQueryPresets.ITEM_1, MockProperties.PROP_1)
             mock_prop_func.assert_called_once_with(MockProperties.PROP_1)

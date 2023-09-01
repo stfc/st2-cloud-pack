@@ -35,7 +35,7 @@ class ServerProperties(PropEnum):
             ) from err
 
     @staticmethod
-    def get_prop_func(prop):
+    def get_prop_mapping(prop):
         """
         Method that returns the property function if function mapping exists for a given ServerProperty Enum
         how to get specified property from an openstacksdk Server object is documented here:
@@ -67,4 +67,4 @@ class ServerProperties(PropEnum):
         """
         A getter method to return marker property function for pagination
         """
-        return ServerProperties.get_prop_func(ServerProperties.SERVER_ID)
+        return ServerProperties.get_prop_mapping(ServerProperties.SERVER_ID)

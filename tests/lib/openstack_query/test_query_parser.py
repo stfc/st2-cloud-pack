@@ -115,7 +115,7 @@ class QueryParserTests(unittest.TestCase):
         mock_group_ranges = {"group1": ["val1", "val2", "val3"], "group2": ["val4"]}
 
         with patch.object(
-            MockProperties, "get_prop_func", wraps=self._get_prop_func
+            MockProperties, "get_prop_mapping", wraps=self._get_prop_func
         ) as mock_get_prop_func:
             self.instance._parse_group_ranges(group_ranges=mock_group_ranges)
             mock_get_prop_func.assert_called_once_with(mock_group_by)
@@ -129,7 +129,7 @@ class QueryParserTests(unittest.TestCase):
         mock_group_ranges = {"group1": ["val1", "val2", "val3"], "group2": ["val4"]}
 
         with patch.object(
-            MockProperties, "get_prop_func", wraps=self._get_prop_func
+            MockProperties, "get_prop_mapping", wraps=self._get_prop_func
         ) as mock_get_prop_func:
             self.instance._add_include_missing_group(mock_group_ranges)
             mock_get_prop_func.assert_called_once_with(mock_group_by)
@@ -202,7 +202,7 @@ class QueryParserTests(unittest.TestCase):
     def _run_sort_by_tests(self, obj_list, sort_by_specs, expected_list):
         self.instance._sort_by = sort_by_specs
         with patch.object(
-            MockProperties, "get_prop_func", wraps=self._get_prop_func
+            MockProperties, "get_prop_mapping", wraps=self._get_prop_func
         ) as mock_get_prop_func:
             res = self.instance._run_sort(obj_list)
             self.assertEqual(res, expected_list)
@@ -383,7 +383,7 @@ class QueryParserTests(unittest.TestCase):
         self.instance._group_by = mock_group_by
 
         with patch.object(
-            MockProperties, "get_prop_func", wraps=self._get_prop_func
+            MockProperties, "get_prop_mapping", wraps=self._get_prop_func
         ) as mock_get_prop_func:
             res = self.instance._build_unique_val_groups(obj_list)
             self.assertEqual(res.keys(), expected_out.keys())

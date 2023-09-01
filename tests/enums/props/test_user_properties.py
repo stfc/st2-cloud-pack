@@ -9,25 +9,25 @@ from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 
 @parameterized(list(UserProperties))
-def test_get_prop_func(prop):
+def test_get_prop_mapping(prop):
     """
     Tests that all user properties have a property function mapping
     """
-    UserProperties.get_prop_func(prop)
+    UserProperties.get_prop_mapping(prop)
 
 
 @raises(QueryPropertyMappingError)
-def test_get_prop_func_invalid():
+def test_get_prop_mapping_invalid():
     """
-    Tests that get_prop_func_invalid returns Error if property not supported
+    Tests that get_prop_mapping returns Error if property not supported
     """
-    UserProperties.get_prop_func(MockProperties.PROP_1)
+    UserProperties.get_prop_mapping(MockProperties.PROP_1)
 
 
-@patch("enums.query.props.user_properties.UserProperties.get_prop_func")
+@patch("enums.query.props.user_properties.UserProperties.get_prop_mapping")
 def test_get_marker_prop_func(mock_get_prop_func):
     """
-    Tests that marker_prop_func returns get_prop_func called with USER_ID
+    Tests that marker_prop_func returns get_prop_mapping called with USER_ID
     """
     val = UserProperties.get_marker_prop_func()
     mock_get_prop_func.assert_called_once_with(UserProperties.USER_ID)

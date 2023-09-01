@@ -31,7 +31,7 @@ class UserRunner(QueryRunner):
         This method returns the marker value for a User object, required for pagination
         :param obj: An Server object to get the marker property for
         """
-        return UserProperties.get_prop_func("id")(obj)
+        return UserProperties.get_prop_mapping("id")(obj)
 
     def _parse_meta_params(
         self, conn: OpenstackConnection, from_domain: Optional[UserDomains] = None
