@@ -2,7 +2,6 @@ from typing import List, Dict, Union
 from tabulate import tabulate
 
 from enums.query.props.prop_enum import PropEnum
-from exceptions.query_property_mapping_error import QueryPropertyMappingError
 from exceptions.parse_query_error import ParseQueryError
 
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
