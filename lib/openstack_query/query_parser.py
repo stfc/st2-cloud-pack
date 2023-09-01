@@ -2,9 +2,8 @@ from typing import List, Dict, Tuple, Union, Optional, Callable
 import logging
 from collections import OrderedDict
 from enums.query.props.prop_enum import PropEnum
-from openstack_query.handlers.prop_handler import PropHandler
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
-from exceptions.query_property_mapping_error import QueryPropertyMappingError
+from exceptions.parse_query_error import ParseQueryError
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +14,8 @@ class QueryParser:
     Performs any sorting / grouping the user has specified
     """
 
-    def __init__(self, prop_handler: PropHandler):
-        self._prop_handler = prop_handler
+    def __init__(self, prop_enum_cls: PropEnum):
+        self._prop_enum_cls = prop_enum_cls
         self._sort_by = {}
         self._group_by = None
         self._group_mappings = {}
@@ -25,17 +24,6 @@ class QueryParser:
     def group_by_prop(self):
         return self._group_by
 
-    def _check_prop_valid(self, prop: PropEnum) -> None:
-        """
-        method which checks if the given property is valid - i.e. has an associated function mapping in
-        self.prop_handler which takes a openstack resource and returns the corresponding property for that object
-        :param prop: An enum representing the desired property
-        """
-        if not self._prop_handler.check_supported(prop):
-            raise QueryPropertyMappingError(
-                "Error: failed to get property mapping, property is not supported by prop_handler"
-            )
-
     def parse_sort_by(self, *sort_by: Tuple[PropEnum, bool]) -> None:
         """
         Public method used to configure sorting results
@@ -43,8 +31,13 @@ class QueryParser:
             - set order to True for descending, False for ascending
         """
         self._sort_by = {}
+        for user_selected_prop, _ in sort_by:
+            if user_selected_prop not in self._prop_enum_cls:
+                raise ParseQueryError(
+                    f"Error: Given property to sort by: {user_selected_prop.name} is not supported by query"
+                )
+
         for prop, order in sort_by:
-            self._check_prop_valid(prop)
             order_log_str = "DESC" if order else "ASC"
             logging.debug(
                 "adding sorting params: %s, order: %s", prop.name, order_log_str
@@ -73,37 +66,44 @@ class QueryParser:
         :param include_missing: a flag which if set includes an extra grouping for values
         that don't fall into any group specified in group_ranges
         """
-        self._check_prop_valid(group_by)
+        if group_by not in self._prop_enum_cls:
+            raise ParseQueryError(
+                f"Error: Given property to group by: {group_by.name} is not supported by query"
+            )
+
         self._group_by = group_by
-        all_prop_list = set()
 
         if group_ranges:
-            logger.debug("creating filter functions for specified group ranges")
-            for name, prop_list in group_ranges.items():
-                group_vals = tuple(prop_list)
-                self._group_mappings.update(
-                    {
-                        name: (
-                            lambda obj, lst=group_vals: self._prop_handler.get_prop(
-                                obj, group_by
-                            )
-                            in lst
-                        )
-                    }
-                )
-                all_prop_list.update(prop_list)
+            self._parse_group_ranges(group_ranges)
 
-            # if ungrouped group wanted - filter for all not in any range specified
-            if include_missing:
-                logger.debug("creating filter function for ungrouped group")
-                self._group_mappings.update(
-                    {
-                        "ungrouped results": lambda obj: self._prop_handler.get_prop(
-                            obj, group_by
-                        )
-                        not in all_prop_list
-                    }
-                )
+        if include_missing:
+            self._add_include_missing_group(group_ranges)
+
+    def _parse_group_ranges(self, group_ranges: Optional[Dict[str, List[PropValue]]]):
+        """
+        helper method for parsing group ranges
+        :param group_ranges: a dictionary containing names of the group and list of prop values
+        to select for that group
+        """
+        logger.debug("creating filter functions for specified group ranges")
+        prop_func = self._prop_enum_cls.get_prop_mapping(self._group_by)
+        for name, prop_list in group_ranges.items():
+            group_vals = tuple(prop_list)
+            self._group_mappings[name] = (
+                lambda obj, lst=group_vals: prop_func(obj) in lst
+            )
+
+    def _add_include_missing_group(self, group_ranges):
+        # if ungrouped group wanted - filter for all not in any range specified
+        all_prop_list = set()
+        for _, prop_list in group_ranges.items():
+            all_prop_list.update(set(prop_list))
+
+        prop_func = self._prop_enum_cls.get_prop_mapping(self._group_by)
+        logger.debug("creating filter function for ungrouped group")
+        self._group_mappings["ungrouped results"] = (
+            lambda obj: prop_func(obj) not in all_prop_list
+        )
 
     def run_parser(
         self, obj_list: List[OpenstackResourceObj]
@@ -140,10 +140,8 @@ class QueryParser:
         ):
             logger.debug("running sort %s / %s", i, sort_num)
             logger.debug("sorting by: %s, reverse=%s", sort_key, reverse)
-            obj_list.sort(
-                key=lambda obj, sk=sort_key: self._prop_handler.get_prop(obj, sk),
-                reverse=reverse,
-            )
+            prop_func = self._prop_enum_cls.get_prop_mapping(sort_key)
+            obj_list.sort(key=prop_func, reverse=reverse)
         return obj_list
 
     def _build_unique_val_groups(
@@ -155,12 +153,10 @@ class QueryParser:
         for each unique value, create a group mapping
         :param obj_list: A list of openstack objects to group
         """
-
+        prop_func = self._prop_enum_cls.get_prop_mapping(self._group_by)
         # ordered dict to mimic ordered set
         # this is to preserve order we see unique values in - in case a sort has been done already
-        unique_vals = OrderedDict(
-            {self._prop_handler.get_prop(obj, self._group_by): None for obj in obj_list}
-        )
+        unique_vals = OrderedDict({prop_func(obj): None for obj in obj_list})
         logger.debug(
             "unique values found %s - each will become a group",
             ",".join(f"{val}" for val in unique_vals),
@@ -172,10 +168,7 @@ class QueryParser:
         for val in unique_vals.keys():
             group_key = f"{self._group_by.name} with value {val}"
             group_mappings[group_key] = (
-                lambda obj, test_val=val: self._prop_handler.get_prop(
-                    obj, self._group_by
-                )
-                == test_val
+                lambda obj, test_val=val: prop_func(obj) == test_val
             )
 
         return group_mappings

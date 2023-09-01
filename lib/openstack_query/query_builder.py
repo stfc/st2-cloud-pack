@@ -2,7 +2,6 @@ from typing import Optional, Dict, Any, List
 import logging
 
 from openstack_query.handlers.client_side_handler import ClientSideHandler
-from openstack_query.handlers.prop_handler import PropHandler
 from openstack_query.handlers.server_side_handler import ServerSideHandler
 
 from enums.query.query_presets import QueryPresets
@@ -25,12 +24,12 @@ class QueryBuilder:
 
     def __init__(
         self,
-        prop_handler: PropHandler,
+        prop_enum_cls: PropEnum,
         client_side_handlers: List[ClientSideHandler],
         server_side_handler: Optional[ServerSideHandler],
     ):
         self._client_side_handlers = client_side_handlers
-        self._prop_handler = prop_handler
+        self._prop_enum_cls = prop_enum_cls
         self._server_side_handler = server_side_handler
 
         self._client_side_filter = None
@@ -70,7 +69,7 @@ class QueryBuilder:
             )
             raise ParseQueryError("Error: Already set a query preset")
 
-        prop_func = self._prop_handler.get_prop_func(prop)
+        prop_func = self._prop_enum_cls.get_prop_mapping(prop)
 
         if not prop_func:
             logging.error(

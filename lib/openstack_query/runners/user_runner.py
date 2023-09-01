@@ -9,6 +9,7 @@ from openstack_query.runners.query_runner import QueryRunner
 from exceptions.parse_query_error import ParseQueryError
 from exceptions.enum_mapping_error import EnumMappingError
 
+from enums.query.props.user_properties import UserProperties
 from enums.user_domains import UserDomains
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,14 @@ class UserRunner(QueryRunner):
     """
 
     DEFAULT_DOMAIN = UserDomains.STFC
+
+    @staticmethod
+    def _get_marker(obj: User) -> str:
+        """
+        This method returns the marker value for a User object, required for pagination
+        :param obj: An Server object to get the marker property for
+        """
+        return UserProperties.get_prop_mapping("id")(obj)
 
     def _parse_meta_params(
         self, conn: OpenstackConnection, from_domain: Optional[UserDomains] = None

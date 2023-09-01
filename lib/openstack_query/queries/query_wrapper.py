@@ -15,18 +15,13 @@ class QueryWrapper(QueryMethods, QueryBase):
     QueryWrapper is a base class for all Query<Resource> subclasses
     """
 
-    def __init__(self, runner_cls):
-        prop_handler = self._get_prop_handler()
-
-        self.runner = runner_cls(
-            marker_prop_func=lambda obj: prop_handler.get_prop(obj, self.marker_enum)
-        )
+    def __init__(self):
         self._query_results = []
-
-        self.output = QueryOutput(prop_handler)
-        self.parser = QueryParser(prop_handler)
+        self.runner = self.runner_cls(self.prop_enum_cls)
+        self.output = QueryOutput(self.prop_enum_cls)
+        self.parser = QueryParser(self.prop_enum_cls)
         self.builder = QueryBuilder(
-            prop_handler,
+            self.prop_enum_cls,
             self._get_client_side_handlers().to_list(),
             self._get_server_side_handler(),
         )

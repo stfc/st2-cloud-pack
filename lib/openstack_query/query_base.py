@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from structs.query.query_client_side_handlers import QueryClientSideHandlers
 
-from openstack_query.handlers.prop_handler import PropHandler
 from openstack_query.handlers.server_side_handler import ServerSideHandler
 
 # pylint:disable=too-few-public-methods
@@ -12,13 +11,6 @@ class QueryBase(ABC):
     Abstract Base class. This class defines abstract getter methods to enforce Query classes implement
     server-side, client-side and property handlers correctly
     """
-
-    @abstractmethod
-    def _get_prop_handler(self) -> PropHandler:
-        """
-        Should return a property handler object which can be used to get valid properties from an openstack resource
-        object
-        """
 
     @abstractmethod
     def _get_server_side_handler(self) -> ServerSideHandler:
