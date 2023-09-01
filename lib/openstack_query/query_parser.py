@@ -32,7 +32,7 @@ class QueryParser:
         """
         self._sort_by = {}
         for user_selected_prop, _ in sort_by:
-            if user_selected_prop not in self._sort_by:
+            if user_selected_prop not in self._prop_enum_cls:
                 raise ParseQueryError(
                     f"Error: Given property to sort by: {user_selected_prop.name} is not supported by query"
                 )
