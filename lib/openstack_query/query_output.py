@@ -93,15 +93,6 @@ class QueryOutput:
 
             self._props.add(prop)
 
-    def _check_prop_valid(self, prop: PropEnum):
-        """
-        method which checks if the given property is valid - i.e. has an associated function mapping in
-        self.prop_handler which takes a openstack resource and returns the corresponding property for that object
-        :param prop: An enum representing the desired property
-        """
-        if prop not in self._prop_enum_cls:
-            raise QueryPropertyMappingError()
-
     def generate_output(
         self, openstack_resources: List[OpenstackResourceObj]
     ) -> List[Dict[str, PropValue]]:
