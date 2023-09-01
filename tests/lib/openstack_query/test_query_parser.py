@@ -47,6 +47,7 @@ class QueryParserTests(unittest.TestCase):
         Tests parse_sort_by method works expectedly - one sort-by key
         should call check_prop_valid and add it to sort_by attribute
         """
+        self.instance._prop_enum_cls = MockProperties
         self.instance.parse_sort_by((MockProperties.PROP_1, False))
         self.assertEqual(dict(self.instance._sort_by), {MockProperties.PROP_1: False})
 
@@ -55,6 +56,7 @@ class QueryParserTests(unittest.TestCase):
         Tests parse_sort_by method works expectedly - two sort-by keys
         should call check_prop_valid and add it to sort_by attribute
         """
+        self.instance._prop_enum_cls = MockProperties
         self.instance.parse_sort_by(
             (MockProperties.PROP_1, False), (MockProperties.PROP_2, True)
         )
