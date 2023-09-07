@@ -29,11 +29,13 @@ parameters:
     description: Project is immutable or not
     type: boolean
   admin_user_list:
-    required: true
+    required: false
+    default: null
     type: array
     description: List of Users (IDs or Names) to give administrator access
   stfc_user_list:
-    required: true
+    required: false
+    default: null
     type: array
     description: List of Users (stfc domain) (IDs or Names) to give local user access
   network_name:
