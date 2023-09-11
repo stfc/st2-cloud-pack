@@ -30,14 +30,14 @@ parameters:
     type: boolean
   admin_user_list:
     required: false
-    default: null
+    default: []
     type: array
     items:
       type: string
     description: Comma seperated list of Users (IDs or Names) to assign administrator access to
   stfc_user_list:
     required: false
-    default: null
+    default: []
     type: array
     description: List of Users (stfc domain) (IDs or Names) to give local user access
   network_name:
