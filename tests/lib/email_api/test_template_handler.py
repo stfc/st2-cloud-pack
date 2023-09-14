@@ -14,6 +14,9 @@ from structs.email.email_template_details import EmailTemplateDetails
 
 @pytest.fixture(name="mock_template_metadata", scope="module")
 def mock_template_metadata_fixture():
+    """
+    Returns a mock template metadata dict for the email API to use
+    """
     return {
         "mock-template": {
             "html_filepath": "/path/to/file.html",
@@ -31,6 +34,10 @@ def mock_template_metadata_fixture():
 
 @pytest.fixture(name="instance")
 def instance_fixture(mock_template_metadata):
+    """
+    Returns a template parsing instance with the mock template metadata
+    injected for testing
+    """
     instance = TemplateHandler(mock_template_metadata)
     instance._template_env = MagicMock()
     return instance

@@ -9,11 +9,20 @@ from email_api.emailer import Emailer
 
 @pytest.fixture(name="template_handler", scope="function")
 def template_handler_fixture():
+    """
+    Returns a mock TemplateHandler instance, this will
+    generate a new mock for each test, but getting the
+    template_handler fixture will return the same mock
+    """
     return MagicMock()
 
 
 @pytest.fixture(name="instance")
 def instance_fixture(template_handler):
+    """
+    Returns a mock Emailer instance, with a mocked
+    template injected
+    """
     mock_smtp_account = MagicMock()
     return Emailer(mock_smtp_account, template_handler)
 
@@ -180,6 +189,11 @@ def test_build_email_with_attachments(
 @pytest.mark.parametrize("as_html", [True, False])
 @patch("email_api.emailer.MIMEText")
 def test_build_email_body(mock_mime_text, as_html, instance, template_handler):
+    """
+    Tests that build email body renders the
+    expected templates and places them into the
+    expected MIMEText object
+    """
     template_details_1 = MagicMock()
     template_details_2 = MagicMock()
     template_list = [template_details_1, template_details_2]
