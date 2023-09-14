@@ -11,3 +11,5 @@ dataclasses; python_version < '3.7'
 # for tests
 nose
 parameterized
+pytest
+pytest-cov

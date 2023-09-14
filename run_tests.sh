@@ -14,7 +14,3 @@ sed -ri 's/nosetests \$\{NOSE_OPTS\[@\]\}/pytest/g' "$ST2_REPO_PATH/st2common/bi
 
 export PYTHONPATH="$PYTHONPATH:$REPO_DIR/lib"
 "$ST2_REPO_PATH/st2common/bin/st2-run-pack-tests" -p "$REPO_DIR" -c
-
-# Generate coverage to consume locally
-python -m pip install coverage~=4.4
-coverage xml
