@@ -11,3 +11,5 @@ Jinja2
 # for tests
 nose
 parameterized
+pytest
+pytest-cov

@@ -29,12 +29,7 @@ jobs:
       - name: Run Tests
         run: cd $GITHUB_WORKSPACE && ./run_tests.sh
 
-      - name: Generate Coverage
-        run: |
-          python3 -m pip install coverage~=4.4
-          coverage xml
-
       - name: Submit Coverage
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
