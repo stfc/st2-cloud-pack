@@ -73,14 +73,14 @@ class Emailer:
                 server.sendmail(
                     email_params.email_from,
                     send_to,
-                    self.build_email_header(email_params).as_string(),
+                    self.build_email(email_params).as_string(),
                 )
 
             logger.info(
                 "sending complete - time elapsed: %s seconds", time.time() - start
             )
 
-    def build_email_header(self, email_params: EmailParams) -> MIMEMultipart:
+    def build_email(self, email_params: EmailParams) -> MIMEMultipart:
         """
         Helper function to setup email as MIMEMultipart
         :param email_params: A dataclass holding parameters for building an email

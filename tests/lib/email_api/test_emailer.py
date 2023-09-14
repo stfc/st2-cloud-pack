@@ -18,7 +18,7 @@ def instance_fixture(template_handler):
     return Emailer(mock_smtp_account, template_handler)
 
 
-@patch("email_api.emailer.Emailer.build_email_header")
+@patch("email_api.emailer.Emailer.build_email")
 @patch("email_api.emailer.SMTP_SSL")
 def test_send_emails(mock_smtp_ssl, mock_build_email, instance):
     """
@@ -144,7 +144,7 @@ def test_build_email_header_fields(mock_build_email_body, instance):
     mock_email_params.attachment_filepaths = None
     mock_email_params.subject = "subject1"
 
-    res = instance.build_email_header(mock_email_params)
+    res = instance.build_email(mock_email_params)
 
     mock_build_email_body.assert_called_once_with(
         mock_email_params.email_templates, mock_email_params.as_html
@@ -171,7 +171,7 @@ def test_build_email_with_attachments(
     """
     mock_email_params = MagicMock()
     mock_email_params.attachment_filepaths = NonCallableMock()
-    instance.build_email_header(mock_email_params)
+    instance.build_email(mock_email_params)
     mock_attach_files.assert_called_once_with(
         mock_mime_multipart.return_value, mock_email_params.attachment_filepaths
     )
@@ -180,7 +180,6 @@ def test_build_email_with_attachments(
 @pytest.mark.parametrize("as_html", [True, False])
 @patch("email_api.emailer.MIMEText")
 def test_build_email_body(mock_mime_text, as_html, instance, template_handler):
-
     template_details_1 = MagicMock()
     template_details_2 = MagicMock()
     template_list = [template_details_1, template_details_2]
