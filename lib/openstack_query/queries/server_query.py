@@ -1,3 +1,5 @@
+from typing import Type
+
 from structs.query.query_client_side_handlers import QueryClientSideHandlers
 
 from enums.query.props.server_properties import ServerProperties
@@ -22,8 +24,6 @@ from openstack_query.runners.server_runner import ServerRunner
 
 from openstack_query.time_utils import TimeUtils
 
-# pylint:disable=too-few-public-methods
-
 
 class ServerQuery(QueryWrapper):
     """
@@ -31,8 +31,13 @@ class ServerQuery(QueryWrapper):
     Define property mappings, kwarg mappings and filter function mappings related to servers here
     """
 
-    prop_enum_cls = ServerProperties
-    runner_cls = ServerRunner
+    @property
+    def prop_mapping(self) -> Type[ServerProperties]:
+        return ServerProperties
+
+    @property
+    def query_runner(self) -> ServerRunner:
+        return ServerRunner(self.prop_mapping)
 
     def _get_server_side_handler(self) -> ServerSideHandler:
         """

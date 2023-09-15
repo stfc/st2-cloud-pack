@@ -1,18 +1,17 @@
-from abc import abstractmethod
-import time
 import logging
-from typing import Optional, List, Any, Dict, Callable
+import time
+from abc import abstractmethod
+from typing import Optional, List, Any, Dict, Callable, Type
 
-from enums.cloud_domains import CloudDomains
-
-from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
-from openstack_api.openstack_connection import OpenstackConnection
 from custom_types.openstack_query.aliases import (
-    PropFunc,
     ServerSideFilters,
     ClientSideFilterFunc,
     OpenstackResourceObj,
 )
+from enums.cloud_domains import CloudDomains
+from enums.query.props.prop_enum import PropEnum
+from openstack_api.openstack_connection import OpenstackConnection
+from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +28,9 @@ class QueryRunner(OpenstackWrapperBase):
     _LIMIT_FOR_PAGINATION = 1000
     _PAGINATION_CALL_LIMIT = 1000
 
-    def __init__(self, marker_prop_func: PropFunc, connection_cls=OpenstackConnection):
+    def __init__(self, prop_enum: Type[PropEnum], connection_cls=OpenstackConnection):
         OpenstackWrapperBase.__init__(self, connection_cls)
-        self._page_marker_prop_func = marker_prop_func
+        self._prop_enum = prop_enum
 
     def run(
         self,
@@ -155,7 +154,7 @@ class QueryRunner(OpenstackWrapperBase):
                 if i == self._LIMIT_FOR_PAGINATION - 1:
                     # restart the for loop with marker set
                     paginated_filters.update(
-                        {"marker": self._page_marker_prop_func(resource)}
+                        {"marker": self._prop_enum.get_prop_mapping(resource)}
                     )
                     logger.debug(
                         "page limit reached: %s - setting new marker: %s",

@@ -1,3 +1,5 @@
+from typing import Type
+
 from structs.query.query_client_side_handlers import QueryClientSideHandlers
 
 from enums.query.props.user_properties import UserProperties
@@ -17,24 +19,25 @@ from openstack_query.queries.query_wrapper import QueryWrapper
 from openstack_query.runners.user_runner import UserRunner
 
 
-# pylint:disable=too-few-public-methods
-
-
 class UserQuery(QueryWrapper):
     """
     Query class for querying Openstack User objects.
     Define property mappings, kwarg mappings and filter function mappings related to users here
     """
 
-    def __init__(
-        self, prop_enum_cls: UserProperties = None, query_runner: UserRunner = None
-    ):
-        prop_enum_cls = UserProperties if prop_enum_cls is None else prop_enum_cls
-        query_runner = (
-            UserRunner(prop_enum_cls) if query_runner is None else query_runner
-        )
+    @property
+    def prop_mapping(self) -> Type[UserProperties]:
+        """
+        Property enum class for users
+        """
+        return UserProperties
 
-        super().__init__(query_runner=query_runner, prop_enum_cls=prop_enum_cls)
+    @property
+    def query_runner(self) -> UserRunner:
+        """
+        Constructs a QueryRunner class for users
+        """
+        return UserRunner(self.prop_mapping)
 
     def _get_server_side_handler(self) -> ServerSideHandler:
         """

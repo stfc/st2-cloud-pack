@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, call, patch, Mock
 from nose.tools import raises
 from parameterized import parameterized
 
@@ -24,9 +24,9 @@ class ServerRunnerTests(unittest.TestCase):
         """
         super().setUp()
         self.mocked_connection = MagicMock()
-        self.marker_prop_func = MagicMock()
+        self.prop_enum = Mock()
         self.instance = ServerRunner(
-            marker_prop_func=self.marker_prop_func,
+            prop_enum=self.prop_enum,
             connection_cls=self.mocked_connection,
         )
         self.conn = self.mocked_connection.return_value.__enter__.return_value

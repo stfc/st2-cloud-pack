@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, Mock
 from parameterized import parameterized
 
 from openstack_query.runners.query_runner import QueryRunner
@@ -15,15 +15,12 @@ class QueryRunnerTests(unittest.TestCase):
         """
         super().setUp()
         self.mocked_connection = MagicMock()
-        self.mock_page_func = self._mock_page_func
+        self.mock_prop_enum = Mock()
+        self.mock_prop_enum.get_prop_mapping = lambda mock_obj: mock_obj["id"]
         self.instance = QueryRunner(
-            marker_prop_func=self.mock_page_func, connection_cls=self.mocked_connection
+            prop_enum=self.mock_prop_enum, connection_cls=self.mocked_connection
         )
         self.conn = self.mocked_connection.return_value.__enter__.return_value
-
-    def _mock_page_func(self, mock_obj):
-        """simple mock func which returns "id" key from given dict"""
-        return mock_obj["id"]
 
     @patch("openstack_query.runners.query_runner.QueryRunner._apply_client_side_filter")
     @patch("openstack_query.runners.query_runner.QueryRunner._run_query")
