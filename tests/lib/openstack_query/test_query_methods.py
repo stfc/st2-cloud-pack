@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, NonCallableMock, call
 from parameterized import parameterized
 from nose.tools import raises
 
-from openstack_query.query_methods import QueryMethods
+from openstack_query.api.query_api import QueryAPI
 
 from exceptions.parse_query_error import ParseQueryError
 from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
@@ -20,7 +20,7 @@ class QueryMethodsTests(unittest.TestCase):
         self.mock_runner = MagicMock()
         self.mock_parser = MagicMock()
         self.mock_output = MagicMock()
-        self.instance = QueryMethods(
+        self.instance = QueryAPI(
             self.mock_builder,
             self.mock_runner,
             self.mock_parser,

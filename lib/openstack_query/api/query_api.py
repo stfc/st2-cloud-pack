@@ -1,55 +1,38 @@
-import time
+import abc
 import logging
+import time
 from typing import Union, List, Any, Optional, Dict, Tuple
 
+from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
+from enums.cloud_domains import CloudDomains
 from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresets
-from enums.cloud_domains import CloudDomains
-
-from openstack_query.query_output import QueryOutput
-from openstack_query.query_builder import QueryBuilder
-from openstack_query.query_parser import QueryParser
-from openstack_query.runners.server_runner import QueryRunner
-
 from exceptions.parse_query_error import ParseQueryError
-from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
+from structs.query.query_impl import QueryImpl
 
 logger = logging.getLogger(__name__)
 
 
-class QueryMethods:
-    """
-    Interface for Query Classes. This class exposes all public methods for query api.
-    """
+class QueryAPI(abc.ABC):
+    def __init__(self, impl: QueryImpl = None):
+        self._impl = QueryAPI._inject_deps() if impl is None else impl
 
-    def __init__(
-        self,
-        builder: QueryBuilder,
-        runner: QueryRunner,
-        parser: QueryParser,
-        output: QueryOutput,
-    ):
-        self.builder = builder
-        self.runner = runner
-        self.parser = parser
-        self.output = output
-        self._query_results = None
-        self._query_results_as_objects = None
+    @staticmethod
+    @abc.abstractmethod
+    def _inject_deps() -> QueryImpl:
+        """
+        Injects dependencies for the query implementation
+        from the dynamic type that was registered
+        """
 
     def select(self, *props: PropEnum):
-        """
-        Public method used to 'select' properties that the query will return the value of.
-        Mutually exclusive to returning objects using select_all()
-        :param props: one or more properties to collect described as enum
-        """
-
         # is an idempotent function
         # an be called multiple times with should aggregate properties to select
         logger.debug("select() called, with props: %s", [prop.name for prop in props])
         if not props:
             raise ParseQueryError("provide at least one property to select")
 
-        self.output.parse_select(*props, select_all=False)
+        self.impl.output.parse_select(*props, select_all=False)
         logger.debug(
             "selected props are now: %s",
             [prop.name for prop in self.output.selected_props],
