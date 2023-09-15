@@ -26,8 +26,15 @@ class UserQuery(QueryWrapper):
     Define property mappings, kwarg mappings and filter function mappings related to users here
     """
 
-    prop_enum_cls = UserProperties
-    runner_cls = UserRunner
+    def __init__(
+        self, prop_enum_cls: UserProperties = None, query_runner: UserRunner = None
+    ):
+        prop_enum_cls = UserProperties if prop_enum_cls is None else prop_enum_cls
+        query_runner = (
+            UserRunner(prop_enum_cls) if query_runner is None else query_runner
+        )
+
+        super().__init__(query_runner=query_runner, prop_enum_cls=prop_enum_cls)
 
     def _get_server_side_handler(self) -> ServerSideHandler:
         """
