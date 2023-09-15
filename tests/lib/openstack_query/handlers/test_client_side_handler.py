@@ -14,9 +14,16 @@ from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 @pytest.fixture(name="mock_filter_func")
 def filter_func_fixture():
-    # Required to mock the filter_func
+    """
+    Stubs out something callable for the method
+    under test. We don't want any side effects from
+    this function, so we just pass.
+    """
+
     # pylint:disable=unused-argument
     def _mock_filter_func(prop, *args, **kwargs):
+        # We're not testing filter functions in this test, so
+        # pass instead of returning a value
         pass
 
     return _mock_filter_func
@@ -24,6 +31,11 @@ def filter_func_fixture():
 
 @pytest.fixture(name="instance")
 def instance_fixture(mock_filter_func):
+    """
+    Returns an instance with a mocked filter function
+    injects, and various properties to query presets
+    pre-defined
+    """
     _filter_function_mappings = {
         MockQueryPresets.ITEM_1: ["*"],
         MockQueryPresets.ITEM_2: [MockProperties.PROP_1, MockProperties.PROP_2],
@@ -235,6 +247,9 @@ def test_check_filter_func_valid_filters(input_val, instance):
 
     # pylint:disable=unused-argument
     def _mock_filter_func(prop, arg1: int, arg2: str = "some-default", **kwargs):
+        # Fake the filter function not finding anything,
+        # so we can test that it handles when args not matched extra args available
+        # based on the arguments in this function, e.g. arg2
         return None
 
     res = instance._check_filter_func(_mock_filter_func, func_kwargs=input_val)
