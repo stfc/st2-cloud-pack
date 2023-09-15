@@ -1,6 +1,5 @@
 from enum import auto
 from enums.query.props.prop_enum import PropEnum
-from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 
 
@@ -20,13 +19,7 @@ class UserProperties(PropEnum):
         """
         Converts a given string in a case-insensitive way to the enum values
         """
-        try:
-            return UserProperties[val.upper()]
-        except KeyError as err:
-            raise ParseQueryError(
-                f"Could not find User Property {val}. "
-                f"Available properties are {','.join([prop.name for prop in UserProperties])}"
-            ) from err
+        return UserProperties._from_string_impl(val, UserProperties)
 
     @staticmethod
     def get_prop_mapping(prop):

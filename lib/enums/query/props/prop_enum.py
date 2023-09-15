@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 from abc import abstractmethod
 from enum import Enum
-from typing import Callable, Any, Optional
+from typing import Callable, Any, Optional, Type
+
+from exceptions.parse_query_error import ParseQueryError
 
 PropFunc = Callable[[Any], Any]
 
@@ -9,6 +13,19 @@ class PropEnum(Enum):
     """
     An enum base class for all openstack resource properties - for type annotation purposes
     """
+
+    @staticmethod
+    def _from_string_impl(val: str, prop_cls: Type[PropEnum]):
+        """
+        Converts a given string in a case-insensitive way to the enum values
+        """
+        try:
+            return prop_cls[val.upper()]
+        except KeyError as err:
+            raise ParseQueryError(
+                f"Could not find property {val}. "
+                f"Available properties are {','.join([prop.name for prop in prop_cls])}"
+            ) from err
 
     @staticmethod
     @abstractmethod

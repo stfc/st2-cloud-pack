@@ -1,6 +1,5 @@
 from enum import auto
 from enums.query.props.prop_enum import PropEnum
-from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 
 
@@ -26,13 +25,7 @@ class ServerProperties(PropEnum):
         """
         Converts a given string in a case-insensitive way to the enum values
         """
-        try:
-            return ServerProperties[val.upper()]
-        except KeyError as err:
-            raise ParseQueryError(
-                f"Could not find Server Property {val}. "
-                f"Available properties are {','.join([prop.name for prop in ServerProperties])}"
-            ) from err
+        return ServerProperties._from_string_impl(val, ServerProperties)
 
     @staticmethod
     def get_prop_mapping(prop):
