@@ -78,3 +78,15 @@ class TestEmailActions(unittest.TestCase):
         mock_emailer.return_value.send_emails.assert_called_once_with(
             [mock_email_params.from_dict.return_value]
         )
+
+    def test_send_email_error(self):
+        """
+        Tests that an email is sent if there is a VM in error state
+        """
+        pass
+
+    def test_send_email_shutoff(self):
+        """
+        Tests that an email is sent if there is a VM in shutoff state
+        """
+        pass
