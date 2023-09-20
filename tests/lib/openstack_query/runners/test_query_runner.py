@@ -41,13 +41,12 @@ class QueryRunnerTests(unittest.TestCase):
 
         mock_client_side_filter_func = MagicMock()
         mock_cloud_domain = MagicMock()
-        mock_cloud_domain.name = "test"
 
         res = self.instance.run(
             cloud_account=mock_cloud_domain,
             client_side_filter_func=mock_client_side_filter_func,
         )
-        self.mocked_connection.assert_called_once_with("test")
+        self.mocked_connection.assert_called_once_with(mock_cloud_domain)
 
         mock_parse_meta_params.assert_not_called()
         mock_run_query.assert_called_once_with(self.conn, None)
@@ -71,7 +70,6 @@ class QueryRunnerTests(unittest.TestCase):
         self.instance._run_query = mock_run_query
         mock_client_side_filter_func = MagicMock()
         mock_user_domain = MagicMock()
-        mock_user_domain.name = "test"
 
         mock_parse_meta_params.return_value = {
             "parsed_arg1": "val1",
@@ -84,7 +82,7 @@ class QueryRunnerTests(unittest.TestCase):
             server_side_filters=mock_server_filters,
             **{"arg1": "val1", "arg2": "val2"}
         )
-        self.mocked_connection.assert_called_once_with("test")
+        self.mocked_connection.assert_called_once_with(mock_user_domain)
 
         mock_parse_meta_params.assert_called_once_with(
             self.conn, **{"arg1": "val1", "arg2": "val2"}
@@ -114,14 +112,13 @@ class QueryRunnerTests(unittest.TestCase):
         mock_apply_filter_func.return_value = ["parsed-openstack-resource-1"]
         mock_client_side_filter_func = MagicMock()
         mock_cloud_domain = MagicMock()
-        mock_cloud_domain.name = "test"
 
         res = self.instance.run(
             cloud_account=mock_cloud_domain,
             client_side_filter_func=mock_client_side_filter_func,
             from_subset=["openstack-resource-1", "openstack-resource-2"],
         )
-        self.mocked_connection.assert_called_once_with("test")
+        self.mocked_connection.assert_called_once_with(mock_cloud_domain)
 
         mock_parse_subset.assert_called_once_with(
             self.conn, ["openstack-resource-1", "openstack-resource-2"]

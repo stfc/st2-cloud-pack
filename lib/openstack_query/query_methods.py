@@ -1,18 +1,15 @@
-import time
 import logging
+import time
 from typing import Union, List, Any, Optional, Dict, Tuple
 
+from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresets
-from enums.cloud_domains import CloudDomains
-
-from openstack_query.query_output import QueryOutput
+from exceptions.parse_query_error import ParseQueryError
 from openstack_query.query_builder import QueryBuilder
+from openstack_query.query_output import QueryOutput
 from openstack_query.query_parser import QueryParser
 from openstack_query.runners.server_runner import QueryRunner
-
-from exceptions.parse_query_error import ParseQueryError
-from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 
 logger = logging.getLogger(__name__)
 
@@ -131,13 +128,13 @@ class QueryMethods:
 
     def run(
         self,
-        cloud_account: CloudDomains,
+        cloud_account: str,
         from_subset: Optional[List[OpenstackResourceObj]] = None,
         **kwargs,
     ):
         """
         Public method that runs the query provided and outputs
-        :param cloud_account: An Enum for the account from the clouds configuration to use
+        :param cloud_account: An string for the account from the clouds configuration to use
         :param from_subset: A subset of openstack resources to run query on instead of querying openstacksdk
         :param kwargs: keyword args that can be used to configure details of how query is run
             - valid kwargs specific to resource
