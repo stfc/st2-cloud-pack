@@ -1,18 +1,16 @@
-from abc import abstractmethod
-import time
 import logging
+import time
+from abc import abstractmethod
 from typing import Optional, List, Any, Dict, Callable
 
-from enums.cloud_domains import CloudDomains
-
-from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
-from openstack_api.openstack_connection import OpenstackConnection
 from custom_types.openstack_query.aliases import (
     PropFunc,
     ServerSideFilters,
     ClientSideFilterFunc,
     OpenstackResourceObj,
 )
+from openstack_api.openstack_connection import OpenstackConnection
+from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +33,7 @@ class QueryRunner(OpenstackWrapperBase):
 
     def run(
         self,
-        cloud_account: CloudDomains,
+        cloud_account: str,
         client_side_filter_func: Optional[ClientSideFilterFunc] = None,
         server_side_filters: Optional[ServerSideFilters] = None,
         from_subset: Optional[List[Any]] = None,
@@ -43,7 +41,7 @@ class QueryRunner(OpenstackWrapperBase):
     ) -> List[OpenstackResourceObj]:
         """
         Public method that runs the query by querying openstacksdk and then applying a filter function.
-        :param cloud_account: An Enum for the account from the clouds configuration to use
+        :param cloud_account: An string for the account from the clouds configuration to use
         :param client_side_filter_func: An Optional function that we can use to limit the results after querying
         openstacksdk
         :param server_side_filters: An Optional set of filter kwargs to limit the results by when querying openstacksdk
@@ -54,10 +52,10 @@ class QueryRunner(OpenstackWrapperBase):
             runner of interest.
         """
         logger.debug("making connection to openstack")
-        with self._connection_cls(cloud_account.name.lower()) as conn:
+        with self._connection_cls(cloud_account) as conn:
             logger.debug(
                 "openstack connection established - using cloud account '%s'",
-                cloud_account.name.lower(),
+                cloud_account,
             )
 
             if from_subset:
