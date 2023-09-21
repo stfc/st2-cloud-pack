@@ -17,7 +17,7 @@ class QueryWrapper(QueryMethods, QueryBase):
 
     def __init__(self):
         self._query_results = []
-        self.runner = self.runner_cls(self.prop_enum_cls)
+        self.runner = self.runner_cls(self.prop_enum_cls.get_marker_prop_func())
         self.output = QueryOutput(self.prop_enum_cls)
         self.parser = QueryParser(self.prop_enum_cls)
         self.builder = QueryBuilder(
