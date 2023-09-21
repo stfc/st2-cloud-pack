@@ -342,7 +342,7 @@ class QueryManager:
             "days": days,
             "hours": hours,
             "minutes": minutes,
-            "seconds": float(seconds),
+            "seconds": seconds,
         }
         logging.info(
             "This query will run a relative datetime query %s %s with args %s",
