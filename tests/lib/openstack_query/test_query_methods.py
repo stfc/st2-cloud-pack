@@ -121,14 +121,17 @@ class QueryMethodsTests(unittest.TestCase):
         mock_client_filter_func = self.mock_builder.client_side_filter
         mock_server_filters = self.mock_builder.server_side_filters
         mock_parser_results = ["obj1", "obj2"]
+
         self.mock_parser.run_parser.return_value = mock_parser_results
 
         if not mock_kwargs:
             mock_kwargs = {}
 
-        res = self.instance.run("test-account", mock_from_subset, **mock_kwargs)
+        # should implicitly convert it to a valid enum in the function
+        res = self.instance.run("PROD", mock_from_subset, **mock_kwargs)
+
         self.mock_runner.run.assert_called_once_with(
-            "test-account",
+            "prod",
             mock_client_filter_func,
             mock_server_filters,
             mock_from_subset,
@@ -145,12 +148,25 @@ class QueryMethodsTests(unittest.TestCase):
         Tests that run method works expectedly - with parsing - i.e. grouping into dict
         Should call run_parser to get items - either dict of lists or list and handle them properly
         """
+        mock_client_filter_func = self.mock_builder.client_side_filter
+        mock_server_filters = self.mock_builder.server_side_filters
         self.mock_parser.run_parser.return_value = ["obj1", "obj2"]
         self.mock_parser.run_parser.return_value = {
             "group1": ["obj1", "obj2"],
             "group2": ["obj3", "obj4"],
         }
-        self.instance.run("cloud_account")
+
+        # should implicitly convert it to a valid enum in the function
+        self.instance.run("DEV")
+
+        self.mock_runner.run.assert_called_once_with(
+            "dev", mock_client_filter_func, mock_server_filters, None
+        )
+
+        self.mock_parser.run_parser.assert_called_once_with(
+            self.mock_runner.run.return_value
+        )
+
         self.mock_output.generate_output.assert_has_calls(
             [call(["obj1", "obj2"]), call(["obj3", "obj4"])]
         )

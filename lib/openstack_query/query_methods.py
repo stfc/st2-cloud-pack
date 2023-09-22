@@ -5,6 +5,7 @@ from typing import Union, List, Any, Optional, Dict, Tuple
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresets
+from enums.cloud_domains import CloudDomains
 from exceptions.parse_query_error import ParseQueryError
 from openstack_query.query_builder import QueryBuilder
 from openstack_query.query_output import QueryOutput
@@ -140,6 +141,9 @@ class QueryMethods:
             - valid kwargs specific to resource
         """
 
+        # get cloud_account enum
+        cloud_account_enum = CloudDomains.from_string(cloud_account)
+
         local_filters = self.builder.client_side_filter
         server_filters = self.builder.server_side_filters
 
@@ -164,7 +168,11 @@ class QueryMethods:
         logger.debug("run started")
         start = time.time()
         results = self.runner.run(
-            cloud_account, local_filters, server_filters, from_subset, **kwargs
+            cloud_account_enum.name.lower(),
+            local_filters,
+            server_filters,
+            from_subset,
+            **kwargs,
         )
         logger.debug("run completed - time elapsed: %s seconds", time.time() - start)
 
