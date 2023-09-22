@@ -41,8 +41,11 @@ class QueryManagerTests(unittest.TestCase):
 
         self.query = MagicMock()
         self.prop_cls = MagicMock()
+        self.cloud_account = MagicMock()
+        self.cloud_account.name = "test_account"
+
         self.instance = QueryManager(
-            cloud_account="test_account", query=self.query, prop_cls=self.prop_cls
+            cloud_account=self.cloud_account, query=self.query, prop_cls=self.prop_cls
         )
 
     def _run_build_and_run_query_case(
