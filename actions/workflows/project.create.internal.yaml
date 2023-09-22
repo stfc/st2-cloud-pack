@@ -14,7 +14,6 @@ input:
 
 vars:
   - project_uuid: null
-  - stdout: null
   - stderr: null
 
 tasks:
@@ -29,7 +28,6 @@ tasks:
       - when: <% succeeded() %>
         publish:
           - project_uuid: <% result().result.id %>
-          - project: <% result().result %>
         do:
           - wait_for_default_security_group
           - create_security_group_http
@@ -167,7 +165,7 @@ tasks:
       user_domain="stfc"
 
 output:
-  - stdout: <% ctx().stdout %>
   - stderr: <% ctx().stderr %>
   - project_id: <% ctx().project_uuid %>
-  - project: <% ctx().project %>
+  - project_name: <% ctx().project_name %>
+  - project_description: <% ctx().project_description %>
