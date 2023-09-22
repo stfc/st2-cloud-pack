@@ -26,11 +26,16 @@ vars:
   - project_uuid: null
   - router_uuid: null
   - subnet_uuid: null
-  - stdout: null
+  - network_uuid: null
   - stderr: null
 
 output:
-  - stdout: <% ctx().stdout %>
+  - project_id: <% ctx().project_uuid %>
+  - project_name: <% ctx().project_name %>
+  - project_description: <% ctx().project_description %>
+  - router_id: <% ctx().router_uuid %>
+  - subnet_id: <% ctx().subnet_uuid %>
+  - network_id: <% ctx().network_uuid %>
   - stderr: <% ctx().stderr %>
 
 tasks:
@@ -48,7 +53,6 @@ tasks:
       - when: <% succeeded() %>
         publish:
           - project_uuid: <% task(create_internal_project).result.output.project_id %>
-          - stdout: <% task(create_internal_project).result.output.project %>
         do:
           - allocate_floating_ips
           - create_network
@@ -73,6 +77,8 @@ tasks:
       has_external_router=False
     next:
       - when: <% succeeded() %>
+        publish:
+          - network_uuid: <% result().result.id %>
         do:
           - create_rbac_policy
           - create_subnet
