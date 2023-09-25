@@ -42,7 +42,6 @@ class QueryManagerTests(unittest.TestCase):
         self.query = MagicMock()
         self.prop_cls = MagicMock()
         self.cloud_account = MagicMock()
-        self.cloud_account.name = "test_account"
 
         self.instance = QueryManager(
             cloud_account=self.cloud_account, query=self.query, prop_cls=self.prop_cls
@@ -81,7 +80,7 @@ class QueryManagerTests(unittest.TestCase):
             runner_params=None,
         )
         self.instance._query.where.assert_not_called()
-        self.query.run.assert_called_once_with("test_account")
+        self.query.run.assert_called_once_with(self.cloud_account.name)
 
     def test_build_and_run_query_with_runner_params(self):
         """
@@ -95,7 +94,9 @@ class QueryManagerTests(unittest.TestCase):
             runner_params=mock_runner_params,
         )
         self.instance._query.where.assert_not_called()
-        self.query.run.assert_called_once_with("test_account", **mock_runner_params)
+        self.query.run.assert_called_once_with(
+            self.cloud_account.name, **mock_runner_params
+        )
 
     def test_build_and_run_query_with_preset_details(self):
         """
