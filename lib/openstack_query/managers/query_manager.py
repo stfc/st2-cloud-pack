@@ -90,7 +90,7 @@ class QueryManager:
                 **preset_details.args,
             )
 
-        self._query.run(self._cloud_account, **runner_params)
+        self._query.run(self._cloud_account.name, **runner_params)
 
         return self._get_query_output(
             output_details.output_type,
