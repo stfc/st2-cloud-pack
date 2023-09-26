@@ -6,10 +6,10 @@ from enums.cloud_domains import CloudDomains
 from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresets
 from exceptions.parse_query_error import ParseQueryError
-from openstack_query.query_builder import QueryBuilder
-from openstack_query.query_output import QueryOutput
-from openstack_query.query_parser import QueryParser
-from openstack_query.query_executer import QueryExecuter
+from openstack_query.query_blocks.query_builder import QueryBuilder
+from openstack_query.query_blocks.query_output import QueryOutput
+from openstack_query.query_blocks.query_parser import QueryParser
+from openstack_query.query_blocks.query_executer import QueryExecuter
 
 logger = logging.getLogger(__name__)
 

@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch, call
 from parameterized import parameterized
 from nose.tools import raises
 
-from openstack_query.query_output import QueryOutput
+from openstack_query.query_blocks.query_output import QueryOutput
 from exceptions.parse_query_error import ParseQueryError
 
 from enums.query.props.server_properties import ServerProperties
@@ -41,7 +41,7 @@ class QueryOutputTests(unittest.TestCase):
         self.assertEqual(res, list(self.instance._props))
 
     @parameterized.expand([("no title", None), ("with title", "test title")])
-    @patch("openstack_query.query_output.QueryOutput._generate_table")
+    @patch("openstack_query.query_blocks.query_output.QueryOutput._generate_table")
     def test_to_html_with_grouped_results(self, _, mock_title, mock_generate_table):
         """
         Tests that to_html function works expectedly - when given grouped results
@@ -67,7 +67,7 @@ class QueryOutputTests(unittest.TestCase):
         self.assertEqual(expected_out, res)
 
     @parameterized.expand([("no title", None), ("with title", "test title")])
-    @patch("openstack_query.query_output.QueryOutput._generate_table")
+    @patch("openstack_query.query_blocks.query_output.QueryOutput._generate_table")
     def test_to_html_with_list_results(self, _, mock_title, mock_generate_table):
         """
         Tests that to_html function works expectedly - when given list as results
@@ -90,7 +90,7 @@ class QueryOutputTests(unittest.TestCase):
         self.assertEqual(expected_out, res)
 
     @parameterized.expand([("no title", None), ("with title", "test title")])
-    @patch("openstack_query.query_output.QueryOutput._generate_table")
+    @patch("openstack_query.query_blocks.query_output.QueryOutput._generate_table")
     def test_to_string_with_grouped_results(self, _, mock_title, mock_generate_table):
         """
         Tests that to_string function works expectedly - when given grouped results
@@ -114,7 +114,7 @@ class QueryOutputTests(unittest.TestCase):
         expected_out += "1 out, 2 out"
 
     @parameterized.expand([("no title", None), ("with title", "test title")])
-    @patch("openstack_query.query_output.QueryOutput._generate_table")
+    @patch("openstack_query.query_blocks.query_output.QueryOutput._generate_table")
     def test_to_string_with_list_results(self, _, mock_title, mock_generate_table):
         """
         Tests that to_string function works expectedly - when given list as results
@@ -137,7 +137,7 @@ class QueryOutputTests(unittest.TestCase):
         self.assertEqual(expected_out, res)
 
     @parameterized.expand([("no title", None), ("with title", "test title")])
-    @patch("openstack_query.query_output.tabulate")
+    @patch("openstack_query.query_blocks.query_output.tabulate")
     def test_generate_table_no_vals(self, _, mock_title, mock_tabulate):
         """
         Tests that generate_table function works expectedly - when results empty
@@ -154,7 +154,7 @@ class QueryOutputTests(unittest.TestCase):
             self.assertEqual(no_out, "No results found")
 
     @parameterized.expand([("no title", None), ("with title", "test title")])
-    @patch("openstack_query.query_output.tabulate")
+    @patch("openstack_query.query_blocks.query_output.tabulate")
     def test_generate_table_with_vals(self, _, mock_title, mock_tabulate):
         """
         Tests that generate_table function works expectedly - with results
@@ -213,7 +213,7 @@ class QueryOutputTests(unittest.TestCase):
         """
         self.assertEqual(self.instance.generate_output([]), [])
 
-    @patch("openstack_query.query_output.QueryOutput._parse_property")
+    @patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
     def test_generate_output_one_item(self, mock_parse_property):
         """
         Tests that generate_output method works expectedly - 1 item
@@ -223,7 +223,7 @@ class QueryOutputTests(unittest.TestCase):
         self.instance.generate_output([item_1])
         mock_parse_property.assert_called_once_with(item_1)
 
-    @patch("openstack_query.query_output.QueryOutput._parse_property")
+    @patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
     def test_generate_output_multiple_items(self, mock_parse_property):
         """
         Tests that generate_output method works expectedly - many items
