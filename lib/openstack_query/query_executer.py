@@ -111,12 +111,12 @@ class QueryExecuter:
             runner of interest.
         """
 
-        if isinstance(cloud_account, str):
-            cloud_account = CloudDomains.from_string(cloud_account)
+        if isinstance(cloud_account, CloudDomains):
+            cloud_account = cloud_account.name.lower()
 
         start = time.time()
         results = self.runner.run(
-            cloud_account=cloud_account.name.lower(),
+            cloud_account=cloud_account,
             client_side_filter_func=self._client_side_filter_func,
             server_side_filters=self._server_side_filters,
             from_subset=from_subset,

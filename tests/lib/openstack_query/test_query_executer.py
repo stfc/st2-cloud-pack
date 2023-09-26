@@ -101,7 +101,9 @@ def test_run_query_without_parse_func(mock_get_output, instance):
     instance._parse_func = None
 
     res1, res2 = instance.run_query(
-        cloud_account="PROD", from_subset=["res1", "res2", "res3"], **{"arg1": "val1"}
+        cloud_account=CloudDomains.PROD,
+        from_subset=["res1", "res2", "res3"],
+        **{"arg1": "val1"}
     )
 
     instance.runner.run.assert_called_once_with(
@@ -131,7 +133,9 @@ def test_run_query_with_parse_func(mock_get_output, instance):
     instance._parse_func = mock_parse_func
 
     res1, res2 = instance.run_query(
-        cloud_account="PROD", from_subset=["res1", "res2", "res3"], **{"arg1": "val1"}
+        cloud_account=CloudDomains.PROD,
+        from_subset=["res1", "res2", "res3"],
+        **{"arg1": "val1"}
     )
 
     instance.runner.run.assert_called_once_with(
@@ -150,9 +154,9 @@ def test_run_query_with_parse_func(mock_get_output, instance):
 
 
 @patch("openstack_query.query_executer.QueryExecuter.get_output")
-def test_run_query_with_cloud_domain(mock_get_output, instance):
+def test_run_query_with_string_as_domain(mock_get_output, instance):
     """
-    Tests that run_query works as expected - not parsing result, with cloud domain enum given
+    Tests that run_query works as expected - not parsing result, with a string as cloud account
     Should call runner.run() and return a tuple of runner.run result and get_output result
     """
 
@@ -161,13 +165,13 @@ def test_run_query_with_cloud_domain(mock_get_output, instance):
     instance._parse_func = None
 
     res1, res2 = instance.run_query(
-        cloud_account=CloudDomains.PROD,
+        cloud_account="test-account",
         from_subset=["res1", "res2", "res3"],
         **{"arg1": "val1"}
     )
 
     instance.runner.run.assert_called_once_with(
-        cloud_account="prod",
+        cloud_account="test-account",
         client_side_filter_func=instance._client_side_filter_func,
         server_side_filters=instance._server_side_filters,
         from_subset=["res1", "res2", "res3"],
