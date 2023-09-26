@@ -18,75 +18,39 @@ def instance_fixture():
     return QueryExecuter(mock_prop_enum_cls, mock_runner_cls)
 
 
-def test_set_client_side_filter_func(instance):
+def test_client_side_filter_func(instance):
     """
-    Tests that client_side_filter_func setter method works as expected
+    Tests that client_side_filter_func property works as expected
     """
     mock_client_filter = MagicMock()
     instance.client_side_filter_func = mock_client_filter
-    assert instance._client_side_filter_func == mock_client_filter
-
-
-def test_get_client_side_filter_func(instance):
-    """
-    Tests that client_side_filter_func getter method works as expected
-    """
-    mock_client_filter = MagicMock()
-    instance._client_side_filter_func = mock_client_filter
     assert instance.client_side_filter_func == mock_client_filter
 
 
-def test_set_server_side_filters(instance):
+def test_server_side_filters(instance):
     """
-    Tests that server_side_filters setter method works as expected
+    Tests that server_side_filters property works as expected
     """
     mock_client_filter = MagicMock()
     instance.server_side_filters = mock_client_filter
-    assert instance._server_side_filters == mock_client_filter
-
-
-def test_get_server_side_filters(instance):
-    """
-    Tests that server_side_filters getter method works as expected
-    """
-    mock_client_filter = MagicMock()
-    instance._server_side_filters = mock_client_filter
     assert instance.server_side_filters == mock_client_filter
 
 
-def test_set_parse_func(instance):
+def test_parse_func(instance):
     """
-    Tests that parse_func setter method works as expected
+    Tests that parse_func property works as expected
     """
     mock_parse_func = MagicMock()
     instance.parse_func = mock_parse_func
-    assert instance._parse_func == mock_parse_func
-
-
-def test_get_parse_func(instance):
-    """
-    Tests that parse_func getter method works as expected
-    """
-    mock_parse_func = MagicMock()
-    instance._parse_func = mock_parse_func
     assert instance.parse_func == mock_parse_func
 
 
-def test_set_output_func(instance):
+def test_output_func(instance):
     """
-    Tests that output_func setter method works as expected
+    Tests that output_func property method works as expected
     """
     mock_output_func = MagicMock()
     instance.output_func = mock_output_func
-    assert instance._output_func == mock_output_func
-
-
-def test_get_output_func(instance):
-    """
-    Tests that output_func getter method works as expected
-    """
-    mock_output_func = MagicMock()
-    instance._output_func = mock_output_func
     assert instance.output_func == mock_output_func
 
 

@@ -126,5 +126,6 @@ class QueryExecuter:
         logger.debug("run completed - time elapsed: %s seconds", time.time() - start)
 
         if self._parse_func:
-            results = self.parse_func(results)
+            parse_func = self._parse_func
+            results = parse_func(results)
         return results, self.get_output(results)
