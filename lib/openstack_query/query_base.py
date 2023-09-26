@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Type
-from typing import TypeVar
+from typing import Type, TypeVar
 
 from openstack_query.handlers.server_side_handler import ServerSideHandler
 from openstack_query.runners.query_runner import QueryRunner

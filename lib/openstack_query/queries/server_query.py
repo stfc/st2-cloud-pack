@@ -33,10 +33,16 @@ class ServerQuery(QueryWrapper):
 
     @property
     def prop_mapping(self) -> Type[ServerProperties]:
+        """
+        Returns the enum this query class uses to map property names to openstack server properties
+        """
         return ServerProperties
 
     @property
     def query_runner(self) -> ServerRunner:
+        """
+        Instantiates and returns a ServerRunner object with the correct property mapping pre-defined
+        """
         return ServerRunner(self.prop_mapping)
 
     def _get_server_side_handler(self) -> ServerSideHandler:
