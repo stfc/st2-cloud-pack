@@ -166,7 +166,7 @@ class QueryParser:
 
         # build groups
         for val in unique_vals.keys():
-            group_key = f"{self._group_by.name} with value {val}"
+            group_key = val
             group_mappings[group_key] = (
                 lambda obj, test_val=val: prop_func(obj) == test_val
             )
