@@ -350,20 +350,20 @@ class QueryParserTests(unittest.TestCase):
                 "group by prop_1",
                 MockProperties.PROP_1,
                 {
-                    "PROP_1 with value a": [
+                    "a": [
                         {"prop_1": "a", "prop_2": 1},
                         {"prop_1": "a", "prop_2": 3},
                     ],
-                    "PROP_1 with value b": [{"prop_1": "b", "prop_2": 2}],
+                    "b": [{"prop_1": "b", "prop_2": 2}],
                 },
             ),
             (
                 "group by prop_2",
                 MockProperties.PROP_2,
                 {
-                    "PROP_2 with value 1": [{"prop_1": "a", "prop_2": 1}],
-                    "PROP_2 with value 2": [{"prop_1": "b", "prop_2": 2}],
-                    "PROP_2 with value 3": [{"prop_1": "a", "prop_2": 3}],
+                    1: [{"prop_1": "a", "prop_2": 1}],
+                    2: [{"prop_1": "b", "prop_2": 2}],
+                    3: [{"prop_1": "a", "prop_2": 3}],
                 },
             ),
         ]
