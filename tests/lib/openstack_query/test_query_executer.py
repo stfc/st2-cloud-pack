@@ -37,6 +37,15 @@ def test_set_parse_func(instance):
     assert instance._parser_func == mock_parser_func
 
 
+def test_set_output_func(instance):
+    """
+    Tests that set_output_func setter method works as expected
+    """
+    mock_output_func = MagicMock()
+    instance.set_output_func(mock_output_func)
+    assert instance._output_func == mock_output_func
+
+
 def test_get_output_list_input(instance):
     """
     Tests that get_output method works as expected - when given a list
@@ -60,6 +69,16 @@ def test_get_output_dict_input(instance):
         {"group1": ["mock-results"], "group2": ["mock-results2"]}
     )
     assert output == expected_out
+
+
+def test_get_output_no_output_func(instance):
+    """
+    Tests that get_output method works as expected - when given no ouptut_func
+    Should output an empty list
+    """
+    instance._output_func = None
+    output = instance.get_output(["mock-results1"])
+    assert output == []
 
 
 @patch("openstack_query.query_executer.QueryExecuter.get_output")
