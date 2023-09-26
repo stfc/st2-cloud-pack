@@ -5,6 +5,8 @@ from enums.cloud_domains import CloudDomains
 from openstack_query.query_executer import QueryExecuter
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
+# pylint:disable=protected-access
+
 
 @pytest.fixture(name="instance")
 def instance_fixture():
