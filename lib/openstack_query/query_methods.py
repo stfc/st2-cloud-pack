@@ -1,16 +1,15 @@
 import logging
-import time
 from typing import Union, List, Any, Optional, Dict, Tuple
 
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
+from enums.cloud_domains import CloudDomains
 from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresets
-from enums.cloud_domains import CloudDomains
 from exceptions.parse_query_error import ParseQueryError
 from openstack_query.query_builder import QueryBuilder
 from openstack_query.query_output import QueryOutput
 from openstack_query.query_parser import QueryParser
-from openstack_query.runners.server_runner import QueryRunner
+from openstack_query.query_executer import QueryExecuter
 
 logger = logging.getLogger(__name__)
 
@@ -23,12 +22,12 @@ class QueryMethods:
     def __init__(
         self,
         builder: QueryBuilder,
-        runner: QueryRunner,
+        executer: QueryExecuter,
         parser: QueryParser,
         output: QueryOutput,
     ):
         self.builder = builder
-        self.runner = runner
+        self.executer = executer
         self.parser = parser
         self.output = output
         self._query_results = None
@@ -129,66 +128,29 @@ class QueryMethods:
 
     def run(
         self,
-        cloud_account: str,
+        cloud_account: Union[str, CloudDomains],
         from_subset: Optional[List[OpenstackResourceObj]] = None,
         **kwargs,
     ):
         """
         Public method that runs the query provided and outputs
-        :param cloud_account: An string for the account from the clouds configuration to use
+        :param cloud_account: A String or a CloudDomains Enum for the clouds configuration to use
         :param from_subset: A subset of openstack resources to run query on instead of querying openstacksdk
         :param kwargs: keyword args that can be used to configure details of how query is run
             - valid kwargs specific to resource
         """
 
-        # get cloud_account enum
-        cloud_account_enum = CloudDomains.from_string(cloud_account)
+        self.executer.client_side_filter_func = self.builder.client_side_filter
+        self.executer.server_side_filters = self.builder.server_side_filters
 
-        local_filters = self.builder.client_side_filter
-        server_filters = self.builder.server_side_filters
+        self.executer.parse_func = self.parser.run_parser
+        self.executer.output_func = self.output.generate_output
 
-        meta_param_log_str = "<none>"
-        if kwargs:
-            from_params_dict = {"from_subset": len(from_subset)} if from_subset else {}
-            log_kwargs = {**kwargs, **from_params_dict}
-            meta_param_log_str = ", ".join(
-                [f"{key}: '{val}'" for key, val in log_kwargs.items()]
-            )
-
-        logger.debug(
-            "run called "
-            "\n\t with server_side_filters: '%s'"
-            "\n\t with client_side_filters: '%s'"
-            "\n\t with run meta args: '%s'",
-            "<none>" if not server_filters else server_filters,
-            "<none>" if not local_filters else local_filters,
-            meta_param_log_str,
-        )
-
-        logger.debug("run started")
-        start = time.time()
-        results = self.runner.run(
-            cloud_account_enum.name.lower(),
-            local_filters,
-            server_filters,
-            from_subset,
+        self._query_results_as_objects, self._query_results = self.executer.run_query(
+            cloud_account=cloud_account,
+            from_subset=from_subset,
             **kwargs,
         )
-        logger.debug("run completed - time elapsed: %s seconds", time.time() - start)
-
-        parsed_results = self.parser.run_parser(results)
-        # if parsed results are grouped results
-        if isinstance(parsed_results, dict):
-            self._query_results = {}
-            self._query_results_as_objects = {}
-            for name, group in parsed_results.items():
-                self._query_results.update({name: self.output.generate_output(group)})
-                self._query_results_as_objects.update({name: group})
-
-        # if parsed results aren't grouped
-        else:
-            self._query_results = self.output.generate_output(parsed_results)
-            self._query_results_as_objects = parsed_results
         return self
 
     def to_list(self, as_objects=False) -> Union[List[Any], List[Dict[str, str]]]:

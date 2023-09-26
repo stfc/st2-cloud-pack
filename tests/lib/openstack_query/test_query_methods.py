@@ -1,6 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, NonCallableMock, call
-from parameterized import parameterized
+from unittest.mock import MagicMock, NonCallableMock
 from nose.tools import raises
 
 from openstack_query.query_methods import QueryMethods
@@ -8,6 +7,8 @@ from openstack_query.query_methods import QueryMethods
 from exceptions.parse_query_error import ParseQueryError
 from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
+
+# pylint:disable=protected-access
 
 
 class QueryMethodsTests(unittest.TestCase):
@@ -17,12 +18,12 @@ class QueryMethodsTests(unittest.TestCase):
         """
         super().setUp()
         self.mock_builder = MagicMock()
-        self.mock_runner = MagicMock()
+        self.mock_executer = MagicMock()
         self.mock_parser = MagicMock()
         self.mock_output = MagicMock()
         self.instance = QueryMethods(
             self.mock_builder,
-            self.mock_runner,
+            self.mock_executer,
             self.mock_parser,
             self.mock_output,
         )
@@ -105,71 +106,47 @@ class QueryMethodsTests(unittest.TestCase):
         )
         self.assertEqual(res, self.instance)
 
-    @parameterized.expand(
-        [
-            ("with kwargs", None, {"arg1": "val1", "arg2": "val2"}),
-            ("with from_subset", ["obj1", "obj2", "obj3"], None),
-            ("with no kwargs and no subset", None, None),
-        ]
-    )
-    def test_run_with_optional_params(self, _, mock_from_subset, mock_kwargs):
+    def test_run(self):
         """
-        Tests that run method works expectedly - with subset and/or meta_params kwargs
-        method should get client_side and server_side filters and forward them to query runner object
-
+        Tests that run method works expectedly
+        method should forward to run_query in QueryExecuter object
         """
-        mock_client_filter_func = self.mock_builder.client_side_filter
-        mock_server_filters = self.mock_builder.server_side_filters
-        mock_parser_results = ["obj1", "obj2"]
-
-        self.mock_parser.run_parser.return_value = mock_parser_results
-
-        if not mock_kwargs:
-            mock_kwargs = {}
-
-        # should implicitly convert it to a valid enum in the function
-        res = self.instance.run("PROD", mock_from_subset, **mock_kwargs)
-
-        self.mock_runner.run.assert_called_once_with(
-            "prod",
-            mock_client_filter_func,
-            mock_server_filters,
-            mock_from_subset,
-            **mock_kwargs
+        self.mock_executer.run_query.return_value = (
+            "results-as-objects",
+            "results-as-string",
         )
-        self.mock_parser.run_parser.assert_called_once_with(
-            self.mock_runner.run.return_value
+
+        res = self.instance.run(
+            cloud_account="test-account",
+            from_subset=["obj1", "obj2", "obj3"],
+            **{"arg1": "val1"}
         )
-        self.mock_output.generate_output.assert_called_once_with(["obj1", "obj2"])
+
+        self.assertEqual(
+            self.mock_executer.client_side_filter_func,
+            self.mock_builder.client_side_filter,
+        )
+
+        self.assertEqual(
+            self.mock_executer.server_side_filters,
+            self.mock_builder.server_side_filters,
+        )
+
+        self.assertEqual(self.mock_executer.parse_func, self.mock_parser.run_parser)
+
+        self.assertEqual(
+            self.mock_executer.output_func, self.mock_output.generate_output
+        )
+
+        self.mock_executer.run_query.assert_called_once_with(
+            cloud_account="test-account",
+            from_subset=["obj1", "obj2", "obj3"],
+            **{"arg1": "val1"}
+        )
+
+        self.instance._query_results_as_objects = "results-as-objects"
+        self.instance._query_results = "results-as-string"
         self.assertEqual(res, self.instance)
-
-    def test_run_with_parsing_grouped(self):
-        """
-        Tests that run method works expectedly - with parsing - i.e. grouping into dict
-        Should call run_parser to get items - either dict of lists or list and handle them properly
-        """
-        mock_client_filter_func = self.mock_builder.client_side_filter
-        mock_server_filters = self.mock_builder.server_side_filters
-        self.mock_parser.run_parser.return_value = ["obj1", "obj2"]
-        self.mock_parser.run_parser.return_value = {
-            "group1": ["obj1", "obj2"],
-            "group2": ["obj3", "obj4"],
-        }
-
-        # should implicitly convert it to a valid enum in the function
-        self.instance.run("DEV")
-
-        self.mock_runner.run.assert_called_once_with(
-            "dev", mock_client_filter_func, mock_server_filters, None
-        )
-
-        self.mock_parser.run_parser.assert_called_once_with(
-            self.mock_runner.run.return_value
-        )
-
-        self.mock_output.generate_output.assert_has_calls(
-            [call(["obj1", "obj2"]), call(["obj3", "obj4"])]
-        )
 
     def test_to_list_as_objects_false(self):
         """
