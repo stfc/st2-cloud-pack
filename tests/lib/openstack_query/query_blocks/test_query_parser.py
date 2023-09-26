@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import MagicMock, call, patch
 from parameterized import parameterized
 
-from openstack_query.query_parser import QueryParser
+from openstack_query.query_blocks.query_parser import QueryParser
 from nose.tools import raises
 
 from exceptions.parse_query_error import ParseQueryError
@@ -77,7 +77,7 @@ class QueryParserTests(unittest.TestCase):
         self.instance.parse_group_by(MockProperties.PROP_1)
         self.assertEqual(self.instance._group_by, MockProperties.PROP_1)
 
-    @patch("openstack_query.query_parser.QueryParser._parse_group_ranges")
+    @patch("openstack_query.query_blocks.query_parser.QueryParser._parse_group_ranges")
     def test_parse_group_by_with_group_ranges(self, mock_parse_group_ranges):
         """
         Tests parse_group_by functions expectedly - with group ranges
@@ -88,8 +88,10 @@ class QueryParserTests(unittest.TestCase):
         self.assertEqual(self.instance._group_by, MockProperties.PROP_1)
         mock_parse_group_ranges.assert_called_once_with(mock_group_ranges)
 
-    @patch("openstack_query.query_parser.QueryParser._parse_group_ranges")
-    @patch("openstack_query.query_parser.QueryParser._add_include_missing_group")
+    @patch("openstack_query.query_blocks.query_parser.QueryParser._parse_group_ranges")
+    @patch(
+        "openstack_query.query_blocks.query_parser.QueryParser._add_include_missing_group"
+    )
     def test_parse_group_by_with_group_ranges_and_include_missing(
         self, mock_add_include_missing_group, mock_parse_group_ranges
     ):
@@ -144,7 +146,7 @@ class QueryParserTests(unittest.TestCase):
             self.instance._group_mappings["ungrouped results"]({"prop_1": "val4"})
         )
 
-    @patch("openstack_query.query_parser.QueryParser._run_sort")
+    @patch("openstack_query.query_blocks.query_parser.QueryParser._run_sort")
     def test_run_parser_with_sort_by(self, mock_run_sort):
         """
         Tests that run_parser functions expectedly - when giving only sort_by
@@ -161,7 +163,7 @@ class QueryParserTests(unittest.TestCase):
         self.assertEqual(res, "sort-out")
         mock_run_sort.assert_called_once_with(mock_obj_list)
 
-    @patch("openstack_query.query_parser.QueryParser._run_group_by")
+    @patch("openstack_query.query_blocks.query_parser.QueryParser._run_group_by")
     def test_run_parser_no_sort_with_group_mappings(self, mock_run_group_by):
         """
         Tests that run_parser functions expectedly - when giving group_mappings
@@ -179,8 +181,8 @@ class QueryParserTests(unittest.TestCase):
         self.assertEqual(res, "group-out")
         mock_run_group_by.assert_called_once_with(mock_obj_list)
 
-    @patch("openstack_query.query_parser.QueryParser._run_sort")
-    @patch("openstack_query.query_parser.QueryParser._run_group_by")
+    @patch("openstack_query.query_blocks.query_parser.QueryParser._run_sort")
+    @patch("openstack_query.query_blocks.query_parser.QueryParser._run_group_by")
     def test_run_parser_with_sort_and_group(self, mock_run_group_by, mock_run_sort):
         """
         Tests that run_parser functions expectedly - when giving both group_by and sort_by
@@ -396,7 +398,9 @@ class QueryParserTests(unittest.TestCase):
         }
         self.assertEqual(grouped_out, expected_out)
 
-    @patch("openstack_query.query_parser.QueryParser._build_unique_val_groups")
+    @patch(
+        "openstack_query.query_blocks.query_parser.QueryParser._build_unique_val_groups"
+    )
     def test_run_group_by_no_group_mappings(self, mock_build_unique_val_groups):
         """
         Tests run group_by method functions expectedly - when using no group mappings
@@ -430,7 +434,9 @@ class QueryParserTests(unittest.TestCase):
             },
         )
 
-    @patch("openstack_query.query_parser.QueryParser._build_unique_val_groups")
+    @patch(
+        "openstack_query.query_blocks.query_parser.QueryParser._build_unique_val_groups"
+    )
     def test_run_group_by_with_group_mappings(self, mock_build_unique_val_groups):
         """
         Tests run group_by method functions expectedly - when using group mappings

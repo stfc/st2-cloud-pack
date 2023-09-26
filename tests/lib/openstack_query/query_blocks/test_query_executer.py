@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from enums.cloud_domains import CloudDomains
-from openstack_query.query_executer import QueryExecuter
+from openstack_query.query_blocks.query_executer import QueryExecuter
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 # pylint:disable=protected-access
@@ -89,7 +89,7 @@ def test_get_output_no_output_func(instance):
     assert output == []
 
 
-@patch("openstack_query.query_executer.QueryExecuter.get_output")
+@patch("openstack_query.query_blocks.query_executer.QueryExecuter.get_output")
 def test_run_query_without_parse_func(mock_get_output, instance):
     """
     Tests that run_query works as expected - not parsing result
@@ -119,7 +119,7 @@ def test_run_query_without_parse_func(mock_get_output, instance):
     assert res2 == mock_get_output.return_value
 
 
-@patch("openstack_query.query_executer.QueryExecuter.get_output")
+@patch("openstack_query.query_blocks.query_executer.QueryExecuter.get_output")
 def test_run_query_with_parse_func(mock_get_output, instance):
     """
     Tests that run_query works as expected - parsing result
@@ -153,7 +153,7 @@ def test_run_query_with_parse_func(mock_get_output, instance):
     assert res2 == mock_get_output.return_value
 
 
-@patch("openstack_query.query_executer.QueryExecuter.get_output")
+@patch("openstack_query.query_blocks.query_executer.QueryExecuter.get_output")
 def test_run_query_with_string_as_domain(mock_get_output, instance):
     """
     Tests that run_query works as expected - not parsing result, with a string as cloud account

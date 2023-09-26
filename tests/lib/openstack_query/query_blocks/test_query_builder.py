@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 from parameterized import parameterized
 from nose.tools import raises
 
-from openstack_query.query_builder import QueryBuilder
+from openstack_query.query_blocks.query_builder import QueryBuilder
 
 from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_preset_mapping_error import QueryPresetMappingError
@@ -46,7 +46,9 @@ class QueryBuilderTests(unittest.TestCase):
             ("with server-side filter", {"filter1": "val1", "filter2": "val2"}),
         ]
     )
-    @patch("openstack_query.query_builder.QueryBuilder._get_preset_handler")
+    @patch(
+        "openstack_query.query_blocks.query_builder.QueryBuilder._get_preset_handler"
+    )
     def test_parse_where_valid(
         self, _, mock_server_side_filter, mock_get_preset_handler
     ):

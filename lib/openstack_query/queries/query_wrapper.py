@@ -1,7 +1,7 @@
-from openstack_query.query_executer import QueryExecuter
-from openstack_query.query_output import QueryOutput
-from openstack_query.query_builder import QueryBuilder
-from openstack_query.query_parser import QueryParser
+from openstack_query.query_blocks.query_executer import QueryExecuter
+from openstack_query.query_blocks.query_output import QueryOutput
+from openstack_query.query_blocks.query_builder import QueryBuilder
+from openstack_query.query_blocks.query_parser import QueryParser
 
 from openstack_query.query_methods import QueryMethods
 from openstack_query.query_base import QueryBase
