@@ -121,17 +121,21 @@ class QueryMethodsTests(unittest.TestCase):
             from_subset=["obj1", "obj2", "obj3"],
             **{"arg1": "val1"}
         )
-        self.mock_executer.set_filters.assert_called_once_with(
-            client_side_filter_func=self.mock_builder.client_side_filter,
-            server_side_filters=self.mock_builder.server_side_filters,
+
+        self.assertEqual(
+            self.mock_executer.client_side_filter_func,
+            self.mock_builder.client_side_filter,
         )
 
-        self.mock_executer.set_parse_func.assert_called_once_with(
-            parser_func=self.mock_parser.run_parser
+        self.assertEqual(
+            self.mock_executer.server_side_filters,
+            self.mock_builder.server_side_filters,
         )
 
-        self.mock_executer.set_output_func.assert_called_once_with(
-            output_func=self.mock_output.generate_output
+        self.assertEqual(self.mock_executer.parse_func, self.mock_parser.run_parser)
+
+        self.assertEqual(
+            self.mock_executer.output_func, self.mock_output.generate_output
         )
 
         self.mock_executer.run_query.assert_called_once_with(

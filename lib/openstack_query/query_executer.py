@@ -20,48 +20,62 @@ class QueryExecuter:
     Helper class to handle executing the query - primarily performing 'run()' method
     """
 
-    def __init__(self, prop_enum_cls: Type[PropEnum], runner: QueryRunner):
+    def __init__(self, prop_enum_cls: Type[PropEnum], runner_cls: Type[QueryRunner]):
         self._prop_enum_cls = prop_enum_cls
-        self.runner = runner
-        self._parser_func = None
+        self.runner = runner_cls(self._prop_enum_cls.get_marker_prop_func())
+        self._parse_func = None
         self._output_func = None
         self._client_side_filter_func = None
         self._server_side_filters = None
 
-    def set_filters(
-        self,
-        client_side_filter_func: Optional[ClientSideFilterFunc] = None,
-        server_side_filters: Optional[ServerSideFilters] = None,
-    ):
+    @property
+    def client_side_filter_func(self):
+        return self._client_side_filter_func
+
+    @client_side_filter_func.setter
+    def client_side_filter_func(self, val: ClientSideFilterFunc):
         """
         Setter method for setting run filters
-        :param client_side_filter_func: An Optional function used to limit the results after querying openstacksdk
-        :param server_side_filters: An Optional set of filter kwargs to pass to openstacksdk
+        :param val: An function used to limit the results after querying openstacksdk
         """
-        self._client_side_filter_func = client_side_filter_func
-        self._server_side_filters = server_side_filters
+        self._client_side_filter_func = val
 
-    def set_parse_func(
-        self,
-        parser_func: Optional[
-            Callable[[List[OpenstackResourceObj]], Union[Dict, List]]
-        ] = None,
+    @property
+    def server_side_filters(self):
+        return self._server_side_filters
+
+    @server_side_filters.setter
+    def server_side_filters(self, val: ServerSideFilters):
+        self._server_side_filters = val
+
+    @property
+    def parse_func(self):
+        return self._parse_func
+
+    @parse_func.setter
+    def parse_func(
+        self, val: Optional[Callable[[List[OpenstackResourceObj]], Union[Dict, List]]]
     ):
         """
         Setter method for setting parse func
-        :param parser_func: A function that takes a list of Openstack Resource Objects and runs parse functions on them
+        :param val: A function that takes a list of Openstack Resource Objects and runs parse functions on them
         """
-        self._parser_func = parser_func
+        self._parse_func = val
 
-    def set_output_func(
-        self, output_func: Callable[[List[OpenstackResourceObj]], List[Dict[str, str]]]
+    @property
+    def output_func(self):
+        return self._output_func
+
+    @output_func.setter
+    def output_func(
+        self, val: Callable[[List[OpenstackResourceObj]], List[Dict[str, str]]]
     ):
         """
         Setter method for setting output func
-        :param output_func: A function that takes a list of Openstack Resource Objects and returns a list of
+        :param val: A function that takes a list of Openstack Resource Objects and returns a list of
         selected properties (as a dictionary) for each resource given
         """
-        self._output_func = output_func
+        self._output_func = val
 
     def get_output(
         self,
@@ -83,7 +97,7 @@ class QueryExecuter:
 
     def run_query(
         self,
-        cloud_account: str,
+        cloud_account: Union[str, CloudDomains],
         from_subset: Optional[List[Any]] = None,
         **kwargs,
     ):
@@ -97,9 +111,12 @@ class QueryExecuter:
             runner of interest.
         """
 
+        if isinstance(cloud_account, str):
+            cloud_account = CloudDomains.from_string(cloud_account)
+
         start = time.time()
         results = self.runner.run(
-            cloud_account=CloudDomains.from_string(cloud_account).name.lower(),
+            cloud_account=cloud_account.name.lower(),
             client_side_filter_func=self._client_side_filter_func,
             server_side_filters=self._server_side_filters,
             from_subset=from_subset,
@@ -108,6 +125,6 @@ class QueryExecuter:
 
         logger.debug("run completed - time elapsed: %s seconds", time.time() - start)
 
-        if self._parser_func:
-            results = self._parser_func(results)
+        if self._parse_func:
+            results = self.parse_func(results)
         return results, self.get_output(results)

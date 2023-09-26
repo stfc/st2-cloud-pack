@@ -20,7 +20,7 @@ class QueryWrapper(QueryMethods, QueryBase):
         self._query_results = []
         self.executer = QueryExecuter(
             self.prop_enum_cls,
-            self.runner_cls(self.prop_enum_cls.get_marker_prop_func()),
+            self.runner_cls,
         )
         self.output = QueryOutput(self.prop_enum_cls)
         self.parser = QueryParser(self.prop_enum_cls)

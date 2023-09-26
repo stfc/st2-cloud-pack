@@ -2,6 +2,7 @@ import logging
 from typing import Union, List, Any, Optional, Dict, Tuple
 
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
+from enums.cloud_domains import CloudDomains
 from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresets
 from exceptions.parse_query_error import ParseQueryError
@@ -127,25 +128,23 @@ class QueryMethods:
 
     def run(
         self,
-        cloud_account: str,
+        cloud_account: Union[str, CloudDomains],
         from_subset: Optional[List[OpenstackResourceObj]] = None,
         **kwargs,
     ):
         """
         Public method that runs the query provided and outputs
-        :param cloud_account: An Enum for the account from the clouds configuration to use
+        :param cloud_account: A String or a CloudDomains Enum for the clouds configuration to use
         :param from_subset: A subset of openstack resources to run query on instead of querying openstacksdk
         :param kwargs: keyword args that can be used to configure details of how query is run
             - valid kwargs specific to resource
         """
 
-        self.executer.set_filters(
-            client_side_filter_func=self.builder.client_side_filter,
-            server_side_filters=self.builder.server_side_filters,
-        )
+        self.executer.client_side_filter_func = self.builder.client_side_filter
+        self.executer.server_side_filters = self.builder.server_side_filters
 
-        self.executer.set_parse_func(parser_func=self.parser.run_parser)
-        self.executer.set_output_func(output_func=self.output.generate_output)
+        self.executer.parse_func = self.parser.run_parser
+        self.executer.output_func = self.output.generate_output
 
         self._query_results_as_objects, self._query_results = self.executer.run_query(
             cloud_account=cloud_account,
