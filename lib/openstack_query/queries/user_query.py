@@ -43,6 +43,7 @@ class UserQuery(QueryWrapper):
                 QueryPresetsGeneric.EQUAL_TO: {
                     UserProperties.USER_DOMAIN_ID: lambda value: {"domain_id": value},
                     UserProperties.USER_NAME: lambda value: {"name": value},
+                    UserProperties.USER_ID: lambda value: {"id": value},
                 }
             }
         )
