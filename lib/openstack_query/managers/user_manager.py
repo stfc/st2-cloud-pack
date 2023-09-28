@@ -5,7 +5,7 @@ from enums.query.props.user_properties import UserProperties
 from enums.cloud_domains import CloudDomains
 
 from openstack_query.queries.user_query import UserQuery
-from openstack_query.managers.query_manager import QueryManager
+from openstack_query.managers.manager_wrapper import ManagerWrapper
 
 from exceptions.parse_query_error import ParseQueryError
 
@@ -15,13 +15,13 @@ logger = logging.getLogger(__name__)
 # pylint:disable=too-few-public-methods
 
 
-class UserManager(QueryManager):
+class UserManager(ManagerWrapper):
     """
     Manager for querying Openstack user objects.
     """
 
     def __init__(self, cloud_account: CloudDomains):
-        QueryManager.__init__(
+        ManagerWrapper.__init__(
             self,
             query=UserQuery(),
             cloud_account=cloud_account,

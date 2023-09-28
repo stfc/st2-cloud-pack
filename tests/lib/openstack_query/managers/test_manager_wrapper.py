@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch, NonCallableMock
 import pytest
 from parameterized import parameterized
 
-from openstack_query.managers.query_manager import QueryManager
+from openstack_query.managers.manager_wrapper import ManagerWrapper
 from enums.query.query_output_types import QueryOutputTypes
 from enums.query.query_presets import (
     QueryPresetsString,
@@ -28,7 +28,7 @@ from tests.lib.openstack_query.mocks.mocked_structs import (
 # pylint:disable=protected-access,
 
 
-class QueryManagerTests(unittest.TestCase):
+class ManagerWrapperTests(unittest.TestCase):
     """
     Runs various tests to ensure that QueryManager class methods function expectedly
     """
@@ -43,7 +43,7 @@ class QueryManagerTests(unittest.TestCase):
         self.prop_cls = MagicMock()
         self.cloud_account = MagicMock()
 
-        self.instance = QueryManager(
+        self.instance = ManagerWrapper(
             cloud_account=self.cloud_account, query=self.query, prop_cls=self.prop_cls
         )
 
@@ -51,10 +51,10 @@ class QueryManagerTests(unittest.TestCase):
         self, output_details, preset_details, runner_params
     ):
         with patch(
-            "openstack_query.managers.query_manager.QueryManager._populate_output_params"
+            "openstack_query.managers.manager_wrapper.ManagerWrapper._populate_output_params"
         ) as mock_populate_output_params:
             with patch(
-                "openstack_query.managers.query_manager.QueryManager._get_query_output"
+                "openstack_query.managers.manager_wrapper.ManagerWrapper._get_query_output"
             ) as mock_get_query_output:
                 res = self.instance._build_and_run_query(
                     output_details=output_details,
@@ -183,8 +183,10 @@ class QueryManagerTests(unittest.TestCase):
         self.query.sort_by.assert_not_called()
         self.query.group_by.assert_not_called()
 
-    @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
-    @patch("openstack_query.managers.query_manager.QueryOutputDetails")
+    @patch(
+        "openstack_query.managers.manager_wrapper.ManagerWrapper._build_and_run_query"
+    )
+    @patch("openstack_query.managers.manager_wrapper.QueryOutputDetails")
     def test_search_all(self, mock_query_output_details, mock_build_and_run_query):
         """
         Tests that search_all method functions expectedly
@@ -214,8 +216,10 @@ class QueryManagerTests(unittest.TestCase):
 
         self.assertEqual(res, mock_query_return)
 
-    @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
-    @patch("openstack_query.managers.query_manager.QueryOutputDetails")
+    @patch(
+        "openstack_query.managers.manager_wrapper.ManagerWrapper._build_and_run_query"
+    )
+    @patch("openstack_query.managers.manager_wrapper.QueryOutputDetails")
     def test_search_by_datetime(
         self, mock_query_output_details, mock_build_and_run_query
     ):
@@ -261,8 +265,10 @@ class QueryManagerTests(unittest.TestCase):
         )
         self.assertEqual(res, mock_query_return)
 
-    @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
-    @patch("openstack_query.managers.query_manager.QueryOutputDetails")
+    @patch(
+        "openstack_query.managers.manager_wrapper.ManagerWrapper._build_and_run_query"
+    )
+    @patch("openstack_query.managers.manager_wrapper.QueryOutputDetails")
     def test_search_by_property_with_single_value(
         self, mock_query_output_details, mock_build_and_run_query
     ):
@@ -303,8 +309,10 @@ class QueryManagerTests(unittest.TestCase):
         )
         self.assertEqual(res, mock_query_return)
 
-    @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
-    @patch("openstack_query.managers.query_manager.QueryOutputDetails")
+    @patch(
+        "openstack_query.managers.manager_wrapper.ManagerWrapper._build_and_run_query"
+    )
+    @patch("openstack_query.managers.manager_wrapper.QueryOutputDetails")
     def test_search_by_property_with_multiple_values(
         self, mock_query_output_details, mock_build_and_run_query
     ):
@@ -343,9 +351,11 @@ class QueryManagerTests(unittest.TestCase):
         )
         self.assertEqual(res, mock_query_return)
 
-    @patch("openstack_query.managers.query_manager.QueryManager._build_and_run_query")
-    @patch("openstack_query.managers.query_manager.QueryOutputDetails")
-    @patch("openstack_query.managers.query_manager.re")
+    @patch(
+        "openstack_query.managers.manager_wrapper.ManagerWrapper._build_and_run_query"
+    )
+    @patch("openstack_query.managers.manager_wrapper.QueryOutputDetails")
+    @patch("openstack_query.managers.manager_wrapper.re")
     def test_search_by_regex_valid(
         self, mock_re, mock_query_output_details, mock_build_and_run_query
     ):
