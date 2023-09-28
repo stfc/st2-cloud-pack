@@ -4,7 +4,7 @@ from typing import Optional, Dict, List
 from openstack.identity.v3.user import User
 
 from openstack_api.openstack_connection import OpenstackConnection
-from openstack_query.runners.query_runner import QueryRunner
+from openstack_query.runners.runner_wrapper import RunnerWrapper
 
 from exceptions.parse_query_error import ParseQueryError
 from exceptions.enum_mapping_error import EnumMappingError
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 # pylint:disable=too-few-public-methods
 
 
-class UserRunner(QueryRunner):
+class UserRunner(RunnerWrapper):
     """
     Runner class for openstack User resource.
     UserRunner encapsulates running any openstacksdk User commands

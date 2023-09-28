@@ -2,13 +2,13 @@ import unittest
 from unittest.mock import MagicMock, patch
 from parameterized import parameterized
 
-from openstack_query.runners.query_runner import QueryRunner
+from openstack_query.runners.runner_wrapper import RunnerWrapper
 
 # pylint:disable=protected-access
 
 
-class QueryRunnerTests(unittest.TestCase):
-    @patch.multiple(QueryRunner, __abstractmethods__=set())
+class RunnerWrapperTests(unittest.TestCase):
+    @patch.multiple(RunnerWrapper, __abstractmethods__=set())
     def setUp(self):
         """
         Setup for tests
@@ -16,7 +16,7 @@ class QueryRunnerTests(unittest.TestCase):
         super().setUp()
         self.mocked_connection = MagicMock()
         self.mock_page_func = self._mock_page_func
-        self.instance = QueryRunner(
+        self.instance = RunnerWrapper(
             marker_prop_func=self.mock_page_func, connection_cls=self.mocked_connection
         )
         self.conn = self.mocked_connection.return_value.__enter__.return_value
@@ -25,9 +25,11 @@ class QueryRunnerTests(unittest.TestCase):
         """simple mock func which returns "id" key from given dict"""
         return mock_obj["id"]
 
-    @patch("openstack_query.runners.query_runner.QueryRunner._apply_client_side_filter")
-    @patch("openstack_query.runners.query_runner.QueryRunner._run_query")
-    @patch("openstack_query.runners.query_runner.QueryRunner._parse_meta_params")
+    @patch(
+        "openstack_query.runners.runner_wrapper.RunnerWrapper._apply_client_side_filter"
+    )
+    @patch("openstack_query.runners.runner_wrapper.RunnerWrapper._run_query")
+    @patch("openstack_query.runners.runner_wrapper.RunnerWrapper._parse_meta_params")
     def test_run_with_only_client_side_filter(
         self, mock_parse_meta_params, mock_run_query, mock_apply_client_side_filter
     ):
@@ -58,8 +60,8 @@ class QueryRunnerTests(unittest.TestCase):
         mock_client_side_filter_func.assert_not_called()
         self.assertEqual(["openstack-resource-1"], res)
 
-    @patch("openstack_query.runners.query_runner.QueryRunner._run_query")
-    @patch("openstack_query.runners.query_runner.QueryRunner._parse_meta_params")
+    @patch("openstack_query.runners.runner_wrapper.RunnerWrapper._run_query")
+    @patch("openstack_query.runners.runner_wrapper.RunnerWrapper._parse_meta_params")
     def test_run_with_server_side_filters(self, mock_parse_meta_params, mock_run_query):
         """
         Tests that run method functions expectedly - with server_side_filters set
@@ -98,8 +100,10 @@ class QueryRunnerTests(unittest.TestCase):
         mock_client_side_filter_func.assert_not_called()
         self.assertEqual(["openstack-resource-1"], res)
 
-    @patch("openstack_query.runners.query_runner.QueryRunner._parse_subset")
-    @patch("openstack_query.runners.query_runner.QueryRunner._apply_client_side_filter")
+    @patch("openstack_query.runners.runner_wrapper.RunnerWrapper._parse_subset")
+    @patch(
+        "openstack_query.runners.runner_wrapper.RunnerWrapper._apply_client_side_filter"
+    )
     def test_run_with_subset(self, mock_apply_filter_func, mock_parse_subset):
         """
         Tests that run method functions expectedly - with meta param 'from_subset' set

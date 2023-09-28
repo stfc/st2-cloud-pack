@@ -2,7 +2,7 @@ import time
 import logging
 from typing import Callable, Optional, Dict, List, Any, Union, Type
 
-from openstack_query.runners.query_runner import QueryRunner
+from openstack_query.runners.runner_wrapper import RunnerWrapper
 from enums.cloud_domains import CloudDomains
 from enums.query.props.prop_enum import PropEnum
 
@@ -20,7 +20,7 @@ class QueryExecuter:
     Helper class to handle executing the query - primarily performing 'run()' method
     """
 
-    def __init__(self, prop_enum_cls: Type[PropEnum], runner_cls: Type[QueryRunner]):
+    def __init__(self, prop_enum_cls: Type[PropEnum], runner_cls: Type[RunnerWrapper]):
         self._prop_enum_cls = prop_enum_cls
         self.runner = runner_cls(self._prop_enum_cls.get_marker_prop_func())
         self._parse_func = None

@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 # pylint:disable=too-few-public-methods
 
 
-class QueryRunner(OpenstackWrapperBase):
+class RunnerWrapper(OpenstackWrapperBase):
     """
     Base class for Runner classes.
     Runner classes encapsulate running any openstacksdk commands
