@@ -91,6 +91,12 @@ class UserRunner(QueryRunner):
         if not filter_kwargs:
             filter_kwargs = {}
 
+        # having a filter of 'id' - will automatically mean no other filter kwargs
+        if "id" in filter_kwargs:
+            id_val = filter_kwargs.get('id')
+            val = conn.identity.find_user(id_val, ignore_missing=True)
+            return val if val else []
+
         if meta_params["domain_id"] and "domain_id" in filter_kwargs.keys():
             raise ParseQueryError(
                 "This query uses a preset that requires searching on domain_ids "
