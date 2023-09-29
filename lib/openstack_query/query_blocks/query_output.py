@@ -1,4 +1,4 @@
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Type, Set
 from tabulate import tabulate
 
 from enums.query.props.prop_enum import PropEnum
@@ -18,13 +18,19 @@ class QueryOutput:
     # what value to output if property is not found for an openstack object
     DEFAULT_OUT = "Not Found"
 
-    def __init__(self, prop_enum_cls: PropEnum):
+    def __init__(self, prop_enum_cls: Type[PropEnum]):
         self._prop_enum_cls = prop_enum_cls
         self._props = set()
 
     @property
     def selected_props(self) -> List[PropEnum]:
+        if not self._props:
+            return []
         return list(self._props)
+
+    @selected_props.setter
+    def selected_props(self, props=Set[PropEnum]):
+        self._props = props
 
     def to_string(self, results: Union[List, Dict], title=None, **kwargs):
         """
@@ -57,14 +63,14 @@ class QueryOutput:
         """
         output = ""
         if title:
-            output += f"<b> {title} </b><br/>"
+            output += f"<b> {title} </b><br/> "
 
         if isinstance(results, dict):
             for group_title, group in results.items():
                 output += self._generate_table(
                     group,
                     return_html=True,
-                    title=f"<b> {group_title}: </b><br/>",
+                    title=f"<b> {group_title}: </b><br/> ",
                     **kwargs,
                 )
         else:
@@ -76,21 +82,24 @@ class QueryOutput:
     def parse_select(self, *props: PropEnum, select_all=False) -> None:
         """
         Method which is used to set which properties to output once results are gathered
-        This method checks that each Enum provided is valid and populates internal attribute self._props
+        This method checks that each Enum provided is valid and populates internal attribute which holds selected props
         :param select_all: boolean flag to select all valid properties
         :param props: any number of Enums representing properties to show
         """
         if select_all:
-            self._props = set(self._prop_enum_cls)
+            self.selected_props = set(self._prop_enum_cls)
             return
 
+        all_props = set()
         for prop in props:
             if prop not in self._prop_enum_cls:
                 raise ParseQueryError(
                     f"Error: Given property to select: {prop.name} is not supported by query"
                 )
+            all_props.add(prop)
 
-            self._props.add(prop)
+        selected_props = set(self.selected_props)
+        self.selected_props = selected_props.union(all_props)
 
     def generate_output(
         self, openstack_resources: List[OpenstackResourceObj]
@@ -113,7 +122,7 @@ class QueryOutput:
         :param openstack_resource: openstack resource item to obtain properties from
         """
         obj_dict = {}
-        for prop in self._props:
+        for prop in self.selected_props:
             prop_func = self._prop_enum_cls.get_prop_mapping(prop)
             try:
                 val = str(prop_func(openstack_resource))
