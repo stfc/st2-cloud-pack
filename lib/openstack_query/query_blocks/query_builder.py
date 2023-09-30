@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Type
 import logging
 
 from openstack_query.handlers.client_side_handler import ClientSideHandler
@@ -24,7 +24,7 @@ class QueryBuilder:
 
     def __init__(
         self,
-        prop_enum_cls: PropEnum,
+        prop_enum_cls: Type[PropEnum],
         client_side_handlers: List[ClientSideHandler],
         server_side_handler: Optional[ServerSideHandler],
     ):
@@ -42,12 +42,29 @@ class QueryBuilder:
         """
         return self._client_side_filter
 
+    @client_side_filter.setter
+    def client_side_filter(self, client_filter: ClientSideFilterFunc):
+        """
+        a setter method to set client side filter function
+        :param client_filter: a function that takes an openstack resource object and returns
+        True if it matches filter, False if not
+        """
+        self._client_side_filter = client_filter
+
     @property
     def server_side_filters(self) -> Optional[ServerSideFilters]:
         """
         a getter method to return server-side filters to pass to openstacksdk
         """
         return self._server_side_filters
+
+    @server_side_filters.setter
+    def server_side_filters(self, server_filters: ServerSideFilters):
+        """
+        a setter method to set server side filters
+        :param server_filters: a dictionary that holds filter options to pass to openstacksdk
+        """
+        self._server_side_filters = server_filters
 
     def parse_where(
         self,
@@ -63,7 +80,7 @@ class QueryBuilder:
         :param preset_kwargs: A set of arguments to pass to configure filter function and filter kwargs
         """
 
-        if self._client_side_filter:
+        if self.client_side_filter:
             logging.error(
                 "Error: Chaining multiple where() functions currently not supported"
             )
@@ -87,17 +104,17 @@ class QueryBuilder:
             )
 
         preset_handler = self._get_preset_handler(preset, prop)
-        self._client_side_filter = preset_handler.get_filter_func(
+        self.client_side_filter = preset_handler.get_filter_func(
             preset=preset,
             prop=prop,
             prop_func=prop_func,
             filter_func_kwargs=preset_kwargs,
         )
 
-        self._server_side_filters = self._server_side_handler.get_filters(
+        self.server_side_filters = self._server_side_handler.get_filters(
             preset=preset, prop=prop, params=preset_kwargs
         )
-        if not self._server_side_filters:
+        if not self.server_side_filters:
             logger.info(
                 "No server-side filters for preset '%s': prop '%s' pair "
                 "- using client-side filter - this may take longer",
@@ -110,10 +127,7 @@ class QueryBuilder:
                 preset.name,
                 prop.name,
                 ", ".join(
-                    [
-                        f"{key}: '{val}'"
-                        for key, val in self._server_side_filters.items()
-                    ]
+                    [f"{key}: '{val}'" for key, val in self.server_side_filters.items()]
                 ),
             )
 
