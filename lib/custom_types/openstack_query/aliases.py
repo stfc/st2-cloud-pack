@@ -35,7 +35,7 @@ ServerSideFilterMappings = Dict[QueryPresets, PropToServerSideFilterFunc]
 # type alias for mapping presets to valid properties that can be used with them
 # can also accept a literal ['*'] to indicate preset works for all enum values
 # NOTE: can't use Literal typing for ['*'] with python 3.6 so using generic List
-PresetPropMappings = Union[List[PropEnum], List]
+PresetPropMappings = Dict[QueryPresets, Union[List, List[PropEnum]]]
 
 # type alias for project identifier - either name/id or Project object
 ProjectIdentifier = Union[str, Project]
