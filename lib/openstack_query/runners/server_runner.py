@@ -102,7 +102,7 @@ class ServerRunner(RunnerWrapper):
                 ",".join(f"{key}={value}" for key, value in filter_kwargs.items()),
             )
             query_res.extend(
-                self._run_paginated_query(conn.compute.servers, filter_kwargs)
+                self._run_paginated_query(conn.compute.servers, dict(filter_kwargs))
             )
         return query_res
 
