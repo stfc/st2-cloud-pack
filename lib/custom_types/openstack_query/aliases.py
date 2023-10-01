@@ -45,3 +45,11 @@ ProjectIdentifier = Union[str, Project]
 #   - A list of Openstack Resource objects
 #   - A list of dictionaries containing selected properties for each openstack resource
 QueryReturn = Union[str, List[OpenstackResourceObj], List[Dict]]
+
+# type alias for group mappings, a dictionary with group name as keys mapped to a function which takes
+# an openstack resource object and returns a True if resource belongs to that group, False if not
+GroupMappings = Dict[str, Callable[[OpenstackResourceObj], bool]]
+
+# type alias for group ranges, a dictionary with group name as keys mapped to a list of prop values
+# that should belong to that group
+GroupRanges = Dict[str, List[PropValue]]
