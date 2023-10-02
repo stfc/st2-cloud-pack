@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 # user-inputted strings straight here - hence there's a lot of parameters and local variables
 # pylint:disable=too-many-arguments
 # pylint:disable=too-many-locals
-class QueryManager:
+class ManagerWrapper:
     """
     This class is the base class for all managers.
     Managers hold a query object and several methods which build and run specific queries

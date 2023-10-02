@@ -5,7 +5,7 @@ from openstack.compute.v2.server import Server
 from openstack.exceptions import ResourceNotFound
 
 from openstack_api.openstack_connection import OpenstackConnection
-from openstack_query.runners.query_runner import QueryRunner
+from openstack_query.runners.runner_wrapper import RunnerWrapper
 
 from exceptions.parse_query_error import ParseQueryError
 from custom_types.openstack_query.aliases import (
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # pylint:disable=too-few-public-methods
 
 
-class ServerRunner(QueryRunner):
+class ServerRunner(RunnerWrapper):
     """
     Runner class for openstack Server resource.
     ServerRunner encapsulates running any openstacksdk Server commands
