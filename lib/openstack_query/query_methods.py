@@ -69,9 +69,7 @@ class QueryMethods:
         )
         return self
 
-    def where(
-        self, preset: QueryPresets, prop: PropEnum, **kwargs: Optional[Dict[str, Any]]
-    ):
+    def where(self, preset: QueryPresets, prop: PropEnum, **kwargs):
         """
         Public method used to set the conditions for the query.
         :param preset: QueryPreset Enum to use
@@ -121,7 +119,7 @@ class QueryMethods:
         output of values found that were
         not specified in group mappings - ignored if group ranges not given
         """
-        if self.parser.group_by_prop:
+        if self.parser.group_by:
             raise ParseQueryError("group by already set")
 
         self.parser.parse_group_by(group_by, group_ranges, include_ungrouped_results)
