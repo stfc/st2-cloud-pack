@@ -3,7 +3,7 @@ import logging
 from enums.query.props.user_properties import UserProperties
 from enums.cloud_domains import CloudDomains
 
-from openstack_query.queries.user_query import UserQuery
+from openstack_query.api.query_objects import UserQuery
 from openstack_query.managers.manager_wrapper import ManagerWrapper
 
 from exceptions.parse_query_error import ParseQueryError

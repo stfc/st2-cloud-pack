@@ -14,7 +14,7 @@ from enums.query.query_presets import (
 from structs.query.query_output_details import QueryOutputDetails
 from structs.query.query_preset_details import QueryPresetDetails
 
-from openstack_query.queries.query_wrapper import QueryWrapper
+from openstack_query.api.query_api import QueryAPI
 from custom_types.openstack_query.aliases import QueryReturn
 
 from exceptions.enum_mapping_error import EnumMappingError
@@ -35,7 +35,7 @@ class ManagerWrapper:
     """
 
     def __init__(
-        self, query: QueryWrapper, cloud_account: CloudDomains, prop_cls: Type[PropEnum]
+        self, query: QueryAPI, cloud_account: CloudDomains, prop_cls: Type[PropEnum]
     ):
         self._query = query
         self._cloud_account = cloud_account
