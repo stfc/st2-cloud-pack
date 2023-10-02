@@ -1,5 +1,4 @@
 import logging
-from custom_types.openstack_query.aliases import QueryReturn
 
 from enums.query.props.user_properties import UserProperties
 from enums.cloud_domains import CloudDomains

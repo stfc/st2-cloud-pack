@@ -1,7 +1,7 @@
 from typing import Any, Dict
-from enums.query.props.prop_enum import PropEnum
 from dataclasses import dataclass
 
+from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresets
 
 
