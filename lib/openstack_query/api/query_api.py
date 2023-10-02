@@ -6,30 +6,21 @@ from enums.cloud_domains import CloudDomains
 from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresets
 from exceptions.parse_query_error import ParseQueryError
-from openstack_query.query_blocks.query_builder import QueryBuilder
-from openstack_query.query_blocks.query_output import QueryOutput
-from openstack_query.query_blocks.query_parser import QueryParser
-from openstack_query.query_blocks.query_executer import QueryExecuter
+from structs.query.query_components import QueryComponents
 
 logger = logging.getLogger(__name__)
 
 
-class QueryMethods:
+class QueryAPI:
     """
     Interface for Query Classes. This class exposes all public methods for query api.
     """
 
-    def __init__(
-        self,
-        builder: QueryBuilder,
-        executer: QueryExecuter,
-        parser: QueryParser,
-        output: QueryOutput,
-    ):
-        self.builder = builder
-        self.executer = executer
-        self.parser = parser
-        self.output = output
+    def __init__(self, query_components: QueryComponents):
+        self.builder = query_components.builder
+        self.executer = query_components.executer
+        self.parser = query_components.parser
+        self.output = query_components.output
         self._query_results = None
         self._query_results_as_objects = None
 
