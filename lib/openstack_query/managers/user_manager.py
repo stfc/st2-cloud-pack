@@ -1,5 +1,4 @@
 import logging
-from custom_types.openstack_query.aliases import QueryReturn
 
 from enums.query.props.user_properties import UserProperties
 from enums.cloud_domains import CloudDomains
@@ -28,7 +27,7 @@ class UserManager(ManagerWrapper):
             prop_cls=UserProperties,
         )
 
-    def search_by_datetime(self, **_) -> QueryReturn:
+    def search_by_datetime(self, **_) -> None:
         """
         Method to search by datetime.
         For querying users this will raise an error as this is not possible

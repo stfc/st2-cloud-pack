@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Type
 import re
 
 from enums.query.query_output_types import QueryOutputTypes
@@ -35,7 +35,7 @@ class ManagerWrapper:
     """
 
     def __init__(
-        self, query: QueryWrapper, cloud_account: CloudDomains, prop_cls: PropEnum
+        self, query: QueryWrapper, cloud_account: CloudDomains, prop_cls: Type[PropEnum]
     ):
         self._query = query
         self._cloud_account = cloud_account

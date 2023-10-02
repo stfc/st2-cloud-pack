@@ -1,7 +1,7 @@
 from typing import Any, Dict
-from enum import Enum
 from dataclasses import dataclass
 
+from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresets
 
 
@@ -13,5 +13,5 @@ class QueryPresetDetails:
     """
 
     preset: QueryPresets
-    prop: Enum
+    prop: PropEnum
     args: Dict[str, Any]

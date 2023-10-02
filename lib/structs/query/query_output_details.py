@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Type
 from enums.query.query_output_types import QueryOutputTypes
 from enums.query.props.prop_enum import PropEnum
 from custom_types.openstack_query.aliases import PropValue
@@ -32,7 +32,7 @@ class QueryOutputDetails:
 
     @staticmethod
     def from_kwargs(
-        prop_cls: PropEnum,
+        prop_cls: Type[PropEnum],
         properties_to_select: Optional[List[str]] = None,
         output_type: Optional[str] = None,
         group_by: Optional[str] = None,
