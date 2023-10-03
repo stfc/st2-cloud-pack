@@ -79,7 +79,7 @@ class UserRunner(RunnerWrapper):
         conn: OpenstackConnection,
         filter_kwargs: Optional[Dict[str, str]] = None,
         **meta_params,
-    ) -> List[User]:
+    ) -> List[Optional[User]]:
         """
         This method runs the query by running openstacksdk commands
 
@@ -90,6 +90,12 @@ class UserRunner(RunnerWrapper):
 
         if not filter_kwargs:
             filter_kwargs = {}
+
+        # having a filter of 'id' - will automatically mean no other filter kwargs
+        selected_id = filter_kwargs.get("id", None)
+        if selected_id:
+            val = conn.identity.find_user(selected_id, ignore_missing=True)
+            return [val] if val else []
 
         if meta_params["domain_id"] and "domain_id" in filter_kwargs.keys():
             raise ParseQueryError(

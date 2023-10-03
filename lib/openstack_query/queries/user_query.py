@@ -31,8 +31,9 @@ class UserQuery(QueryWrapper):
 
     def _get_server_side_handler(self) -> ServerSideHandler:
         """
-        method to configure a server handler which can be used to get 'filter' keyword arguments that
-        can be passed to openstack function conn.compute.servers() to filter results for a valid preset-property pair
+        method to configure a server-side handler which can be used to get 'filter' keyword arguments that
+        can be passed to an openstack function to filter results for a valid preset-property
+        on the control plane, rather than locally.
 
         valid filters documented here:
             https://docs.openstack.org/openstacksdk/latest/user/proxies/compute.html
@@ -43,6 +44,7 @@ class UserQuery(QueryWrapper):
                 QueryPresetsGeneric.EQUAL_TO: {
                     UserProperties.USER_DOMAIN_ID: lambda value: {"domain_id": value},
                     UserProperties.USER_NAME: lambda value: {"name": value},
+                    UserProperties.USER_ID: lambda value: {"id": value},
                 }
             }
         )
@@ -51,7 +53,7 @@ class UserQuery(QueryWrapper):
         """
         method to configure a set of client-side handlers which can be used to get local filter functions
         corresponding to valid preset-property pairs. These filter functions can be used to filter results after
-        listing all servers.
+        listing all users.
         """
         return QueryClientSideHandlers(
             # set generic query preset mappings

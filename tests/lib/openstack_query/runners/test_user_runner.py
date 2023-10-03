@@ -149,6 +149,20 @@ def test_run_query_no_meta_args(
     assert res == ["user1", "user2"]
 
 
+def test_run_query_returns_list(instance, mock_openstack_connection):
+    """
+    Tests that run_query correctly returns a list of entries
+    """
+    return_value = NonCallableMock()
+    mock_openstack_connection.identity.find_user.return_value = return_value
+
+    returned = instance._run_query(mock_openstack_connection, filter_kwargs={"id": "1"})
+    mock_openstack_connection.identity.find_user.assert_called_once_with(
+        "1", ignore_missing=True
+    )
+    assert [return_value] == returned
+
+
 def test_run_query_with_from_domain_and_id_given(instance, mock_openstack_connection):
     """
     Test error is raised when the domain name and domain id is provided at
