@@ -11,8 +11,17 @@ from structs.query.query_components import QueryComponents
 
 
 class QueryFactory:
+    """
+    This class is used to construct a query object using a factory pattern.
+    Decouples the API from the implementation
+    """
+
     @staticmethod
     def build_query_deps(mapping_cls: Type[MappingInterface]) -> QueryComponents:
+        """
+        Composes objects that make up the query - to allow dependency injection
+        :param mapping_cls: A mapping class which is used to configure query objects
+        """
         prop_mapping = mapping_cls.get_prop_mapping()
 
         output = QueryOutput(prop_mapping)

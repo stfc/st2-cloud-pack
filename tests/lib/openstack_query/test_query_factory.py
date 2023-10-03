@@ -14,6 +14,10 @@ def test_build_query_deps(
     mock_output,
     mock_builder,
 ):
+    """
+    Test that function build_query_deps works
+    should build all query blocks and return QueryComponent dataclass using them
+    """
     mock_mapping_cls = MagicMock()
     res = QueryFactory.build_query_deps(mock_mapping_cls)
 
