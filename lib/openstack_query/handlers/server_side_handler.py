@@ -1,6 +1,6 @@
 import logging
-from typing import Optional, Tuple
-from enums.query.query_presets import QueryPresets
+from typing import Optional, Tuple, Callable, Type, Dict, List
+from enums.query.query_presets import QueryPresets, QueryPresetsGeneric
 from enums.query.props.prop_enum import PropEnum
 
 from custom_types.openstack_query.aliases import (
@@ -25,6 +25,12 @@ class ServerSideHandler(HandlerBase):
 
     def __init__(self, kwarg_mappings: ServerSideFilterMappings):
         self._server_side_filter_mappings = kwarg_mappings
+
+    def get_supported_props(self, preset: QueryPresetsGeneric) -> List[PropEnum]:
+        """
+        Gets a list of all supported properties for a given preset
+        """
+        return list(self._server_side_filter_mappings[preset].keys())
 
     def check_supported(self, preset: QueryPresets, prop: PropEnum) -> bool:
         """
@@ -60,7 +66,7 @@ class ServerSideHandler(HandlerBase):
         self,
         preset: QueryPresets,
         prop: PropEnum,
-        params: Optional[FilterParams] = None,
+        params: FilterParams,
     ) -> Optional[ServerSideFilters]:
         """
         Method that returns a dictionary of server side filter params to pass to an openstack list function
@@ -95,12 +101,12 @@ class ServerSideHandler(HandlerBase):
         :param filter_params: a dictionary of params to check if valid for filter func
         """
         try:
-            logger.debug(
-                "checking server-side filter function against provided parameters\n\t%s",
-                "\n\t".join(
-                    [f"{key}: '{value}'" for key, value in filter_params.items()]
-                ),
-            )
+            # logger.debug(
+            #     "checking server-side filter function against provided parameters\n\t%s",
+            #     "\n\t".join(
+            #         [f"{key}: '{value}'" for key, value in filter_params.items()]
+            #     ),
+            # )
             filter_func(**filter_params)
         except KeyError as err:
             return (
