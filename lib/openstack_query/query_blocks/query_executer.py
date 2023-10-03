@@ -9,7 +9,7 @@ from enums.query.props.prop_enum import PropEnum
 from custom_types.openstack_query.aliases import (
     OpenstackResourceObj,
     ServerSideFilters,
-    ClientSideFilterFunc,
+    ClientSideFilters,
 )
 
 logger = logging.getLogger(__name__)
@@ -25,23 +25,24 @@ class QueryExecuter:
         self.runner = runner_cls(self._prop_enum_cls.get_marker_prop_func())
         self._parse_func = None
         self._output_func = None
-        self._client_side_filter_func = None
+        self._client_side_filters = None
         self._server_side_filters = None
 
     @property
-    def client_side_filter_func(self):
+    def client_side_filters(self):
         """
         a getter method to return the client-side filter function
         """
-        return self._client_side_filter_func
+        return self._client_side_filters
 
-    @client_side_filter_func.setter
-    def client_side_filter_func(self, client_filter: ClientSideFilterFunc):
+    @client_side_filters.setter
+    def client_side_filters(self, client_filters=ClientSideFilters):
         """
         Setter method for setting run filters
-        :param client_filter: A function used to limit the results after querying openstacksdk
+        :param client_filters: a list of filter functions that each take an openstack resource
+        and returns True if it matches filter, False if not
         """
-        self._client_side_filter_func = client_filter
+        self._client_side_filters = client_filters
 
     @property
     def server_side_filters(self):
@@ -101,13 +102,13 @@ class QueryExecuter:
         Helper method for getting the output using output func
         :param results: Either a list or group of Openstack Resource objects
         """
-        if not self._output_func:
+        if not self.output_func:
             return []
 
         if not isinstance(results, dict):
-            return self._output_func(results)
+            return self.output_func(results)
 
-        return {name: self._output_func(group) for name, group in results.items()}
+        return {name: self.output_func(group) for name, group in results.items()}
 
     def run_query(
         self,
@@ -131,14 +132,14 @@ class QueryExecuter:
         start = time.time()
         results = self.runner.run(
             cloud_account=cloud_account,
-            client_side_filter_func=self._client_side_filter_func,
-            server_side_filters=self._server_side_filters,
+            client_side_filters=self.client_side_filters,
+            server_side_filters=self.server_side_filters,
             from_subset=from_subset,
             **kwargs,
         )
 
         logger.debug("run completed - time elapsed: %s seconds", time.time() - start)
 
-        if self._parse_func:
-            results = self._parse_func(results)
+        if self.parse_func:
+            results = self.parse_func(results)
         return results, self.get_output(results)

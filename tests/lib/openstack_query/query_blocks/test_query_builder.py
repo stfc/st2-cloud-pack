@@ -169,3 +169,71 @@ def test_server_side_filters(instance):
     instance.server_side_filters = "some-server-side-filter"
     res = instance.server_side_filters
     assert res == "some-server-side-filter"
+
+
+def test_add_filter_no_server_side_filter(instance):
+    """
+    Tests add_filter method works properly - with no server filters
+    Should only set client_side_filter
+    """
+    mock_client_side_filter = MagicMock()
+
+    instance._add_filter(
+        client_side_filter=mock_client_side_filter, server_side_filters=None
+    )
+    instance.client_side_filters = [mock_client_side_filter]
+
+
+@pytest.mark.parametrize(
+    "set_server_side_filters, server_side_filters, expected_values",
+    [
+        # no previous filters set
+        # one server-side filter to add
+        ([], {"filter1": "val1"}, [{"filter1": "val1"}]),
+        # one (non-overlapping) server-side filter set
+        # one server-side filter set to add
+        (
+            [{"filter1": "val1"}],
+            {"filter2": "val2"},
+            [{"filter1": "val1", "filter2": "val2"}],
+        ),
+        # multiple (non-overlapping) server-side filters set, one
+        # one server-side filter set to add
+        (
+            [{"filter1": "val1"}, {"filter2": "val2"}],
+            {"filter3": "val3"},
+            [
+                {"filter1": "val1", "filter3": "val3"},
+                {"filter2": "val2", "filter3": "val3"},
+            ],
+        ),
+        # multiple (non-overlapping) server-side filters set
+        # multiple server-side filter sets to add
+        (
+            [{"filter1": "val1"}, {"filter2": "val2"}],
+            [{"filter3": "val3"}, {"filter4": "val4"}],
+            [
+                {"filter1": "val1", "filter3": "val3"},
+                {"filter1": "val1", "filter4": "val4"},
+                {"filter2": "val2", "filter3": "val3"},
+                {"filter2": "val2", "filter4": "val4"},
+            ],
+        ),
+    ],
+)
+def test_add_filter_with_server_side_filter(
+    set_server_side_filters, server_side_filters, expected_values, instance
+):
+    """
+    Tests add_filter method works properly - with one set of server side filters
+    Should only set client_side_filter
+    """
+    mock_client_side_filter = MagicMock()
+    instance.server_side_filters = set_server_side_filters
+
+    instance._add_filter(
+        client_side_filter=mock_client_side_filter,
+        server_side_filters=server_side_filters,
+    )
+
+    assert instance.server_side_filters == expected_values

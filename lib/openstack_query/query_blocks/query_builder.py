@@ -7,11 +7,14 @@ from openstack_query.handlers.server_side_handler import ServerSideHandler
 from enums.query.query_presets import QueryPresets
 from enums.query.props.prop_enum import PropEnum
 
-from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_preset_mapping_error import QueryPresetMappingError
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 
-from custom_types.openstack_query.aliases import ClientSideFilterFunc, ServerSideFilters
+from custom_types.openstack_query.aliases import (
+    ClientSideFilterFunc,
+    ClientSideFilters,
+    ServerSideFilters,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -32,24 +35,24 @@ class QueryBuilder:
         self._prop_enum_cls = prop_enum_cls
         self._server_side_handler = server_side_handler
 
-        self._client_side_filter = None
-        self._server_side_filters = None
+        self._client_side_filters = []
+        self._server_side_filters = []
 
     @property
-    def client_side_filter(self) -> Optional[ClientSideFilterFunc]:
+    def client_side_filters(self) -> Optional[ClientSideFilters]:
         """
         a getter method to return the client-side filter function
         """
-        return self._client_side_filter
+        return self._client_side_filters
 
-    @client_side_filter.setter
-    def client_side_filter(self, client_filter: ClientSideFilterFunc):
+    @client_side_filters.setter
+    def client_side_filters(self, client_filters: ClientSideFilters):
         """
         a setter method to set client side filter function
-        :param client_filter: a function that takes an openstack resource object and returns
+        :param client_filters: a list of filter functions that each take an openstack resource object and return
         True if it matches filter, False if not
         """
-        self._client_side_filter = client_filter
+        self._client_side_filters = client_filters
 
     @property
     def server_side_filters(self) -> Optional[ServerSideFilters]:
@@ -80,12 +83,6 @@ class QueryBuilder:
         :param preset_kwargs: A set of arguments to pass to configure filter function and filter kwargs
         """
 
-        if self.client_side_filter:
-            logging.error(
-                "Error: Chaining multiple where() functions currently not supported"
-            )
-            raise ParseQueryError("Error: Already set a query preset")
-
         prop_func = self._prop_enum_cls.get_prop_mapping(prop)
 
         if not prop_func:
@@ -104,17 +101,17 @@ class QueryBuilder:
             )
 
         preset_handler = self._get_preset_handler(preset, prop)
-        self.client_side_filter = preset_handler.get_filter_func(
+        client_side_filter = preset_handler.get_filter_func(
             preset=preset,
             prop=prop,
             prop_func=prop_func,
             filter_func_kwargs=preset_kwargs,
         )
 
-        self.server_side_filters = self._server_side_handler.get_filters(
+        server_side_filters = self._server_side_handler.get_filters(
             preset=preset, prop=prop, params=preset_kwargs
         )
-        if not self.server_side_filters:
+        if not server_side_filters:
             logger.info(
                 "No server-side filters for preset '%s': prop '%s' pair "
                 "- using client-side filter - this may take longer",
@@ -127,9 +124,54 @@ class QueryBuilder:
                 preset.name,
                 prop.name,
                 ", ".join(
-                    [f"{key}: '{val}'" for key, val in self.server_side_filters.items()]
+                    [f"{key}: '{val}'" for key, val in server_side_filters.items()]
                 ),
             )
+        self._add_filter(
+            client_side_filter=client_side_filter,
+            server_side_filters=server_side_filters,
+        )
+
+    def _add_filter(
+        self,
+        client_side_filter: ClientSideFilterFunc,
+        server_side_filters: Optional[ServerSideFilters] = None,
+    ) -> None:
+        """
+        method which parses client-side and server-side filters for a given preset and adds it to the
+        list of query operations to perform
+        :param client_side_filter: A client side filter function for the query preset
+        :param server_side_filters: An optional set of server side filters for the query preset
+        """
+
+        # add as client_side_filter if no server_side_filter
+        if not server_side_filters:
+            self.client_side_filters.append(client_side_filter)
+            return
+
+        # we convert to singleton list for aggregating into server_side_filter
+        if not isinstance(server_side_filters, list):
+            server_side_filters = [server_side_filters]
+
+        # check each any new server filter being added has overlapping keys with any server filters currently added
+        # if so add as client_side_filter
+        for current_server_filter in self.server_side_filters:
+            for new_server_filter in server_side_filters:
+                if set(new_server_filter).intersection(set(current_server_filter)):
+                    self.client_side_filters.append(client_side_filter)
+                    return
+
+        # if server side filter not set - set it
+        if not self.server_side_filters:
+            self.server_side_filters = server_side_filters
+            return
+
+        # we update server_side_filters
+        self.server_side_filters = [
+            {**new_server_filter, **current_server_filter}
+            for current_server_filter in self.server_side_filters
+            for new_server_filter in server_side_filters
+        ]
 
     def _get_preset_handler(
         self, preset: QueryPresets, prop: PropEnum
