@@ -3,7 +3,6 @@ import pytest
 
 from openstack_query.query_blocks.query_builder import QueryBuilder
 
-from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_preset_mapping_error import QueryPresetMappingError
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 
@@ -171,6 +170,7 @@ def test_add_filter_no_server_side_filter(instance):
     """
     mock_client_side_filter = MagicMock()
 
+    # pylint:disable=protected-access
     instance._add_filter(
         client_side_filter=mock_client_side_filter, server_side_filters=None
     )
@@ -224,6 +224,7 @@ def test_add_filter_with_server_side_filter(
     mock_client_side_filter = MagicMock()
     instance.server_side_filters = set_server_side_filters
 
+    # pylint:disable=protected-access
     instance._add_filter(
         client_side_filter=mock_client_side_filter,
         server_side_filters=server_side_filters,

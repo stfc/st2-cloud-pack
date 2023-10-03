@@ -7,7 +7,6 @@ from custom_types.openstack_query.aliases import (
     PropFunc,
     ServerSideFilters,
     ClientSideFilters,
-    ClientSideFilterFunc,
     OpenstackResourceObj,
 )
 from openstack_api.openstack_connection import OpenstackConnection

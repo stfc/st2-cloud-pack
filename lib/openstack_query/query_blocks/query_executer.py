@@ -106,9 +106,9 @@ class QueryExecuter:
             return []
 
         if not isinstance(results, dict):
-            return self.output_func(results)
+            return self._output_func(results)
 
-        return {name: self.output_func(group) for name, group in results.items()}
+        return {name: self._output_func(group) for name, group in results.items()}
 
     def run_query(
         self,
@@ -141,5 +141,5 @@ class QueryExecuter:
         logger.debug("run completed - time elapsed: %s seconds", time.time() - start)
 
         if self.parse_func:
-            results = self.parse_func(results)
+            results = self._parse_func(results)
         return results, self.get_output(results)
