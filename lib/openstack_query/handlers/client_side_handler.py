@@ -1,6 +1,6 @@
 import logging
 import inspect
-from typing import Optional, Tuple, Any
+from typing import Optional, Tuple, Any, List, Union
 
 from openstack_query.handlers.handler_base import HandlerBase
 from custom_types.openstack_query.aliases import (
@@ -28,6 +28,12 @@ class ClientSideHandler(HandlerBase):
 
     def __init__(self, filter_func_mappings: PresetPropMappings):
         self._filter_function_mappings = filter_func_mappings
+
+    def get_supported_props(self, preset: QueryPresets) -> Union[List, List[PropEnum]]:
+        """
+        Gets a list of all supported properties for a given preset
+        """
+        return list(self._filter_function_mappings[preset])
 
     def check_supported(self, preset: QueryPresets, prop: PropEnum) -> bool:
         """

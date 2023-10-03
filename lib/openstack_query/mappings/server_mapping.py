@@ -74,13 +74,13 @@ class ServerMapping(MappingInterface):
                     ServerProperties.PROJECT_ID: lambda value: {"project_id": value},
                 },
                 QueryPresetsDateTime.OLDER_THAN_OR_EQUAL_TO: {
-                    ServerProperties.SERVER_LAST_UPDATED_DATE: lambda **kwargs: {
-                        "changes-before": TimeUtils.convert_to_timestamp(**kwargs)
+                    ServerProperties.SERVER_LAST_UPDATED_DATE: lambda func=TimeUtils.convert_to_timestamp, **kwargs: {
+                        "changes-before": func(**kwargs)
                     }
                 },
                 QueryPresetsDateTime.YOUNGER_THAN_OR_EQUAL_TO: {
-                    ServerProperties.SERVER_LAST_UPDATED_DATE: lambda **kwargs: {
-                        "changes-since": TimeUtils.convert_to_timestamp(**kwargs)
+                    ServerProperties.SERVER_LAST_UPDATED_DATE: lambda func=TimeUtils.convert_to_timestamp, **kwargs: {
+                        "changes-since": func(**kwargs)
                     }
                 },
             }

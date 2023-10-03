@@ -7,6 +7,11 @@ from openstack_query.mappings.server_mapping import ServerMapping
 
 
 def get_common(query_mapping: Type[MappingInterface]) -> QueryAPI:
+    """
+    helper function to create query object from given mapping class
+    using QueryFactory
+    :param query_mapping: a mapping class that defines property, runner and handler mappings
+    """
     return QueryAPI(QueryFactory.build_query_deps(query_mapping))
 
 

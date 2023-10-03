@@ -49,6 +49,18 @@ def instance_fixture(mock_filter_func):
     return instance
 
 
+def test_get_supported_props(instance):
+    """
+    Tests that get_supported_props method works expectedly
+    returns the props mapped to a preset
+    """
+    assert instance.get_supported_props(MockQueryPresets.ITEM_1) == ["*"]
+    assert instance.get_supported_props(MockQueryPresets.ITEM_2) == [
+        MockProperties.PROP_1,
+        MockProperties.PROP_2,
+    ]
+
+
 def test_check_supported_true(instance):
     """
     Tests that check_supported method works expectedly
