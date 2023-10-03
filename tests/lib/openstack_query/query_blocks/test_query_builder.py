@@ -62,11 +62,14 @@ def test_parse_where_valid(mock_server_side_filter, instance, mock_server_side_h
     with patch(
         "openstack_query.query_blocks.query_builder.QueryBuilder._get_preset_handler"
     ) as mock_get_preset_handler:
-        mock_get_preset_handler.return_value = mock_client_side_handler
-        with patch.object(MockProperties, "get_prop_mapping") as mock_prop_func:
-            instance.parse_where(
-                MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_kwargs
-            )
+        with patch(
+            "openstack_query.query_blocks.query_builder.QueryBuilder._add_filter"
+        ) as mock_add_filter:
+            mock_get_preset_handler.return_value = mock_client_side_handler
+            with patch.object(MockProperties, "get_prop_mapping") as mock_prop_func:
+                instance.parse_where(
+                    MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_kwargs
+                )
 
     mock_get_preset_handler.assert_called_once_with(
         MockQueryPresets.ITEM_1, MockProperties.PROP_1
@@ -83,20 +86,10 @@ def test_parse_where_valid(mock_server_side_filter, instance, mock_server_side_h
         params=mock_kwargs,
     )
 
-    assert instance.client_side_filter == mock_client_filter_func
-    assert instance.server_side_filters == mock_server_side_filter
-
-
-def test_parse_where_filter_already_set(instance):
-    """
-    Tests that parse_where functions expectedly
-    method raises ParseQueryError when client_side_filter already set
-    """
-
-    instance.client_side_filter = "previously-set-func"
-
-    with pytest.raises(ParseQueryError):
-        instance.parse_where(MockQueryPresets.ITEM_1, MockProperties.PROP_1)
+    mock_add_filter.assert_called_once_with(
+        client_side_filter=mock_client_filter_func,
+        server_side_filters=mock_server_side_filter,
+    )
 
 
 def test_parse_where_prop_invalid(instance):

@@ -41,8 +41,8 @@ def run_with_test_case_fixture(instance):
 
         # test that data is marshalled correctly to executer
         assert (
-            instance.executer.client_side_filter_func
-            == instance.builder.client_side_filter
+            instance.executer.client_side_filters
+            == instance.builder.client_side_filters
         )
         assert (
             instance.executer.server_side_filters
