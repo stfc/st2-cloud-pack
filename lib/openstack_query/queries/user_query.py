@@ -32,7 +32,7 @@ class UserQuery(QueryWrapper):
     def _get_server_side_handler(self) -> ServerSideHandler:
         """
         method to configure a server-side handler which can be used to get 'filter' keyword arguments that
-        can be passed to openstack function conn.compute.servers() to filter results for a valid preset-property
+        can be passed to an openstack function to filter results for a valid preset-property
         on the control plane, rather than locally.
 
         valid filters documented here:
@@ -53,7 +53,7 @@ class UserQuery(QueryWrapper):
         """
         method to configure a set of client-side handlers which can be used to get local filter functions
         corresponding to valid preset-property pairs. These filter functions can be used to filter results after
-        listing all servers.
+        listing all users.
         """
         return QueryClientSideHandlers(
             # set generic query preset mappings
