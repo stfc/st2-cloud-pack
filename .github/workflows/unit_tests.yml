@@ -29,6 +29,11 @@ jobs:
       - name: Run Tests
         run: cd $GITHUB_WORKSPACE && ./run_tests.sh
 
+      - name: Run pytest with codecov
+        run: |
+         pip install -r requirements.txt
+         pytest tests/enums tests/lib --cov=lib --cov=tests/enums --cov=tests/lib --cov-report xml:coverage.xml
+
       - name: Submit Coverage
         uses: codecov/codecov-action@v3
         with:
