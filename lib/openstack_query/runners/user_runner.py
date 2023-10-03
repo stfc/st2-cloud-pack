@@ -92,8 +92,9 @@ class UserRunner(RunnerWrapper):
             filter_kwargs = {}
 
         # having a filter of 'id' - will automatically mean no other filter kwargs
-        if "id" in filter_kwargs:
-            val = conn.identity.find_user("id", ignore_missing=True)
+        selected_id = filter_kwargs.get("id", None)
+        if selected_id:
+            val = conn.identity.find_user(selected_id, ignore_missing=True)
             return [val] if val else []
 
         if meta_params["domain_id"] and "domain_id" in filter_kwargs.keys():

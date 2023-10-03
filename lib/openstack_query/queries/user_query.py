@@ -31,8 +31,9 @@ class UserQuery(QueryWrapper):
 
     def _get_server_side_handler(self) -> ServerSideHandler:
         """
-        method to configure a server handler which can be used to get 'filter' keyword arguments that
-        can be passed to openstack function conn.compute.servers() to filter results for a valid preset-property pair
+        method to configure a server-side handler which can be used to get 'filter' keyword arguments that
+        can be passed to openstack function conn.compute.servers() to filter results for a valid preset-property
+        on the control plane, rather than locally.
 
         valid filters documented here:
             https://docs.openstack.org/openstacksdk/latest/user/proxies/compute.html
