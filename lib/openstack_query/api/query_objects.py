@@ -10,6 +10,10 @@ def get_common(query_mapping: Type[MappingInterface]) -> QueryAPI:
     return QueryAPI(QueryFactory.build_query_deps(query_mapping))
 
 
+# disable this so that we can write functions that mimic a query object
+# pylint:disable=invalid-name
+
+
 def ServerQuery() -> QueryAPI:
     """
     Simple helper function to setup a query using a factory
