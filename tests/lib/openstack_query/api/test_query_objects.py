@@ -1,5 +1,13 @@
 from unittest.mock import patch, MagicMock
-from openstack_query.api.query_objects import UserQuery, ServerQuery, get_common
+
+import pytest
+
+from openstack_query.api.query_objects import (
+    UserQuery,
+    ServerQuery,
+    FlavorQuery,
+    get_common,
+)
 
 
 @patch("openstack_query.api.query_objects.QueryFactory")
@@ -18,25 +26,51 @@ def test_get_common(mock_query_api, mock_query_factory):
     assert res == mock_query_api.return_value
 
 
-@patch("openstack_query.api.query_objects.get_common")
-@patch("openstack_query.api.query_objects.ServerMapping")
-def test_server_query(mock_server_mapping, mock_get_common):
+@pytest.fixture(name="run_query_test_case")
+def run_query_test_case_fixture():
+    """
+    Fixture to test each query function
+    """
+
+    def _run_query_test_case(mock_query_func, expected_mapping):
+        """
+        tests each given query_function calls get_common with expected mapping class
+        """
+
+        with patch("openstack_query.api.query_objects.get_common") as mock_get_common:
+            res = mock_query_func()
+            mock_get_common.assert_called_once_with(expected_mapping)
+        assert res == mock_get_common.return_value
+
+    return _run_query_test_case
+
+
+def test_server_query(run_query_test_case):
     """
     tests that function ServerQuery works
     should call get_common with ServerMapping
     """
-    res = ServerQuery()
-    mock_get_common.assert_called_once_with(mock_server_mapping)
-    assert res == mock_get_common.return_value
+    with patch(
+        "openstack_query.api.query_objects.ServerMapping"
+    ) as mock_server_mapping:
+        run_query_test_case(ServerQuery, mock_server_mapping)
 
 
-@patch("openstack_query.api.query_objects.get_common")
-@patch("openstack_query.api.query_objects.UserMapping")
-def test_user_query(mock_user_mapping, mock_get_common):
+def test_user_query(run_query_test_case):
     """
     tests that function UserQuery works
     should call get_common with UserMapping
     """
-    res = UserQuery()
-    mock_get_common.assert_called_once_with(mock_user_mapping)
-    assert res == mock_get_common.return_value
+    with patch("openstack_query.api.query_objects.UserMapping") as mock_user_mapping:
+        run_query_test_case(UserQuery, mock_user_mapping)
+
+
+def test_flavor_query(run_query_test_case):
+    """
+    tests that function FlavorQuery works
+    should call get_common with FlavorMapping
+    """
+    with patch(
+        "openstack_query.api.query_objects.FlavorMapping"
+    ) as mock_flavor_mapping:
+        run_query_test_case(FlavorQuery, mock_flavor_mapping)
