@@ -168,8 +168,8 @@ class ClientSideHandler(HandlerBase):
 
         # a hack to get EAFP working - set a default value for prop just to see if filter function works
         prop_val = {
-            typing.Any: "",
-            typing.Union[int, float]: 0,
+            Any: "",
+            Union[int, float]: 0,
         }.get(prop_param.annotation, prop_param.annotation())
 
         if not func_kwargs:

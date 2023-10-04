@@ -87,7 +87,7 @@ def test_parse_where_valid(mock_server_side_filter, instance, mock_server_side_h
 
     mock_add_filter.assert_called_once_with(
         client_side_filter=mock_client_filter_func,
-        server_side_filters=mock_server_side_filter,
+        server_side_filters=[mock_server_side_filter],
     )
 
 
