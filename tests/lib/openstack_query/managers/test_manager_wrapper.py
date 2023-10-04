@@ -342,7 +342,7 @@ class ManagerWrapperTests(unittest.TestCase):
 
         mock_build_and_run_query.assert_called_once_with(
             preset_details=QueryPresetDetails(
-                preset=QueryPresetsString.ANY_IN,
+                preset=QueryPresetsGeneric.ANY_IN,
                 prop=self.prop_cls.from_string.return_value,
                 args={"values": ["image-id1", "image-id2"]},
             ),

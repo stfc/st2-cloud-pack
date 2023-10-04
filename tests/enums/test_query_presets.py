@@ -148,7 +148,7 @@ def test_any_in_serialization(preset_string):
     """
     Tests that variants of ANY_IN can be serialized
     """
-    assert QueryPresetsString.from_string(preset_string) is QueryPresetsString.ANY_IN
+    assert QueryPresetsGeneric.from_string(preset_string) is QueryPresetsGeneric.ANY_IN
 
 
 @pytest.mark.parametrize("preset_string", ["not_any_in", "Not_Any_In", "NoT_AnY_In"])
@@ -157,7 +157,7 @@ def test_not_any_in_serialization(preset_string):
     Tests that variants of NOT_ANY_IN can be serialized
     """
     assert (
-        QueryPresetsString.from_string(preset_string) is QueryPresetsString.NOT_ANY_IN
+        QueryPresetsGeneric.from_string(preset_string) is QueryPresetsGeneric.NOT_ANY_IN
     )
 
 

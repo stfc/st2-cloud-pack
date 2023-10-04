@@ -204,7 +204,9 @@ class ManagerWrapper:
         logging.info("Running search by property query")
         logging.debug("converting user-defined property string into enum")
         preset = (
-            QueryPresetsString.ANY_IN if search_mode else QueryPresetsString.NOT_ANY_IN
+            QueryPresetsGeneric.ANY_IN
+            if search_mode
+            else QueryPresetsGeneric.NOT_ANY_IN
         )
         prop = self._prop_cls.from_string(property_to_search_by)
         args = {"values": values}
@@ -221,8 +223,8 @@ class ManagerWrapper:
                 "query only contains one value - EQUAL_TO preset will be used to speed up query"
             )
             equal_to_preset = {
-                QueryPresetsString.ANY_IN: QueryPresetsGeneric.EQUAL_TO,
-                QueryPresetsString.NOT_ANY_IN: QueryPresetsGeneric.NOT_EQUAL_TO,
+                QueryPresetsGeneric.ANY_IN: QueryPresetsGeneric.EQUAL_TO,
+                QueryPresetsGeneric.NOT_ANY_IN: QueryPresetsGeneric.NOT_EQUAL_TO,
             }.get(preset, None)
             if equal_to_preset:
                 preset = equal_to_preset

@@ -1,11 +1,10 @@
 import re
 
-from typing import List, Any
+from typing import Any
 from custom_types.openstack_query.aliases import PresetPropMappings
 
 from enums.query.query_presets import QueryPresetsString
 from openstack_query.handlers.client_side_handler import ClientSideHandler
-from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 
 # pylint: disable=too-few-public-methods
 
@@ -21,9 +20,7 @@ class ClientSideHandlerString(ClientSideHandler):
         super().__init__(filter_function_mappings)
 
         self._filter_functions = {
-            QueryPresetsString.ANY_IN: self._prop_any_in,
             QueryPresetsString.MATCHES_REGEX: self._prop_matches_regex,
-            QueryPresetsString.NOT_ANY_IN: self._prop_not_any_in,
         }
 
     def _prop_matches_regex(self, prop: Any, regex_string: str) -> bool:
@@ -33,23 +30,3 @@ class ClientSideHandlerString(ClientSideHandler):
         :param regex_string: a string which can be converted into a valid regex pattern to run
         """
         return bool(re.match(re.compile(regex_string), prop))
-
-    def _prop_any_in(self, prop: Any, values: List[str]) -> bool:
-        """
-        Filter function which returns true if a prop matches any in a given list
-        :param prop: prop value to check against
-        :param values: a list of values to check against
-        """
-        if len(values) == 0:
-            raise MissingMandatoryParamError(
-                "values list must contain at least one item to match against"
-            )
-        return any(prop == val for val in values)
-
-    def _prop_not_any_in(self, prop: Any, values: List[str]) -> bool:
-        """
-        Filter function which returns true if a prop does not match any in a given list
-        :param prop: prop value to check against
-        :param values: a list of values to check against
-        """
-        return not self._prop_any_in(prop, values)

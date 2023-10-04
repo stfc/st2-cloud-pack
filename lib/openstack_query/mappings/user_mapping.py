@@ -18,9 +18,6 @@ from openstack_query.mappings.mapping_interface import MappingInterface
 from openstack_query.runners.user_runner import UserRunner
 
 
-# pylint:disable=too-few-public-methods
-
-
 class UserMapping(MappingInterface):
     """
     Mapping class for querying Openstack User objects.
@@ -58,7 +55,18 @@ class UserMapping(MappingInterface):
                     UserProperties.USER_DOMAIN_ID: lambda value: {"domain_id": value},
                     UserProperties.USER_NAME: lambda value: {"name": value},
                     UserProperties.USER_ID: lambda value: {"id": value},
-                }
+                },
+                QueryPresetsGeneric.ANY_IN: {
+                    UserProperties.USER_DOMAIN_ID: lambda values: [
+                        {"domain_id": value} for value in values
+                    ],
+                    UserProperties.USER_NAME: lambda values: [
+                        {"name": value} for value in values
+                    ],
+                    UserProperties.USER_ID: lambda values: [
+                        {"id": value} for value in values
+                    ],
+                },
             }
         )
 
@@ -75,6 +83,8 @@ class UserMapping(MappingInterface):
                 {
                     QueryPresetsGeneric.EQUAL_TO: ["*"],
                     QueryPresetsGeneric.NOT_EQUAL_TO: ["*"],
+                    QueryPresetsGeneric.ANY_IN: ["*"],
+                    QueryPresetsGeneric.NOT_ANY_IN: ["*"],
                 }
             ),
             # set string query preset mappings

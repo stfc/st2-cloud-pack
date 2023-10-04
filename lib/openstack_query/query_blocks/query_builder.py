@@ -111,6 +111,9 @@ class QueryBuilder:
         server_side_filters = self._server_side_handler.get_filters(
             preset=preset, prop=prop, params=preset_kwargs
         )
+        if not isinstance(server_side_filters, list):
+            server_side_filters = [server_side_filters]
+
         if not server_side_filters:
             logger.info(
                 "No server-side filters for preset '%s': prop '%s' pair "
@@ -120,13 +123,21 @@ class QueryBuilder:
             )
         else:
             logger.info(
-                "Found server-side filters for preset '%s': prop '%s' pair: {%s}",
+                "Found %s set of server-side filters for preset '%s': prop '%s' pair",
+                len(server_side_filters),
                 preset.name,
                 prop.name,
-                ", ".join(
-                    [f"{key}: '{val}'" for key, val in server_side_filters.items()]
-                ),
             )
+
+        logger.debug(
+            "server-side-filters found: %s",
+            {f"{server_side_filters}" if server_side_filters else "None"},
+        )
+        logger.debug(
+            "client-side-filter found: %s",
+            {client_side_filter if client_side_filter else "None"},
+        )
+
         self._add_filter(
             client_side_filter=client_side_filter,
             server_side_filters=server_side_filters,
