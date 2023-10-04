@@ -158,69 +158,27 @@ class ClientSideHandler(HandlerBase):
         func: FilterFunc, func_kwargs: Optional[FilterParams] = None
     ) -> Tuple[bool, str]:
         """
-        Method that checks a given function can accept a set of kwargs as arguments.
+        Method checks a given function can accept a set of kwargs as arguments - using the EAFP principle.
+        returns false and the error string if an error is raised - else true
         :param func: function to test
         :param func_kwargs: kwargs to test
         """
-
         signature = inspect.signature(func)
+        prop_param = list(signature.parameters.values())[0]
 
-        # skip first parameter for the filter function as this is always the a positional arg which takes
-        # an Openstack resource property as the input for our filter function to compare against
-        parameters = list(signature.parameters.values())[1:]
+        # a hack to get EAFP working - set a default value for prop just to see if filter function works
+        prop_val = {
+            typing.Any: "",
+            typing.Union[int, float]: 0,
+        }.get(prop_param.annotation, prop_param.annotation())
 
-        has_varargs = any(param.kind == param.VAR_POSITIONAL for param in parameters)
-        has_varkwargs = any(param.kind == param.VAR_KEYWORD for param in parameters)
+        if not func_kwargs:
+            func_kwargs = {}
+        try:
+            func(prop=prop_val, **func_kwargs)
+            return True, ""
 
-        logger.debug(
-            "checking client-side filter function against provided parameters\n\t%s",
-            "\n\t".join([f"{key}: '{value}'" for key, value in func_kwargs.items()]),
-        )
-
-        all_params = [param.name for param in parameters]
-        log_all_params = "<none>"
-        if all_params:
-            log_all_params = "\n\t".join(all_params)
-        logger.debug(
-            "client-side filter function '%s' has the following params:\n\t%s",
-            func.__name__,
-            log_all_params,
-        )
-
-        req_params = [
-            param.name
-            for param in parameters
-            if param.VAR_POSITIONAL and param.default == inspect.Parameter.empty
-        ]
-        log_all_req_params = "<none>"
-        if req_params:
-            log_all_req_params = "\n\t".join(req_params)
-
-        logger.debug(
-            "of those, the following params are required:\n\t%s", log_all_req_params
-        )
-
-        for param in parameters:
-            if param.kind == param.POSITIONAL_OR_KEYWORD:
-                param_name = param.name
-                if param_name in func_kwargs:
-                    kwargs_value = func_kwargs[param_name]
-                    param_type = param.annotation
-                    if param_type not in [
-                        Any,
-                        inspect.Parameter.empty,
-                    ] and not isinstance(kwargs_value, param_type):
-                        return (
-                            False,
-                            f"{param_name} given has incorrect type, "
-                            f"expected {param_type}, found {type(kwargs_value)}",
-                        )
-                elif param.default is inspect.Parameter.empty:
-                    return False, f"{param_name} expected but not given"
-
-        if not has_varargs and not has_varkwargs:
-            # Check for extra items in kwargs not present in the function signature
-            unexpected_vals = set(func_kwargs.keys()) - set(p.name for p in parameters)
-            if unexpected_vals:
-                return False, f"unexpected arguments: '{unexpected_vals}'"
-        return True, ""
+        # we're catching all possible exceptions - and fail noisily
+        # pylint:disable=broad-exception-caught
+        except Exception as exp:
+            return False, str(exp)
