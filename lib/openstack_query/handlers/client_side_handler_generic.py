@@ -1,5 +1,5 @@
 from typing import Any, List
-from custom_types.openstack_query.aliases import PresetPropMappings
+from custom_types.openstack_query.aliases import PresetPropMappings, PropValue
 
 from enums.query.query_presets import QueryPresetsGeneric
 from openstack_query.handlers.client_side_handler import ClientSideHandler
@@ -25,7 +25,7 @@ class ClientSideHandlerGeneric(ClientSideHandler):
             QueryPresetsGeneric.NOT_EQUAL_TO: self._prop_not_equal_to,
         }
 
-    def _prop_not_any_in(self, prop: Any, values: List[str]) -> bool:
+    def _prop_not_any_in(self, prop: Any, values: List[PropValue]) -> bool:
         """
         Filter function which returns true if a prop does not match any in a given list
         :param prop: prop value to check against
@@ -33,7 +33,7 @@ class ClientSideHandlerGeneric(ClientSideHandler):
         """
         return not self._prop_any_in(prop, values)
 
-    def _prop_any_in(self, prop: Any, values: List[str]) -> bool:
+    def _prop_any_in(self, prop: Any, values: List[PropValue]) -> bool:
         """
         Filter function which returns true if a prop matches any in a given list
         :param prop: prop value to check against
@@ -45,7 +45,7 @@ class ClientSideHandlerGeneric(ClientSideHandler):
             )
         return any(prop == val for val in values)
 
-    def _prop_not_equal_to(self, prop: Any, value: Any) -> bool:
+    def _prop_not_equal_to(self, prop: Any, value: PropValue) -> bool:
         """
         Filter function which returns true if a prop is not equal to a given value
         :param prop: prop value to check against
@@ -53,7 +53,7 @@ class ClientSideHandlerGeneric(ClientSideHandler):
         """
         return not self._prop_equal_to(prop, value)
 
-    def _prop_equal_to(self, prop: Any, value: Any) -> bool:
+    def _prop_equal_to(self, prop: Any, value: PropValue) -> bool:
         """
         Filter function which returns true if a prop is equal to a given value
         :param prop: prop value to check against
