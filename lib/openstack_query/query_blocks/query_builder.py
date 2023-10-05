@@ -129,7 +129,7 @@ class QueryBuilder:
         server_side_filters = self._server_side_handler.get_filters(
             preset=preset, prop=prop, params=preset_kwargs
         )
-        if not isinstance(server_side_filters, list):
+        if server_side_filters and not isinstance(server_side_filters, list):
             server_side_filters = [server_side_filters]
 
         if not server_side_filters:
@@ -178,8 +178,6 @@ class QueryBuilder:
             self.client_side_filters.append(client_side_filter)
             return
 
-        self.server_filter_fallback.append(client_side_filter)
-
         # we convert to singleton list for aggregating into server_side_filter
         if not isinstance(server_side_filters, list):
             server_side_filters = [server_side_filters]
@@ -188,9 +186,12 @@ class QueryBuilder:
         # if so add as client_side_filter
         for current_server_filter in self.server_side_filters:
             for new_server_filter in server_side_filters:
-                if set(new_server_filter).intersection(set(current_server_filter)):
+                if set(new_server_filter.keys()) & set(current_server_filter.keys()):
                     self.client_side_filters.append(client_side_filter)
                     return
+
+        # before adding server-side filter - set fallback
+        self.server_filter_fallback.append(client_side_filter)
 
         # if server side filter not set - set it
         if not self.server_side_filters:

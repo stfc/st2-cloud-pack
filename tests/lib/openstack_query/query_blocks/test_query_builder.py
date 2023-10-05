@@ -41,54 +41,95 @@ def instance_fixture(mock_client_side_handlers, mock_server_side_handler):
     return instance
 
 
-@pytest.mark.parametrize(
-    "mock_server_side_filter", [None, {"filter1": "val1", "filter2": "val2"}]
-)
-def test_parse_where_valid(mock_server_side_filter, instance, mock_server_side_handler):
+@pytest.fixture(name="run_parse_where_test_case")
+def run_parse_where_test_case_fixture(instance, mock_server_side_handler):
     """
-    Tests that parse_where functions expectedly - where inputs valid
-    method finds and sets client_side_filter and server_side_filters internal attributes
+    Fixture to run parse where test cases
     """
-
-    # setup mocks
-    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     mock_client_side_handler = MagicMock()
     mock_client_filter_func = MagicMock()
     mock_client_side_handler.get_filter_func.return_value = mock_client_filter_func
-    mock_server_side_handler.get_filters.return_value = mock_server_side_filter
 
-    with patch(
-        "openstack_query.query_blocks.query_builder.QueryBuilder._get_preset_handler"
-    ) as mock_get_preset_handler:
+    def _run_parse_where_test_case(mock_server_side_filters, mock_kwargs):
+        """
+        run parse where test case where get_filter_func returns different server-side-filters
+        """
+
+        expected_server_side_filter = mock_server_side_filters
+
+        # add_filters expects a list of server-side filters
+        # - convert to singleton list if a single filter is returned by get_filter_func
+        if mock_server_side_filters and not isinstance(mock_server_side_filters, list):
+            expected_server_side_filter = [mock_server_side_filters]
+
+        mock_server_side_handler.get_filters.return_value = mock_server_side_filters
         with patch(
-            "openstack_query.query_blocks.query_builder.QueryBuilder._add_filter"
-        ) as mock_add_filter:
-            mock_get_preset_handler.return_value = mock_client_side_handler
-            with patch.object(MockProperties, "get_prop_mapping") as mock_prop_func:
-                instance.parse_where(
-                    MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_kwargs
-                )
+            "openstack_query.query_blocks.query_builder.QueryBuilder._get_preset_handler"
+        ) as mock_get_preset_handler:
+            with patch(
+                "openstack_query.query_blocks.query_builder.QueryBuilder._add_filter"
+            ) as mock_add_filter:
+                mock_get_preset_handler.return_value = mock_client_side_handler
+                with patch.object(MockProperties, "get_prop_mapping") as mock_prop_func:
+                    instance.parse_where(
+                        MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_kwargs
+                    )
 
-    mock_get_preset_handler.assert_called_once_with(
-        MockQueryPresets.ITEM_1, MockProperties.PROP_1
-    )
-    mock_client_side_handler.get_filter_func.assert_called_once_with(
-        preset=MockQueryPresets.ITEM_1,
-        prop=MockProperties.PROP_1,
-        prop_func=mock_prop_func.return_value,
-        filter_func_kwargs=mock_kwargs,
-    )
-    mock_server_side_handler.get_filters.assert_called_once_with(
-        preset=MockQueryPresets.ITEM_1,
-        prop=MockProperties.PROP_1,
-        params=mock_kwargs,
-    )
+        mock_get_preset_handler.assert_called_once_with(
+            MockQueryPresets.ITEM_1, MockProperties.PROP_1
+        )
+        mock_client_side_handler.get_filter_func.assert_called_once_with(
+            preset=MockQueryPresets.ITEM_1,
+            prop=MockProperties.PROP_1,
+            prop_func=mock_prop_func.return_value,
+            filter_func_kwargs=mock_kwargs,
+        )
+        mock_server_side_handler.get_filters.assert_called_once_with(
+            preset=MockQueryPresets.ITEM_1,
+            prop=MockProperties.PROP_1,
+            params=mock_kwargs,
+        )
 
-    mock_add_filter.assert_called_once_with(
-        client_side_filter=mock_client_filter_func,
-        server_side_filters=[mock_server_side_filter],
-    )
+        mock_add_filter.assert_called_once_with(
+            client_side_filter=mock_client_filter_func,
+            server_side_filters=expected_server_side_filter,
+        )
+
+    return _run_parse_where_test_case
+
+
+def test_parse_where_gets_single_filter(run_parse_where_test_case):
+    """
+    Tests that parse_where functions expectedly
+    - where server-side-handler get_filter_func returns a single filter set
+    """
+
+    # setup mocks
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+    run_parse_where_test_case({"filter1": "val1", "filter2": "val2"}, mock_kwargs)
+
+
+def test_parse_where_gets_multiple_filters(run_parse_where_test_case):
+    """
+    Tests that parse_where functions expectedly
+    - where server-side-handler get_filter_func returns a list of filters
+    """
+
+    # setup mocks
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+    run_parse_where_test_case([{"filter1": "val1"}, {"filter2": "val2"}], mock_kwargs)
+
+
+def test_parse_where_gets_no_filters(run_parse_where_test_case):
+    """
+    Tests that parse_where functions expectedly
+    - where server-side-handler get_filter_func returns no filter
+    """
+
+    # setup mocks
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+    run_parse_where_test_case(None, mock_kwargs)
 
 
 def test_parse_where_prop_invalid(instance):
@@ -241,3 +282,21 @@ def test_add_filter_with_server_side_filter(
 
     assert instance.server_side_filters == expected_values
     assert instance.server_filter_fallback == [mock_client_side_filter]
+
+
+def test_add_filter_conflicting_presets(instance):
+    """
+    Tests add_filter method works properly - when a conflict occurs between
+    server-side filter params - add new server-side filter as client-side filter
+    """
+    instance.client_side_filters = []
+    instance.server_side_filters = [{"filter1": "val1"}]
+
+    # pylint:disable=protected-access
+    instance._add_filter(
+        client_side_filter="client-side-filter",
+        server_side_filters={"filter1": "val2"},
+    )
+
+    assert instance.server_side_filters == [{"filter1": "val1"}]
+    assert instance.client_side_filters == ["client-side-filter"]

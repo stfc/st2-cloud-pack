@@ -289,3 +289,19 @@ def test_check_filter_func_invalid_entry(instance):
     res = instance._check_filter_func(_mock_filter_func, mock_func_kwargs)
     assert not res[0]
     assert res[1] == "some error"
+
+
+def test_check_filter_func_no_params_needed(instance):
+    """
+    Tests that check_filter_func method works expectedly - for filter_func which needs no extra params
+    """
+
+    # need prop since we essentially 'mock' it in check_filter_func - to check the function works
+    # pylint:disable=unused-argument
+
+    def _mock_filter_func(prop: str):
+        pass
+
+    res = instance._check_filter_func(_mock_filter_func, None)
+    assert res[0]
+    assert res[1] == ""
