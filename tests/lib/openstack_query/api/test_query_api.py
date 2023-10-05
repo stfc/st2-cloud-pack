@@ -30,6 +30,9 @@ def run_with_test_case_fixture(instance):
         """
         mock_query_results = ("object-list", "property-list")
         instance.executer.run_query.return_value = mock_query_results
+        instance.builder.client_side_filters = ["client-filters"]
+        instance.builder.server_filter_fallback = ["fallback-client-filters"]
+        instance.builder.server_side_filters = ["server-filters"]
 
         if not mock_kwargs:
             mock_kwargs = {}
@@ -40,14 +43,19 @@ def run_with_test_case_fixture(instance):
         )
 
         # test that data is marshalled correctly to executer
-        assert (
-            instance.executer.client_side_filters
-            == instance.builder.client_side_filters
-        )
-        assert (
-            instance.executer.server_side_filters
-            == instance.builder.server_side_filters
-        )
+        # - this differs based on if from_subset is given
+        if data_subset:
+            client_filters = (
+                instance.builder.client_side_filters
+                + instance.builder.server_filter_fallback
+            )
+            server_filters = None
+        else:
+            client_filters = instance.builder.client_side_filters
+            server_filters = instance.builder.server_side_filters
+
+        assert instance.executer.client_side_filters == client_filters
+        assert instance.executer.server_side_filters == server_filters
         assert instance.executer.parse_func == instance.parser.run_parser
         assert instance.executer.output_func == instance.output.generate_output
         assert res == instance

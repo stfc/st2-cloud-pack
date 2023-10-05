@@ -37,6 +37,7 @@ class QueryBuilder:
 
         self._client_side_filters = []
         self._server_side_filters = []
+        self._server_filter_fallback = []
 
     @property
     def client_side_filters(self) -> Optional[ClientSideFilters]:
@@ -68,6 +69,23 @@ class QueryBuilder:
         :param server_filters: a dictionary that holds filter options to pass to openstacksdk
         """
         self._server_side_filters = server_filters
+
+    @property
+    def server_filter_fallback(self):
+        """
+        a getter method to return equivalent client-side filters for each server-side filter if
+        server-side filters are not to be used
+        """
+        return self._server_filter_fallback
+
+    @server_filter_fallback.setter
+    def server_filter_fallback(self, fallback_filters: ClientSideFilters):
+        """
+        a setter method to set client-side filters to fallback on for each server-side filter if
+        server-side filters are not to be used
+        :param fallback_filters: a set of client-side filters
+        """
+        self._server_filter_fallback = fallback_filters
 
     def parse_where(
         self,
@@ -159,6 +177,8 @@ class QueryBuilder:
         if not server_side_filters:
             self.client_side_filters.append(client_side_filter)
             return
+
+        self.server_filter_fallback.append(client_side_filter)
 
         # we convert to singleton list for aggregating into server_side_filter
         if not isinstance(server_side_filters, list):

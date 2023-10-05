@@ -16,7 +16,7 @@ PropFunc = Callable[[OpenstackResourceObj], Any]
 PropertyMappings = Dict[PropEnum, PropFunc]
 
 # A type alias for a dictionary of params to pass to either client_side or server_side filters
-FilterParams = Dict[str, PropValue]
+FilterParams = Dict[str, Union[PropValue, List[PropValue]]]
 FilterFunc = Callable[[PropFunc, FilterParams], bool]
 
 # A type alias for a client-side filter func

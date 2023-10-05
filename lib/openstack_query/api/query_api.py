@@ -129,8 +129,17 @@ class QueryAPI:
             - valid kwargs specific to resource
         """
 
-        self.executer.client_side_filters = self.builder.client_side_filters
-        self.executer.server_side_filters = self.builder.server_side_filters
+        if from_subset:
+            logger.debug(
+                "'from_subset' optional param given - will run client-side filters only"
+            )
+            self.executer.client_side_filters = (
+                self.builder.client_side_filters + self.builder.server_filter_fallback
+            )
+            self.executer.server_side_filters = None
+        else:
+            self.executer.client_side_filters = self.builder.client_side_filters
+            self.executer.server_side_filters = self.builder.server_side_filters
 
         self.executer.parse_func = self.parser.run_parser
         self.executer.output_func = self.output.generate_output

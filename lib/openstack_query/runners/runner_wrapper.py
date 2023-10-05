@@ -52,6 +52,16 @@ class RunnerWrapper(OpenstackWrapperBase):
             runner of interest.
         """
 
+        if from_subset and server_side_filters:
+            logger.error(
+                "Error: Received server-side filters - suggesting that the query requires getting results via "
+                "openstacksdk, but also openstack objects directly - suggesting that we want to filter a set already "
+                "given. Not sure what to do - aborting."
+            )
+            raise RuntimeError(
+                "Ambiguous Query: received both server-side filters and values passed directly"
+            )
+
         logger.debug("making connection to openstack")
         start = time.time()
         with self._connection_cls(cloud_account) as conn:

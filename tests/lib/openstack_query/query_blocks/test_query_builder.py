@@ -163,6 +163,15 @@ def test_server_side_filters(instance):
     assert res == "some-server-side-filter"
 
 
+def test_server_filter_fallback(instance):
+    """
+    Tests server_filter_fallback property methods
+    """
+    instance.server_filter_fallback = "some-client-side-filter"
+    res = instance.server_filter_fallback
+    assert res == "some-client-side-filter"
+
+
 def test_add_filter_no_server_side_filter(instance):
     """
     Tests add_filter method works properly - with no server filters
@@ -231,3 +240,4 @@ def test_add_filter_with_server_side_filter(
     )
 
     assert instance.server_side_filters == expected_values
+    assert instance.server_filter_fallback == [mock_client_side_filter]
