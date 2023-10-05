@@ -30,37 +30,51 @@ class QueryExecuter:
 
     @property
     def client_side_filter_func(self):
+        """
+        a getter method to return the client-side filter function
+        """
         return self._client_side_filter_func
 
     @client_side_filter_func.setter
-    def client_side_filter_func(self, val: ClientSideFilterFunc):
+    def client_side_filter_func(self, client_filter: ClientSideFilterFunc):
         """
         Setter method for setting run filters
-        :param val: An function used to limit the results after querying openstacksdk
+        :param client_filter: A function used to limit the results after querying openstacksdk
         """
-        self._client_side_filter_func = val
+        self._client_side_filter_func = client_filter
 
     @property
     def server_side_filters(self):
+        """
+        a getter method to return the server side filter functions
+        """
         return self._server_side_filters
 
     @server_side_filters.setter
-    def server_side_filters(self, val: ServerSideFilters):
-        self._server_side_filters = val
+    def server_side_filters(self, server_filters: ServerSideFilters):
+        """
+        a setter method to return the server side filter functions
+        :param server_filters: A dictionary of filter kwargs to pass to openstacksdk
+        """
+        self._server_side_filters = server_filters
 
     @property
     def parse_func(self):
+        """
+        a getter method for parse function
+        """
         return self._parse_func
 
     @parse_func.setter
     def parse_func(
-        self, val: Optional[Callable[[List[OpenstackResourceObj]], Union[Dict, List]]]
+        self,
+        parse_func: Optional[Callable[[List[OpenstackResourceObj]], Union[Dict, List]]],
     ):
         """
-        Setter method for setting parse func
-        :param val: A function that takes a list of Openstack Resource Objects and runs parse functions on them
+        Setter method for setting parse function
+        :param parse_func: A function that takes a list of Openstack Resource Objects and runs parse functions on them
         """
-        self._parse_func = val
+        self._parse_func = parse_func
 
     @property
     def output_func(self):

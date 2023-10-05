@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 from enums.query.query_presets import QueryPresets
 from enums.query.props.prop_enum import PropEnum
 
@@ -25,6 +25,12 @@ class ServerSideHandler(HandlerBase):
 
     def __init__(self, kwarg_mappings: ServerSideFilterMappings):
         self._server_side_filter_mappings = kwarg_mappings
+
+    def get_supported_props(self, preset: QueryPresets) -> List[PropEnum]:
+        """
+        Gets a list of all supported properties for a given preset
+        """
+        return list(self._server_side_filter_mappings[preset].keys())
 
     def check_supported(self, preset: QueryPresets, prop: PropEnum) -> bool:
         """
@@ -60,7 +66,7 @@ class ServerSideHandler(HandlerBase):
         self,
         preset: QueryPresets,
         prop: PropEnum,
-        params: Optional[FilterParams] = None,
+        params: FilterParams,
     ) -> Optional[ServerSideFilters]:
         """
         Method that returns a dictionary of server side filter params to pass to an openstack list function

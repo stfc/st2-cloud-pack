@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, NonCallableMock
 import pytest
 
-from openstack_query.query_methods import QueryMethods
+from openstack_query.api.query_api import QueryAPI
 
 from exceptions.parse_query_error import ParseQueryError
 from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
@@ -15,17 +15,7 @@ def instance_fixture():
     """
     Returns an instance to run tests with
     """
-    mock_builder = MagicMock()
-    mock_executer = MagicMock()
-    mock_parser = MagicMock()
-    mock_output = MagicMock()
-
-    return QueryMethods(
-        builder=mock_builder,
-        executer=mock_executer,
-        parser=mock_parser,
-        output=mock_output,
-    )
+    return QueryAPI(query_components=MagicMock())
 
 
 @pytest.fixture(name="run_with_test_case")

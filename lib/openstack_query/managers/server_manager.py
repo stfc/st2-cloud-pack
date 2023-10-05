@@ -1,7 +1,7 @@
 from enums.query.props.server_properties import ServerProperties
 from enums.cloud_domains import CloudDomains
 
-from openstack_query.queries.server_query import ServerQuery
+from openstack_query.api.query_objects import ServerQuery
 from openstack_query.managers.manager_wrapper import ManagerWrapper
 
 # pylint:disable=too-few-public-methods

@@ -1,3 +1,4 @@
+from typing import Type
 from structs.query.query_client_side_handlers import QueryClientSideHandlers
 
 from enums.query.props.server_properties import ServerProperties
@@ -17,7 +18,7 @@ from openstack_query.handlers.client_side_handler_datetime import (
     ClientSideHandlerDateTime,
 )
 
-from openstack_query.queries.query_wrapper import QueryWrapper
+from openstack_query.mappings.mapping_interface import MappingInterface
 from openstack_query.runners.server_runner import ServerRunner
 
 from openstack_query.time_utils import TimeUtils
@@ -25,16 +26,28 @@ from openstack_query.time_utils import TimeUtils
 # pylint:disable=too-few-public-methods
 
 
-class ServerQuery(QueryWrapper):
+class ServerMapping(MappingInterface):
     """
-    Query class for querying Openstack Server objects.
-    Define property mappings, kwarg mappings and filter function mappings related to servers here
+    Mapping class for querying Openstack Server objects.
+    Define property mappings, kwarg mappings and filter function mappings, and runner mapping related to servers here
     """
 
-    prop_enum_cls = ServerProperties
-    runner_cls = ServerRunner
+    @staticmethod
+    def get_runner_mapping() -> Type[ServerRunner]:
+        """
+        Returns a mapping to associated Runner class for the Query (ServerRunner)
+        """
+        return ServerRunner
 
-    def _get_server_side_handler(self) -> ServerSideHandler:
+    @staticmethod
+    def get_prop_mapping() -> Type[ServerProperties]:
+        """
+        Returns a mapping of valid presets for server side attributes (ServerProperties)
+        """
+        return ServerProperties
+
+    @staticmethod
+    def get_server_side_handler() -> ServerSideHandler:
         """
         method to configure a server handler which can be used to get 'filter' keyword arguments that
         can be passed to openstack function conn.compute.servers() to filter results for a valid preset-property pair
@@ -61,19 +74,20 @@ class ServerQuery(QueryWrapper):
                     ServerProperties.PROJECT_ID: lambda value: {"project_id": value},
                 },
                 QueryPresetsDateTime.OLDER_THAN_OR_EQUAL_TO: {
-                    ServerProperties.SERVER_LAST_UPDATED_DATE: lambda **kwargs: {
-                        "changes-before": TimeUtils.convert_to_timestamp(**kwargs)
+                    ServerProperties.SERVER_LAST_UPDATED_DATE: lambda func=TimeUtils.convert_to_timestamp, **kwargs: {
+                        "changes-before": func(**kwargs)
                     }
                 },
                 QueryPresetsDateTime.YOUNGER_THAN_OR_EQUAL_TO: {
-                    ServerProperties.SERVER_LAST_UPDATED_DATE: lambda **kwargs: {
-                        "changes-since": TimeUtils.convert_to_timestamp(**kwargs)
+                    ServerProperties.SERVER_LAST_UPDATED_DATE: lambda func=TimeUtils.convert_to_timestamp, **kwargs: {
+                        "changes-since": func(**kwargs)
                     }
                 },
             }
         )
 
-    def _get_client_side_handlers(self) -> QueryClientSideHandlers:
+    @staticmethod
+    def get_client_side_handlers() -> QueryClientSideHandlers:
         """
         method to configure a set of client-side handlers which can be used to get local filter functions
         corresponding to valid preset-property pairs. These filter functions can be used to filter results after

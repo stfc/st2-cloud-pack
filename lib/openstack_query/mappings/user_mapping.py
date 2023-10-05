@@ -1,3 +1,4 @@
+from typing import Type
 from structs.query.query_client_side_handlers import QueryClientSideHandlers
 
 from enums.query.props.user_properties import UserProperties
@@ -13,23 +14,35 @@ from openstack_query.handlers.client_side_handler_generic import (
 )
 from openstack_query.handlers.client_side_handler_string import ClientSideHandlerString
 
-from openstack_query.queries.query_wrapper import QueryWrapper
+from openstack_query.mappings.mapping_interface import MappingInterface
 from openstack_query.runners.user_runner import UserRunner
 
 
 # pylint:disable=too-few-public-methods
 
 
-class UserQuery(QueryWrapper):
+class UserMapping(MappingInterface):
     """
-    Query class for querying Openstack User objects.
-    Define property mappings, kwarg mappings and filter function mappings related to users here
+    Mapping class for querying Openstack User objects.
+    Define property mappings, kwarg mappings, filter function mappings, and runner mappings related to users here
     """
 
-    prop_enum_cls = UserProperties
-    runner_cls = UserRunner
+    @staticmethod
+    def get_runner_mapping() -> Type[UserRunner]:
+        """
+        Returns a mapping to associated Runner class for the Query (UserRunner)
+        """
+        return UserRunner
 
-    def _get_server_side_handler(self) -> ServerSideHandler:
+    @staticmethod
+    def get_prop_mapping() -> Type[UserProperties]:
+        """
+        Returns a mapping of valid presets for server side attributes (UserProperties)
+        """
+        return UserProperties
+
+    @staticmethod
+    def get_server_side_handler() -> ServerSideHandler:
         """
         method to configure a server-side handler which can be used to get 'filter' keyword arguments that
         can be passed to an openstack function to filter results for a valid preset-property
@@ -49,7 +62,8 @@ class UserQuery(QueryWrapper):
             }
         )
 
-    def _get_client_side_handlers(self) -> QueryClientSideHandlers:
+    @staticmethod
+    def get_client_side_handlers() -> QueryClientSideHandlers:
         """
         method to configure a set of client-side handlers which can be used to get local filter functions
         corresponding to valid preset-property pairs. These filter functions can be used to filter results after

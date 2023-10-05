@@ -50,6 +50,14 @@ def test_check_supported_false(instance):
     assert not instance.check_supported(MockQueryPresets.ITEM_1, MockProperties.PROP_3)
 
 
+def test_get_supported_props(instance):
+    """
+    Tests that get_supported_props method works expectedly
+    returns a list of supported props for a given preset
+    """
+    assert instance.get_supported_props(MockQueryPresets.ITEM_1)
+
+
 def test_get_mapping_valid(instance):
     """
     Tests that get_mapping method works expectedly
