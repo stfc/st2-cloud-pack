@@ -42,12 +42,42 @@ def test_server_side_handler_mappings_equal_to(server_side_test_mappings):
         ServerProperties.SERVER_NAME: "hostname",
         ServerProperties.SERVER_STATUS: "vm_state",
         ServerProperties.SERVER_DESCRIPTION: "description",
+        ServerProperties.SERVER_CREATION_DATE: "created_at",
+        ServerProperties.FLAVOR_ID: "flavor",
+        ServerProperties.IMAGE_ID: "image",
         ServerProperties.PROJECT_ID: "project_id",
     }
     server_side_test_mappings(
         ServerMapping.get_server_side_handler(),
         ServerMapping.get_client_side_handlers().generic_handler,
         QueryPresetsGeneric.EQUAL_TO,
+        mappings,
+    )
+
+
+def test_server_side_handler_mappings_any_in(server_side_any_in_mappings):
+    """
+    Tests server side handler mappings are correct for ANY_IN, and line up to the expected
+    server side params for equal to params
+    Tests that mappings render multiple server-side filters if multiple values given.
+    Tests that equivalent equal to server-side filter exists for each ANY_IN filter - since they
+    produce equivalent filters
+    """
+
+    mappings = {
+        ServerProperties.USER_ID: "user_id",
+        ServerProperties.SERVER_ID: "uuid",
+        ServerProperties.SERVER_NAME: "hostname",
+        ServerProperties.SERVER_STATUS: "vm_state",
+        ServerProperties.SERVER_DESCRIPTION: "description",
+        ServerProperties.SERVER_CREATION_DATE: "created_at",
+        ServerProperties.FLAVOR_ID: "flavor",
+        ServerProperties.IMAGE_ID: "image",
+        ServerProperties.PROJECT_ID: "project_id",
+    }
+    server_side_any_in_mappings(
+        ServerMapping.get_server_side_handler(),
+        ServerMapping.get_client_side_handlers().generic_handler,
         mappings,
     )
 
@@ -117,6 +147,8 @@ def test_client_side_handlers_generic(client_side_test_mappings):
     mappings = {
         QueryPresetsGeneric.EQUAL_TO: ["*"],
         QueryPresetsGeneric.NOT_EQUAL_TO: ["*"],
+        QueryPresetsGeneric.ANY_IN: ["*"],
+        QueryPresetsGeneric.NOT_ANY_IN: ["*"],
     }
     client_side_test_mappings(handler, mappings)
 

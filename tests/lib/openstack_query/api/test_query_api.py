@@ -18,6 +18,47 @@ def instance_fixture():
     return QueryAPI(query_components=MagicMock())
 
 
+@pytest.fixture(name="run_with_test_case_with_subset")
+def run_with_test_case_with_subset_fixture(instance):
+    """
+    Fixture for running run() with a subset
+    """
+
+    def _run_with_test_case(mock_kwargs):
+        """
+        Runs a test case for the run() method
+        """
+        mock_query_results = ("object-list", "property-list")
+        instance.executer.run_query.return_value = mock_query_results
+        instance.builder.client_side_filters = ["client-filters"]
+        instance.builder.server_filter_fallback = ["fallback-client-filters"]
+        instance.builder.server_side_filters = ["server-filters"]
+
+        if not mock_kwargs:
+            mock_kwargs = {}
+
+        res = instance.run("test-account", ["item1", "item2"], **mock_kwargs)
+        instance.executer.run_query.assert_called_once_with(
+            cloud_account="test-account", from_subset=["item1", "item2"], **mock_kwargs
+        )
+
+        # test that data is marshalled correctly to executer
+        # - this differs based on if from_subset is given
+        client_filters = (
+            instance.builder.client_side_filters
+            + instance.builder.server_filter_fallback
+        )
+        server_filters = None
+
+        assert instance.executer.client_side_filters == client_filters
+        assert instance.executer.server_side_filters == server_filters
+        assert instance.executer.parse_func == instance.parser.run_parser
+        assert instance.executer.output_func == instance.output.generate_output
+        assert res == instance
+
+    return _run_with_test_case
+
+
 @pytest.fixture(name="run_with_test_case")
 def run_with_test_case_fixture(instance):
     """
@@ -30,6 +71,9 @@ def run_with_test_case_fixture(instance):
         """
         mock_query_results = ("object-list", "property-list")
         instance.executer.run_query.return_value = mock_query_results
+        instance.builder.client_side_filters = ["client-filters"]
+        instance.builder.server_filter_fallback = ["fallback-client-filters"]
+        instance.builder.server_side_filters = ["server-filters"]
 
         if not mock_kwargs:
             mock_kwargs = {}
@@ -40,14 +84,12 @@ def run_with_test_case_fixture(instance):
         )
 
         # test that data is marshalled correctly to executer
-        assert (
-            instance.executer.client_side_filter_func
-            == instance.builder.client_side_filter
-        )
-        assert (
-            instance.executer.server_side_filters
-            == instance.builder.server_side_filters
-        )
+        # - this differs based on if from_subset is given
+        client_filters = instance.builder.client_side_filters
+        server_filters = instance.builder.server_side_filters
+
+        assert instance.executer.client_side_filters == client_filters
+        assert instance.executer.server_side_filters == server_filters
         assert instance.executer.parse_func == instance.parser.run_parser
         assert instance.executer.output_func == instance.output.generate_output
         assert res == instance
@@ -139,13 +181,13 @@ def test_where_with_kwargs(instance):
     assert res == instance
 
 
-def test_run_with_optional_params(run_with_test_case):
+def test_run_with_optional_params(run_with_test_case_with_subset):
     """
     Tests that run method works expectedly - with subset meta_params kwargs
     method should get client_side and server_side filters and forward them to query runner object
 
     """
-    run_with_test_case(data_subset=["obj1", "obj2", "obj3"], mock_kwargs=None)
+    run_with_test_case_with_subset(mock_kwargs=None)
 
 
 def test_run_with_kwargs(run_with_test_case):
@@ -166,14 +208,13 @@ def test_run_with_nothing(run_with_test_case):
     run_with_test_case(None, None)
 
 
-def test_run_with_kwargs_and_subset(run_with_test_case):
+def test_run_with_kwargs_and_subset(run_with_test_case_with_subset):
     """
     Tests that run method works expectedly - with subset kwargs
     method should get client_side and server_side filters and forward them to query runner object
 
     """
-    run_with_test_case(
-        data_subset=["obj1", "obj2", "obj3"],
+    run_with_test_case_with_subset(
         mock_kwargs={"arg1": "val1", "arg2": "val2"},
     )
 

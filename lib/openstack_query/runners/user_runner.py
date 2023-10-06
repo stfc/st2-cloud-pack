@@ -85,7 +85,7 @@ class UserRunner(RunnerWrapper):
 
         For UserQuery, this command gets all users by domain ID
         :param conn: An OpenstackConnection object - used to connect to openstacksdk
-        :param filter_kwargs: An Optional set of filter kwargs to pass to conn.identity.users()
+        :param filter_kwargs: An Optional list of filter kwargs to pass to conn.identity.users()
         """
 
         if not filter_kwargs:

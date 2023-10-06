@@ -13,6 +13,8 @@ class QueryPresetsGeneric(QueryPresets):
 
     EQUAL_TO = auto()
     NOT_EQUAL_TO = auto()
+    ANY_IN = auto()
+    NOT_ANY_IN = auto()
 
     @staticmethod
     def from_string(val: str):
@@ -81,9 +83,7 @@ class QueryPresetsString(QueryPresets):
     Enum class which holds string comparison operators
     """
 
-    ANY_IN = auto()
     MATCHES_REGEX = auto()
-    NOT_ANY_IN = auto()
 
     @staticmethod
     def from_string(val: str):

@@ -6,8 +6,9 @@ from typing import Optional, List, Any, Dict, Callable
 from custom_types.openstack_query.aliases import (
     PropFunc,
     ServerSideFilters,
-    ClientSideFilterFunc,
+    ClientSideFilters,
     OpenstackResourceObj,
+    ClientSideFilterFunc,
 )
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
@@ -34,7 +35,7 @@ class RunnerWrapper(OpenstackWrapperBase):
     def run(
         self,
         cloud_account: str,
-        client_side_filter_func: Optional[ClientSideFilterFunc] = None,
+        client_side_filters: Optional[ClientSideFilters] = None,
         server_side_filters: Optional[ServerSideFilters] = None,
         from_subset: Optional[List[Any]] = None,
         **kwargs,
@@ -42,72 +43,104 @@ class RunnerWrapper(OpenstackWrapperBase):
         """
         Public method that runs the query by querying openstacksdk and then applying a filter function.
         :param cloud_account: An string for the account from the clouds configuration to use
-        :param client_side_filter_func: An Optional function that we can use to limit the results after querying
-        openstacksdk
-        :param server_side_filters: An Optional set of filter kwargs to limit the results by when querying openstacksdk
+        :param client_side_filters: An Optional list of filter functions to run locally that we can use to limit the
+        results after querying openstacksdk
+        :param server_side_filters: An Optional list of filter kwargs to limit the results by when querying openstacksdk
         :param from_subset: A subset of openstack resources to run query on instead of querying openstacksdk
         :param kwargs: An extra set of kwargs to pass to internal _run_query method that changes what/how the
         openstacksdk query is run
             - valid kwargs to _run_query is specific to the runner object - see docstrings for _run_query() on the
             runner of interest.
         """
+
+        if from_subset and server_side_filters:
+            logger.error(
+                "Error: Received server-side filters - suggesting that the query requires getting results via "
+                "openstacksdk, but also openstack objects directly - suggesting that we want to filter a set already "
+                "given. Not sure what to do - aborting."
+            )
+            raise RuntimeError(
+                "Ambiguous Query: received both server-side filters and values passed directly"
+            )
+
         logger.debug("making connection to openstack")
+        start = time.time()
         with self._connection_cls(cloud_account) as conn:
             logger.debug(
                 "openstack connection established - using cloud account '%s'",
                 cloud_account,
             )
-
             if from_subset:
-                logger.info("'from_subset' meta param given - parsing subset")
-                logger.debug("parsing subset of %s items", len(from_subset))
-                start = time.time()
-                resource_objects = self._parse_subset(conn, from_subset)
+                logger.info("'from_subset' meta param given - running query on subset")
+                resource_objects = self._parse_subset(
+                    conn=conn,
+                    subset=from_subset,
+                )
                 logger.debug(
-                    "parsing complete - time elapsed: %s seconds", time.time() - start
+                    "subset parsed. (time elapsed: %0.4f seconds)", time.time() - start
                 )
             else:
                 logger.info("running query using openstacksdk and server-side filters")
-                server_side_filters_log_str = "none (getting all)"
-                kwarg_log_str = "none"
-                if server_side_filters:
-                    server_side_filters_log_str = "\n\t\t".join(
-                        [f"{key}: '{val}'" for key, val in server_side_filters.items()]
-                    )
-                if kwargs:
-                    kwarg_log_str = "\n\t\t".join(
-                        [f"{key}: '{val}'" for key, val in kwargs.items()]
-                    )
-
+                resource_objects = self._run_with_openstacksdk(
+                    conn=conn, server_filters=server_side_filters, **kwargs
+                )
                 logger.debug(
-                    "calling run_query with parameters "
-                    "\n\tserver_side_filters: "
-                    "\n\t\t%s "
-                    "\n\trun_meta_kwargs: "
-                    "\n\t\t%s",
-                    server_side_filters_log_str,
-                    kwarg_log_str,
-                )
-                start = time.time()
-                query_meta_params = {}
-                if kwargs:
-                    query_meta_params = self._parse_meta_params(conn, **kwargs)
-                resource_objects = self._run_query(
-                    conn, server_side_filters, **query_meta_params
-                )
-                logger.info(
-                    "server-side query complete - time elapsed: %s seconds",
+                    "server-side quer(y/ies) completed - found %s items. (time elapsed: %0.4f seconds)",
+                    len(resource_objects),
                     time.time() - start,
                 )
-                logger.debug("server-side query found %s items", len(resource_objects))
 
-        if client_side_filter_func and not server_side_filters:
-            logger.info("applying client side filters")
-            resource_objects = self._apply_client_side_filter(
-                resource_objects, client_side_filter_func
+        logger.info("applying client side filters - if any")
+        if client_side_filters:
+            resource_objects = self._apply_client_side_filters(
+                items=resource_objects, filters=client_side_filters
             )
 
-        logger.info("found %s items in total", len(resource_objects))
+        logger.info(
+            "Query Complete! Found %s items. Time elapsed: %0.4f seconds",
+            len(resource_objects),
+            time.time() - start,
+        )
+        return resource_objects
+
+    def _run_with_openstacksdk(
+        self,
+        conn: OpenstackConnection,
+        server_filters: Optional[ServerSideFilters] = None,
+        **kwargs,
+    ):
+        if not server_filters:
+            server_filters = [None]
+
+        if kwargs:
+            kwargs = self._parse_meta_params(conn, **kwargs)
+
+        meta_param_log_str = "\n\t\t".join(
+            [f"{key}: '{val}'" for key, val in kwargs.items()]
+        )
+        logger.info("found %s set(s) of server-side filters", len(server_filters))
+        resource_objects = []
+        for i, query_filters in enumerate(server_filters, 1):
+            logger.debug("running query %s / %s", i, len(server_filters))
+
+            filters_log_str = "None (getting all)"
+            if query_filters:
+                filters_log_str = "\n\t".join(
+                    [f"{key}: '{val}'" for key, val in query_filters.items()]
+                )
+
+            logger.debug(
+                "Running OpenstackSDK Query with: "
+                "\n\tserver side filters: "
+                "\n%s "
+                "\n\n meta kwargs: "
+                "\n\t%s",
+                filters_log_str,
+                "None" if not meta_param_log_str else meta_param_log_str,
+            )
+
+            resource_objects.extend(self._run_query(conn, query_filters, **kwargs))
+
         return resource_objects
 
     def _run_paginated_query(
@@ -172,18 +205,30 @@ class RunnerWrapper(OpenstackWrapperBase):
             curr_marker = paginated_filters["marker"]
         return query_res
 
-    @staticmethod
-    def _apply_client_side_filter(
-        items: List[OpenstackResourceObj], filter_func: ClientSideFilterFunc
+    def _apply_client_side_filters(
+        self, items: List[OpenstackResourceObj], filters: ClientSideFilters
     ) -> List[OpenstackResourceObj]:
         """
-        Removes items from a list by running a given filter function
+        Removes items from a list by running a given filter functions
         :param items: List of items to query e.g. list of servers
-        :param filter_func: An Optional function that we can use to limit the results after querying openstacksdk,
-            - function takes an openstack resource object and returns True if it passes the filter, false if not
+        :param filters: filter functions that we can use to limit the results after querying openstacksdk,
+            - each function takes an openstack resource object and returns True if it passes the filter, false if not
         :return: List of items that match the1 given query
         """
-        return [item for item in items if filter_func(item)]
+        for client_filter in filters:
+            items = self._apply_client_side_filter(items, client_filter)
+        return items
+
+    @staticmethod
+    def _apply_client_side_filter(
+        items: List[OpenstackResourceObj], client_filter: ClientSideFilterFunc
+    ) -> Optional[List[OpenstackResourceObj]]:
+        """
+        Method that will apply a client filter on a list of openstack items
+        :param items: A list of openstack resources
+        :param client_filter: A client filter to apply
+        """
+        return [client_filter(item) for item in items]
 
     @abstractmethod
     def _run_query(

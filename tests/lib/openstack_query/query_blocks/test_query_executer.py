@@ -96,9 +96,8 @@ def test_run_query_without_parse_func(mock_get_output, instance):
     Should call runner.run() and return a tuple of runner.run result and get_output result
     """
 
-    instance._client_side_filter_func = MagicMock()
-    instance._server_side_filters = MagicMock()
-    instance._parse_func = None
+    instance.client_side_filters = MagicMock()
+    instance.server_side_filters = MagicMock()
 
     res1, res2 = instance.run_query(
         cloud_account=CloudDomains.PROD,
@@ -108,8 +107,8 @@ def test_run_query_without_parse_func(mock_get_output, instance):
 
     instance.runner.run.assert_called_once_with(
         cloud_account="prod",
-        client_side_filter_func=instance._client_side_filter_func,
-        server_side_filters=instance._server_side_filters,
+        client_side_filters=instance.client_side_filters,
+        server_side_filters=instance.server_side_filters,
         from_subset=["res1", "res2", "res3"],
         **{"arg1": "val1"}
     )
@@ -126,11 +125,11 @@ def test_run_query_with_parse_func(mock_get_output, instance):
     Should call runner.run() and then parse_func, and then output a tuple of
     parse_func result and get_output result
     """
-    instance._client_side_filter_func = MagicMock()
-    instance._server_side_filters = MagicMock()
+    instance.client_side_filters = MagicMock()
+    instance.server_side_filters = MagicMock()
 
     mock_parse_func = MagicMock()
-    instance._parse_func = mock_parse_func
+    instance.parse_func = mock_parse_func
 
     res1, res2 = instance.run_query(
         cloud_account=CloudDomains.PROD,
@@ -140,8 +139,8 @@ def test_run_query_with_parse_func(mock_get_output, instance):
 
     instance.runner.run.assert_called_once_with(
         cloud_account="prod",
-        client_side_filter_func=instance._client_side_filter_func,
-        server_side_filters=instance._server_side_filters,
+        client_side_filters=instance.client_side_filters,
+        server_side_filters=instance.server_side_filters,
         from_subset=["res1", "res2", "res3"],
         **{"arg1": "val1"}
     )
@@ -160,9 +159,9 @@ def test_run_query_with_string_as_domain(mock_get_output, instance):
     Should call runner.run() and return a tuple of runner.run result and get_output result
     """
 
-    instance._client_side_filter_func = MagicMock()
-    instance._server_side_filters = MagicMock()
-    instance._parse_func = None
+    instance.client_side_filters = MagicMock()
+    instance.server_side_filters = MagicMock()
+    instance.parse_func = None
 
     res1, res2 = instance.run_query(
         cloud_account="test-account",
@@ -172,8 +171,8 @@ def test_run_query_with_string_as_domain(mock_get_output, instance):
 
     instance.runner.run.assert_called_once_with(
         cloud_account="test-account",
-        client_side_filter_func=instance._client_side_filter_func,
-        server_side_filters=instance._server_side_filters,
+        client_side_filters=instance.client_side_filters,
+        server_side_filters=instance.server_side_filters,
         from_subset=["res1", "res2", "res3"],
         **{"arg1": "val1"}
     )

@@ -89,7 +89,11 @@ class ServerSideHandler(HandlerBase):
                 f"'{preset.name}':'{prop.name}' "
                 f"reason: {reason}"
             )
-        return filter_func(**params)
+        filters = filter_func(**params)
+
+        if not isinstance(filters, list):
+            return [filters]
+        return filters
 
     @staticmethod
     def _check_filter_mapping(

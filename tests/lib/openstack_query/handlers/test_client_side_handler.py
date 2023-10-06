@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Union
 from unittest.mock import MagicMock, patch, NonCallableMock
 
 import pytest
@@ -258,7 +258,9 @@ def test_check_filter_func_valid_filters(input_val, instance):
     """
 
     # pylint:disable=unused-argument
-    def _mock_filter_func(prop, arg1: int, arg2: str = "some-default", **kwargs):
+    def _mock_filter_func(
+        prop: str, arg1: Union[int, float], arg2: str = "some-default", **kwargs
+    ):
         # Fake the filter function not finding anything,
         # so we can test that it handles when args not matched extra args available
         # based on the arguments in this function, e.g. arg2
@@ -269,79 +271,37 @@ def test_check_filter_func_valid_filters(input_val, instance):
     assert res[1] == ""
 
 
-@pytest.mark.parametrize(
-    "input_val",
-    [
-        # no but required"
-        {},
-        # required wrong type
-        {"arg1": "non-default"},
-        # optional wrong type
-        {"arg1": 12, "arg2": 12},
-    ],
-)
-def test_check_filter_func_invalid_entry(input_val, instance):
+def test_check_filter_func_invalid_entry(instance):
     """
     Tests that check_filter_func method works expectedly - for filter_func which takes extra params
-    when args don't match expected args required by client-side filter function
+    when given invalid args
     """
 
-    # pylint:disable=unused-argument
-    def _mock_filter_func(prop, arg1: int, arg2: str = "some-default", **kwargs):
-        return None
+    def _mock_filter_func(
+        prop: str, arg1: Union[int, float], arg2: str = "some-default", **kwargs
+    ):
+        # Fake the filter function not finding anything,
+        # so we can test that it handles when args not matched extra args available
+        # based on the arguments in this function, e.g. arg2
+        raise TypeError("some error")
 
-    res = instance._check_filter_func(_mock_filter_func, func_kwargs=input_val)
+    mock_func_kwargs = {"arg1": "val1", "arg2": "val2"}
+    res = instance._check_filter_func(_mock_filter_func, mock_func_kwargs)
     assert not res[0]
-    assert isinstance(res[1], str) and len(res[1]) > 0
+    assert res[1] == "some error"
 
 
-def test_check_filter_func_with_no_args(instance):
+def test_check_filter_func_no_params_needed(instance):
     """
-    Tests that check_filter_func method works expectedly - for filter_func which takes no extra params
-    returns True if args match expected args required by client-side filter function
+    Tests that check_filter_func method works expectedly - for filter_func which needs no extra params
     """
 
+    # need prop since we essentially 'mock' it in check_filter_func - to check the function works
     # pylint:disable=unused-argument
-    def _mock_filter_func(prop):
-        return None
 
-    res = instance._check_filter_func(_mock_filter_func, func_kwargs={})
+    def _mock_filter_func(prop: str):
+        pass
+
+    res = instance._check_filter_func(_mock_filter_func, None)
     assert res[0]
-
-
-def test_check_filter_func_with_extra_arg(instance):
-    """
-    Tests that check_filter_func method works expectedly - for filter_func which takes no extra params
-    if the user tries to pass one that doesn't exist
-    """
-
-    # pylint:disable=unused-argument
-    def _mock_filter_func(prop):
-        return None
-
-    res = instance._check_filter_func(
-        _mock_filter_func, func_kwargs={"arg1": "not-there"}
-    )
-    assert not res[0]
-
-
-def test_check_filter_func_with_any_typing(instance):
-    """
-    Tests that check_filter_func method works expectedly - for filter_func which takes a param with Any
-    returns True for any args which match.
-    Also tests that variables with no type definition are also accepted (and type checking is ignored)
-    """
-
-    # pylint:disable=unused-argument
-    def _mock_filter_func(prop, arg1, arg2, arg3: Any):
-        return None
-
-    res = instance._check_filter_func(
-        _mock_filter_func, func_kwargs={"arg1": 1, "arg2": bool, "arg3": "string"}
-    )
-    assert res[0]
-
-    res = instance._check_filter_func(
-        _mock_filter_func, func_kwargs={"arg1": 1, "arg2": bool, "arg3": "string"}
-    )
-    assert res[0]
+    assert res[1] == ""

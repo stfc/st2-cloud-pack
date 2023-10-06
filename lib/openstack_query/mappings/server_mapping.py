@@ -23,8 +23,6 @@ from openstack_query.runners.server_runner import ServerRunner
 
 from openstack_query.time_utils import TimeUtils
 
-# pylint:disable=too-few-public-methods
-
 
 class ServerMapping(MappingInterface):
     """
@@ -73,6 +71,35 @@ class ServerMapping(MappingInterface):
                     ServerProperties.IMAGE_ID: lambda value: {"image": value},
                     ServerProperties.PROJECT_ID: lambda value: {"project_id": value},
                 },
+                QueryPresetsGeneric.ANY_IN: {
+                    ServerProperties.USER_ID: lambda values: [
+                        {"user_id": value} for value in values
+                    ],
+                    ServerProperties.SERVER_ID: lambda values: [
+                        {"uuid": value} for value in values
+                    ],
+                    ServerProperties.SERVER_NAME: lambda values: [
+                        {"hostname": value} for value in values
+                    ],
+                    ServerProperties.SERVER_DESCRIPTION: lambda values: [
+                        {"description": value} for value in values
+                    ],
+                    ServerProperties.SERVER_STATUS: lambda values: [
+                        {"vm_state": value} for value in values
+                    ],
+                    ServerProperties.SERVER_CREATION_DATE: lambda values: [
+                        {"created_at": value} for value in values
+                    ],
+                    ServerProperties.FLAVOR_ID: lambda values: [
+                        {"flavor": value} for value in values
+                    ],
+                    ServerProperties.IMAGE_ID: lambda values: [
+                        {"image": value} for value in values
+                    ],
+                    ServerProperties.PROJECT_ID: lambda values: [
+                        {"project_id": value} for value in values
+                    ],
+                },
                 QueryPresetsDateTime.OLDER_THAN_OR_EQUAL_TO: {
                     ServerProperties.SERVER_LAST_UPDATED_DATE: lambda func=TimeUtils.convert_to_timestamp, **kwargs: {
                         "changes-before": func(**kwargs)
@@ -99,6 +126,8 @@ class ServerMapping(MappingInterface):
                 {
                     QueryPresetsGeneric.EQUAL_TO: ["*"],
                     QueryPresetsGeneric.NOT_EQUAL_TO: ["*"],
+                    QueryPresetsGeneric.ANY_IN: ["*"],
+                    QueryPresetsGeneric.NOT_ANY_IN: ["*"],
                 }
             ),
             # set string query preset mappings
