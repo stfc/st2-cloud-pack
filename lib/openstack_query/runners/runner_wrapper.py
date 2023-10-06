@@ -8,6 +8,7 @@ from custom_types.openstack_query.aliases import (
     ServerSideFilters,
     ClientSideFilters,
     OpenstackResourceObj,
+    ClientSideFilterFunc,
 )
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
@@ -89,8 +90,8 @@ class RunnerWrapper(OpenstackWrapperBase):
                     time.time() - start,
                 )
 
+        logger.info("applying client side filters - if any")
         if client_side_filters:
-            logger.info("applying client side filters")
             resource_objects = self._apply_client_side_filters(
                 items=resource_objects, filters=client_side_filters
             )
@@ -204,9 +205,8 @@ class RunnerWrapper(OpenstackWrapperBase):
             curr_marker = paginated_filters["marker"]
         return query_res
 
-    @staticmethod
     def _apply_client_side_filters(
-        items: List[OpenstackResourceObj], filters: ClientSideFilters
+        self, items: List[OpenstackResourceObj], filters: ClientSideFilters
     ) -> List[OpenstackResourceObj]:
         """
         Removes items from a list by running a given filter functions
@@ -215,11 +215,20 @@ class RunnerWrapper(OpenstackWrapperBase):
             - each function takes an openstack resource object and returns True if it passes the filter, false if not
         :return: List of items that match the1 given query
         """
-        filtered_items = []
-        for item in items:
-            if all(filter_func(item) for filter_func in filters):
-                filtered_items.append(item)
-        return filtered_items
+        for client_filter in filters:
+            items = self._apply_client_side_filter(items, client_filter)
+        return items
+
+    @staticmethod
+    def _apply_client_side_filter(
+        items: List[OpenstackResourceObj], client_filter: ClientSideFilterFunc
+    ) -> Optional[List[OpenstackResourceObj]]:
+        """
+        Method that will apply a client filter on a list of openstack items
+        :param items: A list of openstack resources
+        :param client_filter: A client filter to apply
+        """
+        return [client_filter(item) for item in items]
 
     @abstractmethod
     def _run_query(

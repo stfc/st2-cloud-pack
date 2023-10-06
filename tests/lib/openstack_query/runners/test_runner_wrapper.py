@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, call
 import pytest
 from openstack_query.runners.runner_wrapper import RunnerWrapper
 
@@ -291,42 +291,76 @@ def test_run_with_openstacksdk_no_filters(
     assert res == mock_run_query.return_value
 
 
-def test_apply_client_side_filters_one_filter(instance):
+@patch("openstack_query.runners.runner_wrapper.RunnerWrapper._apply_client_side_filter")
+def test_apply_client_side_filters_one_filter(mock_apply_client_side_filter, instance):
     """
-    Tests that apply_filter_func method functions expectedly
+    Tests that apply_client_side_filters method functions expectedly
     with one filter function
-    method should iteratively run single filter function on each
-    item and return only those that filter_function returned True
+    method call apply_client_side_filter once with single filter function
     """
-    mock_filters = MagicMock()
-    mock_filters.side_effect = [False, True]
-
+    mock_filter = ["filter1"]
     mock_items = ["openstack-resource-1", "openstack-resource-2"]
-    res = instance._apply_client_side_filters(mock_items, [mock_filters])
-    assert ["openstack-resource-2"] == res
+    res = instance._apply_client_side_filters(mock_items, mock_filter)
+    mock_apply_client_side_filter.assert_called_once_with(mock_items, mock_filter[0])
+    assert mock_apply_client_side_filter.return_value == res
 
 
-def test_apply_client_side_filters_multi_filter(instance):
+@patch("openstack_query.runners.runner_wrapper.RunnerWrapper._apply_client_side_filter")
+def test_apply_client_side_filters_multi_filter(
+    mock_apply_client_side_filter, instance
+):
     """
-    Tests that apply_filter_func method functions expectedly
-    - with  many filter functions
-    method should iteratively run each filter function on each item and
-    return only those that filter_function returned True
+    Tests that apply_client_side_filters method functions expectedly
+    with one filter function
+    method call apply_client_side_filter for each filter given
     """
-    mock_filter1 = MagicMock()
-    mock_filter1.side_effect = [False, False, True, True]
+    mock_filter = ["filter1", "filter2"]
+    mock_items = "mock-items"
+    mock_apply_client_side_filter.side_effect = ["filter-out-1", "filter-out-2"]
+    res = instance._apply_client_side_filters(mock_items, mock_filter)
 
-    mock_filter2 = MagicMock()
-    mock_filter2.side_effect = [False, True, False, True]
-
-    mock_items = [
-        "openstack-resource-1",
-        "openstack-resource-2",
-        "openstack-resource-3",
-        "openstack-resource-4",
+    assert mock_apply_client_side_filter.call_args_list == [
+        call(mock_items, mock_filter[0]),
+        call("filter-out-1", mock_filter[1]),
     ]
-    res = instance._apply_client_side_filters(mock_items, [mock_filter1, mock_filter2])
-    assert ["openstack-resource-4"] == res
+    assert res == "filter-out-2"
+
+
+def test_apply_client_side_filter_no_items(instance):
+    """
+    Tests that apply_client_side_filter method functions expectedly
+    method should run given client_filter with no items
+    """
+    mock_client_filter = MagicMock()
+    mock_items = []
+    res = instance._apply_client_side_filter(mock_items, mock_client_filter)
+    mock_client_filter.assert_not_called()
+    assert res == []
+
+
+def test_apply_client_side_filter_one_item(instance):
+    """
+    Tests that apply_client_side_filter method functions expectedly
+    method should run given client_filter with one item
+    """
+    mock_client_filter = MagicMock()
+    mock_items = ["item1"]
+    res = instance._apply_client_side_filter(mock_items, mock_client_filter)
+    mock_client_filter.assert_called_once_with("item1")
+    assert res == [mock_client_filter.return_value]
+
+
+def test_apply_client_side_filter_one_many_items(instance):
+    """
+    Tests that apply_client_side_filter method functions expectedly
+    method should run given client_filter with many items
+    """
+    mock_client_filter = MagicMock()
+    mock_client_filter.side_effect = ["out1", "out2"]
+    mock_items = ["item1", "item2"]
+    res = instance._apply_client_side_filter(mock_items, mock_client_filter)
+    mock_client_filter.assert_has_calls([call("item1"), call("item2")])
+    assert res == ["out1", "out2"]
 
 
 def test_run_pagination_query_gt_0(run_paginated_query_test):

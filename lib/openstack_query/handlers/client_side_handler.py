@@ -3,6 +3,10 @@ import inspect
 import typing
 from typing import Optional, Tuple, List, Union
 
+from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
+from exceptions.parse_query_error import ParseQueryError
+from exceptions.query_preset_mapping_error import QueryPresetMappingError
+
 from openstack_query.handlers.handler_base import HandlerBase
 from custom_types.openstack_query.aliases import (
     FilterFunc,
@@ -15,7 +19,6 @@ from custom_types.openstack_query.aliases import (
 
 from enums.query.query_presets import QueryPresets
 from enums.query.props.prop_enum import PropEnum
-from exceptions.query_preset_mapping_error import QueryPresetMappingError
 
 logger = logging.getLogger(__name__)
 
@@ -181,7 +184,10 @@ class ClientSideHandler(HandlerBase):
             func(prop=prop_val, **func_kwargs)
             return True, ""
 
-        # we're catching all possible exceptions - and fail noisily
-        # pylint:disable=broad-exception-caught
-        except Exception as exp:
+        except (
+            TypeError,
+            NameError,
+            ParseQueryError,
+            MissingMandatoryParamError,
+        ) as exp:
             return False, str(exp)
