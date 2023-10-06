@@ -1,6 +1,7 @@
 import logging
 import inspect
-from typing import Optional, Tuple, Any, List, Union
+import typing
+from typing import Optional, Tuple, List, Union
 
 from openstack_query.handlers.handler_base import HandlerBase
 from custom_types.openstack_query.aliases import (
@@ -167,10 +168,12 @@ class ClientSideHandler(HandlerBase):
         prop_param = list(signature.parameters.values())[0]
 
         # a hack to get EAFP working - set a default value for prop just to see if filter function works
-        prop_val = {
-            Any: "",
-            Union[int, float]: 0,
-        }.get(prop_param.annotation, prop_param.annotation())
+        if prop_param.annotation == typing.Any:
+            prop_val = ""
+        elif prop_param.annotation == typing.Union[int, float]:
+            prop_val = 0
+        else:
+            prop_val = prop_param.annotation()
 
         if not func_kwargs:
             func_kwargs = {}
