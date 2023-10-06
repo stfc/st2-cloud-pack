@@ -30,7 +30,7 @@ ServerSideFilter = Dict[str, PropValue]
 
 # A type alias for representing a list of server-side-filters which will be used to run multiple openstacksdk commands
 # - one command per server-side filter
-ServerSideFilters = Union[ServerSideFilter, List[ServerSideFilter]]
+ServerSideFilters = List[ServerSideFilter]
 
 # A type alias for a function that takes a number of filter params and returns a set of server-side filters
 ServerSideFilterFunc = Callable[[FilterParams], ServerSideFilters]

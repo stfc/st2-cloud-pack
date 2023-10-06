@@ -90,7 +90,7 @@ def server_side_test_mappings_fixture(client_side_match):
             server_filter = server_side_handler.get_filters(
                 preset_to_test, prop, {"value": "test"}
             )
-            assert server_filter == {expected: "test"}
+            assert server_filter == [{expected: "test"}]
         client_side_match(
             client_side_handler, preset_to_test, list(expected_mappings.keys())
         )

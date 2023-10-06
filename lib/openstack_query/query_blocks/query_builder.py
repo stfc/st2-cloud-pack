@@ -66,7 +66,7 @@ class QueryBuilder:
     def server_side_filters(self, server_filters: ServerSideFilters):
         """
         a setter method to set server side filters
-        :param server_filters: a dictionary that holds filter options to pass to openstacksdk
+        :param server_filters: a list of server-side-filters that holds filter options to pass to openstacksdk
         """
         self._server_side_filters = server_filters
 
@@ -129,8 +129,6 @@ class QueryBuilder:
         server_side_filters = self._server_side_handler.get_filters(
             preset=preset, prop=prop, params=preset_kwargs
         )
-        if server_side_filters and not isinstance(server_side_filters, list):
-            server_side_filters = [server_side_filters]
 
         if not server_side_filters:
             logger.info(
@@ -178,27 +176,26 @@ class QueryBuilder:
             self.client_side_filters.append(client_side_filter)
             return
 
-        # we convert to singleton list for aggregating into server_side_filter
-        if not isinstance(server_side_filters, list):
-            server_side_filters = [server_side_filters]
-
-        # check each any new server filter being added has overlapping keys with any server filters currently added
-        # if so add as client_side_filter
+        # If the keys of the new filter and current filter match but the values are different - then the filter
+        # will likely return nothing - this is not for us to enforce - hence add it as a client-side-filter
+        # if the values also match - just ignore it as a duplicate
         for current_server_filter in self.server_side_filters:
             for new_server_filter in server_side_filters:
-                if set(new_server_filter.keys()) & set(current_server_filter.keys()):
+                if set(new_server_filter.keys()).intersection(
+                    set(current_server_filter.keys())
+                ):
                     self.client_side_filters.append(client_side_filter)
                     return
 
         # before adding server-side filter - set fallback
         self.server_filter_fallback.append(client_side_filter)
 
-        # if server side filter not set - set it
+        # if there are no server-side filters - we don't need to aggregate with existing ones - we can just set it
         if not self.server_side_filters:
             self.server_side_filters = server_side_filters
             return
 
-        # we update server_side_filters
+        # we aggregate the new filter with other server filters already set into
         self.server_side_filters = [
             {**new_server_filter, **current_server_filter}
             for current_server_filter in self.server_side_filters

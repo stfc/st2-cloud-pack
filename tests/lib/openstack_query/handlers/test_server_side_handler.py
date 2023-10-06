@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch, NonCallableMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -85,9 +85,9 @@ def test_get_mapping_invalid(instance):
     "openstack_query.handlers.server_side_handler.ServerSideHandler._check_filter_mapping"
 )
 @patch("openstack_query.handlers.server_side_handler.ServerSideHandler._get_mapping")
-def test_get_filters_valid(mock_get_mapping, mock_check_filter_mapping, instance):
+def test_get_filters_valid_list(mock_get_mapping, mock_check_filter_mapping, instance):
     """
-    Tests that get_filters method works expectedly
+    Tests that get_filters method works expectedly - filters returned are a list
     returns server-side filters as a set of kwargs
         - Prop Enum and Preset Enum are supported
         - and filter_params are valid
@@ -95,7 +95,7 @@ def test_get_filters_valid(mock_get_mapping, mock_check_filter_mapping, instance
     mock_params = {"arg1": "val1", "arg2": "val2"}
     mock_filter_func = MagicMock()
 
-    mock_filters = NonCallableMock()
+    mock_filters = ["filter1", "filter2"]
     mock_filter_func.return_value = mock_filters
 
     mock_check_filter_mapping.return_value = True, ""
@@ -108,6 +108,37 @@ def test_get_filters_valid(mock_get_mapping, mock_check_filter_mapping, instance
     mock_check_filter_mapping.assert_called_once_with(mock_filter_func, mock_params)
     mock_filter_func.assert_called_once_with(**mock_params)
     assert res == mock_filters
+
+
+@patch(
+    "openstack_query.handlers.server_side_handler.ServerSideHandler._check_filter_mapping"
+)
+@patch("openstack_query.handlers.server_side_handler.ServerSideHandler._get_mapping")
+def test_get_filters_valid_not_list(
+    mock_get_mapping, mock_check_filter_mapping, instance
+):
+    """
+    Tests that get_filters method works expectedly - filters returned are a not a list
+    returns server-side filters as a set of kwargs
+        - Prop Enum and Preset Enum are supported
+        - and filter_params are valid
+    """
+    mock_params = {"arg1": "val1", "arg2": "val2"}
+    mock_filter_func = MagicMock()
+
+    mock_filters = "filter1"
+    mock_filter_func.return_value = mock_filters
+
+    mock_check_filter_mapping.return_value = True, ""
+    mock_get_mapping.return_value = mock_filter_func
+
+    res = instance.get_filters(
+        MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_params
+    )
+
+    mock_check_filter_mapping.assert_called_once_with(mock_filter_func, mock_params)
+    mock_filter_func.assert_called_once_with(**mock_params)
+    assert res == [mock_filters]
 
 
 @patch(

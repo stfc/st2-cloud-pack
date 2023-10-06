@@ -56,13 +56,6 @@ def run_parse_where_test_case_fixture(instance, mock_server_side_handler):
         run parse where test case where get_filter_func returns different server-side-filters
         """
 
-        expected_server_side_filter = mock_server_side_filters
-
-        # add_filters expects a list of server-side filters
-        # - convert to singleton list if a single filter is returned by get_filter_func
-        if mock_server_side_filters and not isinstance(mock_server_side_filters, list):
-            expected_server_side_filter = [mock_server_side_filters]
-
         mock_server_side_handler.get_filters.return_value = mock_server_side_filters
         with patch(
             "openstack_query.query_blocks.query_builder.QueryBuilder._get_preset_handler"
@@ -93,7 +86,7 @@ def run_parse_where_test_case_fixture(instance, mock_server_side_handler):
 
         mock_add_filter.assert_called_once_with(
             client_side_filter=mock_client_filter_func,
-            server_side_filters=expected_server_side_filter,
+            server_side_filters=mock_server_side_filters,
         )
 
     return _run_parse_where_test_case
@@ -186,13 +179,13 @@ def test_get_preset_handler_invalid_prop(instance, mock_client_side_handlers):
         instance._get_preset_handler(MockQueryPresets.ITEM_1, MockProperties.PROP_1)
 
 
-def test_client_side_filter(instance):
+def test_client_side_filter_none_before(instance):
     """
     Tests client_side_filter property methods
     """
-    instance.client_side_filter = "some-client-side-filter"
+    instance.client_side_filter = ["some-client-side-filter"]
     res = instance.client_side_filter
-    assert res == "some-client-side-filter"
+    assert res == ["some-client-side-filter"]
 
 
 def test_server_side_filters(instance):
@@ -232,19 +225,19 @@ def test_add_filter_no_server_side_filter(instance):
     [
         # no previous filters set
         # one server-side filter to add
-        ([], {"filter1": "val1"}, [{"filter1": "val1"}]),
+        ([], [{"filter1": "val1"}], [{"filter1": "val1"}]),
         # one (non-overlapping) server-side filter set
         # one server-side filter set to add
         (
             [{"filter1": "val1"}],
-            {"filter2": "val2"},
+            [{"filter2": "val2"}],
             [{"filter1": "val1", "filter2": "val2"}],
         ),
         # multiple (non-overlapping) server-side filters set, one
         # one server-side filter set to add
         (
             [{"filter1": "val1"}, {"filter2": "val2"}],
-            {"filter3": "val3"},
+            [{"filter3": "val3"}],
             [
                 {"filter1": "val1", "filter3": "val3"},
                 {"filter2": "val2", "filter3": "val3"},
@@ -295,7 +288,7 @@ def test_add_filter_conflicting_presets(instance):
     # pylint:disable=protected-access
     instance._add_filter(
         client_side_filter="client-side-filter",
-        server_side_filters={"filter1": "val2"},
+        server_side_filters=[{"filter1": "val2"}],
     )
 
     assert instance.server_side_filters == [{"filter1": "val1"}]
