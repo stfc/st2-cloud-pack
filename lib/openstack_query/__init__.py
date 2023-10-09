@@ -1,5 +1,7 @@
 import sys
 import logging
+from .api.query_objects import ServerQuery
+from .api.query_objects import UserQuery
 
 # Create logger
 openstack_query_loggers = logging.getLogger(__name__)
