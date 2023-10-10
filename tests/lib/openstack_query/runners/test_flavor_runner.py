@@ -57,7 +57,7 @@ def test_run_query_no_server_filters(
 def test_parse_subset(instance, mock_openstack_connection):
     """
     Tests _parse_subset works expectedly
-    method simply checks each value in 'subset' param is of the User type and returns it
+    method simply checks each value in 'subset' param is of the Flavor type and returns it
     """
 
     # with one item
@@ -78,7 +78,7 @@ def test_parse_subset(instance, mock_openstack_connection):
 def test_parse_subset_invalid(instance, mock_openstack_connection):
     """
     Tests _parse_subset works expectedly
-    method raises error when provided value which is not of User type
+    method raises error when provided value which is not of Flavor type
     """
     invalid_flavor = "invalid-flavor-obj"
     with pytest.raises(ParseQueryError):
