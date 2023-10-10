@@ -44,7 +44,7 @@ class RunnerWrapper(OpenstackWrapperBase):
     ) -> List[OpenstackResourceObj]:
         """
         Public method that runs the query by querying openstacksdk and then applying a filter function.
-        :param cloud_account: An string for the account from the clouds configuration to use
+        :param cloud_account: A string for the account from the clouds configuration to use
         :param client_side_filters: An Optional list of filter functions to run locally that we can use to limit the
         results after querying openstacksdk
         :param server_side_filters: An Optional list of filter kwargs to limit the results by when querying openstacksdk
@@ -114,9 +114,7 @@ class RunnerWrapper(OpenstackWrapperBase):
         if not server_filters:
             server_filters = [None]
 
-        if kwargs:
-            kwargs = self._parse_meta_params(conn, **kwargs)
-
+        kwargs = self._parse_meta_params(conn, **kwargs)
         meta_param_log_str = "\n\t\t".join(
             [f"{key}: '{val}'" for key, val in kwargs.items()]
         )
