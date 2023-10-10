@@ -24,6 +24,7 @@ class UserRunner(RunnerWrapper):
     """
 
     DEFAULT_DOMAIN = UserDomains.STFC
+    RESOURCE_TYPE = User
 
     @staticmethod
     def _get_marker(obj: User) -> str:
@@ -124,13 +125,3 @@ class UserRunner(RunnerWrapper):
             ",".join(f"{key}={value}" for key, value in filter_kwargs.items()),
         )
         return self._run_paginated_query(conn.identity.users, filter_kwargs)
-
-    def _parse_subset(self, _: OpenstackConnection, subset: List[User]) -> List[User]:
-        """
-        This method is a helper function that will check a list of users to ensure that they are valid User
-        objects
-        :param subset: A list of openstack User objects
-        """
-        if any(not isinstance(i, User) for i in subset):
-            raise ParseQueryError("'from_subset' only accepts User openstack objects")
-        return subset

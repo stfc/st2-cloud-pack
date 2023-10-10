@@ -25,6 +25,8 @@ class ServerRunner(RunnerWrapper):
     ServerRunner encapsulates running any openstacksdk Server commands
     """
 
+    RESOURCE_TYPE = Server
+
     def _parse_meta_params(
         self,
         conn: OpenstackConnection,
@@ -104,17 +106,3 @@ class ServerRunner(RunnerWrapper):
                 self._run_paginated_query(conn.compute.servers, dict(filter_kwargs))
             )
         return query_res
-
-    def _parse_subset(
-        self, _: OpenstackConnection, subset: List[Server]
-    ) -> List[Server]:
-        """
-        This method is a helper function that will check a list of servers to ensure that they are valid Server
-        objects
-        :param subset: A list of openstack Server objects
-        """
-
-        # should check validity that each server still exists but takes too long
-        if any(not isinstance(i, Server) for i in subset):
-            raise ParseQueryError("'from_subset' only accepts Server openstack objects")
-        return subset

@@ -10,6 +10,7 @@ from custom_types.openstack_query.aliases import (
     OpenstackResourceObj,
     ClientSideFilterFunc,
 )
+from exceptions.parse_query_error import ParseQueryError
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
@@ -27,6 +28,7 @@ class RunnerWrapper(OpenstackWrapperBase):
     # Sets the limit for getting values from openstack
     _LIMIT_FOR_PAGINATION = 1000
     _PAGINATION_CALL_LIMIT = 1000
+    RESOURCE_TYPE = None
 
     def __init__(self, marker_prop_func: PropFunc, connection_cls=OpenstackConnection):
         OpenstackWrapperBase.__init__(self, connection_cls)
@@ -246,15 +248,22 @@ class RunnerWrapper(OpenstackWrapperBase):
         openstacksdk query is run - these kwargs are specific to the resource runner.
         """
 
-    @abstractmethod
     def _parse_subset(
-        self, conn: OpenstackConnection, subset: List[OpenstackResourceObj]
+        self, _, subset: List[OpenstackResourceObj]
     ) -> List[OpenstackResourceObj]:
         """
         This method is a helper function that will check a subset of openstack objects and check their validity
-        :param conn: An OpenstackConnection object - used to connect to openstacksdk
+        :param _: An OpenstackConnection object - not used right now
         :param subset: A list of openstack objects to parse
         """
+
+        # connection object may need to be used if we want to run validation checks
+        if any(not isinstance(i, self.RESOURCE_TYPE) for i in subset):
+            raise ParseQueryError(
+                "'from_subset' only accepts openstack objects of type %s",
+                self.RESOURCE_TYPE,
+            )
+        return subset
 
     @abstractmethod
     def _parse_meta_params(self, conn: OpenstackConnection, **kwargs) -> Dict[str, str]:
