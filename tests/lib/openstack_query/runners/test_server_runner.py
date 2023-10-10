@@ -1,4 +1,6 @@
 from unittest.mock import MagicMock, call, patch
+
+import openstack.exceptions
 import pytest
 
 from openstack_query.runners.server_runner import ServerRunner
@@ -47,6 +49,20 @@ def test_parse_meta_params_with_from_projects_no_admin(
             from_projects=["project_id1", "project_id2"],
             as_admin=False,
         )
+
+
+def test_parse_meta_params_with_no_admin(instance, mock_openstack_connection):
+    """
+    Tests _parse_meta_params method works expectedly - with no as_admin given
+    method should return meta params with projects set to a singleton list containing
+    only the current scoped project id
+    """
+    res = instance._parse_meta_params(
+        mock_openstack_connection,
+        as_admin=False,
+    )
+    assert not set(res.keys()).difference({"projects"})
+    assert res["projects"] == [mock_openstack_connection.current_project_id]
 
 
 def test_parse_meta_params_with_all_projects_no_admin(
@@ -146,7 +162,30 @@ def test_parse_meta_params_with_invalid_project_identifier(
     mock_project_identifiers = ["project_id3"]
     mock_openstack_connection.identity.find_project.side_effect = [ResourceNotFound()]
     with pytest.raises(ParseQueryError):
-        instance._parse_meta_params(mock_openstack_connection, mock_project_identifiers)
+        instance._parse_meta_params(
+            mock_openstack_connection,
+            from_projects=mock_project_identifiers,
+            as_admin=True,
+        )
+
+
+def test_parse_meta_params_with_invalid_permissions(
+    instance, mock_openstack_connection
+):
+    """
+    Tests _parse_meta_parms method works expectedly - with invalid admin creds
+    method should raise ParseQueryError when find_project fails with ForbiddenException
+    """
+    mock_project_identifiers = ["project_id3"]
+    mock_openstack_connection.identity.find_project.side_effect = [
+        openstack.exceptions.ForbiddenException()
+    ]
+    with pytest.raises(ParseQueryError):
+        instance._parse_meta_params(
+            mock_openstack_connection,
+            from_projects=mock_project_identifiers,
+            as_admin=True,
+        )
 
 
 def test_run_query_project_meta_arg_preset_duplication(
@@ -223,7 +262,7 @@ def test_run_query_with_meta_arg_projects_with_no_server_queries(
     assert res == ["server1", "server2", "server3", "server4"]
 
 
-def test_parse_subset(instance, mock_openstack_connection):
+def test_parse_subset(instance):
     """
     Tests _parse_subset works expectedly
     method simply checks each value in 'subset' param is of the Server type and returns it
