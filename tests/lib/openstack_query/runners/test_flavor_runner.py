@@ -54,7 +54,7 @@ def test_run_query_no_server_filters(
     assert res == mock_user_list
 
 
-def test_parse_subset(instance, mock_openstack_connection):
+def test_parse_subset(instance):
     """
     Tests _parse_subset works expectedly
     method simply checks each value in 'subset' param is of the Flavor type and returns it
@@ -63,23 +63,21 @@ def test_parse_subset(instance, mock_openstack_connection):
     # with one item
     mock_flavor_1 = MagicMock()
     mock_flavor_1.__class__ = Flavor
-    res = instance._parse_subset(mock_openstack_connection, [mock_flavor_1])
+    res = instance._parse_subset([mock_flavor_1])
     assert res == [mock_flavor_1]
 
     # with two items
     mock_flavor_2 = MagicMock()
     mock_flavor_2.__class__ = Flavor
-    res = instance._parse_subset(
-        mock_openstack_connection, [mock_flavor_1, mock_flavor_2]
-    )
+    res = instance._parse_subset([mock_flavor_1, mock_flavor_2])
     assert res == [mock_flavor_1, mock_flavor_2]
 
 
-def test_parse_subset_invalid(instance, mock_openstack_connection):
+def test_parse_subset_invalid(instance):
     """
     Tests _parse_subset works expectedly
     method raises error when provided value which is not of Flavor type
     """
     invalid_flavor = "invalid-flavor-obj"
     with pytest.raises(ParseQueryError):
-        instance._parse_subset(mock_openstack_connection, [invalid_flavor])
+        instance._parse_subset([invalid_flavor])

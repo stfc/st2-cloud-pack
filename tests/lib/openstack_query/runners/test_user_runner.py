@@ -192,7 +192,7 @@ def test_get_user_domain_error_raised(instance, mock_openstack_connection):
         instance._get_user_domain(mock_openstack_connection, MagicMock())
 
 
-def test_parse_subset(instance, mock_openstack_connection):
+def test_parse_subset(instance):
     """
     Tests _parse_subset works expectedly
     method simply checks each value in 'subset' param is of the User type and returns it
@@ -201,21 +201,21 @@ def test_parse_subset(instance, mock_openstack_connection):
     # with one item
     mock_user_1 = MagicMock()
     mock_user_1.__class__ = User
-    res = instance._parse_subset(mock_openstack_connection, [mock_user_1])
+    res = instance._parse_subset([mock_user_1])
     assert res == [mock_user_1]
 
     # with two items
     mock_user_2 = MagicMock()
     mock_user_2.__class__ = User
-    res = instance._parse_subset(mock_openstack_connection, [mock_user_1, mock_user_2])
+    res = instance._parse_subset([mock_user_1, mock_user_2])
     assert res == [mock_user_1, mock_user_2]
 
 
-def test_parse_subset_invalid(instance, mock_openstack_connection):
+def test_parse_subset_invalid(instance):
     """
     Tests _parse_subset works expectedly
     method raises error when provided value which is not of User type
     """
     invalid_user = "invalid-user-obj"
     with pytest.raises(ParseQueryError):
-        instance._parse_subset(mock_openstack_connection, [invalid_user])
+        instance._parse_subset([invalid_user])

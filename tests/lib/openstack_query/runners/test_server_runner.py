@@ -178,7 +178,7 @@ def test_run_query_with_no_meta_args_with_kwargs(
     assert res == ["server1", "server2"]
 
 
-def test_parse_subset(instance, mock_openstack_connection):
+def test_parse_subset(instance):
     """
     Tests _parse_subset works expectedly
     method simply checks each value in 'subset' param is of the Server type and returns it
@@ -187,23 +187,21 @@ def test_parse_subset(instance, mock_openstack_connection):
     # with one item
     mock_server_1 = MagicMock()
     mock_server_1.__class__ = Server
-    res = instance._parse_subset(mock_openstack_connection, [mock_server_1])
+    res = instance._parse_subset([mock_server_1])
     assert res == [mock_server_1]
 
     # with two items
     mock_server_2 = MagicMock()
     mock_server_2.__class__ = Server
-    res = instance._parse_subset(
-        mock_openstack_connection, [mock_server_1, mock_server_2]
-    )
+    res = instance._parse_subset([mock_server_1, mock_server_2])
     assert res == [mock_server_1, mock_server_2]
 
 
-def test_parse_subset_invalid(instance, mock_openstack_connection):
+def test_parse_subset_invalid(instance):
     """
     Tests _parse_subset works expectedly
     method raises error when provided value which is not of Server type
     """
     invalid_server = "invalid-server-obj"
     with pytest.raises(ParseQueryError):
-        instance._parse_subset(mock_openstack_connection, [invalid_server])
+        instance._parse_subset([invalid_server])
