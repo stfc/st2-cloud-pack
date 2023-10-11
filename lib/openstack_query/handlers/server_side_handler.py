@@ -104,13 +104,11 @@ class ServerSideHandler(HandlerBase):
         :param filter_func: lambda filter func to check
         :param filter_params: a dictionary of params to check if valid for filter func
         """
+        logger.debug(
+            "checking server-side filter function against provided parameters\n\t%s",
+            "\n\t".join([f"{key}: '{value}'" for key, value in filter_params.items()]),
+        )
         try:
-            logger.debug(
-                "checking server-side filter function against provided parameters\n\t%s",
-                "\n\t".join(
-                    [f"{key}: '{value}'" for key, value in filter_params.items()]
-                ),
-            )
             filter_func(**filter_params)
         except KeyError as err:
             return (

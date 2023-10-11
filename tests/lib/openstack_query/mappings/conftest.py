@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import pytest
 
 from custom_types.openstack_query.aliases import PresetPropMappings
@@ -72,6 +72,7 @@ def server_side_test_mappings_fixture(client_side_match):
         client_side_handler: ClientSideHandler,
         preset_to_test: QueryPresets,
         expected_mappings: Dict[PropEnum, str],
+        test_case: Tuple = ("test", "test"),
     ):
         """
         Tests server side handler mappings are correct, and line up to the expected
@@ -81,6 +82,8 @@ def server_side_test_mappings_fixture(client_side_match):
         :param client_side_handler: equivalent client-side handler to test
         :param preset_to_test: preset to test against
         :param expected_mappings: dictionary mapping expected properties to the filter param they should output
+        :param test_case: tuple of value to test mapping with and expected value that
+        it will map to when running get_filters
         """
         supported_props = server_side_handler.get_supported_props(preset_to_test)
         assert all(
@@ -88,9 +91,9 @@ def server_side_test_mappings_fixture(client_side_match):
         )
         for prop, expected in expected_mappings.items():
             server_filter = server_side_handler.get_filters(
-                preset_to_test, prop, {"value": "test"}
+                preset_to_test, prop, {"value": test_case[0]}
             )
-            assert server_filter == [{expected: "test"}]
+            assert server_filter == [{expected: test_case[1]}]
         client_side_match(
             client_side_handler, preset_to_test, list(expected_mappings.keys())
         )

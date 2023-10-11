@@ -111,12 +111,11 @@ def runner_run_test_case_fixture(instance, mock_connection, mock_openstack_conne
                     )
 
         if mock_from_subset:
-            mock_parse_subset.assert_called_once_with(
-                conn=mock_openstack_connection, subset=mock_from_subset
-            )
+            mock_parse_subset.assert_called_once_with(subset=mock_from_subset)
             mock_run_with_openstacksdk.assert_not_called()
 
         else:
+            mock_connection.assert_called_once_with("test-account")
             mock_run_with_openstacksdk.assert_called_once_with(
                 conn=mock_openstack_connection,
                 server_filters=mock_server_side_filters,
@@ -135,7 +134,6 @@ def runner_run_test_case_fixture(instance, mock_connection, mock_openstack_conne
             query_out = mock_apply_client_side_filters.return_value
 
         assert res == query_out
-        mock_connection.assert_called_once_with("test-account")
 
     return _runner_run_test_case
 

@@ -10,6 +10,7 @@ from custom_types.openstack_query.aliases import (
     OpenstackResourceObj,
     ClientSideFilterFunc,
 )
+from exceptions.parse_query_error import ParseQueryError
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_wrapper_base import OpenstackWrapperBase
 
@@ -27,6 +28,7 @@ class RunnerWrapper(OpenstackWrapperBase):
     # Sets the limit for getting values from openstack
     _LIMIT_FOR_PAGINATION = 1000
     _PAGINATION_CALL_LIMIT = 1000
+    RESOURCE_TYPE = type(None)
 
     def __init__(self, marker_prop_func: PropFunc, connection_cls=OpenstackConnection):
         OpenstackWrapperBase.__init__(self, connection_cls)
@@ -65,30 +67,30 @@ class RunnerWrapper(OpenstackWrapperBase):
 
         logger.debug("making connection to openstack")
         start = time.time()
-        with self._connection_cls(cloud_account) as conn:
-            logger.debug(
-                "openstack connection established - using cloud account '%s'",
-                cloud_account,
+
+        if from_subset:
+            logger.info("'from_subset' meta param given - running query on subset")
+            resource_objects = self._parse_subset(
+                subset=from_subset,
             )
-            if from_subset:
-                logger.info("'from_subset' meta param given - running query on subset")
-                resource_objects = self._parse_subset(
-                    conn=conn,
-                    subset=from_subset,
-                )
+            logger.debug(
+                "subset parsed. (time elapsed: %0.4f seconds)", time.time() - start
+            )
+        else:
+            logger.info("running query using openstacksdk and server-side filters")
+            with self._connection_cls(cloud_account) as conn:
                 logger.debug(
-                    "subset parsed. (time elapsed: %0.4f seconds)", time.time() - start
+                    "openstack connection established - using cloud account '%s'",
+                    cloud_account,
                 )
-            else:
-                logger.info("running query using openstacksdk and server-side filters")
                 resource_objects = self._run_with_openstacksdk(
                     conn=conn, server_filters=server_side_filters, **kwargs
                 )
-                logger.debug(
-                    "server-side quer(y/ies) completed - found %s items. (time elapsed: %0.4f seconds)",
-                    len(resource_objects),
-                    time.time() - start,
-                )
+            logger.debug(
+                "server-side quer(y/ies) completed - found %s items. (time elapsed: %0.4f seconds)",
+                len(resource_objects),
+                time.time() - start,
+            )
 
         logger.info("applying client side filters - if any")
         if client_side_filters:
@@ -246,15 +248,21 @@ class RunnerWrapper(OpenstackWrapperBase):
         openstacksdk query is run - these kwargs are specific to the resource runner.
         """
 
-    @abstractmethod
     def _parse_subset(
-        self, conn: OpenstackConnection, subset: List[OpenstackResourceObj]
+        self, subset: List[OpenstackResourceObj]
     ) -> List[OpenstackResourceObj]:
         """
         This method is a helper function that will check a subset of openstack objects and check their validity
-        :param conn: An OpenstackConnection object - used to connect to openstacksdk
+        :param _: An OpenstackConnection object - not used right now
         :param subset: A list of openstack objects to parse
         """
+
+        # connection object may need to be used if we want to run validation checks
+        if any(not isinstance(i, self.RESOURCE_TYPE) for i in subset):
+            raise ParseQueryError(
+                f"'from_subset' only accepts openstack objects of type {self.RESOURCE_TYPE}"
+            )
+        return subset
 
     @abstractmethod
     def _parse_meta_params(self, conn: OpenstackConnection, **kwargs) -> Dict[str, str]:
