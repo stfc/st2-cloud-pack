@@ -91,6 +91,7 @@ def test_server_side_handler_mappings_any_in(server_side_any_in_mappings):
         ProjectMapping.get_server_side_handler(),
         ProjectMapping.get_client_side_handlers().generic_handler,
         mappings,
+        {"test1": "test1", "test2": "test2"},
     )
 
 

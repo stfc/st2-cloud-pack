@@ -11,14 +11,14 @@ from openstack_query.runners.flavor_runner import FlavorRunner
 
 def test_get_runner_mapping():
     """
-    Tests get runner mapping returns a server runner
+    Tests get runner mapping returns a flavor runner
     """
     assert FlavorMapping.get_runner_mapping() == FlavorRunner
 
 
 def test_get_prop_mapping():
     """
-    Tests get prop mapping returns a server properties
+    Tests get prop mapping returns a flavor properties
     """
     assert FlavorMapping.get_prop_mapping() == FlavorProperties
 

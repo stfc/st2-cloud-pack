@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple
 import pytest
 
 from custom_types.openstack_query.aliases import PresetPropMappings
@@ -113,7 +113,7 @@ def server_side_test_any_in_mappings_fixture(
         server_side_handler: ServerSideHandler,
         client_side_handler: ClientSideHandler,
         expected_mappings: Dict[PropEnum, str],
-        test_cases: Optional[Dict] = None,
+        test_cases: Dict,
     ):
         """
         Tests server side handler mappings for ANY_IN preset are correct, and line up to the expected
@@ -128,9 +128,6 @@ def server_side_test_any_in_mappings_fixture(
         supported_props = server_side_handler.get_supported_props(
             QueryPresetsGeneric.ANY_IN
         )
-
-        if not test_cases:
-            test_cases = {"test1": "test1", "test2": "test2"}
 
         assert all(
             key_to_check in supported_props for key_to_check in expected_mappings
