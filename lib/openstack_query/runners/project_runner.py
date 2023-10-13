@@ -2,7 +2,6 @@ from typing import Optional, List
 import logging
 
 from openstack.identity.v3.project import Project
-from exceptions.parse_query_error import ParseQueryError
 
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_query.runners.runner_wrapper import RunnerWrapper
