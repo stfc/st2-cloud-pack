@@ -160,7 +160,12 @@ def test_client_side_handlers_string(client_side_test_mappings):
     client side params for string presets
     """
     handler = ServerMapping.get_client_side_handlers().string_handler
-    mappings = {QueryPresetsString.MATCHES_REGEX: [ServerProperties.SERVER_NAME]}
+    mappings = {
+        QueryPresetsString.MATCHES_REGEX: [
+            ServerProperties.SERVER_NAME,
+            ServerProperties.ADDRESSES,
+        ]
+    }
     client_side_test_mappings(handler, mappings)
 
 
@@ -170,7 +175,12 @@ def test_client_side_handlers_datetime(client_side_test_mappings):
     client side params for string presets
     """
     handler = ServerMapping.get_client_side_handlers().string_handler
-    mappings = {QueryPresetsString.MATCHES_REGEX: [ServerProperties.SERVER_NAME]}
+    mappings = {
+        QueryPresetsString.MATCHES_REGEX: [
+            ServerProperties.SERVER_NAME,
+            ServerProperties.ADDRESSES,
+        ]
+    }
     client_side_test_mappings(handler, mappings)
 
 

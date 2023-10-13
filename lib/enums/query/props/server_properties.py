@@ -20,6 +20,7 @@ class ServerProperties(PropEnum):
     SERVER_NAME = auto()
     SERVER_STATUS = auto()
     USER_ID = auto()
+    ADDRESSES = auto()
 
     @staticmethod
     def from_string(val: str):
@@ -54,6 +55,7 @@ class ServerProperties(PropEnum):
             ServerProperties.FLAVOR_ID: lambda a: a["flavor_id"],
             ServerProperties.IMAGE_ID: lambda a: a["image_id"],
             ServerProperties.PROJECT_ID: lambda a: a["location"]["project"]["id"],
+            ServerProperties.ADDRESSES: ServerProperties.get_ips,
         }
         try:
             return mapping[prop]
@@ -68,3 +70,17 @@ class ServerProperties(PropEnum):
         A getter method to return marker property function for pagination
         """
         return ServerProperties.get_prop_mapping(ServerProperties.SERVER_ID)
+
+    @staticmethod
+    def get_ips(obj):
+        """
+        A method to parse IPs from a server object and output as a comma-spaced string
+        :param obj: a openstacksdk server object
+        """
+        return ", ".join(
+            [
+                ip.get("addr", [])
+                for network in obj["addresses"].values()
+                for ip in network
+            ]
+        )

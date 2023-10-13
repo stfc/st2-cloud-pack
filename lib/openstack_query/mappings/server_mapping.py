@@ -132,7 +132,12 @@ class ServerMapping(MappingInterface):
             ),
             # set string query preset mappings
             string_handler=ClientSideHandlerString(
-                {QueryPresetsString.MATCHES_REGEX: [ServerProperties.SERVER_NAME]}
+                {
+                    QueryPresetsString.MATCHES_REGEX: [
+                        ServerProperties.SERVER_NAME,
+                        ServerProperties.ADDRESSES,
+                    ]
+                }
             ),
             # set datetime query preset mappings
             datetime_handler=ClientSideHandlerDateTime(
