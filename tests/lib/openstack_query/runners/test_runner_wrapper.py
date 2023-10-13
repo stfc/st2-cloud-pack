@@ -211,14 +211,8 @@ def run_with_openstacksdk_test_case_fixture(instance, mock_connection):
                     **mock_kwargs,
                 )
 
-        if mock_kwargs:
-            mock_parse_meta_params.assert_called_once_with(
-                mock_connection, **mock_kwargs
-            )
-            run_query_kwargs = mock_parse_meta_params.return_value
-        else:
-            mock_parse_meta_params.assert_not_called()
-            run_query_kwargs = {}
+        mock_parse_meta_params.assert_called_once_with(mock_connection, **mock_kwargs)
+        run_query_kwargs = mock_parse_meta_params.return_value
 
         # check that run_query has been called correctly for each mock filter given
         for mock_filter in mock_server_filters:

@@ -63,7 +63,7 @@ class ServerMapping(MappingInterface):
                     ServerProperties.SERVER_DESCRIPTION: lambda value: {
                         "description": value
                     },
-                    ServerProperties.SERVER_STATUS: lambda value: {"vm_state": value},
+                    ServerProperties.SERVER_STATUS: lambda value: {"status": value},
                     ServerProperties.SERVER_CREATION_DATE: lambda value: {
                         "created_at": value
                     },
@@ -85,7 +85,7 @@ class ServerMapping(MappingInterface):
                         {"description": value} for value in values
                     ],
                     ServerProperties.SERVER_STATUS: lambda values: [
-                        {"vm_state": value} for value in values
+                        {"status": value} for value in values
                     ],
                     ServerProperties.SERVER_CREATION_DATE: lambda values: [
                         {"created_at": value} for value in values

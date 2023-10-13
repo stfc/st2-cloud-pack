@@ -10,6 +10,10 @@ parameters:
     default: "search_all"
     immutable: true
     type: string
+  as_admin:
+    default: True
+    immutable: true
+    type: boolean
   cloud_account:
     description: "The clouds.yaml account to use whilst performing this action"
     required: true

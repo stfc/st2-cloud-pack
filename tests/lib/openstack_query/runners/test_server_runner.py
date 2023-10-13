@@ -1,4 +1,6 @@
 from unittest.mock import MagicMock, call, patch
+
+import openstack.exceptions
 import pytest
 
 from openstack_query.runners.server_runner import ServerRunner
@@ -21,9 +23,66 @@ def instance_fixture(mock_connection):
     )
 
 
-def test_parse_meta_params_with_from_projects(instance, mock_openstack_connection):
+def test_parse_meta_params_ambiguous(instance, mock_openstack_connection):
     """
-    Tests _parse_meta_params method works expectedly - with valid from_project argument
+    Tests _parse_meta_params method works expectedly - when given both from_project and all_project arguments
+    should raise an error
+    """
+    with pytest.raises(ParseQueryError):
+        instance._parse_meta_params(
+            mock_openstack_connection,
+            from_projects=["project_id1", "project_id2"],
+            all_projects=True,
+        )
+
+
+def test_parse_meta_params_with_from_projects_no_admin(
+    instance, mock_openstack_connection
+):
+    """
+    Tests _parse_meta_params method works expectedly - with no as_admin given
+    method should raise error because from_projects won't work without admin being set
+    """
+    with pytest.raises(ParseQueryError):
+        instance._parse_meta_params(
+            mock_openstack_connection,
+            from_projects=["project_id1", "project_id2"],
+            as_admin=False,
+        )
+
+
+def test_parse_meta_params_with_no_admin(instance, mock_openstack_connection):
+    """
+    Tests _parse_meta_params method works expectedly - with no as_admin given
+    method should return meta params with projects set to a singleton list containing
+    only the current scoped project id
+    """
+    res = instance._parse_meta_params(
+        mock_openstack_connection,
+        as_admin=False,
+    )
+    assert not set(res.keys()).difference({"projects"})
+    assert res["projects"] == [mock_openstack_connection.current_project_id]
+
+
+def test_parse_meta_params_with_all_projects_no_admin(
+    instance, mock_openstack_connection
+):
+    """
+    Tests _parse_meta_params method works expectedly - with no as_admin given
+    method should raise error because all_projects won't work without admin being set
+    """
+    with pytest.raises(ParseQueryError):
+        instance._parse_meta_params(
+            mock_openstack_connection, all_projects=True, as_admin=False
+        )
+
+
+def test_parse_meta_params_with_from_projects_as_admin(
+    instance, mock_openstack_connection
+):
+    """
+    Tests _parse_meta_params method works expectedly - with valid from_project argument and as_admin
     method should iteratively call find_project() to find each project in list and return outputs
     """
 
@@ -34,7 +93,13 @@ def test_parse_meta_params_with_from_projects(instance, mock_openstack_connectio
     ]
 
     res = instance._parse_meta_params(
-        mock_openstack_connection, mock_project_identifiers
+        mock_openstack_connection,
+        from_projects=mock_project_identifiers,
+        all_projects=False,
+        as_admin=True,
+    )
+    mock_openstack_connection.identity.user_projects.assert_called_once_with(
+        mock_openstack_connection.current_user_id
     )
     mock_openstack_connection.identity.find_project.assert_has_calls(
         [
@@ -42,7 +107,47 @@ def test_parse_meta_params_with_from_projects(instance, mock_openstack_connectio
             call("project_id2", ignore_missing=False),
         ]
     )
-    assert not set(res.keys()).difference({"projects"})
+    assert not set(res.keys()).difference({"projects", "all_tenants"})
+    assert not set(res["projects"]).difference({"id1", "id2"})
+
+
+def test_parse_meta_params_with_all_projects_as_admin(
+    instance, mock_openstack_connection
+):
+    """
+    Tests _parse_meta_params method works expectedly - with all_projects and as_admin set
+    method should return meta params with only all_tenants set to true
+    """
+    res = instance._parse_meta_params(
+        mock_openstack_connection, all_projects=True, as_admin=True
+    )
+    assert not set(res.keys()).difference({"all_tenants"})
+
+
+def test_parse_meta_params_with_only_as_admin(instance, mock_openstack_connection):
+    """
+    Tests _parse_meta_params method works expectedly - with only as_admin set
+    method should return meta params with all_tenants and projects set to output of user_projects
+    """
+    mock_openstack_connection.identity.user_projects.return_value = [
+        "user-project1",
+        "user-project2",
+    ]
+    mock_openstack_connection.identity.find_project.side_effect = [
+        {"id": "id1"},
+        {"id": "id2"},
+    ]
+    res = instance._parse_meta_params(mock_openstack_connection, as_admin=True)
+    mock_openstack_connection.identity.find_project.assert_has_calls(
+        [
+            call("user-project1", ignore_missing=False),
+            call("user-project2", ignore_missing=False),
+        ]
+    )
+    mock_openstack_connection.identity.user_projects.assert_called_once_with(
+        mock_openstack_connection.current_user_id
+    )
+    assert not set(res.keys()).difference({"projects", "all_tenants"})
     assert not set(res["projects"]).difference({"id1", "id2"})
 
 
@@ -57,7 +162,30 @@ def test_parse_meta_params_with_invalid_project_identifier(
     mock_project_identifiers = ["project_id3"]
     mock_openstack_connection.identity.find_project.side_effect = [ResourceNotFound()]
     with pytest.raises(ParseQueryError):
-        instance._parse_meta_params(mock_openstack_connection, mock_project_identifiers)
+        instance._parse_meta_params(
+            mock_openstack_connection,
+            from_projects=mock_project_identifiers,
+            as_admin=True,
+        )
+
+
+def test_parse_meta_params_with_invalid_permissions(
+    instance, mock_openstack_connection
+):
+    """
+    Tests _parse_meta_parms method works expectedly - with invalid admin creds
+    method should raise ParseQueryError when find_project fails with ForbiddenException
+    """
+    mock_project_identifiers = ["project_id3"]
+    mock_openstack_connection.identity.find_project.side_effect = [
+        openstack.exceptions.ForbiddenException()
+    ]
+    with pytest.raises(ParseQueryError):
+        instance._parse_meta_params(
+            mock_openstack_connection,
+            from_projects=mock_project_identifiers,
+            as_admin=True,
+        )
 
 
 def test_run_query_project_meta_arg_preset_duplication(
@@ -102,7 +230,7 @@ def test_run_query_with_meta_arg_projects_with_server_side_queries(
     for project in projects:
         mock_run_paginated_query.assert_any_call(
             mock_openstack_connection.compute.servers,
-            {"all_tenants": True, "project_id": project, **mock_filter_kwargs},
+            {"project_id": project, **mock_filter_kwargs},
         )
 
     assert res == ["server1", "server2", "server3", "server4"]
@@ -128,54 +256,10 @@ def test_run_query_with_meta_arg_projects_with_no_server_queries(
     for project in projects:
         mock_run_paginated_query.assert_any_call(
             mock_openstack_connection.compute.servers,
-            {"all_tenants": True, "project_id": project},
+            {"project_id": project},
         )
 
     assert res == ["server1", "server2", "server3", "server4"]
-
-
-@patch("openstack_query.runners.server_runner.ServerRunner._run_paginated_query")
-def test_run_query_with_no_meta_args_no_kwargs(
-    mock_run_paginated_query, instance, mock_openstack_connection
-):
-    """
-    Tests _run_query method works expectedly - no meta arg projects, no filter kwargs
-    method should call run_paginated_query with all_tenants=True and no other filters
-    """
-
-    mock_run_paginated_query.side_effect = [["server1", "server2"]]
-    mock_filter_kwargs = {}
-
-    res = instance._run_query(
-        mock_openstack_connection, filter_kwargs=mock_filter_kwargs
-    )
-
-    mock_run_paginated_query.asset_called_once_with(
-        mock_openstack_connection.compute.servers, {"all_tenants": True}
-    )
-    assert res == ["server1", "server2"]
-
-
-@patch("openstack_query.runners.server_runner.ServerRunner._run_paginated_query")
-def test_run_query_with_no_meta_args_with_kwargs(
-    mock_run_paginated_query, instance, mock_openstack_connection
-):
-    """
-    Tests _run_query method works expectedly - no meta arg projects, and with filter kwargs
-    method should call run_paginated_query with all_tenants=True and pass through other filters
-    """
-
-    mock_run_paginated_query.side_effect = [["server1", "server2"]]
-    mock_filter_kwargs = {"arg1": "val1"}
-
-    res = instance._run_query(
-        mock_openstack_connection, filter_kwargs=mock_filter_kwargs
-    )
-
-    mock_run_paginated_query.asset_called_once_with(
-        mock_openstack_connection.compute.servers, {"all_tenants": True, "arg1": "val1"}
-    )
-    assert res == ["server1", "server2"]
 
 
 def test_parse_subset(instance):
