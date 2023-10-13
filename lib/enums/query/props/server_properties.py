@@ -73,10 +73,6 @@ class ServerProperties(PropEnum):
 
     @staticmethod
     def get_ips(obj):
-
-        if "addresses" not in obj:
-            return ""
-
         return ", ".join(
             [
                 ip.get("addr", [])
