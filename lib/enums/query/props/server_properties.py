@@ -55,9 +55,7 @@ class ServerProperties(PropEnum):
             ServerProperties.FLAVOR_ID: lambda a: a["flavor_id"],
             ServerProperties.IMAGE_ID: lambda a: a["image_id"],
             ServerProperties.PROJECT_ID: lambda a: a["location"]["project"]["id"],
-            ServerProperties.ADDRESSES: lambda a: ", ".join(
-                [ip["addr"] for network in a["addresses"].values() for ip in network]
-            ),
+            ServerProperties.ADDRESSES: ServerProperties.get_ips,
         }
         try:
             return mapping[prop]
@@ -72,3 +70,17 @@ class ServerProperties(PropEnum):
         A getter method to return marker property function for pagination
         """
         return ServerProperties.get_prop_mapping(ServerProperties.SERVER_ID)
+
+    @staticmethod
+    def get_ips(obj):
+
+        if "addresses" not in obj:
+            return ""
+
+        return ", ".join(
+            [
+                ip.get("addr", [])
+                for network in obj["addresses"].values()
+                for ip in network
+            ]
+        )

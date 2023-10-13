@@ -141,3 +141,27 @@ def test_invalid_serialization():
     """
     with pytest.raises(ParseQueryError):
         ServerProperties.from_string("some-invalid-string")
+
+
+def test_get_ips_with_valid_data():
+    # Create a sample object with addresses
+    obj = {
+        "addresses": {
+            "network1": [{"addr": "192.168.1.1"}, {"addr": "192.168.1.2"}],
+            "network2": [{"addr": "10.0.0.1"}],
+        }
+    }
+
+    # Call the get_ips method
+    result = ServerProperties.get_ips(obj)
+
+    # Check if the result is as expected
+    expected_result = "192.168.1.1, 192.168.1.2, 10.0.0.1"
+    assert result == expected_result
+
+
+def test_get_ips_with_empty_data():
+    # Test with an empty object
+    obj = {"addresses": {}}
+    result = ServerProperties.get_ips(obj)
+    assert result == ""
