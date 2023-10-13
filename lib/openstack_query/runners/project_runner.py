@@ -23,11 +23,8 @@ class ProjectRunner(RunnerWrapper):
     RESOURCE_TYPE = Project
 
     def _parse_meta_params(self, _: OpenstackConnection, **__):
-        logger.error(
-            "ProjectQuery doesn't take any meta-params, if you think it should,"
-            "please raise an issue with the repo maintainers"
-        )
-        raise ParseQueryError("FlavorQuery has no meta-params available")
+        logger.debug("ProjectQuery has no meta-params available")
+        return {}
 
     def _run_query(
         self,

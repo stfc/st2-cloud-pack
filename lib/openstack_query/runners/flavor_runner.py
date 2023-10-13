@@ -23,11 +23,8 @@ class FlavorRunner(RunnerWrapper):
     RESOURCE_TYPE = Flavor
 
     def _parse_meta_params(self, _: OpenstackConnection, **__):
-        logger.error(
-            "FlavorQuery doesn't take any meta-params, if you think it should,"
-            "please raise an issue with the repo maintainers"
-        )
-        raise ParseQueryError("FlavorQuery has no meta-params available")
+        logger.debug("FlavorQuery has no meta-params available")
+        return {}
 
     def _run_query(
         self,

@@ -19,15 +19,16 @@ def instance_fixture(mock_connection):
     )
 
 
-def test_parse_query_params_raise_error(instance, mock_openstack_connection):
+def test_parse_query_params(instance, mock_openstack_connection):
     """
-    tests that parse_query_params raises error - FlavorQuery accepts no meta-params currently
+    tests that parse_query_params returns empty dict - FlavorQuery accepts no meta-params currently
     """
-
-    with pytest.raises(ParseQueryError):
+    assert (
         instance._parse_meta_params(
             mock_openstack_connection, **{"arg1": "val1", "arg2": "val2"}
         )
+        == {}
+    )
 
 
 @patch("openstack_query.runners.flavor_runner.FlavorRunner._run_paginated_query")
