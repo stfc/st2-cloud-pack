@@ -20,6 +20,7 @@ class ServerProperties(PropEnum):
     SERVER_NAME = auto()
     SERVER_STATUS = auto()
     USER_ID = auto()
+    ADDRESSES = auto()
 
     @staticmethod
     def from_string(val: str):
@@ -54,6 +55,9 @@ class ServerProperties(PropEnum):
             ServerProperties.FLAVOR_ID: lambda a: a["flavor_id"],
             ServerProperties.IMAGE_ID: lambda a: a["image_id"],
             ServerProperties.PROJECT_ID: lambda a: a["location"]["project"]["id"],
+            ServerProperties.ADDRESSES: lambda a: ", ".join(
+                [ip["addr"] for network in a["addresses"].values() for ip in network]
+            ),
         }
         try:
             return mapping[prop]
