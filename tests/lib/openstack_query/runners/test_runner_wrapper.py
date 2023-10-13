@@ -330,29 +330,43 @@ def test_apply_client_side_filter_no_items(instance):
     assert res == []
 
 
-def test_apply_client_side_filter_one_item(instance):
+def test_apply_client_side_filter_one_item_true(instance):
     """
     Tests that apply_client_side_filter method functions expectedly
-    method should run given client_filter with one item
+    method when run on one item which should pass filter should return that item
     """
     mock_client_filter = MagicMock()
+    mock_client_filter.return_value = True
     mock_items = ["item1"]
     res = instance._apply_client_side_filter(mock_items, mock_client_filter)
     mock_client_filter.assert_called_once_with("item1")
-    assert res == [mock_client_filter.return_value]
+    assert res == mock_items
+
+
+def test_apply_client_side_filter_one_item_false(instance):
+    """
+    Tests that apply_client_side_filter method functions expectedly
+    method when run on one item which should fail filter should return empty list
+    """
+    mock_client_filter = MagicMock()
+    mock_client_filter.return_value = False
+    mock_items = ["item1"]
+    res = instance._apply_client_side_filter(mock_items, mock_client_filter)
+    mock_client_filter.assert_called_once_with("item1")
+    assert res == []
 
 
 def test_apply_client_side_filter_one_many_items(instance):
     """
     Tests that apply_client_side_filter method functions expectedly
-    method should run given client_filter with many items
+    method should run given client_filter with many items - one pass, one fail
     """
     mock_client_filter = MagicMock()
-    mock_client_filter.side_effect = ["out1", "out2"]
+    mock_client_filter.side_effect = [True, False]
     mock_items = ["item1", "item2"]
     res = instance._apply_client_side_filter(mock_items, mock_client_filter)
     mock_client_filter.assert_has_calls([call("item1"), call("item2")])
-    assert res == ["out1", "out2"]
+    assert res == ["item1"]
 
 
 def test_run_pagination_query_gt_0(run_paginated_query_test):

@@ -228,7 +228,7 @@ class RunnerWrapper(OpenstackWrapperBase):
         :param items: A list of openstack resources
         :param client_filter: A client filter to apply
         """
-        return [client_filter(item) for item in items]
+        return [item for item in items if client_filter(item) is True]
 
     @abstractmethod
     def _run_query(
