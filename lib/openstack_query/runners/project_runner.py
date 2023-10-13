@@ -1,7 +1,8 @@
 from typing import Optional, List
 import logging
 
-from openstack.compute.v2.flavor import Flavor
+from openstack.identity.v3.project import Project
+
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_query.runners.runner_wrapper import RunnerWrapper
 
@@ -12,16 +13,16 @@ logger = logging.getLogger(__name__)
 # pylint:disable=too-few-public-methods
 
 
-class FlavorRunner(RunnerWrapper):
+class ProjectRunner(RunnerWrapper):
     """
     Runner class for openstack flavor resource
-    FlavorRunner encapsulates running any openstacksdk Flavor commands
+    ProjectRunner encapsulates running any openstacksdk Project commands
     """
 
-    RESOURCE_TYPE = Flavor
+    RESOURCE_TYPE = Project
 
     def _parse_meta_params(self, _: OpenstackConnection, **__):
-        logger.debug("FlavorQuery has no meta-params available")
+        logger.debug("ProjectQuery has no meta-params available")
         return {}
 
     def _run_query(
@@ -29,21 +30,26 @@ class FlavorRunner(RunnerWrapper):
         conn: OpenstackConnection,
         filter_kwargs: Optional[ServerSideFilters] = None,
         **_,
-    ) -> List[Flavor]:
+    ) -> List[Project]:
         """
         This method runs the query by running openstacksdk commands
 
-        For FlavorQuery, this command finds all flavors that match a given set of filter_kwargs
+        For ProjectQuery, this command finds all projects that match a given set of filter_kwargs
         :param conn: An OpenstackConnection object - used to connect to openstacksdk
-        :param filter_kwargs: An Optional list of filter kwargs to pass to conn.compute.flavors()
+        :param filter_kwargs: An Optional list of filter kwargs to pass to conn.identity.projects()
             to limit the flavors being returned.
             - see https://docs.openstack.org/api-ref/compute/#list-flavors-with-details
         """
         if not filter_kwargs:
             # return all info
-            filter_kwargs = {"details": True}
+            filter_kwargs = {}
+
+        if "id" in filter_kwargs:
+            val = conn.identity.find_project(filter_kwargs["id"], ignore_missing=True)
+            return [val] if val else []
+
         logger.debug(
-            "running openstacksdk command conn.compute.flavors(%s)",
+            "running openstacksdk command conn.identity.projects(%s)",
             ",".join(f"{key}={value}" for key, value in filter_kwargs.items()),
         )
-        return self._run_paginated_query(conn.compute.flavors, filter_kwargs)
+        return self._run_paginated_query(conn.identity.projects, filter_kwargs)

@@ -6,6 +6,7 @@ from openstack_query.api.query_objects import (
     UserQuery,
     ServerQuery,
     FlavorQuery,
+    ProjectQuery,
     get_common,
 )
 
@@ -74,3 +75,14 @@ def test_flavor_query(run_query_test_case):
         "openstack_query.api.query_objects.FlavorMapping"
     ) as mock_flavor_mapping:
         run_query_test_case(FlavorQuery, mock_flavor_mapping)
+
+
+def test_project_query(run_query_test_case):
+    """
+    tests that function ProjectQuery works
+    should call get_common with ProjectMapping
+    """
+    with patch(
+        "openstack_query.api.query_objects.ProjectMapping"
+    ) as mock_project_mapping:
+        run_query_test_case(ProjectQuery, mock_project_mapping)
