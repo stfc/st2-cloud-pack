@@ -1,5 +1,3 @@
-from unittest.mock import patch, NonCallableMock
-
 import pytest
 
 from enums.query.query_presets import QueryPresetsString
@@ -32,32 +30,23 @@ def test_check_supported_all_presets(instance):
 
 
 @pytest.mark.parametrize(
-    "regex_string, test_prop",
+    "regex_string, test_prop, expected",
     [
         # "Numeric digits only",
-        ("[0-9]+", "123"),
+        ("[0-9]+", "123", True),
         # "Alphabetic characters only",
-        ("[A-Za-z]+", "abc"),
+        ("[A-Za-z]+", "abc", True),
         # "No alphabetic characters",
-        ("[A-Za-z]+", "123"),
+        ("[A-Za-z]+", "123", False),
         # "Alphabetic and numeric characters",
-        ("[A-Za-z0-9]+", "abc123"),
+        ("[A-Za-z0-9]+", "abc123", True),
         # "Empty string, no match",
-        ("[A-Za-z]+", ""),
+        ("[0-9]+", "", False),
     ],
 )
-@patch("re.match")
-@patch("re.compile")
-def test_prop_matches_regex_valid(
-    mock_regex_compile, mock_regex_match, regex_string, test_prop, instance
-):
+def test_prop_matches_regex(regex_string, test_prop, expected, instance):
     """
     Tests that method prop_matches_regex functions expectedly - with valid regex patterns
     Returns True if test_prop matches given regex pattern regex_string
     """
-    mock_compile = NonCallableMock()
-    mock_regex_match.return_value = test_prop
-    mock_regex_compile.return_value = mock_compile
-    instance._prop_matches_regex(test_prop, regex_string)
-    mock_regex_match.assert_called_once_with(mock_compile, test_prop)
-    mock_regex_compile.assert_called_once_with(regex_string)
+    assert instance._prop_matches_regex(test_prop, regex_string) == expected
