@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 import pytest
 
 from custom_types.openstack_query.aliases import PresetPropMappings
@@ -113,6 +113,7 @@ def server_side_test_any_in_mappings_fixture(
         server_side_handler: ServerSideHandler,
         client_side_handler: ClientSideHandler,
         expected_mappings: Dict[PropEnum, str],
+        test_cases: Optional[Dict] = None,
     ):
         """
         Tests server side handler mappings for ANY_IN preset are correct, and line up to the expected
@@ -121,25 +122,37 @@ def server_side_test_any_in_mappings_fixture(
         :param server_side_handler: server-side handler to test
         :param client_side_handler: equivalent client-side handler to test
         :param expected_mappings: dictionary mapping expected properties to the filter param they should output
+        :param test_cases: tuple of value to test mapping with and expected value that
+        it will map to when running get_filters
         """
         supported_props = server_side_handler.get_supported_props(
             QueryPresetsGeneric.ANY_IN
         )
+
+        if not test_cases:
+            test_cases = {"test1": "test1", "test2": "test2"}
+
         assert all(
             key_to_check in supported_props for key_to_check in expected_mappings
         )
         for prop, expected in expected_mappings.items():
             # test with one value
             server_filter = server_side_handler.get_filters(
-                QueryPresetsGeneric.ANY_IN, prop, {"values": ["test"]}
+                QueryPresetsGeneric.ANY_IN,
+                prop,
+                {"values": [list(test_cases.keys())[0]]},
             )
-            assert server_filter == [{expected: "test"}]
+            assert server_filter == [{expected: list(test_cases.values())[0]}]
 
             # test with multiple values
             server_filter = server_side_handler.get_filters(
-                QueryPresetsGeneric.ANY_IN, prop, {"values": ["test1", "test2"]}
+                QueryPresetsGeneric.ANY_IN,
+                prop,
+                {"values": list(test_cases.keys())},
             )
-            assert server_filter == [{expected: "test1"}, {expected: "test2"}]
+            assert server_filter == [
+                {expected: test_exp} for test_exp in list(test_cases.values())
+            ]
 
         # EQUAL_TO should have the same mappings for ANY_IN
         server_side_test_mappings(
@@ -147,6 +160,7 @@ def server_side_test_any_in_mappings_fixture(
             client_side_handler,
             QueryPresetsGeneric.EQUAL_TO,
             expected_mappings,
+            test_case=(list(test_cases.keys())[0], list(test_cases.values())[0]),
         )
 
         client_side_match(

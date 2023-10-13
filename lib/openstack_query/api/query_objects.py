@@ -5,6 +5,7 @@ from openstack_query.query_factory import QueryFactory
 from openstack_query.mappings.user_mapping import UserMapping
 from openstack_query.mappings.server_mapping import ServerMapping
 from openstack_query.mappings.flavor_mapping import FlavorMapping
+from openstack_query.mappings.project_mapping import ProjectMapping
 
 
 def get_common(query_mapping: Type[MappingInterface]) -> QueryAPI:
@@ -39,3 +40,10 @@ def FlavorQuery() -> QueryAPI:
     Simple helper function to setup a query using a factory
     """
     return get_common(FlavorMapping)
+
+
+def ProjectQuery() -> QueryAPI:
+    """
+    Simple helper function to setup a query using a factory
+    """
+    return get_common(ProjectMapping)
