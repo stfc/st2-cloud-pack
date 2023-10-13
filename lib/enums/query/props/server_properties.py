@@ -73,6 +73,10 @@ class ServerProperties(PropEnum):
 
     @staticmethod
     def get_ips(obj):
+        """
+        A method to parse IPs from a server object and output as a comma-spaced string
+        :param obj: a openstacksdk server object
+        """
         return ", ".join(
             [
                 ip.get("addr", [])

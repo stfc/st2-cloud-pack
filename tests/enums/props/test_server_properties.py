@@ -144,6 +144,10 @@ def test_invalid_serialization():
 
 
 def test_get_ips_with_valid_data():
+    """
+    Tests that get_ips works expectedly
+    should get comma-spaced ips for each network in addresses
+    """
     # Create a sample object with addresses
     obj = {
         "addresses": {
@@ -161,6 +165,10 @@ def test_get_ips_with_valid_data():
 
 
 def test_get_ips_with_empty_data():
+    """
+    Tests that get_pis works expectedly
+    should return empty string if addresses is empty
+    """
     # Test with an empty object
     obj = {"addresses": {}}
     result = ServerProperties.get_ips(obj)
