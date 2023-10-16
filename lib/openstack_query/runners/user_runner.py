@@ -98,7 +98,7 @@ class UserRunner(RunnerWrapper):
             val = conn.identity.find_user(selected_id, ignore_missing=True)
             return [val] if val else []
 
-        if meta_params["domain_id"] and "domain_id" in filter_kwargs.keys():
+        if "domain_id" in meta_params and "domain_id" in filter_kwargs.keys():
             raise ParseQueryError(
                 "This query uses a preset that requires searching on domain_ids "
                 "- but you've provided a domain using from_domain "
@@ -109,7 +109,7 @@ class UserRunner(RunnerWrapper):
             {"domain_id": self._get_user_domain(conn, self.DEFAULT_DOMAIN)}
         )
 
-        if meta_params["domain_id"]:
+        if "domain_id" in meta_params and meta_params["domain_id"]:
             filter_kwargs.update({"domain_id": meta_params["domain_id"]})
         else:
             logger.info(
