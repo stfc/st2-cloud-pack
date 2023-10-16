@@ -84,6 +84,24 @@ def test_to_html_with_grouped_results(mock_generate_table, instance):
     assert res == "<b> mock title </b><br/> 1 out, 2 out"
 
 
+def test_to_html_incorrect_groups(instance):
+    """
+    Tests that to_html function raises error when given a group that doesn't appear in results
+    """
+    mocked_results = {"group1": ["obj1", "obj2"], "group2": ["obj3", "obj4"]}
+    with pytest.raises(ParseQueryError):
+        instance.to_html(results=mocked_results, groups=["group3"])
+
+
+def test_to_html_errors_when_not_grouped(instance):
+    """
+    Tests that to_html function raises error when given a group and results are not grouped
+    """
+    mocked_results = ["obj1", "obj2"]
+    with pytest.raises(ParseQueryError):
+        instance.to_html(results=mocked_results, groups=["group3"])
+
+
 @patch("openstack_query.query_blocks.query_output.QueryOutput._generate_table")
 def test_to_string_with_list_results(mock_generate_table, instance):
     """
@@ -136,6 +154,24 @@ def test_to_string_with_grouped_results(mock_generate_table, instance):
         ]
     )
     assert "mock title:\n1 out, 2 out" == res
+
+
+def test_to_string_incorrect_groups(instance):
+    """
+    Tests that to_html function raises error when given a group that doesn't appear in results
+    """
+    mocked_results = {"group1": ["obj1", "obj2"], "group2": ["obj3", "obj4"]}
+    with pytest.raises(ParseQueryError):
+        instance.to_string(results=mocked_results, groups=["group3"])
+
+
+def test_to_string_errors_when_not_grouped(instance):
+    """
+    Tests that to_string function raises error when given a group and results are not grouped
+    """
+    mocked_results = ["obj1", "obj2"]
+    with pytest.raises(ParseQueryError):
+        instance.to_string(results=mocked_results, groups=["group3"])
 
 
 def test_generate_table_no_vals(instance):
@@ -383,3 +419,91 @@ def test_parse_property_many_props(mock_get_prop_func, instance):
     mock_get_prop_mapping.assert_has_calls(
         [call(prop) for prop in instance.selected_props]
     )
+
+
+def test_flatten_empty(instance):
+    """
+    Tests that flatten() function works expectedly - with empty list/dict
+    """
+    assert instance.flatten([]) is None
+    assert instance.flatten({}) is None
+
+
+def test_flatten_with_list(instance):
+    """
+    Tests that flatten() functions works expectedly - with a non-empty list
+    should call flatten_list
+    """
+    with patch(
+        "openstack_query.query_blocks.query_output.QueryOutput._flatten_list"
+    ) as mock_flatten_list:
+        res = instance.flatten(["obj1", "obj2"])
+    mock_flatten_list.assert_called_once_with(["obj1", "obj2"])
+    assert res == mock_flatten_list.return_value
+
+
+def test_flatten_with_dict_one_group(instance):
+    """
+    Tests that flatten() functions works expectedly
+    with a non-empty results with one group - should call flatten list once
+    """
+    with patch(
+        "openstack_query.query_blocks.query_output.QueryOutput._flatten_list"
+    ) as mock_flatten_list:
+        res = instance.flatten({"group1": ["obj1", "obj2"]})
+    mock_flatten_list.assert_called_once_with(["obj1", "obj2"])
+    assert res == {"group1": mock_flatten_list.return_value}
+
+
+def test_flatten_with_dict_many_groups(instance):
+    """
+    Tests that flatten() functions works expectedly
+    with a non-empty result with many groups - should call flatten list with each group
+    """
+    with patch(
+        "openstack_query.query_blocks.query_output.QueryOutput._flatten_list"
+    ) as mock_flatten_list:
+        res = instance.flatten({"group1": ["obj1", "obj2"], "group2": ["obj3", "obj4"]})
+    mock_flatten_list.assert_has_calls([call(["obj1", "obj2"]), call(["obj3", "obj4"])])
+    assert res == {
+        "group1": mock_flatten_list.return_value,
+        "group2": mock_flatten_list.return_value,
+    }
+
+
+def test_flatten_list_empty_list(instance):
+    """
+    Tests that flatten_list() function works expectedly
+    with an empty list - should return an empty dictionary
+    """
+    # pylint:disable=protected-access
+    assert instance._flatten_list([]) == {}
+
+
+def test_flatten_list_one_key_one_item(instance):
+    """
+    Tests flatten_list() function with one item with one key-value pair
+    """
+    # pylint:disable=protected-access
+    assert instance._flatten_list([{"prop1": "val1"}]) == {"prop1": ["val1"]}
+
+
+def test_flatten_list_many_keys_one_item(instance):
+    """
+    Tests flatten_list() function with one item with many key-value pairs
+    """
+    # pylint:disable=protected-access
+    assert instance._flatten_list([{"prop1": "val1", "prop2": "val2"}]) == {
+        "prop1": ["val1"],
+        "prop2": ["val2"],
+    }
+
+
+def test_flatten_list_many_keys_many_items(instance):
+    """
+    Tests flatten_list() function with many items with many key-value pairs
+    """
+    # pylint:disable=protected-access
+    assert instance._flatten_list(
+        [{"prop1": "val1", "prop2": "val2"}, {"prop1": "val3", "prop2": "val4"}]
+    ) == {"prop1": ["val1", "val3"], "prop2": ["val2", "val4"]}

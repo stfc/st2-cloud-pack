@@ -1,5 +1,5 @@
 import logging
-from typing import Union, List, Any, Optional, Dict, Tuple
+from typing import Union, List, Optional, Dict, Tuple
 
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 from enums.cloud_domains import CloudDomains
@@ -151,28 +151,52 @@ class QueryAPI:
         )
         return self
 
-    def to_list(self, as_objects=False) -> Union[List[Any], List[Dict[str, str]]]:
+    def to_list(
+        self, as_objects=False, flatten=False, groups: Optional[List[str]] = None
+    ) -> Union[Dict[str, List], List[Dict[str, str]]]:
         """
-        Public method to return results as a list/dict
-        :param as_objects: if true return result as openstack objects,
-        else return result as dictionaries containing selected properties
+        Public method to return results as a list (ungrouped) or dict (if grouped/flattened)
+        :param as_objects: if true return result as openstack objects
+        :param flatten: boolean which will flatten results if true
+        :param groups: a list group to limit output by
         """
+        results = self._query_results
         if as_objects:
-            return self._query_results_as_objects
-        return self._query_results
+            results = self._query_results_as_objects
 
-    def to_string(self, title: Optional[str] = None, **kwargs) -> str:
+        if groups:
+            if not isinstance(results, dict):
+                raise ParseQueryError(
+                    f"Result is not grouped - cannot filter by given group(s) {groups}"
+                )
+            if not all(group in results.keys() for group in groups):
+                raise ParseQueryError(
+                    f"Group(s) given are invalid - valid groups {list(results.keys())}"
+                )
+            return {group_key: results[group_key] for group_key in groups}
+
+        if flatten:
+            return self.output.flatten(results)
+        return results
+
+    def to_string(
+        self, title: Optional[str] = None, groups: Optional[List[str]] = None, **kwargs
+    ) -> str:
         """
         Public method to return results as table(s)
         :param title: an optional title for the table(s)
+        :param groups: a list group to limit output by
         :param kwargs: kwargs to pass to generate table
         """
-        return self.output.to_string(self._query_results, title, **kwargs)
+        return self.output.to_string(self._query_results, title, groups, **kwargs)
 
-    def to_html(self, title: Optional[str] = None, **kwargs) -> str:
+    def to_html(
+        self, title: Optional[str] = None, groups: Optional[List[str]] = None, **kwargs
+    ) -> str:
         """
         Public method to return results as html table
         :param title: an optional title for the table(s) - will be converted to html automatically
+        :param groups: a list group to limit output by
         :param kwargs: kwargs to pass to generate table
         """
-        return self.output.to_html(self._query_results, title, **kwargs)
+        return self.output.to_html(self._query_results, title, groups, **kwargs)
