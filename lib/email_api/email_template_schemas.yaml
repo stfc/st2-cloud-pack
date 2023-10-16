@@ -32,3 +32,11 @@ shutoff_error:
     errored_table: "No Errored VMs"
   html_filepath: "html/shutoff_error.html.j2"
   plaintext_filepath: "plaintext/shutoff_error.txt.j2"
+
+decom_email:
+  schema:
+    username: null
+    affected_flavors: "No Flavors"
+    decom_table: "No VMs affected"
+  html_filepath: "html/decom_email.html.j2"
+  plaintext_filepath: "plaintext/decom_email.txt.j2"
