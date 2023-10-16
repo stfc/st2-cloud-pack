@@ -313,6 +313,16 @@ def test_parse_select_given_invalid(instance):
         instance.parse_select(MockProperties.PROP_1, ServerProperties.SERVER_ID)
 
 
+def test_parse_select_overwrites_old(instance):
+    """
+    Tests that parse_select overwrites old selected_props
+    method should overwrite internal attribute selected_props if already set
+    """
+    instance.selected_props = [MockProperties.PROP_1]
+    instance.parse_select(MockProperties.PROP_2)
+    assert instance.selected_props == [MockProperties.PROP_2]
+
+
 def test_generate_output_no_items(instance):
     """
     Tests that generate_output method works expectedly - no openstack items
