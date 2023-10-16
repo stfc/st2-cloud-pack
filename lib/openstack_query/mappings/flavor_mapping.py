@@ -1,6 +1,8 @@
 from typing import Type
+
 from structs.query.query_client_side_handlers import QueryClientSideHandlers
 
+from enums.query.props.server_properties import ServerProperties
 from enums.query.props.flavor_properties import FlavorProperties
 from enums.query.query_presets import (
     QueryPresetsGeneric,
@@ -26,6 +28,22 @@ class FlavorMapping(MappingInterface):
     Mapping class for querying Openstack Flavor objects
     Define property mappings, kwarg mappings and filter function mappings, and runner mapping related to flavors here
     """
+
+    @staticmethod
+    def get_chain_mappings():
+        """
+        Should return a dictionary containing property pairs mapped to query mappings.
+        This is used to define how to chain results from this query to other possible queries
+        """
+        # local import prevents circular import issue
+        from enums.query.query_types import QueryTypes
+
+        return {
+            QueryTypes.SERVER_QUERY: (
+                FlavorProperties.FLAVOR_ID,
+                ServerProperties.FLAVOR_ID,
+            ),
+        }
 
     @staticmethod
     def get_runner_mapping() -> Type[FlavorRunner]:

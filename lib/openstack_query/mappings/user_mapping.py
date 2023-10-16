@@ -1,4 +1,5 @@
 from typing import Type
+
 from structs.query.query_client_side_handlers import QueryClientSideHandlers
 
 from enums.query.props.user_properties import UserProperties
@@ -6,6 +7,8 @@ from enums.query.query_presets import (
     QueryPresetsGeneric,
     QueryPresetsString,
 )
+from enums.query.props.server_properties import ServerProperties
+
 from openstack_query.handlers.server_side_handler import ServerSideHandler
 
 
@@ -23,6 +26,19 @@ class UserMapping(MappingInterface):
     Mapping class for querying Openstack User objects.
     Define property mappings, kwarg mappings, filter function mappings, and runner mappings related to users here
     """
+
+    @staticmethod
+    def get_chain_mappings():
+        """
+        Should return a dictionary containing property pairs mapped to query mappings.
+        This is used to define how to chain results from this query to other possible queries
+        """
+        # local import prevents circular import issue
+        from enums.query.query_types import QueryTypes
+
+        return {
+            QueryTypes.SERVER_QUERY: {UserProperties.USER_ID, ServerProperties.USER_ID},
+        }
 
     @staticmethod
     def get_runner_mapping() -> Type[UserRunner]:

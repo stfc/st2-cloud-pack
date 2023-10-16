@@ -14,6 +14,14 @@ class MappingInterface(ABC):
 
     @staticmethod
     @abstractmethod
+    def get_chain_mappings():
+        """
+        Should return a dictionary containing property pairs mapped to query mappings.
+        This is used to define how to chain results from this query to other possible queries
+        """
+
+    @staticmethod
+    @abstractmethod
     def get_server_side_handler() -> ServerSideHandler:
         """
         Should return a server-side filter handler object. This object can be used to get filter params to pass to the
