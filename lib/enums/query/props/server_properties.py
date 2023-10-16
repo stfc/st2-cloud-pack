@@ -52,7 +52,7 @@ class ServerProperties(PropEnum):
             ServerProperties.SERVER_STATUS: lambda a: a["status"],
             ServerProperties.SERVER_CREATION_DATE: lambda a: a["created_at"],
             ServerProperties.SERVER_LAST_UPDATED_DATE: lambda a: a["updated_at"],
-            ServerProperties.FLAVOR_ID: lambda a: a["flavor_id"],
+            ServerProperties.FLAVOR_ID: lambda a: a["flavor"]["id"],
             ServerProperties.IMAGE_ID: lambda a: a["image_id"],
             ServerProperties.PROJECT_ID: lambda a: a["location"]["project"]["id"],
             ServerProperties.ADDRESSES: ServerProperties.get_ips,
@@ -61,7 +61,7 @@ class ServerProperties(PropEnum):
             return mapping[prop]
         except KeyError as exp:
             raise QueryPropertyMappingError(
-                "Error: failed to get property mapping, property {prop.name} is not supported in ServerProperties"
+                f"Error: failed to get property mapping, property {prop.name} is not supported in ServerProperties"
             ) from exp
 
     @staticmethod
