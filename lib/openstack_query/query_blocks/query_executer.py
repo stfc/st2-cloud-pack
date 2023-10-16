@@ -1,6 +1,6 @@
 import time
 import logging
-from typing import Callable, Optional, Dict, List, Any, Union, Type
+from typing import Tuple, Callable, Optional, Dict, List, Any, Union, Type
 
 from openstack_query.runners.runner_wrapper import RunnerWrapper
 from enums.cloud_domains import CloudDomains
@@ -15,6 +15,10 @@ from custom_types.openstack_query.aliases import (
 logger = logging.getLogger(__name__)
 
 
+# pylint:disable=too-many-instance-attributes
+# TODO: streamline these instance attributes later
+
+
 class QueryExecuter:
     """
     Helper class to handle executing the query - primarily performing 'run()' method
@@ -27,6 +31,7 @@ class QueryExecuter:
         self._output_func = None
         self._client_side_filters = None
         self._server_side_filters = None
+        self._raw_results = []
 
     @property
     def client_side_filters(self):
@@ -79,6 +84,9 @@ class QueryExecuter:
 
     @property
     def output_func(self):
+        """
+        A getter for output function
+        """
         return self._output_func
 
     @output_func.setter
@@ -91,6 +99,20 @@ class QueryExecuter:
         selected properties (as a dictionary) for each resource given
         """
         self._output_func = val
+
+    @property
+    def raw_results(self) -> List[OpenstackResourceObj]:
+        """
+        a getter for raw results
+        """
+        return self._raw_results
+
+    @raw_results.setter
+    def raw_results(self, results: List[OpenstackResourceObj]):
+        """
+        a setter for raw results
+        """
+        self._raw_results = results
 
     def get_output(
         self,
@@ -130,16 +152,21 @@ class QueryExecuter:
             cloud_account = cloud_account.name.lower()
 
         start = time.time()
-        results = self.runner.run(
+        self.raw_results = self.runner.run(
             cloud_account=cloud_account,
             client_side_filters=self.client_side_filters,
             server_side_filters=self.server_side_filters,
             from_subset=from_subset,
             **kwargs,
         )
-
         logger.debug("run completed - time elapsed: %s seconds", time.time() - start)
 
+    def parse_results(self) -> Tuple[Union[List, Dict], Union[List, Dict]]:
+        """
+        This method takes the raw results computed in run_query() and applies the pre-set parser
+        and generate output functions
+        """
+        results = self.raw_results
         if self.parse_func:
             results = self._parse_func(results)
         return results, self.get_output(results)

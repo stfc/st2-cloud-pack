@@ -54,6 +54,15 @@ def test_output_func(instance):
     assert instance.output_func == mock_output_func
 
 
+def test_raw_results(instance):
+    """
+    Tests that raw_results property method works as expected
+    """
+    mock_raw_results = MagicMock()
+    instance.raw_results = mock_raw_results
+    assert instance.raw_results == mock_raw_results
+
+
 def test_get_output_list_input(instance):
     """
     Tests that get_output method works as expected - when given a list
@@ -89,94 +98,83 @@ def test_get_output_no_output_func(instance):
     assert output == []
 
 
-@patch("openstack_query.query_blocks.query_executer.QueryExecuter.get_output")
-def test_run_query_without_parse_func(mock_get_output, instance):
+def test_run_query(instance):
     """
-    Tests that run_query works as expected - not parsing result
-    Should call runner.run() and return a tuple of runner.run result and get_output result
+    Tests that run_query method works as expected
+    simply calls runner.run() and saves result in raw_results
     """
-
     instance.client_side_filters = MagicMock()
     instance.server_side_filters = MagicMock()
 
-    res1, res2 = instance.run_query(
+    instance.run_query(
         cloud_account=CloudDomains.PROD,
-        from_subset=["res1", "res2", "res3"],
-        **{"arg1": "val1"}
+        from_subset="some-subset",
+        **{"arg1": "val1", "arg2": "val2"}
     )
 
     instance.runner.run.assert_called_once_with(
         cloud_account="prod",
         client_side_filters=instance.client_side_filters,
         server_side_filters=instance.server_side_filters,
-        from_subset=["res1", "res2", "res3"],
-        **{"arg1": "val1"}
+        from_subset="some-subset",
+        **{"arg1": "val1", "arg2": "val2"}
     )
 
-    mock_get_output.assert_called_once_with(instance.runner.run.return_value)
-    assert res1 == instance.runner.run.return_value
-    assert res2 == mock_get_output.return_value
 
-
-@patch("openstack_query.query_blocks.query_executer.QueryExecuter.get_output")
-def test_run_query_with_parse_func(mock_get_output, instance):
+def test_run_query_with_string_domain(instance):
     """
-    Tests that run_query works as expected - parsing result
-    Should call runner.run() and then parse_func, and then output a tuple of
-    parse_func result and get_output result
+    Tests that run_query method works as expected
+    simply calls runner.run() and saves result in raw_results
     """
     instance.client_side_filters = MagicMock()
     instance.server_side_filters = MagicMock()
 
-    mock_parse_func = MagicMock()
-    instance.parse_func = mock_parse_func
-
-    res1, res2 = instance.run_query(
-        cloud_account=CloudDomains.PROD,
-        from_subset=["res1", "res2", "res3"],
-        **{"arg1": "val1"}
+    instance.run_query(
+        cloud_account="domain",
+        from_subset="some-subset",
+        **{"arg1": "val1", "arg2": "val2"}
     )
 
     instance.runner.run.assert_called_once_with(
-        cloud_account="prod",
+        cloud_account="domain",
         client_side_filters=instance.client_side_filters,
         server_side_filters=instance.server_side_filters,
-        from_subset=["res1", "res2", "res3"],
-        **{"arg1": "val1"}
+        from_subset="some-subset",
+        **{"arg1": "val1", "arg2": "val2"}
     )
 
-    mock_parse_func.assert_called_once_with(instance.runner.run.return_value)
-    mock_get_output.assert_called_once_with(mock_parse_func.return_value)
 
-    assert res1 == mock_parse_func.return_value
-    assert res2 == mock_get_output.return_value
-
-
-@patch("openstack_query.query_blocks.query_executer.QueryExecuter.get_output")
-def test_run_query_with_string_as_domain(mock_get_output, instance):
+def test_parse_results_no_parse_func(instance):
     """
-    Tests that run_query works as expected - not parsing result, with a string as cloud account
-    Should call runner.run() and return a tuple of runner.run result and get_output result
+    Tests that parse_results method works as expected
+    should return raw_results, and get_output(raw_results) tuple
     """
-
-    instance.client_side_filters = MagicMock()
-    instance.server_side_filters = MagicMock()
+    instance.raw_results = MagicMock()
     instance.parse_func = None
+    with patch(
+        "openstack_query.query_blocks.query_executer.QueryExecuter.get_output"
+    ) as mock_get_output:
+        res1, res2 = instance.parse_results()
 
-    res1, res2 = instance.run_query(
-        cloud_account="test-account",
-        from_subset=["res1", "res2", "res3"],
-        **{"arg1": "val1"}
-    )
+    assert res1 == instance.raw_results
+    mock_get_output.assert_called_once_with(instance.raw_results)
+    assert res2 == mock_get_output.return_value
 
-    instance.runner.run.assert_called_once_with(
-        cloud_account="test-account",
-        client_side_filters=instance.client_side_filters,
-        server_side_filters=instance.server_side_filters,
-        from_subset=["res1", "res2", "res3"],
-        **{"arg1": "val1"}
-    )
 
-    mock_get_output.assert_called_once_with(instance.runner.run.return_value)
-    assert res1 == instance.runner.run.return_value
+def test_parse_results_with_parse_func(instance):
+    """
+    Tests that parse_results method works as expected
+    should return raw_results, and get_output(raw_results) tuple
+    """
+    instance.raw_results = MagicMock()
+    instance.parse_func = MagicMock()
+    with patch(
+        "openstack_query.query_blocks.query_executer.QueryExecuter.get_output"
+    ) as mock_get_output:
+        res1, res2 = instance.parse_results()
+
+    instance.parse_func.assert_called_once_with(instance.raw_results)
+    assert res1 == instance.parse_func.return_value
+
+    mock_get_output.assert_called_once_with(instance.parse_func.return_value)
     assert res2 == mock_get_output.return_value
