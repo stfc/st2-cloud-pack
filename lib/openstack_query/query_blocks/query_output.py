@@ -1,4 +1,4 @@
-from typing import List, Dict, Union, Type, Set
+from typing import List, Dict, Union, Type, Set, Optional
 from tabulate import tabulate
 
 from enums.query.props.prop_enum import PropEnum
@@ -32,11 +32,18 @@ class QueryOutput:
     def selected_props(self, props=Set[PropEnum]):
         self._props = props
 
-    def to_string(self, results: Union[List, Dict], title=None, **kwargs):
+    def to_string(
+        self,
+        results: Union[List, Dict],
+        title: str = None,
+        groups: Optional[List[str]] = None,
+        **kwargs,
+    ):
         """
         method to return results as a table
         :param results: a list of parsed query results - either a list or a dict of grouped results
         :param title: a title for the table(s) when it gets outputted
+        :param groups: a list group to limit output by
         :param kwargs: kwargs to pass to _generate_table method
         """
         output = ""
@@ -44,21 +51,42 @@ class QueryOutput:
             output += f"{title}:\n"
 
         if isinstance(results, dict):
-            for group_title, group in results.items():
-                output += self._generate_table(
-                    group, return_html=False, title=f"{group_title}:\n", **kwargs
+            if groups and any(group not in results.keys() for group in groups):
+                raise ParseQueryError(
+                    f"given group(s) {groups} not found - available groups {list(results.keys())}"
                 )
+
+            if not groups:
+                groups = list(results.keys())
+
+            for group_title in groups:
+                group_list = results[group_title]
+                output += self._generate_table(
+                    group_list, return_html=False, title=f"{group_title}:\n", **kwargs
+                )
+        elif groups:
+            raise ParseQueryError(
+                f"Result is not grouped - cannot filter by given group(s) {groups}"
+            )
+
         else:
             output += self._generate_table(
                 results, return_html=False, title=None, **kwargs
             )
         return output
 
-    def to_html(self, results, title=None, **kwargs) -> str:
+    def to_html(
+        self,
+        results: Union[List, Dict],
+        title: str = None,
+        groups: Optional[List[str]] = None,
+        **kwargs,
+    ) -> str:
         """
         method to return results as html table
         :param results: a list of parsed query results - either a list or a dict of grouped results
         :param title: a title for the table(s) when it gets outputted
+        :param groups: a list group to limit output by
         :param kwargs: kwargs to pass to generate table
         """
         output = ""
@@ -66,13 +94,27 @@ class QueryOutput:
             output += f"<b> {title} </b><br/> "
 
         if isinstance(results, dict):
-            for group_title, group in results.items():
+            if groups and any(group not in results.keys() for group in groups):
+                raise ParseQueryError(
+                    f"given group(s) {groups} not found - available groups {list(results.keys())}"
+                )
+
+            if not groups:
+                groups = list(results.keys())
+
+            for group_title in groups:
+                group_list = results[group_title]
                 output += self._generate_table(
-                    group,
+                    group_list,
                     return_html=True,
                     title=f"<b> {group_title}: </b><br/> ",
                     **kwargs,
                 )
+        elif groups:
+            raise ParseQueryError(
+                f"Result is not grouped - cannot filter by given group(s) {groups}"
+            )
+
         else:
             output += self._generate_table(
                 results, return_html=True, title=None, **kwargs
@@ -156,3 +198,45 @@ class QueryOutput:
         else:
             output += "No results found"
         return output
+
+    @staticmethod
+    def flatten(data: Union[List, Dict]) -> Optional[Dict]:
+        """
+        Utility function for flattening output to instead get list of unique
+        values found for each property selected. results will also be grouped if given
+        data is grouped too
+        :param data: output to flatten
+        """
+        if not data:
+            return None
+
+        if isinstance(data, list):
+            return QueryOutput._flatten_list(data)
+
+        result = {}
+        for group_key, values in data.items():
+            result[group_key] = QueryOutput._flatten_list(values)
+
+        return result
+
+    @staticmethod
+    def _flatten_list(data: List[Dict]) -> Dict:
+        """
+        Helper function to flatten a query output list. This will return
+        a dictionary where the keys are strings representing the property and
+        the value is a list of unique values found in the given output list for that property.
+        Output list can be actual query output (if it's a list) or one group of grouped results
+        :param data: output list to flatten
+        """
+        if not data:
+            return {}
+
+        keys = list(data[0].keys())
+        res = {}
+        for key in keys:
+            vals = [d[key] for d in data]
+            # converting into a set preserving order
+            # https://stackoverflow.com/a/53657523
+            vals = list(dict.fromkeys(vals))
+            res[key] = vals
+        return res

@@ -241,6 +241,74 @@ def test_to_list_as_objects_true(instance):
     assert instance.to_list(as_objects=True) == mock_query_results_as_obj
 
 
+def test_to_list_flatten_true(instance):
+    """
+    Tests that to_list method functions expectedly
+    method should call output.flatten() with query_results
+    """
+    # pylint: disable=protected-access
+    mock_query_results = NonCallableMock()
+    instance._query_results = mock_query_results
+    res = instance.to_list(flatten=True)
+    instance.output.flatten.assert_called_once_with(mock_query_results)
+    assert res == instance.output.flatten.return_value
+
+
+def test_to_list_flatten_and_as_objects(instance):
+    """
+    Tests that to_list method functions expectedly
+    method should call output.flatten() with query_results_as_obj
+    """
+    # pylint: disable=protected-access
+    mock_query_results_as_obj = NonCallableMock()
+    instance._query_results_as_objects = mock_query_results_as_obj
+    res = instance.to_list(as_objects=True, flatten=True)
+    instance.output.flatten.assert_called_once_with(mock_query_results_as_obj)
+    assert res == instance.output.flatten.return_value
+
+
+def test_to_list_groups_not_dict(instance):
+    """
+    Tests that to_list method functions expectedly
+    method should raise error when given group and results are not dict
+    """
+    # pylint: disable=protected-access
+    mock_query_results = ["result1", "result2"]
+    instance._query_results = mock_query_results
+    with pytest.raises(ParseQueryError):
+        instance.to_list(groups=["group1", "group2"])
+
+
+def test_to_list_groups_dict(instance):
+    """
+    Tests that to_list method functions expectedly
+    method should return subset of results which match keys (groups) given
+    """
+    # pylint: disable=protected-access
+    mock_query_results = {
+        "group1": ["result1", "result2"],
+        "group2": ["result3", "result4"],
+    }
+    instance._query_results = mock_query_results
+    res = instance.to_list(groups=["group1"])
+    assert res == {"group1": mock_query_results["group1"]}
+
+
+def test_to_list_group_not_valid(instance):
+    """
+    Tests that to_list method functions expectedly
+    method should return subset of results which match keys (groups) given
+    """
+    # pylint: disable=protected-access
+    mock_query_results = {
+        "group1": ["result1", "result2"],
+        "group2": ["result3", "result4"],
+    }
+    instance._query_results = mock_query_results
+    with pytest.raises(ParseQueryError):
+        instance.to_list(groups=["group3"])
+
+
 def test_to_string(instance):
     """
     Tests that to_string method functions expectedly
