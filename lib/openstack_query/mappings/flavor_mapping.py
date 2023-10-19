@@ -35,14 +35,8 @@ class FlavorMapping(MappingInterface):
         Should return a dictionary containing property pairs mapped to query mappings.
         This is used to define how to chain results from this query to other possible queries
         """
-        # local import prevents circular import issue
-        from enums.query.query_types import QueryTypes
-
         return {
-            QueryTypes.SERVER_QUERY: (
-                FlavorProperties.FLAVOR_ID,
-                ServerProperties.FLAVOR_ID,
-            ),
+            FlavorProperties.FLAVOR_ID: ServerProperties.FLAVOR_ID,
         }
 
     @staticmethod

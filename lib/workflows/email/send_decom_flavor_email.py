@@ -86,7 +86,7 @@ def send_decom_flavor_email(
             print(f"flavor table: {flavor_table}")
             print(f"decom table: {q3.to_string(groups=[email_addr])}")
             print("\n\n")
-            break
+            continue
 
         email_params = EmailParams.from_dict(
             {

@@ -40,19 +40,10 @@ class ServerMapping(MappingInterface):
         Should return a dictionary containing property pairs mapped to query mappings.
         This is used to define how to chain results from this query to other possible queries
         """
-        # local import prevents circular import issue
-        from enums.query.query_types import QueryTypes
-
         return {
-            QueryTypes.USER_QUERY: (ServerProperties.USER_ID, UserProperties.USER_ID),
-            QueryTypes.PROJECT_QUERY: (
-                ServerProperties.PROJECT_ID,
-                ProjectProperties.PROJECT_ID,
-            ),
-            QueryTypes.FLAVOR_QUERY: (
-                ServerProperties.FLAVOR_ID,
-                FlavorProperties.FLAVOR_ID,
-            )
+            ServerProperties.USER_ID: UserProperties.USER_ID,
+            ServerProperties.PROJECT_ID: ProjectProperties.PROJECT_ID,
+            ServerProperties.FLAVOR_ID: FlavorProperties.FLAVOR_ID
             # TODO hypervisor mapping, image mapping etc
         }
 

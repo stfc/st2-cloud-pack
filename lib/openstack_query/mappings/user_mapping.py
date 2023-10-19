@@ -33,12 +33,7 @@ class UserMapping(MappingInterface):
         Should return a dictionary containing property pairs mapped to query mappings.
         This is used to define how to chain results from this query to other possible queries
         """
-        # local import prevents circular import issue
-        from enums.query.query_types import QueryTypes
-
-        return {
-            QueryTypes.SERVER_QUERY: {UserProperties.USER_ID, ServerProperties.USER_ID},
-        }
+        return {UserProperties.USER_ID: ServerProperties.USER_ID}
 
     @staticmethod
     def get_runner_mapping() -> Type[UserRunner]:

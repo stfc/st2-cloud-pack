@@ -31,15 +31,7 @@ class ProjectMapping(MappingInterface):
         Should return a dictionary containing property pairs mapped to query mappings.
         This is used to define how to chain results from this query to other possible queries
         """
-        # local import prevents circular import issue
-        from enums.query.query_types import QueryTypes
-
-        return {
-            QueryTypes.SERVER_QUERY: (
-                ProjectProperties.PROJECT_ID,
-                ServerProperties.PROJECT_ID,
-            ),
-        }
+        return {ProjectProperties.PROJECT_ID: ServerProperties.PROJECT_ID}
 
     @staticmethod
     def get_runner_mapping() -> Type[ProjectRunner]:

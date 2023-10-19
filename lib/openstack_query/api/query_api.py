@@ -4,11 +4,10 @@ from typing import Union, List, Optional, Dict, Tuple
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 from enums.cloud_domains import CloudDomains
 from enums.query.props.prop_enum import PropEnum
-from enums.query.query_presets import QueryPresets, QueryPresetsGeneric
+from enums.query.query_presets import QueryPresets
 from enums.query.query_types import QueryTypes
 from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_chaining_error import QueryChainingError
-from openstack_query.query_factory import QueryFactory
 from structs.query.query_components import QueryComponents
 
 logger = logging.getLogger(__name__)
@@ -221,38 +220,12 @@ class QueryAPI:
                 - see Mappings for more chaining options
 
         :param query_type: an enum representing the new query to chain into
-        :param forward_outputs: (default=True) boolean that if true - will forward outputs from t
-        his query (and previous chained queries) onto new query.
+        :param forward_outputs:
+            - If True - will forward outputs from this query (and previous chained queries) onto new query.
+            - If False - runs the query based on the previous results as a filter without adding additional fields
             NOTE: You will NOT be able to group/sort by these properties in the new query
         """
-        if isinstance(query_type, str):
-            query_type = QueryTypes.from_string(query_type)
-
-        link_props = self.chainer.get_link_props(query_type)
-        if not link_props:
-            raise QueryChainingError(
-                f"Query Chaining Error: Could not find a way to chain current query into {query_type}"
-            )
-
-        curr_query_results = self.group_by(link_props[0]).to_list()
-        if not curr_query_results:
-            raise QueryChainingError(
-                "Query Chaining Error: No values found after running query set in {curr_query_obj_cls} aborting. "
-                "Have you run the query first?"
-            )
-
-        to_forward = None
-        if forward_outputs:
-            to_forward = (link_props[1], curr_query_results)
-
-        new_query = QueryAPI(
-            QueryFactory.build_query_deps(query_type.value, to_forward)
-        )
-        return new_query.where(
-            QueryPresetsGeneric.ANY_IN,
-            link_props[1],
-            values=list(curr_query_results.keys()),
-        )
+        return self.chainer.parse_then(self, query_type, forward_outputs)
 
     def append_from(
         self,
@@ -268,19 +241,20 @@ class QueryAPI:
         NOTE - a shared common property must exist between this query and the new query
             - i.e. both ServerQuery and UserQuery share the 'USER_ID' property so chaining is possible
                 - see Mappings for more chaining options
+
+        :param query_type: an enum representing the new query to chain into
+        :param cloud_account: A String or a CloudDomains Enum for the clouds configuration to use
+        :param props: list of props from new queries to get
         """
         if isinstance(query_type, str):
             query_type = QueryTypes.from_string(query_type)
 
         new_query = self.then(query_type, forward_outputs=False)
-        try:
-            new_query.select(*props)
-        except ParseQueryError as exp:
-            raise QueryChainingError(
-                "Query Chaining Error: Could append properties from external query"
-            ) from exp
+        new_query.select(*props)
+        new_query.run(cloud_account)
 
         link_props = self.chainer.get_link_props(query_type)
-        new_query.run(cloud_account)
         new_query.group_by(link_props[1])
+
         self.output.update_forwarded_outputs(link_props[0], new_query.to_list())
+        return self

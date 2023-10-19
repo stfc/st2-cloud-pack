@@ -16,7 +16,7 @@ class MappingInterface(ABC):
     @abstractmethod
     def get_chain_mappings():
         """
-        Should return a dictionary containing property pairs mapped to query mappings.
+        Should return a dictionary containing common property pairs for query mappings.
         This is used to define how to chain results from this query to other possible queries
         """
 
