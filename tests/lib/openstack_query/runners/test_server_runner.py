@@ -237,6 +237,23 @@ def test_run_query_with_meta_arg_projects_with_server_side_queries(
 
 
 @patch("openstack_query.runners.server_runner.ServerRunner._run_paginated_query")
+def test_run_query_meta_arg_all_tenants_no_projects(
+    mock_run_paginated_query, instance, mock_openstack_connection
+):
+    """
+    Tests _run_query method works expectedly - when meta arg all_tenants given
+    """
+    mock_run_paginated_query.return_value = ["server1", "server2"]
+    res = instance._run_query(
+        mock_openstack_connection, filter_kwargs={}, all_tenants=True
+    )
+    mock_run_paginated_query.assert_called_once_with(
+        mock_openstack_connection.compute.servers, {"all_tenants": True}
+    )
+    assert res == ["server1", "server2"]
+
+
+@patch("openstack_query.runners.server_runner.ServerRunner._run_paginated_query")
 def test_run_query_with_meta_arg_projects_with_no_server_queries(
     mock_run_paginated_query, instance, mock_openstack_connection
 ):
