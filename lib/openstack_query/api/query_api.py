@@ -7,7 +7,6 @@ from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresets
 from enums.query.query_types import QueryTypes
 from exceptions.parse_query_error import ParseQueryError
-from exceptions.query_chaining_error import QueryChainingError
 from structs.query.query_components import QueryComponents
 
 logger = logging.getLogger(__name__)
@@ -24,8 +23,6 @@ class QueryAPI:
         self.parser = query_components.parser
         self.output = query_components.output
         self.chainer = query_components.chainer
-        self._query_results = None
-        self._query_results_as_objects = None
         self._query_run = False
 
     def select(self, *props: PropEnum):

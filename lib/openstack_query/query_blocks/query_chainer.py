@@ -54,6 +54,9 @@ class QueryChainer:
         :param forward_outputs: boolean that if true - will forward outputs from
         this query (and previous chained queries) onto new query.
         """
+
+        # prevents circular imports
+        # pylint:disable=import-outside-toplevel
         from openstack_query.query_factory import QueryFactory
         from openstack_query.api.query_api import QueryAPI
 
