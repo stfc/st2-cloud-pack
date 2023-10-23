@@ -1,10 +1,9 @@
 from typing import List, Dict, Union, Type, Set, Optional
 from tabulate import tabulate
-
 from enums.query.props.prop_enum import PropEnum
-from exceptions.parse_query_error import ParseQueryError
-
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
+from exceptions.query_chaining_error import QueryChainingError
+from exceptions.parse_query_error import ParseQueryError
 
 
 class QueryOutput:
@@ -203,13 +202,21 @@ class QueryOutput:
                     output_list = outputs[prop_val]
                     # should only ever contain one element since it's grouped by a unique id
                     forwarded_output_dict.update(output_list[0])
-                except KeyError:
+                except KeyError as exp:
+                    raise QueryChainingError(
+                        "Error: Chaining failed. Could not attach forwarded outputs.\n"
+                        f"Property {grouped_property} extracted from has value {prop_val} which"
+                        "does not match any values from forwarded outputs. "
+                        "This is due to a mismatch in property mappings - likely an Openstack issue"
+                    ) from exp
+
                     # get keys from first set of forwarded outputs - and set it all to "Not Found"
                     # (get first item from first group - keys should all be the same)
-                    first_output_entry = list(outputs.values())[0][0]
-                    forwarded_output_dict.update(
-                        {key: "Not Found" for key in list(first_output_entry.keys())}
-                    )
+                    # TODO: uncomment this block if the error is common
+                    # first_output_entry = list(outputs.values())[0][0]
+                    # forwarded_output_dict.update(
+                    #     {key: "Not Found" for key in list(first_output_entry.keys())}
+                    # )
         return forwarded_output_dict
 
     def _parse_properties(
