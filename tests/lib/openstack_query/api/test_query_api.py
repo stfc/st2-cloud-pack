@@ -349,10 +349,10 @@ def test_then(instance):
     Tests that then method forwards to chainer parse_then method and return results
     """
     mock_query_type = NonCallableMock()
-    forward_outputs = NonCallableMock()
-    res = instance.then(mock_query_type, forward_outputs)
+    keep_previous_results = NonCallableMock()
+    res = instance.then(mock_query_type, keep_previous_results)
     instance.chainer.parse_then.assert_called_once_with(
-        instance, mock_query_type, forward_outputs
+        instance, mock_query_type, keep_previous_results
     )
     assert res == instance.chainer.parse_then.return_value
 
@@ -374,7 +374,7 @@ def test_append_from(mock_query_types_cls, mock_then, instance):
     res = instance.append_from(mock_query_type, mock_cloud_account, *mock_props)
     mock_query_types_cls.from_string.assert_called_once_with(mock_query_type)
     mock_then.assert_called_once_with(
-        mock_query_types_cls.from_string.return_value, forward_outputs=False
+        mock_query_types_cls.from_string.return_value, keep_previous_results=False
     )
 
     mock_new_query.select.assert_called_once_with(*mock_props)

@@ -68,7 +68,7 @@ def find_users_with_decom_flavors(
 
     # run a server query from flavor query using then()
     server_query = (
-        flavor_query.then(query_type="SERVER_QUERY", forward_outputs=True)
+        flavor_query.then(query_type="SERVER_QUERY", keep_previous_results=True)
         .run(
             cloud_account,
             as_admin=True,
@@ -85,7 +85,7 @@ def find_users_with_decom_flavors(
 
     # run a user query from server query using then()
     user_query = (
-        server_query.then("USER_QUERY", forward_outputs=True)
+        server_query.then("USER_QUERY", keep_previous_results=True)
         .run(cloud_account)
         .select(UserProperties.USER_NAME)
         .group_by(UserProperties.USER_EMAIL)
