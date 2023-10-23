@@ -32,13 +32,13 @@ def run_parse_then_query_valid_fixture(instance):
     @patch("openstack_query.api.query_api.QueryAPI")
     @patch("openstack_query.query_blocks.query_chainer.QueryTypes")
     def _run_parse_then_query_valid(
-        mock_forward_outputs,
+        mock_keep_previous_results,
         mock_query_types_cls,
         mock_query_api,
         mock_query_factory,
     ):
         """
-        runs a then_query() test case with forward_outputs being either True or False
+        runs a then_query() test case with keep_previous_results being either True or False
         """
         mock_curr_query = MagicMock()
         mock_curr_query.chainer.get_link_props.return_value = ("curr-prop", "new-prop")
@@ -49,13 +49,13 @@ def run_parse_then_query_valid_fixture(instance):
         )
 
         to_forward = None
-        if mock_forward_outputs:
+        if mock_keep_previous_results:
             to_forward = ("new-prop", mock_curr_query_results)
 
         res = instance.parse_then(
             curr_query=mock_curr_query,
             query_type="query-type",
-            forward_outputs=mock_forward_outputs,
+            keep_previous_results=mock_keep_previous_results,
         )
 
         mock_query_types_cls.from_string.assert_called_once_with("query-type")
@@ -135,7 +135,7 @@ def test_get_link_props_no_mapping(instance):
 def test_parse_then_query_valid_no_forward(run_parse_then_query_valid):
     """
     Tests parse_then method - with valid params
-    should run parse_then with forward_outputs = False
+    should run parse_then with keep_previous_results = False
     """
     run_parse_then_query_valid(False)
 
@@ -162,7 +162,7 @@ def test_parse_then_no_link_props(instance):
         instance.parse_then(
             curr_query=mock_curr_query,
             query_type=mock_query_type,
-            forward_outputs=False,
+            keep_previous_results=False,
         )
         mock_curr_query.chainer.get_link_props.assert_called_once_with(mock_query_type)
 
@@ -181,7 +181,7 @@ def test_parse_then_no_results(instance):
         instance.parse_then(
             curr_query=mock_curr_query,
             query_type=mock_query_type,
-            forward_outputs=False,
+            keep_previous_results=False,
         )
         mock_curr_query.chainer.get_link_props.assert_called_once_with(mock_query_type)
         mock_curr_query.group_by.assert_called_once_with("curr-prop")

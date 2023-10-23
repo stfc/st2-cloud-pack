@@ -208,7 +208,9 @@ class QueryAPI:
         )
         return self.output.to_html(selected_results, title, groups, **kwargs)
 
-    def then(self, query_type: Union[str, QueryTypes], forward_outputs: bool = True):
+    def then(
+        self, query_type: Union[str, QueryTypes], keep_previous_results: bool = True
+    ):
         """
         Public method to chain current query into another query of a different type
         and return the new query so that it will work only on the results of the original query.
@@ -218,12 +220,12 @@ class QueryAPI:
                 - see Mappings for more chaining options
 
         :param query_type: an enum representing the new query to chain into
-        :param forward_outputs:
+        :param keep_previous_results:
             - If True - will forward outputs from this query (and previous chained queries) onto new query.
             - If False - runs the query based on the previous results as a filter without adding additional fields
             NOTE: You will NOT be able to group/sort by these properties in the new query
         """
-        return self.chainer.parse_then(self, query_type, forward_outputs)
+        return self.chainer.parse_then(self, query_type, keep_previous_results)
 
     def append_from(
         self,
@@ -247,7 +249,7 @@ class QueryAPI:
         if isinstance(query_type, str):
             query_type = QueryTypes.from_string(query_type)
 
-        new_query = self.then(query_type, forward_outputs=False)
+        new_query = self.then(query_type, keep_previous_results=False)
         new_query.select(*props)
         new_query.run(cloud_account)
 
