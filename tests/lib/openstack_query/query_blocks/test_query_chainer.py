@@ -183,6 +183,6 @@ def test_parse_then_no_results(instance):
             query_type=mock_query_type,
             keep_previous_results=False,
         )
-        mock_curr_query.chainer.get_link_props.assert_called_once_with(mock_query_type)
-        mock_curr_query.group_by.assert_called_once_with("curr-prop")
-        mock_curr_query.group_by.return_value.to_list.assert_called_once()
+    mock_curr_query.chainer.get_link_props.assert_called_once_with(mock_query_type)
+    mock_curr_query.group_by.assert_called_once_with("curr-prop")
+    mock_curr_query.group_by.return_value.to_list.assert_called_once()
