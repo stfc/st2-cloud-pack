@@ -1,10 +1,11 @@
 from unittest.mock import MagicMock, call, patch
 import pytest
 
+from enums.query.props.server_properties import ServerProperties
+from enums.query.sort_order import SortOrder
 from openstack_query.query_blocks.query_parser import QueryParser
 from exceptions.parse_query_error import ParseQueryError
 
-from enums.query.props.server_properties import ServerProperties
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 
@@ -78,7 +79,7 @@ def test_parse_sort_by_one_key(instance):
     Tests parse_sort_by method works expectedly - one sort-by key
     should call check_prop_valid and add it to sort_by attribute
     """
-    instance.parse_sort_by((MockProperties.PROP_1, False))
+    instance.parse_sort_by((MockProperties.PROP_1, SortOrder.ASC))
     assert instance.sort_by == {MockProperties.PROP_1: False}
 
 
@@ -88,7 +89,7 @@ def test_parse_sort_by_many_keys(instance):
     should call check_prop_valid and add it to sort_by attribute
     """
     instance.parse_sort_by(
-        (MockProperties.PROP_1, False), (MockProperties.PROP_2, True)
+        (MockProperties.PROP_1, SortOrder.ASC), (MockProperties.PROP_2, SortOrder.DESC)
     )
     assert instance.sort_by == {
         MockProperties.PROP_1: False,

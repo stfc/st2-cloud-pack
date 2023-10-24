@@ -2,6 +2,7 @@ from typing import List, Dict, Tuple, Union, Optional, Type
 import logging
 from collections import OrderedDict
 from enums.query.props.prop_enum import PropEnum
+from enums.query.sort_order import SortOrder
 from custom_types.openstack_query.aliases import (
     OpenstackResourceObj,
     PropValue,
@@ -72,11 +73,10 @@ class QueryParser:
         """
         self._group_mappings = group_mappings
 
-    def parse_sort_by(self, *sort_by: Tuple[PropEnum, bool]) -> None:
+    def parse_sort_by(self, *sort_by: Tuple[PropEnum, SortOrder]) -> None:
         """
         Public method used to configure sorting results
-        :param sort_by: one or more tuples of property name to sort by and order
-            - set order to True for descending, False for ascending
+        :param sort_by: one or more tuples of property name to sort by and order enum
         """
         sort_by_dict = {}
         for user_selected_prop, _ in sort_by:
@@ -86,11 +86,11 @@ class QueryParser:
                 )
 
         for prop, order in sort_by:
-            order_log_str = "DESC" if order else "ASC"
+            order_log_str = "DESC" if order.value else "ASC"
             logging.debug(
                 "adding sorting params: %s, order: %s", prop.name, order_log_str
             )
-            sort_by_dict.update({prop: order})
+            sort_by_dict.update({prop: order.value})
 
         self.sort_by = sort_by_dict
 
