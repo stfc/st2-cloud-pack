@@ -43,10 +43,10 @@ class UserRunner(RunnerWrapper):
         """
         if from_domain:
             logger.info("searching in given user domain: '%s'", from_domain.name)
-            return {"domain_id": self._get_user_domain(conn, from_domain)}
+            return {"domain_id": self._get_user_domain_id(conn, from_domain)}
         return {}
 
-    def _get_user_domain(
+    def _get_user_domain_id(
         self, conn: OpenstackConnection, user_domain: UserDomains
     ) -> str:
         """
@@ -73,7 +73,7 @@ class UserRunner(RunnerWrapper):
             "running openstacksdk command conn.identity.find_domain(%s) to get domain",
             domain_name_arg,
         )
-        return conn.identity.find_domain(domain_name_arg)
+        return conn.identity.find_domain(domain_name_arg)["id"]
 
     def _run_query(
         self,
@@ -106,7 +106,7 @@ class UserRunner(RunnerWrapper):
             )
 
         filter_kwargs.update(
-            {"domain_id": self._get_user_domain(conn, self.DEFAULT_DOMAIN)}
+            {"domain_id": self._get_user_domain_id(conn, self.DEFAULT_DOMAIN)}
         )
 
         if "domain_id" in meta_params and meta_params["domain_id"]:
