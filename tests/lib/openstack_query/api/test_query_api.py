@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, NonCallableMock
+from unittest.mock import MagicMock
 import pytest
 
 from openstack_query.api.query_api import QueryAPI
@@ -52,8 +52,6 @@ def run_with_test_case_with_subset_fixture(instance):
 
         assert instance.executer.client_side_filters == client_filters
         assert instance.executer.server_side_filters == server_filters
-        assert instance.executer.parse_func == instance.parser.run_parser
-        assert instance.executer.output_func == instance.output.generate_output
         assert res == instance
 
     return _run_with_test_case
@@ -90,8 +88,6 @@ def run_with_test_case_fixture(instance):
 
         assert instance.executer.client_side_filters == client_filters
         assert instance.executer.server_side_filters == server_filters
-        assert instance.executer.parse_func == instance.parser.run_parser
-        assert instance.executer.output_func == instance.output.generate_output
         assert res == instance
 
     return _run_with_test_case
@@ -222,12 +218,10 @@ def test_run_with_kwargs_and_subset(run_with_test_case_with_subset):
 def test_to_list_as_objects_false(instance):
     """
     Tests that to_list method functions expectedly
-    method should return _query_results attribute when as_objects is false
+    method should return _query_results attribute when as_objects is false and flatten is false
     """
-    # pylint: disable=protected-access
-    mock_query_results = NonCallableMock()
-    instance._query_results = mock_query_results
-    assert instance.to_list() == mock_query_results
+    instance.executer.parse_results.return_value = "", "parsed-list"
+    assert instance.to_list() == "parsed-list"
 
 
 def test_to_list_as_objects_true(instance):
@@ -236,9 +230,8 @@ def test_to_list_as_objects_true(instance):
     method should return _query_results_as_objects attribute when as_objects is true
     """
     # pylint: disable=protected-access
-    mock_query_results_as_obj = NonCallableMock()
-    instance._query_results_as_objects = mock_query_results_as_obj
-    assert instance.to_list(as_objects=True) == mock_query_results_as_obj
+    instance.executer.parse_results.return_value = "object-list", ""
+    assert instance.to_list(as_objects=True) == "object-list"
 
 
 def test_to_list_flatten_true(instance):
@@ -246,11 +239,9 @@ def test_to_list_flatten_true(instance):
     Tests that to_list method functions expectedly
     method should call output.flatten() with query_results
     """
-    # pylint: disable=protected-access
-    mock_query_results = NonCallableMock()
-    instance._query_results = mock_query_results
+    instance.executer.parse_results.return_value = "", "parsed-list"
     res = instance.to_list(flatten=True)
-    instance.output.flatten.assert_called_once_with(mock_query_results)
+    instance.output.flatten.assert_called_once_with("parsed-list")
     assert res == instance.output.flatten.return_value
 
 
@@ -259,11 +250,9 @@ def test_to_list_flatten_and_as_objects(instance):
     Tests that to_list method functions expectedly
     method should call output.flatten() with query_results_as_obj
     """
-    # pylint: disable=protected-access
-    mock_query_results_as_obj = NonCallableMock()
-    instance._query_results_as_objects = mock_query_results_as_obj
+    instance.executer.parse_results.return_value = "object-list", ""
     res = instance.to_list(as_objects=True, flatten=True)
-    instance.output.flatten.assert_called_once_with(mock_query_results_as_obj)
+    instance.output.flatten.assert_called_once_with("object-list")
     assert res == instance.output.flatten.return_value
 
 
@@ -272,9 +261,7 @@ def test_to_list_groups_not_dict(instance):
     Tests that to_list method functions expectedly
     method should raise error when given group and results are not dict
     """
-    # pylint: disable=protected-access
-    mock_query_results = ["result1", "result2"]
-    instance._query_results = mock_query_results
+    instance.executer.parse_results.return_value = "", ["obj1", "obj2"]
     with pytest.raises(ParseQueryError):
         instance.to_list(groups=["group1", "group2"])
 
@@ -284,12 +271,11 @@ def test_to_list_groups_dict(instance):
     Tests that to_list method functions expectedly
     method should return subset of results which match keys (groups) given
     """
-    # pylint: disable=protected-access
     mock_query_results = {
         "group1": ["result1", "result2"],
         "group2": ["result3", "result4"],
     }
-    instance._query_results = mock_query_results
+    instance.executer.parse_results.return_value = "", mock_query_results
     res = instance.to_list(groups=["group1"])
     assert res == {"group1": mock_query_results["group1"]}
 
@@ -299,12 +285,11 @@ def test_to_list_group_not_valid(instance):
     Tests that to_list method functions expectedly
     method should return subset of results which match keys (groups) given
     """
-    # pylint: disable=protected-access
     mock_query_results = {
         "group1": ["result1", "result2"],
         "group2": ["result3", "result4"],
     }
-    instance._query_results = mock_query_results
+    instance.executer.parse_results.return_value = "", mock_query_results
     with pytest.raises(ParseQueryError):
         instance.to_list(groups=["group3"])
 
@@ -314,10 +299,9 @@ def test_to_string(instance):
     Tests that to_string method functions expectedly
     method should call QueryOutput object to_string() and return results
     """
-    mock_query_output = MagicMock()
-    instance.output = mock_query_output
-    instance.output.to_string.return_value = "string-out"
-    assert instance.to_string() == "string-out"
+    instance.executer.parse_results.return_value = "", "parsed-list"
+    assert instance.to_string() == instance.output.to_string.return_value
+    instance.output.to_string.assert_called_once_with("parsed-list", None, None)
 
 
 def test_to_html(instance):
@@ -325,10 +309,9 @@ def test_to_html(instance):
     Tests that to_html method functions expectedly
     method should call QueryOutput object to_html() and return results
     """
-    mock_query_output = MagicMock()
-    instance.output = mock_query_output
-    instance.output.to_html.return_value = "html-out"
-    assert instance.to_html() == "html-out"
+    instance.executer.parse_results.return_value = "", "parsed-list"
+    assert instance.to_html() == instance.output.to_html.return_value
+    instance.output.to_html.assert_called_once_with("parsed-list", None, None)
 
 
 def test_sort_by(instance):
@@ -337,8 +320,9 @@ def test_sort_by(instance):
     method should call QueryParser object parse_sort_by() and return results
     """
     mock_sort_by = [("some-prop-enum", False), ("some-prop-enum-2", True)]
-    instance.sort_by(*mock_sort_by)
+    res = instance.sort_by(*mock_sort_by)
     instance.parser.parse_sort_by.assert_called_once_with(*mock_sort_by)
+    assert res == instance
 
 
 def test_group_by(instance):
@@ -351,17 +335,10 @@ def test_group_by(instance):
     mock_include_ungrouped_results = False
     instance.parser.group_by = None
 
-    instance.group_by(mock_group_by, mock_group_ranges, mock_include_ungrouped_results)
+    res = instance.group_by(
+        mock_group_by, mock_group_ranges, mock_include_ungrouped_results
+    )
     instance.parser.parse_group_by.assert_called_once_with(
         mock_group_by, mock_group_ranges, mock_include_ungrouped_results
     )
-
-
-def test_group_by_already_set(instance):
-    """
-    Tests that group_by method functions expectedly
-    Should raise error when attempting to set group by when already set
-    """
-    instance.parser.group_by_prop = "prop1"
-    with pytest.raises(ParseQueryError):
-        instance.group_by("prop2")
+    assert res == instance

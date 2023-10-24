@@ -23,6 +23,7 @@ class QueryAPI:
         self.output = query_components.output
         self._query_results = None
         self._query_results_as_objects = None
+        self._query_run = False
 
     def select(self, *props: PropEnum):
         """
@@ -94,6 +95,7 @@ class QueryAPI:
             - False (ascending) or True (descending)
         """
         self.parser.parse_sort_by(*sort_by)
+        return self
 
     def group_by(
         self,
@@ -110,10 +112,9 @@ class QueryAPI:
         output of values found that were
         not specified in group mappings - ignored if group ranges not given
         """
-        if self.parser.group_by:
-            raise ParseQueryError("group by already set")
-
         self.parser.parse_group_by(group_by, group_ranges, include_ungrouped_results)
+
+        return self
 
     def run(
         self,
@@ -141,14 +142,12 @@ class QueryAPI:
             self.executer.client_side_filters = self.builder.client_side_filters
             self.executer.server_side_filters = self.builder.server_side_filters
 
-        self.executer.parse_func = self.parser.run_parser
-        self.executer.output_func = self.output.generate_output
-
-        self._query_results_as_objects, self._query_results = self.executer.run_query(
+        self.executer.run_query(
             cloud_account=cloud_account,
             from_subset=from_subset,
             **kwargs,
         )
+        self._query_run = True
         return self
 
     def to_list(
@@ -160,9 +159,10 @@ class QueryAPI:
         :param flatten: boolean which will flatten results if true
         :param groups: a list group to limit output by
         """
-        results = self._query_results
-        if as_objects:
-            results = self._query_results_as_objects
+        result_as_objects, selected_results = self.executer.parse_results(
+            parse_func=self.parser.run_parser, output_func=self.output.generate_output
+        )
+        results = result_as_objects if as_objects else selected_results
 
         if groups:
             if not isinstance(results, dict):
@@ -188,7 +188,11 @@ class QueryAPI:
         :param groups: a list group to limit output by
         :param kwargs: kwargs to pass to generate table
         """
-        return self.output.to_string(self._query_results, title, groups, **kwargs)
+        _, selected_results = self.executer.parse_results(
+            parse_func=self.parser.run_parser, output_func=self.output.generate_output
+        )
+
+        return self.output.to_string(selected_results, title, groups, **kwargs)
 
     def to_html(
         self, title: Optional[str] = None, groups: Optional[List[str]] = None, **kwargs
@@ -199,4 +203,7 @@ class QueryAPI:
         :param groups: a list group to limit output by
         :param kwargs: kwargs to pass to generate table
         """
-        return self.output.to_html(self._query_results, title, groups, **kwargs)
+        _, selected_results = self.executer.parse_results(
+            parse_func=self.parser.run_parser, output_func=self.output.generate_output
+        )
+        return self.output.to_html(selected_results, title, groups, **kwargs)

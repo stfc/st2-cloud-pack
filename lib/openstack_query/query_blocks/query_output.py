@@ -140,8 +140,7 @@ class QueryOutput:
                 )
             all_props.add(prop)
 
-        selected_props = set(self.selected_props)
-        self.selected_props = selected_props.union(all_props)
+        self.selected_props = set(all_props)
 
     def generate_output(
         self, openstack_resources: List[OpenstackResourceObj]
