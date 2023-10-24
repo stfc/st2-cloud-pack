@@ -24,8 +24,6 @@ class QueryAPI:
         self.parser = query_components.parser
         self.output = query_components.output
         self.chainer = query_components.chainer
-        self._query_results = None
-        self._query_results_as_objects = None
         self._query_run = False
 
     def select(self, *props: PropEnum):

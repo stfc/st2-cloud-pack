@@ -1,4 +1,5 @@
 from enums.query.props.flavor_properties import FlavorProperties
+from enums.query.props.server_properties import ServerProperties
 from enums.query.query_presets import (
     QueryPresetsGeneric,
     QueryPresetsString,
@@ -152,3 +153,14 @@ def test_client_side_handlers_integer(client_side_test_mappings):
         QueryPresetsInteger.GREATER_THAN_OR_EQUAL_TO: integer_prop_list,
     }
     client_side_test_mappings(handler, mappings)
+
+
+def test_get_chain_mappings():
+    """
+    Tests get_chain_mapping outputs correctly
+    """
+    expected_mappings = {
+        FlavorProperties.FLAVOR_ID: ServerProperties.FLAVOR_ID,
+    }
+
+    assert FlavorMapping.get_chain_mappings() == expected_mappings

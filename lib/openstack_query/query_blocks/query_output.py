@@ -179,23 +179,38 @@ class QueryOutput:
         output = []
         for item in openstack_resources:
             prop_list = self._parse_properties(item)
-            if self.forwarded_outputs:
-                for grouped_property, outputs in self.forwarded_outputs.items():
-                    prop_val = self._parse_property(grouped_property, item)
-
-                    # this "should not" error because forwarded outputs should always be a super-set
-                    # but sometimes resolving the property fails for whatever reason
-                    # in this case just copy all the keys in one of the dictionaries in the list
-                    # since they should be equal and set the values to "Not Found"
-                    try:
-                        output_list = outputs[prop_val]
-                        # should only ever contain one element since it's grouped by a unique id
-                        prop_list.update(output_list[0])
-                    except KeyError:
-                        prop_list.update({key: "Not Found" for key in outputs.keys()})
-
+            prop_list.update(self._parse_forwarded_outputs(item))
             output.append(prop_list)
         return output
+
+    def _parse_forwarded_outputs(
+        self, openstack_resource: OpenstackResourceObj
+    ) -> Dict[str, str]:
+        """
+        Generates a dictionary of forwarded outputs for the item given
+        :param openstack_resource: openstack resource item to parse forwarded outputs for
+        """
+        forwarded_output_dict = {}
+        if self.forwarded_outputs:
+            for grouped_property, outputs in self.forwarded_outputs.items():
+                prop_val = self._parse_property(grouped_property, openstack_resource)
+
+                # this "should not" error because forwarded outputs should always be a super-set
+                # but sometimes resolving the property fails for whatever reason
+                # in this case just copy all the keys in one of the dictionaries in the list
+                # since they should be equal and set the values to "Not Found"
+                try:
+                    output_list = outputs[prop_val]
+                    # should only ever contain one element since it's grouped by a unique id
+                    forwarded_output_dict.update(output_list[0])
+                except KeyError:
+                    # get keys from first set of forwarded outputs - and set it all to "Not Found"
+                    # (get first item from first group - keys should all be the same)
+                    first_output_entry = list(outputs.values())[0][0]
+                    forwarded_output_dict.update(
+                        {key: "Not Found" for key in list(first_output_entry.keys())}
+                    )
+        return forwarded_output_dict
 
     def _parse_properties(
         self, openstack_resource: OpenstackResourceObj
