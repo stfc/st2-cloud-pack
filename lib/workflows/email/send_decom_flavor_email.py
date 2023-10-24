@@ -153,7 +153,7 @@ def send_decom_flavor_email(
     as_html: bool = False,
     send_email: bool = False,
     override_email: bool = False,
-    override_email_address: str = "",
+    override_email_address: str = "cloud-support@stfc.ac.uk",
     **email_params_kwargs,
 ):
     """
@@ -179,9 +179,16 @@ def send_decom_flavor_email(
     for email_addr, outputs in user_query.to_list().items():
         user_name = outputs[0]["user_name"]
 
+        # if email_address not found - send to override_email_address
+        # also send to override_email_address if override_email set
+
+        send_to = email_addr
+        if override_email or not email_addr:
+            send_to = override_email_address
+
         if not send_email:
             print_email_params(
-                email_addr,
+                send_to,
                 user_name,
                 as_html,
                 ", ".join(flavor_name_list),

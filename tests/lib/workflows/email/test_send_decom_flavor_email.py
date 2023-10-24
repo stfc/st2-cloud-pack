@@ -1,7 +1,8 @@
 from unittest.mock import patch, call, NonCallableMock
-import pytest
 from io import StringIO
 import sys
+import pytest
+
 
 from enums.query.props.flavor_properties import FlavorProperties
 from enums.query.props.project_properties import ProjectProperties
@@ -197,6 +198,7 @@ def test_build_params(mock_email_params, mock_email_template_details):
 
 @pytest.fixture(name="run_send_decom_flavor_email_test_case")
 def run_send_decom_flavor_email_test_case_fixture():
+    # pylint: disable=too-many-arguments
     @patch("workflows.email.send_decom_flavor_email.validate")
     @patch("workflows.email.send_decom_flavor_email.find_users_with_decom_flavors")
     @patch("workflows.email.send_decom_flavor_email.build_email_params")
@@ -276,6 +278,15 @@ def run_send_decom_flavor_email_test_case_fixture():
                     ),
                 ]
             )
+
+            mock_emailer.assert_has_calls(
+                [
+                    call(smtp_account),
+                    call().send_emails(mock_build_email.return_value),
+                    call(smtp_account),
+                    call().send_emails(mock_build_email.return_value),
+                ]
+            )
         else:
             mock_print_email.assert_has_calls(
                 [
@@ -284,30 +295,21 @@ def run_send_decom_flavor_email_test_case_fixture():
                         "user1",
                         as_html,
                         "flavor1, flavor2",
-                        mock_find_users.to_string.return_value,
+                        mock_find_users.return_value.to_string.return_value,
                     ),
                     call(
                         "user_email2" if not override_email else override_email_address,
                         "user2",
                         as_html,
                         "flavor1, flavor2",
-                        mock_find_users.to_string.return_value,
+                        mock_find_users.return_value.to_string.return_value,
                     ),
                 ]
             )
 
-            mock_find_users.to_string.assert_has_calls(
+            mock_find_users.return_value.to_string.assert_has_calls(
                 [call(groups=["user_email1"]), call(groups=["user_email2"])]
             )
-
-        mock_emailer.assert_has_calls(
-            [
-                call(smtp_account),
-                call().send_emails(mock_build_email.return_value),
-                call(smtp_account),
-                call().send_emails(mock_build_email.return_value),
-            ]
-        )
 
     return _run_send_decom_flavor_email_test_case
 
