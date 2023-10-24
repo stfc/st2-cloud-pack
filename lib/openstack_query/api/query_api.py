@@ -5,6 +5,7 @@ from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 from enums.cloud_domains import CloudDomains
 from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresets
+from enums.query.sort_order import SortOrder
 from exceptions.parse_query_error import ParseQueryError
 from structs.query.query_components import QueryComponents
 
@@ -88,11 +89,11 @@ class QueryAPI:
         self.builder.parse_where(preset, prop, kwargs)
         return self
 
-    def sort_by(self, *sort_by: Tuple[PropEnum, bool]):
+    def sort_by(self, *sort_by: Tuple[PropEnum, SortOrder]):
         """
         Public method used to configure sorting results
-        :param sort_by: Tuple of property enum to sort by and boolean representing sorting order
-            - False (ascending) or True (descending)
+        :param sort_by: Tuple of property enum to sort by and enum representing sorting order
+            - SortOrder.ASC (ascending) or SortOrder.DESC (descending)
         """
         self.parser.parse_sort_by(*sort_by)
         return self
