@@ -27,8 +27,6 @@ class QueryExecuter:
     def __init__(self, prop_enum_cls: Type[PropEnum], runner_cls: Type[RunnerWrapper]):
         self._prop_enum_cls = prop_enum_cls
         self.runner = runner_cls(self._prop_enum_cls.get_marker_prop_func())
-        self._parse_func = None
-        self._output_func = None
         self._client_side_filters = None
         self._server_side_filters = None
         self._raw_results = []
@@ -65,42 +63,6 @@ class QueryExecuter:
         self._server_side_filters = server_filters
 
     @property
-    def parse_func(self):
-        """
-        a getter method for parse function
-        """
-        return self._parse_func
-
-    @parse_func.setter
-    def parse_func(
-        self,
-        parse_func: Optional[Callable[[List[OpenstackResourceObj]], Union[Dict, List]]],
-    ):
-        """
-        Setter method for setting parse function
-        :param parse_func: A function that takes a list of Openstack Resource Objects and runs parse functions on them
-        """
-        self._parse_func = parse_func
-
-    @property
-    def output_func(self):
-        """
-        A getter for output function
-        """
-        return self._output_func
-
-    @output_func.setter
-    def output_func(
-        self, val: Callable[[List[OpenstackResourceObj]], List[Dict[str, str]]]
-    ):
-        """
-        Setter method for setting output func
-        :param val: A function that takes a list of Openstack Resource Objects and returns a list of
-        selected properties (as a dictionary) for each resource given
-        """
-        self._output_func = val
-
-    @property
     def raw_results(self) -> List[OpenstackResourceObj]:
         """
         a getter for raw results
@@ -113,24 +75,6 @@ class QueryExecuter:
         a setter for raw results
         """
         self._raw_results = results
-
-    def get_output(
-        self,
-        results: Union[
-            List[OpenstackResourceObj], Dict[str, List[OpenstackResourceObj]]
-        ],
-    ):
-        """
-        Helper method for getting the output using output func
-        :param results: Either a list or group of Openstack Resource objects
-        """
-        if not self.output_func:
-            return []
-
-        if not isinstance(results, dict):
-            return self._output_func(results)
-
-        return {name: self._output_func(group) for name, group in results.items()}
 
     def run_query(
         self,
@@ -161,12 +105,38 @@ class QueryExecuter:
         )
         logger.debug("run completed - time elapsed: %s seconds", time.time() - start)
 
-    def parse_results(self) -> Tuple[Union[List, Dict], Union[List, Dict]]:
+    def parse_results(
+        self,
+        parse_func: Optional[Callable],
+        output_func: Optional[Callable],
+    ) -> Tuple[Union[List, Dict], Union[List, Dict]]:
         """
         This method takes the raw results computed in run_query() and applies the pre-set parser
         and generate output functions
+        :param parse_func: function that groups and sorts raw results
+        :param output_func: function that takes raw results and converts it into outputs
         """
         results = self.raw_results
-        if self.parse_func:
-            results = self._parse_func(results)
-        return results, self.get_output(results)
+        if parse_func:
+            results = parse_func(results)
+        return results, self.get_output(output_func, results)
+
+    @staticmethod
+    def get_output(
+        output_func: Optional[Callable],
+        results: Union[
+            List[OpenstackResourceObj], Dict[str, List[OpenstackResourceObj]]
+        ],
+    ):
+        """
+        Helper method for getting the output using output func
+        :param output_func: function that takes raw results and returns parsed outputs
+        :param results: Either a list or group of Openstack Resource objects
+        """
+        if not output_func:
+            return []
+
+        if not isinstance(results, dict):
+            return output_func(results)
+
+        return {name: output_func(group) for name, group in results.items()}

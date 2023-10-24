@@ -52,8 +52,6 @@ def run_with_test_case_with_subset_fixture(instance):
 
         assert instance.executer.client_side_filters == client_filters
         assert instance.executer.server_side_filters == server_filters
-        assert instance.executer.parse_func == instance.parser.run_parser
-        assert instance.executer.output_func == instance.output.generate_output
         assert res == instance
 
     return _run_with_test_case
@@ -90,8 +88,6 @@ def run_with_test_case_fixture(instance):
 
         assert instance.executer.client_side_filters == client_filters
         assert instance.executer.server_side_filters == server_filters
-        assert instance.executer.parse_func == instance.parser.run_parser
-        assert instance.executer.output_func == instance.output.generate_output
         assert res == instance
 
     return _run_with_test_case

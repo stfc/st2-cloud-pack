@@ -23,11 +23,6 @@ class QueryAPI:
         self.output = query_components.output
         self._query_results = None
         self._query_results_as_objects = None
-
-        # setup executer functions
-        self.executer.parse_func = self.parser.run_parser
-        self.executer.output_func = self.output.generate_output
-
         self._query_run = False
 
     def select(self, *props: PropEnum):
@@ -164,7 +159,9 @@ class QueryAPI:
         :param flatten: boolean which will flatten results if true
         :param groups: a list group to limit output by
         """
-        result_as_objects, selected_results = self.executer.parse_results()
+        result_as_objects, selected_results = self.executer.parse_results(
+            parse_func=self.parser.run_parser, output_func=self.output.generate_output
+        )
         results = result_as_objects if as_objects else selected_results
 
         if groups:
@@ -191,7 +188,10 @@ class QueryAPI:
         :param groups: a list group to limit output by
         :param kwargs: kwargs to pass to generate table
         """
-        _, selected_results = self.executer.parse_results()
+        _, selected_results = self.executer.parse_results(
+            parse_func=self.parser.run_parser, output_func=self.output.generate_output
+        )
+
         return self.output.to_string(selected_results, title, groups, **kwargs)
 
     def to_html(
@@ -203,5 +203,7 @@ class QueryAPI:
         :param groups: a list group to limit output by
         :param kwargs: kwargs to pass to generate table
         """
-        _, selected_results = self.executer.parse_results()
+        _, selected_results = self.executer.parse_results(
+            parse_func=self.parser.run_parser, output_func=self.output.generate_output
+        )
         return self.output.to_html(selected_results, title, groups, **kwargs)

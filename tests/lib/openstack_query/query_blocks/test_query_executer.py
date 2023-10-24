@@ -69,8 +69,11 @@ def test_get_output_list_input(instance):
     Should output the results of calling function stored in output_func attribute with given list
     """
     mock_out = [1, 2, 3]
-    instance._output_func = lambda _: mock_out
-    output = instance.get_output(["mock-result1"])
+
+    def output_func(_):
+        return mock_out
+
+    output = instance.get_output(output_func, ["mock-result1"])
     assert output == mock_out
 
 
@@ -81,9 +84,12 @@ def test_get_output_dict_input(instance):
     """
     mock_out = [1, 2, 3]
     expected_out = {"group1": mock_out, "group2": mock_out}
-    instance._output_func = lambda _: mock_out
+
+    def output_func(_):
+        return mock_out
+
     output = instance.get_output(
-        {"group1": ["mock-results"], "group2": ["mock-results2"]}
+        output_func, {"group1": ["mock-results"], "group2": ["mock-results2"]}
     )
     assert output == expected_out
 
@@ -94,7 +100,7 @@ def test_get_output_no_output_func(instance):
     Should output an empty list
     """
     instance._output_func = None
-    output = instance.get_output(["mock-results1"])
+    output = instance.get_output(None, ["mock-results1"])
     assert output == []
 
 
@@ -150,14 +156,13 @@ def test_parse_results_no_parse_func(instance):
     should return raw_results, and get_output(raw_results) tuple
     """
     instance.raw_results = MagicMock()
-    instance.parse_func = None
     with patch(
         "openstack_query.query_blocks.query_executer.QueryExecuter.get_output"
     ) as mock_get_output:
-        res1, res2 = instance.parse_results()
+        res1, res2 = instance.parse_results(None, "output_func")
 
     assert res1 == instance.raw_results
-    mock_get_output.assert_called_once_with(instance.raw_results)
+    mock_get_output.assert_called_once_with("output_func", instance.raw_results)
     assert res2 == mock_get_output.return_value
 
 
@@ -167,14 +172,16 @@ def test_parse_results_with_parse_func(instance):
     should return raw_results, and get_output(raw_results) tuple
     """
     instance.raw_results = MagicMock()
-    instance.parse_func = MagicMock()
+    parse_func = MagicMock()
+    output_func = "output_func"
+
     with patch(
         "openstack_query.query_blocks.query_executer.QueryExecuter.get_output"
     ) as mock_get_output:
-        res1, res2 = instance.parse_results()
+        res1, res2 = instance.parse_results(parse_func, output_func)
 
-    instance.parse_func.assert_called_once_with(instance.raw_results)
-    assert res1 == instance.parse_func.return_value
+    parse_func.assert_called_once_with(instance.raw_results)
+    assert res1 == parse_func.return_value
 
-    mock_get_output.assert_called_once_with(instance.parse_func.return_value)
+    mock_get_output.assert_called_once_with("output_func", parse_func.return_value)
     assert res2 == mock_get_output.return_value
