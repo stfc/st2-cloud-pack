@@ -2,9 +2,8 @@ from unittest.mock import MagicMock, patch, call
 import pytest
 
 from exceptions.query_chaining_error import QueryChainingError
-from openstack_query.query_blocks.query_output import QueryOutput
 from exceptions.parse_query_error import ParseQueryError
-
+from openstack_query.query_blocks.query_output import QueryOutput
 from enums.query.props.server_properties import ServerProperties
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
@@ -630,7 +629,7 @@ def test_parse_forwarded_outputs_many_set(instance):
 
 
 @patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
-def test_parse_forwarded_prop_Value_not_found(mock_parse_property, instance):
+def test_parse_forwarded_prop_value_not_found(mock_parse_property, instance):
     """
     Tests parse_forwarded_prop() method
     where a prop_value is not found - raise error
@@ -639,6 +638,7 @@ def test_parse_forwarded_prop_Value_not_found(mock_parse_property, instance):
 
     mock_parse_property.return_value = "invalid-prop"
     with pytest.raises(QueryChainingError):
+        # pylint:disable=protected-access
         instance._parse_forwarded_outputs("obj1")
 
 

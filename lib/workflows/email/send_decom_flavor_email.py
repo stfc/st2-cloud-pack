@@ -17,8 +17,8 @@ from email_api.emailer import Emailer
 
 def validate(
     flavor_name_list: List[str],
-    from_projects: List[str],
-    all_projects: bool,
+    from_projects: List[str] = None,
+    all_projects: bool = False,
 ):
     """
     Validate incoming kwargs to ensure they are valid
@@ -68,7 +68,7 @@ def find_users_with_decom_flavors(
 
     # run a server query from flavor query using then()
     server_query = (
-        flavor_query.then(query_type="SERVER_QUERY", keep_previous_results=True)
+        flavor_query.then("SERVER_QUERY", True)
         .run(
             cloud_account,
             as_admin=True,
@@ -85,7 +85,7 @@ def find_users_with_decom_flavors(
 
     # run a user query from server query using then()
     user_query = (
-        server_query.then("USER_QUERY", keep_previous_results=True)
+        server_query.then("USER_QUERY", True)
         .run(cloud_account)
         .select(UserProperties.USER_NAME)
         .group_by(UserProperties.USER_EMAIL)
@@ -106,12 +106,13 @@ def print_email_params(
     :param decom_table: a table representing info found in openstack
     about VMs running with decommissioned flavors
     """
-    print(f"Send Email To: {email_addr}")
-    print(f"email_templates decom-email: username {user_name}")
-    print(f"send as html: {as_html}")
-    print(f"flavor table: {flavor_table}")
-    print(f"decom table: {decom_table}")
-    print("\n\n")
+    print(
+        f"Send Email To: {email_addr}\n"
+        f"email_templates decom-email: username {user_name}\n"
+        f"send as html: {as_html}\n"
+        f"flavor table: {flavor_table}\n"
+        f"decom table: {decom_table}\n"
+    )
 
 
 def build_email_params(
@@ -174,12 +175,9 @@ def send_decom_flavor_email(
     user_query = find_users_with_decom_flavors(
         cloud_account, flavor_name_list, from_projects
     )
-    user_list = user_query.to_list()
 
-    for email_addr, outputs in user_list.items():
+    for email_addr, outputs in user_query.to_list().items():
         user_name = outputs[0]["user_name"]
-        for output in outputs:
-            del output["user_name"]
 
         if not send_email:
             print_email_params(
