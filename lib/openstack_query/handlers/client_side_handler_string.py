@@ -23,10 +23,10 @@ class ClientSideHandlerString(ClientSideHandler):
             QueryPresetsString.MATCHES_REGEX: self._prop_matches_regex,
         }
 
-    def _prop_matches_regex(self, prop: Any, regex_string: str) -> bool:
+    def _prop_matches_regex(self, prop: Any, value: str) -> bool:
         """
         Filter function which returns true if a prop matches a regex pattern
         :param prop: prop value to check against
-        :param regex_string: a string which can be converted into a valid regex pattern to run
+        :param value: a string which can be converted into a valid regex pattern to run
         """
-        return bool(re.match(re.compile(regex_string), prop))
+        return bool(re.match(re.compile(rf"{value}"), prop))
