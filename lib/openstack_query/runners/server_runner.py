@@ -118,6 +118,16 @@ class ServerRunner(RunnerWrapper):
                 "- or you are not running as admin"
             )
 
+        if "all_tenants" in meta_params:
+            filter_kwargs["all_tenants"] = meta_params["all_tenants"]
+
+        if "projects" not in meta_params:
+            logger.debug(
+                "running openstacksdk command conn.compute.servers (%s)",
+                ", ".join(f"{key}={value}" for key, value in filter_kwargs.items()),
+            )
+            return self._run_paginated_query(conn.compute.servers, dict(filter_kwargs))
+
         query_res = []
         project_num = len(meta_params["projects"])
         logger.debug("running query on %s projects", project_num)
