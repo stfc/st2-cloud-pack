@@ -1,4 +1,5 @@
 from typing import Type
+
 from structs.query.query_client_side_handlers import QueryClientSideHandlers
 
 from enums.query.props.server_properties import ServerProperties
@@ -7,8 +8,11 @@ from enums.query.query_presets import (
     QueryPresetsDateTime,
     QueryPresetsString,
 )
-from openstack_query.handlers.server_side_handler import ServerSideHandler
+from enums.query.props.user_properties import UserProperties
+from enums.query.props.project_properties import ProjectProperties
+from enums.query.props.flavor_properties import FlavorProperties
 
+from openstack_query.handlers.server_side_handler import ServerSideHandler
 
 from openstack_query.handlers.client_side_handler_generic import (
     ClientSideHandlerGeneric,
@@ -29,6 +33,19 @@ class ServerMapping(MappingInterface):
     Mapping class for querying Openstack Server objects.
     Define property mappings, kwarg mappings and filter function mappings, and runner mapping related to servers here
     """
+
+    @staticmethod
+    def get_chain_mappings():
+        """
+        Should return a dictionary containing property pairs mapped to query mappings.
+        This is used to define how to chain results from this query to other possible queries
+        """
+        return {
+            ServerProperties.USER_ID: UserProperties.USER_ID,
+            ServerProperties.PROJECT_ID: ProjectProperties.PROJECT_ID,
+            ServerProperties.FLAVOR_ID: FlavorProperties.FLAVOR_ID
+            # TODO hypervisor mapping, image mapping etc
+        }
 
     @staticmethod
     def get_runner_mapping() -> Type[ServerRunner]:
