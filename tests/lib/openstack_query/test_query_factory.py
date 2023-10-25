@@ -8,6 +8,8 @@ from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 @pytest.fixture(name="run_build_query_deps_test_case")
 def run_build_query_deps_test_case_fixture():
+    """Fixture for running build_query_deps"""
+
     # pylint:disable=too-many-arguments
     @patch("openstack_query.query_factory.QueryBuilder")
     @patch("openstack_query.query_factory.QueryOutput")
@@ -24,6 +26,10 @@ def run_build_query_deps_test_case_fixture():
         mock_output,
         mock_builder,
     ):
+        """
+        Tests build_query deps works with different inputs - namely
+        if provided forwarded outputs or not
+        """
         mock_mapping_cls = MagicMock()
         res = QueryFactory.build_query_deps(
             mock_mapping_cls, forwarded_outputs=mock_forwarded_outputs
