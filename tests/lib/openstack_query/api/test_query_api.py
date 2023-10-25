@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, NonCallableMock, patch
 import pytest
 
 from openstack_query.api.query_api import QueryAPI
@@ -340,5 +340,51 @@ def test_group_by(instance):
     )
     instance.parser.parse_group_by.assert_called_once_with(
         mock_group_by, mock_group_ranges, mock_include_ungrouped_results
+    )
+    assert res == instance
+
+
+def test_then(instance):
+    """
+    Tests that then method forwards to chainer parse_then method and return results
+    """
+    mock_query_type = NonCallableMock()
+    keep_previous_results = NonCallableMock()
+    res = instance.then(mock_query_type, keep_previous_results)
+    instance.chainer.parse_then.assert_called_once_with(
+        instance, mock_query_type, keep_previous_results
+    )
+    assert res == instance.chainer.parse_then.return_value
+
+
+@patch("openstack_query.api.query_api.QueryAPI.then")
+@patch("openstack_query.api.query_api.QueryTypes")
+def test_append_from(mock_query_types_cls, mock_then, instance):
+    """
+    Tests that append_from method creates new query
+    """
+    mock_new_query = MagicMock()
+    mock_cloud_account = NonCallableMock()
+    mock_query_type = "query-type"
+
+    mock_props = ["prop1", "prop2", "prop3"]
+    instance.chainer.get_link_props.return_value = ("curr-prop", "link-prop")
+    mock_then.return_value = mock_new_query
+
+    res = instance.append_from(mock_query_type, mock_cloud_account, *mock_props)
+    mock_query_types_cls.from_string.assert_called_once_with(mock_query_type)
+    mock_then.assert_called_once_with(
+        mock_query_types_cls.from_string.return_value, keep_previous_results=False
+    )
+
+    mock_new_query.select.assert_called_once_with(*mock_props)
+    mock_new_query.run.assert_called_once_with(mock_cloud_account)
+    instance.chainer.get_link_props.assert_called_once_with(
+        mock_query_types_cls.from_string.return_value
+    )
+    mock_new_query.group_by.assert_called_once_with("link-prop")
+    mock_new_query.to_list.assert_called_once()
+    instance.output.update_forwarded_outputs.assert_called_once_with(
+        "curr-prop", mock_new_query.to_list.return_value
     )
     assert res == instance

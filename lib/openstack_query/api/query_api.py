@@ -4,8 +4,9 @@ from typing import Union, List, Optional, Dict, Tuple
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 from enums.cloud_domains import CloudDomains
 from enums.query.props.prop_enum import PropEnum
-from enums.query.query_presets import QueryPresets
 from enums.query.sort_order import SortOrder
+from enums.query.query_presets import QueryPresets
+from enums.query.query_types import QueryTypes
 from exceptions.parse_query_error import ParseQueryError
 from structs.query.query_components import QueryComponents
 
@@ -22,8 +23,7 @@ class QueryAPI:
         self.executer = query_components.executer
         self.parser = query_components.parser
         self.output = query_components.output
-        self._query_results = None
-        self._query_results_as_objects = None
+        self.chainer = query_components.chainer
         self._query_run = False
 
     def select(self, *props: PropEnum):
@@ -114,7 +114,6 @@ class QueryAPI:
         not specified in group mappings - ignored if group ranges not given
         """
         self.parser.parse_group_by(group_by, group_ranges, include_ungrouped_results)
-
         return self
 
     def run(
@@ -208,3 +207,54 @@ class QueryAPI:
             parse_func=self.parser.run_parser, output_func=self.output.generate_output
         )
         return self.output.to_html(selected_results, title, groups, **kwargs)
+
+    def then(
+        self, query_type: Union[str, QueryTypes], keep_previous_results: bool = True
+    ):
+        """
+        Public method to chain current query into another query of a different type
+        and return the new query so that it will work only on the results of the original query.
+        NOTE - query must be run first for this to work
+        NOTE - a shared common property must exist between this query and the new query
+            - i.e. both ServerQuery and UserQuery share the 'USER_ID' property so chaining is possible
+                - see Mappings for more chaining options
+
+        :param query_type: an enum representing the new query to chain into
+        :param keep_previous_results:
+            - If True - will forward outputs from this query (and previous chained queries) onto new query.
+            - If False - runs the query based on the previous results as a filter without adding additional fields
+            NOTE: You will NOT be able to group/sort by these properties in the new query
+        """
+        return self.chainer.parse_then(self, query_type, keep_previous_results)
+
+    def append_from(
+        self,
+        query_type: Union[str, QueryTypes],
+        cloud_account: Union[str, CloudDomains],
+        *props: PropEnum,
+    ):
+        """
+        Public method to append specific properties from other queries to the output
+        of this query. This method will run a secondary query on top of this one to get required properties
+        and append the properties to the results of this query
+        NOTE - query must be run first for this to work
+        NOTE - a shared common property must exist between this query and the new query
+            - i.e. both ServerQuery and UserQuery share the 'USER_ID' property so chaining is possible
+                - see Mappings for more chaining options
+
+        :param query_type: an enum representing the new query to chain into
+        :param cloud_account: A String or a CloudDomains Enum for the clouds configuration to use
+        :param props: list of props from new queries to get
+        """
+        if isinstance(query_type, str):
+            query_type = QueryTypes.from_string(query_type)
+
+        new_query = self.then(query_type, keep_previous_results=False)
+        new_query.select(*props)
+        new_query.run(cloud_account)
+
+        link_props = self.chainer.get_link_props(query_type)
+        new_query.group_by(link_props[1])
+
+        self.output.update_forwarded_outputs(link_props[0], new_query.to_list())
+        return self

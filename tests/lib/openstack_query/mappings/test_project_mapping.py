@@ -1,4 +1,5 @@
 from enums.query.props.project_properties import ProjectProperties
+from enums.query.props.server_properties import ServerProperties
 from enums.query.query_presets import (
     QueryPresetsGeneric,
     QueryPresetsString,
@@ -141,3 +142,12 @@ def test_client_side_handlers_integer():
     """
     handler = ProjectMapping.get_client_side_handlers().integer_handler
     assert not handler
+
+
+def test_get_chain_mappings():
+    """
+    Tests get_chain_mapping outputs correctly
+    """
+    expected_mappings = {ProjectProperties.PROJECT_ID: ServerProperties.PROJECT_ID}
+
+    assert ProjectMapping.get_chain_mappings() == expected_mappings

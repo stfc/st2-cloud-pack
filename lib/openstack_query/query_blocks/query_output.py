@@ -1,10 +1,13 @@
 from typing import List, Dict, Union, Type, Set, Optional
 from tabulate import tabulate
-
 from enums.query.props.prop_enum import PropEnum
+from custom_types.openstack_query.aliases import (
+    OpenstackResourceObj,
+    PropValue,
+    GroupedReturn,
+)
+from exceptions.query_chaining_error import QueryChainingError
 from exceptions.parse_query_error import ParseQueryError
-
-from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 
 
 class QueryOutput:
@@ -21,15 +24,38 @@ class QueryOutput:
     def __init__(self, prop_enum_cls: Type[PropEnum]):
         self._prop_enum_cls = prop_enum_cls
         self._props = set()
+        self._forwarded_outputs: Dict[PropEnum, GroupedReturn] = {}
+
+    def update_forwarded_outputs(self, link_prop: PropEnum, values: Dict[str, List]):
+        """
+        method to set outputs to forward from other queries
+        :param link_prop: the property that the results are grouped by
+        :param values: grouped properties to forward
+        """
+        self._forwarded_outputs[link_prop] = values
+
+    @property
+    def forwarded_outputs(self) -> Dict[PropEnum, GroupedReturn]:
+        """
+        A getter for forwarded properties
+        """
+        return self._forwarded_outputs
 
     @property
     def selected_props(self) -> List[PropEnum]:
+        """
+        A getter for selected properties relevant to the query
+        """
         if not self._props:
             return []
         return list(self._props)
 
     @selected_props.setter
     def selected_props(self, props=Set[PropEnum]):
+        """
+        A setter for setting selected properties
+        :param props: A set of property enums to select for
+        """
         self._props = props
 
     def to_string(
@@ -153,9 +179,40 @@ class QueryOutput:
         :param openstack_resources: List of openstack objects to obtain properties from - e.g. [Server1, Server2]
         :return: List containing dictionaries of the requested properties obtained from the items
         """
-        return [self._parse_property(item) for item in openstack_resources]
+        output = []
+        for item in openstack_resources:
+            prop_list = self._parse_properties(item)
+            prop_list.update(self._parse_forwarded_outputs(item))
+            output.append(prop_list)
+        return output
 
-    def _parse_property(
+    def _parse_forwarded_outputs(
+        self, openstack_resource: OpenstackResourceObj
+    ) -> Dict[str, str]:
+        """
+        Generates a dictionary of forwarded outputs for the item given
+        :param openstack_resource: openstack resource item to parse forwarded outputs for
+        """
+        forwarded_output_dict = {}
+        for grouped_property, outputs in self.forwarded_outputs.items():
+            prop_val = self._parse_property(grouped_property, openstack_resource)
+
+            # this "should not" error because forwarded outputs should always be a super-set
+            # but sometimes resolving the property fails for whatever reason - fail noisily
+            try:
+                output_list = outputs[prop_val]
+                # should only ever contain one element since it's grouped by a unique id
+                forwarded_output_dict.update(output_list[0])
+            except KeyError as exp:
+                raise QueryChainingError(
+                    "Error: Chaining failed. Could not attach forwarded outputs.\n"
+                    f"Property {grouped_property} extracted from has value {prop_val} which"
+                    "does not match any values from forwarded outputs. "
+                    "This is due to a mismatch in property mappings - likely an Openstack issue"
+                ) from exp
+        return forwarded_output_dict
+
+    def _parse_properties(
         self, openstack_resource: OpenstackResourceObj
     ) -> Dict[str, PropValue]:
         """
@@ -164,13 +221,24 @@ class QueryOutput:
         """
         obj_dict = {}
         for prop in self.selected_props:
-            prop_func = self._prop_enum_cls.get_prop_mapping(prop)
-            try:
-                val = str(prop_func(openstack_resource))
-            except AttributeError:
-                val = self.DEFAULT_OUT
+            val = self._parse_property(prop, openstack_resource)
             obj_dict[prop.name.lower()] = val
         return obj_dict
+
+    def _parse_property(
+        self, prop: PropEnum, openstack_resource: OpenstackResourceObj
+    ) -> PropValue:
+        """
+        Parse single property from an openstack_object and return result
+        :param prop: property to parse
+        :param openstack_resource: openstack resource item to obtain property from
+        """
+        prop_func = self._prop_enum_cls.get_prop_mapping(prop)
+        try:
+            val = str(prop_func(openstack_resource))
+        except AttributeError:
+            val = self.DEFAULT_OUT
+        return val
 
     @staticmethod
     def _generate_table(

@@ -116,13 +116,14 @@ class QueryParser:
         :param include_missing: a flag which if set includes an extra grouping for values
         that don't fall into any group specified in group_ranges
         """
+
         if group_by not in self._prop_enum_cls:
             raise ParseQueryError(
                 f"Error: Given property to group by: {group_by.name} is not supported by query"
             )
 
         self.group_by = group_by
-
+        self.group_mappings = {}
         if group_ranges:
             self._parse_group_ranges(group_ranges)
 

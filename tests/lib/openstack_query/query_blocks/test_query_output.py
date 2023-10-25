@@ -1,9 +1,9 @@
 from unittest.mock import MagicMock, patch, call
 import pytest
 
-from openstack_query.query_blocks.query_output import QueryOutput
+from exceptions.query_chaining_error import QueryChainingError
 from exceptions.parse_query_error import ParseQueryError
-
+from openstack_query.query_blocks.query_output import QueryOutput
 from enums.query.props.server_properties import ServerProperties
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
@@ -331,30 +331,70 @@ def test_generate_output_no_items(instance):
     assert instance.generate_output([]) == []
 
 
-@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
-def test_generate_output_one_item(mock_parse_property, instance):
+@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_properties")
+@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_forwarded_outputs")
+def test_generate_output_one_item(
+    mock_parse_forwarded_outputs, mock_parse_properties, instance
+):
     """
-    Tests that generate_output method works expectedly - 1 item
-    method should call parse_property with the singular item
+    Tests generate output method - with a list containing one item
     """
-    item_1 = "openstack-resource-1"
-    instance.generate_output([item_1])
-    mock_parse_property.assert_called_once_with(item_1)
+    mock_parse_properties.return_value = {"prop1": "val1", "prop2": "val2"}
+
+    mock_parse_forwarded_outputs.return_value = {
+        "output_prop3": "val3",
+        "output_prop4": "val4",
+    }
+
+    res = instance.generate_output(["obj1"])
+    mock_parse_properties.assert_called_once_with("obj1")
+    mock_parse_forwarded_outputs.assert_called_once_with("obj1")
+    assert res == [
+        {
+            "prop1": "val1",
+            "prop2": "val2",
+            "output_prop3": "val3",
+            "output_prop4": "val4",
+        }
+    ]
 
 
-@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
-def test_generate_output_multiple_items(mock_parse_property, instance):
+@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_properties")
+@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_forwarded_outputs")
+def test_generate_output_many_items(
+    mock_parse_forwarded_outputs, mock_parse_properties, instance
+):
     """
-    Tests that generate_output method works expectedly - many items
-    method should call parse_property multiple times with each item in item list
+    Tests generate output method - with a list containing one item
     """
+    mock_parse_properties.side_effect = [
+        {"prop1": "val1", "prop2": "val2"},
+        {"prop1": "val3", "prop2": "val4"},
+    ]
+    mock_parse_forwarded_outputs.side_effect = [
+        {"output_prop1": "val1", "output_prop2": "val2"},
+        {"output_prop1": "val3", "output_prop2": "val4"},
+    ]
 
-    item_1 = "openstack-resource-1"
-    item_2 = "openstack-resource-2"
-    instance.generate_output([item_1, item_2])
-    mock_parse_property.assert_has_calls(
-        [call("openstack-resource-1"), call("openstack-resource-2")]
-    )
+    res = instance.generate_output(["obj1", "obj2"])
+    mock_parse_properties.assert_has_calls([call("obj1"), call("obj2")])
+    mock_parse_forwarded_outputs.asssert_has_calls([call("obj1"), call("obj2")])
+
+    expected_vals = [
+        {
+            "prop1": "val1",
+            "prop2": "val2",
+            "output_prop1": "val1",
+            "output_prop2": "val2",
+        },
+        {
+            "prop1": "val3",
+            "prop2": "val4",
+            "output_prop1": "val3",
+            "output_prop2": "val4",
+        },
+    ]
+    assert res == expected_vals
 
 
 @pytest.fixture(name="mock_get_prop_func")
@@ -378,22 +418,22 @@ def get_prop_func_fixture():
     return _mock_get_prop_func
 
 
-def test_parse_property_no_props(instance):
+def test_parse_properties_no_props(instance):
     """
-    Tests that parse_property function works expectedly with 0 prop_funcs to apply
+    Tests that parse_properties function works expectedly with 0 prop_funcs to apply
     method should return an empty dict
     """
 
     # mock get_prop_mapping to return a func string appropriate for that prop
     instance.selected_props = set()
     # pylint:disable=protected-access
-    assert instance._parse_property("openstack-item") == {}
+    assert instance._parse_properties("openstack-item") == {}
 
 
 @patch.object(MockProperties, "get_prop_mapping")
-def test_parse_property_one_prop(mock_get_prop_func, instance):
+def test_parse_properties_one_prop(mock_get_prop_func, instance):
     """
-    Tests that parse_property function works expectedly with 0 prop_funcs to apply
+    Tests that parse_properties function works expectedly with 0 prop_funcs to apply
     method should return a dict with one key value pair (prop-name, prop-value)
     """
     mock_prop_func = MagicMock()
@@ -403,7 +443,7 @@ def test_parse_property_one_prop(mock_get_prop_func, instance):
 
     instance.selected_props = {MockProperties.PROP_1}
     # pylint:disable=protected-access
-    res = instance._parse_property("openstack-item")
+    res = instance._parse_properties("openstack-item")
 
     mock_get_prop_func.assert_called_once_with(MockProperties.PROP_1)
     mock_prop_func.assert_called_once_with("openstack-item")
@@ -411,9 +451,9 @@ def test_parse_property_one_prop(mock_get_prop_func, instance):
     assert res == {"prop_1": "prop 1 out"}
 
 
-def test_parse_property_many_props(mock_get_prop_func, instance):
+def test_parse_properties_many_props(mock_get_prop_func, instance):
     """
-    Tests that parse_property function works expectedly with 0 prop_funcs to apply
+    Tests that parse_properties function works expectedly with 0 prop_funcs to apply
     method should return a dict with many key value pairs (prop-name, prop-value)
     """
 
@@ -423,7 +463,7 @@ def test_parse_property_many_props(mock_get_prop_func, instance):
         MockProperties, "get_prop_mapping", wraps=mock_get_prop_func
     ) as mock_get_prop_mapping:
         # pylint:disable=protected-access
-        res = instance._parse_property("openstack-item")
+        res = instance._parse_properties("openstack-item")
 
     assert res == {"prop_1": "prop 1 out", "prop_2": "Not Found"}
     mock_get_prop_mapping.assert_has_calls(
@@ -517,3 +557,86 @@ def test_flatten_list_many_keys_many_items(instance):
     assert instance._flatten_list(
         [{"prop1": "val1", "prop2": "val2"}, {"prop1": "val3", "prop2": "val4"}]
     ) == {"prop1": ["val1", "val3"], "prop2": ["val2", "val4"]}
+
+
+def test_update_forwarded_outputs(instance):
+    """
+    Tests update_forwarded_outputs() method
+    ensure various test cases when running update_forwarded_outputs succeeds
+    """
+
+    # test update with one output set when forwarded_outputs empty
+    instance.update_forwarded_outputs("prop1", "output")
+    assert instance.forwarded_outputs == {"prop1": "output"}
+
+    # test add another another output set - different group key
+    instance.update_forwarded_outputs("prop2", "output2")
+    assert instance.forwarded_outputs == {"prop1": "output", "prop2": "output2"}
+
+    # test update works - same group key
+    instance.update_forwarded_outputs("prop1", "output-new")
+    assert instance.forwarded_outputs == {"prop1": "output-new", "prop2": "output2"}
+
+
+def test_parse_forwarded_outputs_no_set(instance):
+    """
+    Tests parse_forwarded_outputs() method - with no forwarded_outputs set
+    should return empty dict
+    """
+    # pylint:disable=protected-access
+    assert instance._parse_forwarded_outputs("obj1") == {}
+
+
+def test_parse_forwarded_outputs_one_set(instance):
+    """
+    Tests parse_forwarded_outputs() method - one set of forwarded_outputs
+    """
+    # grouped outputs that should be found - should always be a singleton list
+    # since it should always be grouped based on a unique id
+    expected_out = {"forwarded-prop1": "val1", "forwarded-prop2": "val2"}
+    instance.update_forwarded_outputs("prop1", {"prop_val1": [expected_out]})
+
+    with patch(
+        "openstack_query.query_blocks.query_output.QueryOutput._parse_property"
+    ) as mock_parse_property:
+        mock_parse_property.return_value = "prop_val1"
+        # pylint:disable=protected-access
+        res = instance._parse_forwarded_outputs("obj1")
+
+    mock_parse_property.assert_called_once_with("prop1", "obj1")
+    assert res == expected_out
+
+
+def test_parse_forwarded_outputs_many_set(instance):
+    """
+    Tests parse_forwarded_outputs() method - a set of many forwarded_outputs
+    """
+    expected_out1 = {"forwarded-prop1": "val1", "forwarded-prop2": "val2"}
+    expected_out2 = {"forwarded-prop3": "val3", "forwarded-prop4": "val4"}
+
+    instance.update_forwarded_outputs("prop1", {"prop_val1": [expected_out1]})
+    instance.update_forwarded_outputs("prop2", {"prop_val2": [expected_out2]})
+
+    with patch(
+        "openstack_query.query_blocks.query_output.QueryOutput._parse_property"
+    ) as mock_parse_property:
+        mock_parse_property.side_effect = ["prop_val1", "prop_val2"]
+        # pylint:disable=protected-access
+        res = instance._parse_forwarded_outputs("obj1")
+
+    mock_parse_property.assert_has_calls([call("prop1", "obj1"), call("prop2", "obj1")])
+    assert res == {**expected_out1, **expected_out2}
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
+def test_parse_forwarded_prop_value_not_found(mock_parse_property, instance):
+    """
+    Tests parse_forwarded_prop() method
+    where a prop_value is not found - raise error
+    """
+    instance.update_forwarded_outputs("prop1", {"prop-val1": ["outputs"]})
+
+    mock_parse_property.return_value = "invalid-prop"
+    with pytest.raises(QueryChainingError):
+        # pylint:disable=protected-access
+        instance._parse_forwarded_outputs("obj1")

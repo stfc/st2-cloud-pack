@@ -1,5 +1,9 @@
 from unittest.mock import patch, call
+
+from enums.query.props.flavor_properties import FlavorProperties
+from enums.query.props.project_properties import ProjectProperties
 from enums.query.props.server_properties import ServerProperties
+from enums.query.props.user_properties import UserProperties
 from enums.query.query_presets import (
     QueryPresetsGeneric,
     QueryPresetsDateTime,
@@ -191,3 +195,16 @@ def test_client_side_handlers_integer():
     """
     handler = ServerMapping.get_client_side_handlers().integer_handler
     assert not handler
+
+
+def test_get_chain_mappings():
+    """
+    Tests get_chain_mapping outputs correctly
+    """
+    expected_mappings = {
+        ServerProperties.USER_ID: UserProperties.USER_ID,
+        ServerProperties.PROJECT_ID: ProjectProperties.PROJECT_ID,
+        ServerProperties.FLAVOR_ID: FlavorProperties.FLAVOR_ID,
+    }
+
+    assert ServerMapping.get_chain_mappings() == expected_mappings

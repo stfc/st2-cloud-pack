@@ -1,3 +1,4 @@
+from enums.query.props.server_properties import ServerProperties
 from enums.query.props.user_properties import UserProperties
 from enums.query.query_presets import QueryPresetsGeneric, QueryPresetsString
 from openstack_query.handlers.server_side_handler import ServerSideHandler
@@ -114,3 +115,14 @@ def test_client_side_handlers_datetime():
     """
     handler = UserMapping.get_client_side_handlers().datetime_handler
     assert not handler
+
+
+def test_get_chain_mappings():
+    """
+    Tests get_chain_mapping outputs correctly
+    """
+    expected_mappings = {
+        UserProperties.USER_ID: ServerProperties.USER_ID,
+    }
+
+    assert UserMapping.get_chain_mappings() == expected_mappings

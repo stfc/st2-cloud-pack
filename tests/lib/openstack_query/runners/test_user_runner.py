@@ -22,7 +22,7 @@ def instance_fixture(mock_connection):
     )
 
 
-@patch("openstack_query.runners.user_runner.UserRunner._get_user_domain")
+@patch("openstack_query.runners.user_runner.UserRunner._get_user_domain_id")
 def test_parse_meta_params_with_from_domain(
     mock_get_user_domain, instance, mock_openstack_connection
 ):
@@ -119,7 +119,7 @@ def test_run_query_domain_id_meta_arg_preset_duplication(
 
 
 @patch("openstack_query.runners.user_runner.UserRunner._run_paginated_query")
-@patch("openstack_query.runners.user_runner.UserRunner._get_user_domain")
+@patch("openstack_query.runners.user_runner.UserRunner._get_user_domain_id")
 def test_run_query_no_meta_args(
     mock_get_user_domain, mock_run_paginated_query, instance, mock_openstack_connection
 ):
@@ -176,20 +176,20 @@ def test_run_query_with_from_domain_and_id_given(instance, mock_openstack_connec
         )
 
 
-def test_get_user_domain(instance, mock_openstack_connection):
+def test_get_user_domain_id(instance, mock_openstack_connection):
     """
     Test that user domains have a mapping and no errors are raised
     """
     for domain in UserDomains:
-        instance._get_user_domain(mock_openstack_connection, domain)
+        instance._get_user_domain_id(mock_openstack_connection, domain)
 
 
-def test_get_user_domain_error_raised(instance, mock_openstack_connection):
+def test_get_user_domain_id_error_raised(instance, mock_openstack_connection):
     """
     Test that an error is raised if a domain mapping is not found
     """
     with pytest.raises(EnumMappingError):
-        instance._get_user_domain(mock_openstack_connection, MagicMock())
+        instance._get_user_domain_id(mock_openstack_connection, MagicMock())
 
 
 def test_parse_subset(instance):

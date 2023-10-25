@@ -60,3 +60,8 @@ GroupMappings = Dict[str, Callable[[OpenstackResourceObj], bool]]
 # type alias for group ranges, a dictionary with group name as keys mapped to a list of prop values
 # that should belong to that group
 GroupRanges = Dict[str, List[PropValue]]
+
+
+# a type alias for grouped and parsed outputs. A dicitonary of grouped prop-value as key and list of values
+# that belong to that group
+GroupedReturn = Dict[PropValue, List[Dict]]
