@@ -36,7 +36,7 @@ class QueryChainer:
         :param next_query: next Query QueryTypes
         """
 
-        new_query_props = list(next_query.value.get_prop_mapping())
+        new_query_props = next_query.value.get_prop_mapping()
         for start_chain_prop, check_prop in self._chain_mappings.items():
             if check_prop in new_query_props:
                 return start_chain_prop, check_prop
@@ -71,10 +71,11 @@ class QueryChainer:
                 f"Query Chaining Error: Could not find a way to chain current query into {query_type}"
             )
 
+        # we group the current results by the link property as this is the way we forward results
         curr_query_results = curr_query.group_by(link_props[0]).to_list()
         if not curr_query_results:
             raise QueryChainingError(
-                "Query Chaining Error: No values found after running query set in {curr_query_obj_cls} aborting. "
+                "Query Chaining Error: No values found after running this query - aborting. "
                 "Have you run the query first?"
             )
 

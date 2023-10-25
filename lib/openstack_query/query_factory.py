@@ -1,6 +1,7 @@
-from typing import Tuple, Type, List, Dict, Optional
+from typing import Tuple, Type, Optional
 
 from enums.query.props.prop_enum import PropEnum
+from custom_types.openstack_query.aliases import GroupedReturn
 from openstack_query.mappings.mapping_interface import MappingInterface
 from openstack_query.query_blocks.query_builder import QueryBuilder
 from openstack_query.query_blocks.query_chainer import QueryChainer
@@ -22,7 +23,7 @@ class QueryFactory:
     @staticmethod
     def build_query_deps(
         mapping_cls: Type[MappingInterface],
-        forwarded_outputs: Optional[Tuple[PropEnum, Dict[str, List]]] = None,
+        forwarded_outputs: Optional[Tuple[PropEnum, GroupedReturn]] = None,
     ) -> QueryComponents:
         """
         Composes objects that make up the query - to allow dependency injection

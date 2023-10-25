@@ -640,23 +640,3 @@ def test_parse_forwarded_prop_value_not_found(mock_parse_property, instance):
     with pytest.raises(QueryChainingError):
         # pylint:disable=protected-access
         instance._parse_forwarded_outputs("obj1")
-
-
-# TODO uncomment this when/if we find that prop mismatch error and need to implement workaround
-# def test_parse_forwarded_prop_value_not_found(instance):
-#    """
-#    Tests parse_forwarded_prop() method
-#    where a prop_value is not found, set to "Not Found"
-#    """
-#    forwarded_entry = {"forwarded-prop1": "val1", "forwarded-prop2": "val2"}
-#
-#    instance.update_forwarded_outputs("prop1", {"prop-val1": [forwarded_entry]})
-#    with patch(
-#        "openstack_query.query_blocks.query_output.QueryOutput._parse_property"
-#    ) as mock_parse_property:
-#        mock_parse_property.return_value = "invalid-prop"
-#        # pylint:disable=protected-access
-#        res = instance._parse_forwarded_outputs("obj1")
-#
-#    mock_parse_property.assert_called_once_with("prop1", "obj1")
-#    assert res == {key: "Not Found" for key in forwarded_entry}

@@ -1,7 +1,11 @@
 from typing import List, Dict, Union, Type, Set, Optional
 from tabulate import tabulate
 from enums.query.props.prop_enum import PropEnum
-from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
+from custom_types.openstack_query.aliases import (
+    OpenstackResourceObj,
+    PropValue,
+    GroupedReturn,
+)
 from exceptions.query_chaining_error import QueryChainingError
 from exceptions.parse_query_error import ParseQueryError
 
@@ -20,7 +24,7 @@ class QueryOutput:
     def __init__(self, prop_enum_cls: Type[PropEnum]):
         self._prop_enum_cls = prop_enum_cls
         self._props = set()
-        self._forwarded_outputs = {}
+        self._forwarded_outputs: Dict[PropEnum, GroupedReturn] = {}
 
     def update_forwarded_outputs(self, link_prop: PropEnum, values: Dict[str, List]):
         """
@@ -31,7 +35,7 @@ class QueryOutput:
         self._forwarded_outputs[link_prop] = values
 
     @property
-    def forwarded_outputs(self):
+    def forwarded_outputs(self) -> Dict[PropEnum, GroupedReturn]:
         """
         A getter for forwarded properties
         """
@@ -190,33 +194,22 @@ class QueryOutput:
         :param openstack_resource: openstack resource item to parse forwarded outputs for
         """
         forwarded_output_dict = {}
-        if self.forwarded_outputs:
-            for grouped_property, outputs in self.forwarded_outputs.items():
-                prop_val = self._parse_property(grouped_property, openstack_resource)
+        for grouped_property, outputs in self.forwarded_outputs.items():
+            prop_val = self._parse_property(grouped_property, openstack_resource)
 
-                # this "should not" error because forwarded outputs should always be a super-set
-                # but sometimes resolving the property fails for whatever reason
-                # in this case just copy all the keys in one of the dictionaries in the list
-                # since they should be equal and set the values to "Not Found"
-                try:
-                    output_list = outputs[prop_val]
-                    # should only ever contain one element since it's grouped by a unique id
-                    forwarded_output_dict.update(output_list[0])
-                except KeyError as exp:
-                    raise QueryChainingError(
-                        "Error: Chaining failed. Could not attach forwarded outputs.\n"
-                        f"Property {grouped_property} extracted from has value {prop_val} which"
-                        "does not match any values from forwarded outputs. "
-                        "This is due to a mismatch in property mappings - likely an Openstack issue"
-                    ) from exp
-
-                    # get keys from first set of forwarded outputs - and set it all to "Not Found"
-                    # (get first item from first group - keys should all be the same)
-                    # TODO: uncomment this block if the error is common
-                    # first_output_entry = list(outputs.values())[0][0]
-                    # forwarded_output_dict.update(
-                    #     {key: "Not Found" for key in list(first_output_entry.keys())}
-                    # )
+            # this "should not" error because forwarded outputs should always be a super-set
+            # but sometimes resolving the property fails for whatever reason - fail noisily
+            try:
+                output_list = outputs[prop_val]
+                # should only ever contain one element since it's grouped by a unique id
+                forwarded_output_dict.update(output_list[0])
+            except KeyError as exp:
+                raise QueryChainingError(
+                    "Error: Chaining failed. Could not attach forwarded outputs.\n"
+                    f"Property {grouped_property} extracted from has value {prop_val} which"
+                    "does not match any values from forwarded outputs. "
+                    "This is due to a mismatch in property mappings - likely an Openstack issue"
+                ) from exp
         return forwarded_output_dict
 
     def _parse_properties(

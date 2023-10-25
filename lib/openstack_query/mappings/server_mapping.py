@@ -43,8 +43,7 @@ class ServerMapping(MappingInterface):
         return {
             ServerProperties.USER_ID: UserProperties.USER_ID,
             ServerProperties.PROJECT_ID: ProjectProperties.PROJECT_ID,
-            ServerProperties.FLAVOR_ID: FlavorProperties.FLAVOR_ID
-            # TODO hypervisor mapping, image mapping etc
+            ServerProperties.FLAVOR_ID: FlavorProperties.FLAVOR_ID,
         }
 
     @staticmethod
