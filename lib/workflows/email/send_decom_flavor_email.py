@@ -101,7 +101,7 @@ def print_email_params(
     Print email params instead of sending the email
     :param email_addr: email address to send to
     :param user_name: name of user in openstack
-    :param as_html: if the email is to be sent as html email
+    :param as_html: A boolean which if selected will send an email, otherwise prints email details only
     :param flavor_table: a table representing decommissioned flavors
     :param decom_table: a table representing info found in openstack
     about VMs running with decommissioned flavors
