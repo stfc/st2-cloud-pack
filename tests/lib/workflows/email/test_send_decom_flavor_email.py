@@ -1,6 +1,4 @@
 from unittest.mock import patch, call, NonCallableMock
-from io import StringIO
-import sys
 import pytest
 
 
@@ -138,21 +136,16 @@ def test_print_email_params():
     flavor_table = "Flavor Table Content"
     decom_table = "Decom Table Content"
 
-    # redirect print to StringIO
-    output_buffer = StringIO()
-    sys.stdout = output_buffer
+    with patch("builtins.print") as mock_print:
+        print_email_params(email_addr, user_name, as_html, flavor_table, decom_table)
 
-    expected_output = (
+    mock_print.assert_called_once_with(
         f"Send Email To: {email_addr}\n"
         f"email_templates decom-email: username {user_name}\n"
         f"send as html: {as_html}\n"
         f"flavor table: {flavor_table}\n"
-        f"decom table: {decom_table}\n\n"
+        f"decom table: {decom_table}\n"
     )
-
-    print_email_params(email_addr, user_name, as_html, flavor_table, decom_table)
-    assert output_buffer.getvalue() == expected_output
-    sys.stdout = sys.__stdout__
 
 
 @patch("workflows.email.send_decom_flavor_email.EmailTemplateDetails")
