@@ -22,7 +22,7 @@ to handle rabbitmq message commands.
 | `rabbitmq.server.delete.rule` | matches trigger `rabbit.message` with `message_type=DELETE_VM` and calls `server.delete` using `stackstorm_send_notification.rabbit.execute` |
 | `rabbitmq.server.reboot.rule` | matches trigger `rabbit.message` with `message_type=REBOOT_VM` and calls `server.reboot` using `stackstorm_send_notification.rabbit.execute`|
 
-# NOTE: May need to change this to a execute and reply version - depending on use case?
+### NOTE: May need to change this to a execute and reply version - depending on use case?
 
 | Rule      | Description |
 | ----------- | ----------- |
