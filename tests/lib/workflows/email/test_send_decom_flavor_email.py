@@ -7,6 +7,7 @@ from enums.query.props.project_properties import ProjectProperties
 from enums.query.props.server_properties import ServerProperties
 from enums.query.props.user_properties import UserProperties
 from enums.query.query_presets import QueryPresetsGeneric
+from enums.query.sort_order import SortOrder
 from workflows.email.send_decom_flavor_email import (
     validate,
     find_users_with_decom_flavors,
@@ -86,10 +87,14 @@ def test_find_users_with_decom_flavor(mock_flavor_query):
     flavor_query_run.assert_called_once_with("test-cloud-account")
 
     flavor_query_sort_by = flavor_query_run.return_value.sort_by
-    flavor_query_sort_by.assert_called_once_with((FlavorProperties.FLAVOR_ID, False))
+    flavor_query_sort_by.assert_called_once_with(
+        (FlavorProperties.FLAVOR_ID, SortOrder.ASC)
+    )
 
     flavor_query_then = flavor_query_sort_by.return_value.then
-    flavor_query_then.assert_called_once_with("SERVER_QUERY", True)
+    flavor_query_then.assert_called_once_with(
+        "SERVER_QUERY", keep_previous_results=True
+    )
 
     server_query_run = flavor_query_then.return_value.run
     server_query_run.assert_called_once_with(
@@ -112,7 +117,7 @@ def test_find_users_with_decom_flavor(mock_flavor_query):
     )
 
     server_query_then = server_query_select.return_value.then
-    server_query_then.assert_called_once_with("USER_QUERY", True)
+    server_query_then.assert_called_once_with("USER_QUERY", keep_previous_results=True)
 
     user_query_run = server_query_then.return_value.run
     user_query_run.assert_called_once_with("test-cloud-account")
@@ -175,18 +180,16 @@ def test_build_params(mock_email_params, mock_email_template_details):
         ]
     )
 
-    mock_email_params.from_dict.assert_called_once_with(
-        {
-            "email_templates": [
-                mock_email_template_details.return_value,
-                mock_email_template_details.return_value,
-            ],
-            "arg1": "val1",
-            "arg2": "val2",
-        }
+    mock_email_params.assert_called_once_with(
+        email_templates=[
+            mock_email_template_details.return_value,
+            mock_email_template_details.return_value,
+        ],
+        arg1="val1",
+        arg2="val2",
     )
 
-    assert res == mock_email_params.from_dict.return_value
+    assert res == mock_email_params.return_value
 
 
 @pytest.fixture(name="run_send_decom_flavor_email_test_case")

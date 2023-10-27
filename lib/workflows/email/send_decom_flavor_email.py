@@ -1,6 +1,8 @@
 from typing import List, Optional, Union
+
 from openstack_query import FlavorQuery
 
+from enums.query.sort_order import SortOrder
 from enums.cloud_domains import CloudDomains
 from enums.query.query_presets import QueryPresetsGeneric
 from enums.query.props.flavor_properties import FlavorProperties
@@ -63,12 +65,12 @@ def find_users_with_decom_flavors(
             values=flavor_name_list,
         )
         .run(cloud_account)
-        .sort_by((FlavorProperties.FLAVOR_ID, False))
+        .sort_by((FlavorProperties.FLAVOR_ID, SortOrder.ASC))
     )
 
-    # run a server query from flavor query using then()
+    # find the VMs using flavors we found from the flavor query
     server_query = (
-        flavor_query.then("SERVER_QUERY", True)
+        flavor_query.then("SERVER_QUERY", keep_previous_results=True)
         .run(
             cloud_account,
             as_admin=True,
@@ -83,9 +85,9 @@ def find_users_with_decom_flavors(
         )
     )
 
-    # run a user query from server query using then()
+    # find the users who own the VMs we found from the server query
     user_query = (
-        server_query.then("USER_QUERY", True)
+        server_query.then("USER_QUERY", keep_previous_results=True)
         .run(cloud_account)
         .select(UserProperties.USER_NAME)
         .group_by(UserProperties.USER_EMAIL)
@@ -137,9 +139,7 @@ def build_email_params(
 
     footer = EmailTemplateDetails(template_name="footer", template_params={})
 
-    return EmailParams.from_dict(
-        {**{"email_templates": [body, footer]}, **email_kwargs}
-    )
+    return EmailParams(email_templates=[body, footer], **email_kwargs)
 
 
 # pylint:disable=too-many-arguments
