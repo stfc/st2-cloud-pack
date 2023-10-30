@@ -126,7 +126,7 @@ user_query.run("prod")
 # We're going to create a Server Query using the results from the first query
 
 # This is the same as doing:
-# user_ids = user_query.group_by(UserProperties.USER_ID).to_list().keys()
+# user_ids = user_query.group_by(UserProperties.USER_ID).to_props().keys()
 # ServerQuery().where(QueryPresetsGeneric.ANY_IN, ServerProperties.USER_ID, values=list(user_ids))
 
 # NOTE: setting keep_previous_results=True will carry over properties we've selected for from the previous query
@@ -173,12 +173,12 @@ server_query.run("prod", as_admin=True, all_projects=True)
 
 # We need to get project name by running append_from()
 # append_from() command below is the same as doing the following:
-#   project_ids = server_query.group_by(ServerProperties.PROJECT_ID).to_list().keys()
+#   project_ids = server_query.group_by(ServerProperties.PROJECT_ID).to_props().keys()
 #   p = ProjectQuery().select(ProjectProperties.PROJECT_NAME).where(
 #        QueryPresetsGeneric.ANY_IN, ProjectProperties.PROJECT_ID, values=list(project_ids)
 #   )
 #   p.run("prod")
-#   res = p.to_list()
+#   res = p.to_props()
 # `res` is then combined zipped together into the current output
 server_query.append_from("PROJECT_QUERY", "prod", ProjectProperties.PROJECT_ID)
 
@@ -196,15 +196,11 @@ server_query.to_string()
 
 you can output the results of your query in the following ways:
 
-`to_list()` - output the info to a list or a dict (if grouped)
+`to_props()` - output the info to a list or a dict (if grouped)
+
+- will output selected props as dictionary of property name to property value for each openstack resource found
 
 **optional params:**
-
-- `as_objects`: `bool`
-    - if True will return results as Openstack Objects instead of selected for properties
-      - if group_by() was run - then the results will be a dictionary
-    - if False will return selected for results as normal
-
 
 - `flatten`: `bool`
 
@@ -212,7 +208,7 @@ If True will flatten the results by selected for properties:
 
 Instead of returning:
 ```python
-print(query.to_list(flatten=False))
+print(query.to_props(flatten=False))
 
 [
 
@@ -227,7 +223,7 @@ print(query.to_list(flatten=False))
 
 it will return:
 ```python
-print(query.to_list(flatten=True))
+print(query.to_props(flatten=True))
 
 {
     "project_name": ["foo", "foo1"],
@@ -239,7 +235,7 @@ If the results are grouped:
 
 Instead of returning:
 ```python
-print(grouped_query.to_list(flatten=False))
+print(grouped_query.to_props(flatten=False))
 
 {
     "group1": [
@@ -254,7 +250,7 @@ print(grouped_query.to_list(flatten=False))
 ```
 It will return:
 ```python
-print(grouped_query.to_list(flatten=True))
+print(grouped_query.to_props(flatten=True))
 
 {
     "group1": {
@@ -271,17 +267,22 @@ print(grouped_query.to_list(flatten=True))
   - `groups`: List[str] - limit output to only a set of specified group keys
 
 
+`to_objects()` - output results as objects
+- optional param `groups` works same as `to_props`
+
+
+
 `to_string()` - output results as a tabulate table
 
 - accepts tabulate kwargs - see [tabulate](https://pypi.org/project/tabulate/)
-- optional param `groups` works same as `to_list`
+- optional param `groups` works same as `to_props`
 - optional param `title` - allows you to set a heading title for the table
 
 `to_html()`- output results as a tabulate html compatible table
 
 - accepts tabulate kwargs - see [tabulate](https://pypi.org/project/tabulate/)
 - optional param `title` - allows you to set a html heading title for the table
-- optional param `groups` works same as  `to_list`
+- optional param `groups` works same as  `to_props`
 
 `to_csv` - in development
 
