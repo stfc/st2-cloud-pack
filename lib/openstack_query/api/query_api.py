@@ -154,9 +154,9 @@ class QueryAPI:
         self, groups: Optional[List[str]] = None
     ) -> Union[Dict[str, List], List]:
         """
-        Public method to return results as openstack objects
+        Public method to return results as openstack objects.
+        This is either returned as a list if no groups are specified, or as a dict if they grouping was requested
         :param groups: a list of group keys to limit output by
-        :return: List of openstacksdk resource objects or Dictionary of grouped openstacksdk resource objects
         """
         results, _ = self.executer.parse_results(
             parse_func=self.parser.run_parser, output_func=self.output.generate_output
@@ -177,10 +177,10 @@ class QueryAPI:
         self, flatten: bool = False, groups: Optional[List[str]] = None
     ) -> Union[Dict[str, List], List]:
         """
-        Public method to return results as openstack objects
+        Public method to return results as openstack properties.
+        This is either returned as a list if no groups are specified, or as a dict if they grouping was requested
         :param flatten: boolean which will flatten results if true
         :param groups: a list of group keys to limit output by
-        :return: List of selected props for each openstack resource object or Dictionary of grouped selected props
         """
         _, results = self.executer.parse_results(
             parse_func=self.parser.run_parser, output_func=self.output.generate_output
