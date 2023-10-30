@@ -150,20 +150,41 @@ class QueryAPI:
         self._query_run = True
         return self
 
-    def to_list(
-        self, as_objects=False, flatten=False, groups: Optional[List[str]] = None
-    ) -> Union[Dict[str, List], List[Dict[str, str]]]:
+    def to_objects(
+        self, groups: Optional[List[str]] = None
+    ) -> Union[Dict[str, List], List]:
         """
-        Public method to return results as a list (ungrouped) or dict (if grouped/flattened)
-        :param as_objects: if true return result as openstack objects
-        :param flatten: boolean which will flatten results if true
-        :param groups: a list group to limit output by
+        Public method to return results as openstack objects
+        :param groups: a list of group keys to limit output by
+        :return: List of openstacksdk resource objects or Dictionary of grouped openstacksdk resource objects
         """
-        result_as_objects, selected_results = self.executer.parse_results(
+        results, _ = self.executer.parse_results(
             parse_func=self.parser.run_parser, output_func=self.output.generate_output
         )
-        results = result_as_objects if as_objects else selected_results
+        if groups:
+            if not isinstance(results, dict):
+                raise ParseQueryError(
+                    f"Result is not grouped - cannot filter by given group(s) {groups}"
+                )
+            if not all(group in results.keys() for group in groups):
+                raise ParseQueryError(
+                    f"Group(s) given are invalid - valid groups {list(results.keys())}"
+                )
+            return {group_key: results[group_key] for group_key in groups}
+        return results
 
+    def to_props(
+        self, flatten: bool = False, groups: Optional[List[str]] = None
+    ) -> Union[Dict[str, List], List]:
+        """
+        Public method to return results as openstack objects
+        :param flatten: boolean which will flatten results if true
+        :param groups: a list of group keys to limit output by
+        :return: List of selected props for each openstack resource object or Dictionary of grouped selected props
+        """
+        _, results = self.executer.parse_results(
+            parse_func=self.parser.run_parser, output_func=self.output.generate_output
+        )
         if groups:
             if not isinstance(results, dict):
                 raise ParseQueryError(
