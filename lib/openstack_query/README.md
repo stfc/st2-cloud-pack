@@ -220,7 +220,7 @@ print(query.to_list(flatten=False))
   { "project_name": "foo", "project_id": "bar" },
 
   # second result
-  { "project_name": "foo1", "project_id": "bar2" },
+  { "project_name": "foo1", "project_id": "bar1" },
   ...
 ]
 ```
@@ -244,11 +244,11 @@ print(grouped_query.to_list(flatten=False))
 {
     "group1": [
         { "project_name": "foo", "project_id": "bar" },
-        { "project_name": "foo1", "project_id": "bar2" },
+        { "project_name": "foo1", "project_id": "bar1" },
     ],
     "group2": [
         {"project_name": "biz", "project_id": "baz"},
-        {"project_name": "biz2", "project_id": "baz2"}
+        {"project_name": "biz1", "project_id": "baz1"}
     ]
 }
 ```
