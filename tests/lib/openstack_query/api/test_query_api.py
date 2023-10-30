@@ -410,8 +410,8 @@ def test_append_from(mock_query_types_cls, mock_then, instance):
         mock_query_types_cls.from_string.return_value
     )
     mock_new_query.group_by.assert_called_once_with("link-prop")
-    mock_new_query.to_list.assert_called_once()
+    mock_new_query.to_props.assert_called_once()
     instance.output.update_forwarded_outputs.assert_called_once_with(
-        "curr-prop", mock_new_query.to_list.return_value
+        "curr-prop", mock_new_query.to_props.return_value
     )
     assert res == instance

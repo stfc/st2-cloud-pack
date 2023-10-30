@@ -44,7 +44,7 @@ def run_parse_then_query_valid_fixture(instance):
         mock_curr_query.chainer.get_link_props.return_value = ("curr-prop", "new-prop")
 
         mock_curr_query_results = {"prop-val1": "out1", "prop-val2": "out2"}
-        mock_curr_query.group_by.return_value.to_list.return_value = (
+        mock_curr_query.group_by.return_value.to_props.return_value = (
             mock_curr_query_results
         )
 
@@ -61,7 +61,7 @@ def run_parse_then_query_valid_fixture(instance):
         mock_query_types_cls.from_string.assert_called_once_with("query-type")
 
         mock_curr_query.group_by.assert_called_once_with("curr-prop")
-        mock_curr_query.group_by.return_value.to_list.assert_called_once()
+        mock_curr_query.group_by.return_value.to_props.assert_called_once()
 
         mock_query_factory.build_query_deps.assert_called_once_with(
             mock_query_types_cls.from_string.return_value.value, to_forward
@@ -174,7 +174,7 @@ def test_parse_then_no_results(instance):
     """
     mock_curr_query = MagicMock()
     mock_curr_query.chainer.get_link_props.return_value = ("curr-prop", "new-prop")
-    mock_curr_query.group_by.return_value.to_list.return_value = None
+    mock_curr_query.group_by.return_value.to_props.return_value = None
     mock_query_type = MagicMock()
 
     with pytest.raises(QueryChainingError):
@@ -185,4 +185,4 @@ def test_parse_then_no_results(instance):
         )
     mock_curr_query.chainer.get_link_props.assert_called_once_with(mock_query_type)
     mock_curr_query.group_by.assert_called_once_with("curr-prop")
-    mock_curr_query.group_by.return_value.to_list.assert_called_once()
+    mock_curr_query.group_by.return_value.to_props.assert_called_once()

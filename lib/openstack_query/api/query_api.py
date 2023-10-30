@@ -277,5 +277,5 @@ class QueryAPI:
         link_props = self.chainer.get_link_props(query_type)
         new_query.group_by(link_props[1])
 
-        self.output.update_forwarded_outputs(link_props[0], new_query.to_list())
+        self.output.update_forwarded_outputs(link_props[0], new_query.to_props())
         return self

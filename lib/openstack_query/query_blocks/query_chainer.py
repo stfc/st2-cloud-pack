@@ -72,7 +72,7 @@ class QueryChainer:
             )
 
         # we group the current results by the link property as this is the way we forward results
-        curr_query_results = curr_query.group_by(link_props[0]).to_list()
+        curr_query_results = curr_query.group_by(link_props[0]).to_props()
         if not curr_query_results:
             raise QueryChainingError(
                 "Query Chaining Error: No values found after running this query - aborting. "
