@@ -215,60 +215,59 @@ def test_run_with_kwargs_and_subset(run_with_test_case_with_subset):
     )
 
 
-def test_to_list_as_objects_false(instance):
+def test_to_props(instance):
     """
-    Tests that to_list method functions expectedly
-    method should return _query_results attribute when as_objects is false and flatten is false
+    Tests that to_props method functions expectedly - with no extra params
+    method should just return _query_results attribute when groups is None and flatten is false
     """
     instance.executer.parse_results.return_value = "", "parsed-list"
-    assert instance.to_list() == "parsed-list"
+    assert instance.to_props() == "parsed-list"
 
 
-def test_to_list_as_objects_true(instance):
+def test_to_objects(instance):
     """
-    Tests that to_list method functions expectedly
-    method should return _query_results_as_objects attribute when as_objects is true
+    Tests that to_objects method functions expectedly - with no extra params
+    method should just return _query_results_as_objects attribute when groups is None
     """
     # pylint: disable=protected-access
     instance.executer.parse_results.return_value = "object-list", ""
-    assert instance.to_list(as_objects=True) == "object-list"
+    assert instance.to_objects() == "object-list"
 
 
-def test_to_list_flatten_true(instance):
+def test_to_props_flatten_true(instance):
     """
-    Tests that to_list method functions expectedly
+    Tests that to_props method functions expectedly
     method should call output.flatten() with query_results
     """
     instance.executer.parse_results.return_value = "", "parsed-list"
-    res = instance.to_list(flatten=True)
+    res = instance.to_props(flatten=True)
     instance.output.flatten.assert_called_once_with("parsed-list")
     assert res == instance.output.flatten.return_value
 
 
-def test_to_list_flatten_and_as_objects(instance):
+def test_to_props_with_groups_not_dict(instance):
     """
-    Tests that to_list method functions expectedly
-    method should call output.flatten() with query_results_as_obj
-    """
-    instance.executer.parse_results.return_value = "object-list", ""
-    res = instance.to_list(as_objects=True, flatten=True)
-    instance.output.flatten.assert_called_once_with("object-list")
-    assert res == instance.output.flatten.return_value
-
-
-def test_to_list_groups_not_dict(instance):
-    """
-    Tests that to_list method functions expectedly
+    Tests that to_props method functions expectedly
     method should raise error when given group and results are not dict
     """
     instance.executer.parse_results.return_value = "", ["obj1", "obj2"]
     with pytest.raises(ParseQueryError):
-        instance.to_list(groups=["group1", "group2"])
+        instance.to_props(groups=["group1", "group2"])
 
 
-def test_to_list_groups_dict(instance):
+def test_to_objects_with_groups_not_dict(instance):
     """
-    Tests that to_list method functions expectedly
+    Tests that to_objects method functions expectedly
+    method should raise error when given group and results are not dict
+    """
+    instance.executer.parse_results.return_value = "", ["obj1", "obj2"]
+    with pytest.raises(ParseQueryError):
+        instance.to_objects(groups=["group1", "group2"])
+
+
+def test_to_props_groups_dict(instance):
+    """
+    Tests that to_props method functions expectedly
     method should return subset of results which match keys (groups) given
     """
     mock_query_results = {
@@ -276,14 +275,28 @@ def test_to_list_groups_dict(instance):
         "group2": ["result3", "result4"],
     }
     instance.executer.parse_results.return_value = "", mock_query_results
-    res = instance.to_list(groups=["group1"])
+    res = instance.to_props(groups=["group1"])
     assert res == {"group1": mock_query_results["group1"]}
 
 
-def test_to_list_group_not_valid(instance):
+def test_to_objects_groups_dict(instance):
     """
-    Tests that to_list method functions expectedly
+    Tests that to_objects method functions expectedly
     method should return subset of results which match keys (groups) given
+    """
+    mock_query_results = {
+        "group1": ["obj1", "obj2"],
+        "group2": ["obj3", "obj4"],
+    }
+    instance.executer.parse_results.return_value = mock_query_results, ""
+    res = instance.to_objects(groups=["group1"])
+    assert res == {"group1": mock_query_results["group1"]}
+
+
+def test_to_props_group_not_valid(instance):
+    """
+    Tests that to_props method functions expectedly
+    method should raise error if group specified is not a key in results
     """
     mock_query_results = {
         "group1": ["result1", "result2"],
@@ -291,7 +304,21 @@ def test_to_list_group_not_valid(instance):
     }
     instance.executer.parse_results.return_value = "", mock_query_results
     with pytest.raises(ParseQueryError):
-        instance.to_list(groups=["group3"])
+        instance.to_props(groups=["group3"])
+
+
+def test_to_objects_group_not_valid(instance):
+    """
+    Tests that to_objects method functions expectedly
+    method should raise error if group specified is not a key in results
+    """
+    mock_query_results = {
+        "group1": ["result1", "result2"],
+        "group2": ["result3", "result4"],
+    }
+    instance.executer.parse_results.return_value = mock_query_results, ""
+    with pytest.raises(ParseQueryError):
+        instance.to_objects(groups=["group3"])
 
 
 def test_to_string(instance):
@@ -368,7 +395,7 @@ def test_append_from(mock_query_types_cls, mock_then, instance):
     mock_query_type = "query-type"
 
     mock_props = ["prop1", "prop2", "prop3"]
-    instance.chainer.get_link_props.return_value = ("curr-prop", "link-prop")
+    instance.chainer.get_link_props.return_value = ("current-prop", "link-prop")
     mock_then.return_value = mock_new_query
 
     res = instance.append_from(mock_query_type, mock_cloud_account, *mock_props)
@@ -383,8 +410,8 @@ def test_append_from(mock_query_types_cls, mock_then, instance):
         mock_query_types_cls.from_string.return_value
     )
     mock_new_query.group_by.assert_called_once_with("link-prop")
-    mock_new_query.to_list.assert_called_once()
+    mock_new_query.to_props.assert_called_once()
     instance.output.update_forwarded_outputs.assert_called_once_with(
-        "curr-prop", mock_new_query.to_list.return_value
+        "current-prop", mock_new_query.to_props.return_value
     )
     assert res == instance

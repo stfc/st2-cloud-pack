@@ -40,28 +40,31 @@ def run_parse_then_query_valid_fixture(instance):
         """
         runs a then_query() test case with keep_previous_results being either True or False
         """
-        mock_curr_query = MagicMock()
-        mock_curr_query.chainer.get_link_props.return_value = ("curr-prop", "new-prop")
+        mock_current_query = MagicMock()
+        mock_current_query.chainer.get_link_props.return_value = (
+            "current-prop",
+            "new-prop",
+        )
 
-        mock_curr_query_results = {"prop-val1": "out1", "prop-val2": "out2"}
-        mock_curr_query.group_by.return_value.to_list.return_value = (
-            mock_curr_query_results
+        mock_current_query_results = {"prop-val1": "out1", "prop-val2": "out2"}
+        mock_current_query.group_by.return_value.to_props.return_value = (
+            mock_current_query_results
         )
 
         to_forward = None
         if mock_keep_previous_results:
-            to_forward = ("new-prop", mock_curr_query_results)
+            to_forward = ("new-prop", mock_current_query_results)
 
         res = instance.parse_then(
-            curr_query=mock_curr_query,
+            current_query=mock_current_query,
             query_type="query-type",
             keep_previous_results=mock_keep_previous_results,
         )
 
         mock_query_types_cls.from_string.assert_called_once_with("query-type")
 
-        mock_curr_query.group_by.assert_called_once_with("curr-prop")
-        mock_curr_query.group_by.return_value.to_list.assert_called_once()
+        mock_current_query.group_by.assert_called_once_with("current-prop")
+        mock_current_query.group_by.return_value.to_props.assert_called_once()
 
         mock_query_factory.build_query_deps.assert_called_once_with(
             mock_query_types_cls.from_string.return_value.value, to_forward
@@ -153,18 +156,20 @@ def test_parse_then_no_link_props(instance):
     Tests parse_then method - where no link props available
     should raise error
     """
-    mock_curr_query = MagicMock()
-    mock_curr_query.chainer.get_link_props.return_value = None
+    mock_current_query = MagicMock()
+    mock_current_query.chainer.get_link_props.return_value = None
 
     mock_query_type = MagicMock()
 
     with pytest.raises(QueryChainingError):
         instance.parse_then(
-            curr_query=mock_curr_query,
+            current_query=mock_current_query,
             query_type=mock_query_type,
             keep_previous_results=False,
         )
-        mock_curr_query.chainer.get_link_props.assert_called_once_with(mock_query_type)
+        mock_current_query.chainer.get_link_props.assert_called_once_with(
+            mock_query_type
+        )
 
 
 def test_parse_then_no_results(instance):
@@ -172,17 +177,20 @@ def test_parse_then_no_results(instance):
     Tests parse_then method - where no results found
     should raise error
     """
-    mock_curr_query = MagicMock()
-    mock_curr_query.chainer.get_link_props.return_value = ("curr-prop", "new-prop")
-    mock_curr_query.group_by.return_value.to_list.return_value = None
+    mock_current_query = MagicMock()
+    mock_current_query.chainer.get_link_props.return_value = (
+        "current-prop",
+        "new-prop",
+    )
+    mock_current_query.group_by.return_value.to_props.return_value = None
     mock_query_type = MagicMock()
 
     with pytest.raises(QueryChainingError):
         instance.parse_then(
-            curr_query=mock_curr_query,
+            current_query=mock_current_query,
             query_type=mock_query_type,
             keep_previous_results=False,
         )
-    mock_curr_query.chainer.get_link_props.assert_called_once_with(mock_query_type)
-    mock_curr_query.group_by.assert_called_once_with("curr-prop")
-    mock_curr_query.group_by.return_value.to_list.assert_called_once()
+    mock_current_query.chainer.get_link_props.assert_called_once_with(mock_query_type)
+    mock_current_query.group_by.assert_called_once_with("current-prop")
+    mock_current_query.group_by.return_value.to_props.assert_called_once()
