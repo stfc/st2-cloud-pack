@@ -395,7 +395,7 @@ def test_append_from(mock_query_types_cls, mock_then, instance):
     mock_query_type = "query-type"
 
     mock_props = ["prop1", "prop2", "prop3"]
-    instance.chainer.get_link_props.return_value = ("curr-prop", "link-prop")
+    instance.chainer.get_link_props.return_value = ("current-prop", "link-prop")
     mock_then.return_value = mock_new_query
 
     res = instance.append_from(mock_query_type, mock_cloud_account, *mock_props)
@@ -412,6 +412,6 @@ def test_append_from(mock_query_types_cls, mock_then, instance):
     mock_new_query.group_by.assert_called_once_with("link-prop")
     mock_new_query.to_props.assert_called_once()
     instance.output.update_forwarded_outputs.assert_called_once_with(
-        "curr-prop", mock_new_query.to_props.return_value
+        "current-prop", mock_new_query.to_props.return_value
     )
     assert res == instance

@@ -44,14 +44,14 @@ class QueryChainer:
 
     @staticmethod
     def parse_then(
-        curr_query,
+        current_query,
         query_type: Union[str, QueryTypes],
         keep_previous_results: bool = False,
     ):
         """
         Public static method to chain current query into another query of a different type
         and return the new query so that it will work only on the results of the original query.
-        :param curr_query: current QueryAPI object
+        :param current_query: current QueryAPI object
         :param query_type: an enum representing the new query to chain into
         :param keep_previous_results: boolean that if true - will forward outputs from
         this query (and previous chained queries) onto new query.
@@ -65,15 +65,15 @@ class QueryChainer:
         if isinstance(query_type, str):
             query_type = QueryTypes.from_string(query_type)
 
-        link_props = curr_query.chainer.get_link_props(query_type)
+        link_props = current_query.chainer.get_link_props(query_type)
         if not link_props:
             raise QueryChainingError(
                 f"Query Chaining Error: Could not find a way to chain current query into {query_type}"
             )
 
         # we group the current results by the link property as this is the way we forward results
-        curr_query_results = curr_query.group_by(link_props[0]).to_props()
-        if not curr_query_results:
+        current_query_results = current_query.group_by(link_props[0]).to_props()
+        if not current_query_results:
             raise QueryChainingError(
                 "Query Chaining Error: No values found after running this query - aborting. "
                 "Have you run the query first?"
@@ -81,7 +81,7 @@ class QueryChainer:
 
         to_forward = None
         if keep_previous_results:
-            to_forward = (link_props[1], curr_query_results)
+            to_forward = (link_props[1], current_query_results)
 
         new_query = QueryAPI(
             QueryFactory.build_query_deps(query_type.value, to_forward)
@@ -89,5 +89,5 @@ class QueryChainer:
         return new_query.where(
             QueryPresetsGeneric.ANY_IN,
             link_props[1],
-            values=list(curr_query_results.keys()),
+            values=list(current_query_results.keys()),
         )
