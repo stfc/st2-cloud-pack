@@ -42,48 +42,29 @@ Query Library
 # Actions
 
 Generally, Stackstorm openstack actions are written to be very similar and easy to understand for anyone who has used
-Openstack CMD commands
-
-- each openstack resource `server, hypervisor, float.ip, etc` (should) have 4 basic commands:
-  - `create`, `delete`, `update`, `show`
-
-NOTE: CURRENTLY MANY OF THESE METHODS ARE NOT IMPLEMENTED - ESPECIALLY CREATE AND DELETE.
-- They may not be implemented if they are not feasibly/possible under current constraints imposed by the STFC Cloud Ops Team
-
-- They may also have other commands specific to them. `i.e. server.reboot, server.restart etc`
+Openstack CMD commands.
 
 ### Examples
 
 examples of atomic Actions are shown below (not an exhaustive list):
-`floating.ip.create` - Action to assign a number of floating IP to a project
 
-`network.create` - Action to create a network for a project
-
-`network.rbac.create` - Action to create Role Based Access Control rules on a network
-
-`project.create` - Action to create a new openstack project (not-configured)
-
-`project.show` - Action to find and list an Openstack Project's properties given it's Name or ID
-
-`quota.set` - Action to set project quota
-
-`role.add` - Action to add user role to a project
-
-`router.add.interface` - Action to add interface to a router
-
-`router.create` - Action to create a Openstack router
-
-`security.group.create` - Action to create new security group for a project
-
-`security.group.list` - Action to list security groups and their properties for a given project
-
-`security.group.rule.create` - Action to create a new rule for a given security group
-
-`server.list` - Action to list server properties given some criteria
-
-`subnet.create` - Action to create an Openstack subnet
-
-`user.get.email` - Action to get a user's email address given their Name/ID
+| Action Name                | Description                                                                     |
+|----------------------------|---------------------------------------------------------------------------------|
+| floating.ip.create         | Action to assign a number of floating IP to a project                           |
+| network.create             | Action to create a network for a project                                        |
+| network.rbac.create        | Action to create Role Based Access Control rules on a network                   |
+| project.create             | Action to create a new openstack project (not-configured)                       |
+| project.show               | Action to find and list an Openstack Project's properties given it's Name or ID |
+| quota.set                  | Action to set project quota                                                     |
+| role.add                   | Action to add user role to a project                                            |
+| router.add.interface       | Action to add interface to a router                                             |
+| router.create              | Action to create a Openstack router                                             |
+| security.group.create      | Action to create new security group for a project                               |
+| security.group.list        | Action to list security groups and their properties for a given project         |
+| security.group.rule.create | Action to create a new rule for a given security group                          |
+| server.list                | Action to list server properties given some criteria                            |
+| subnet.create              | Action to create an Openstack subnet                                            |
+| user.get.email             | Action to get a user's email address given their Name/ID                        |
 
 
 ## Misc Openstack Actions
