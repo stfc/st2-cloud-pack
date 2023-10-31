@@ -206,19 +206,19 @@ def run_send_decom_flavor_email_test_case_fixture():
         mock_build_email,
         mock_find_users,
         mock_validate,
-        override_email,
-        send_email,
+        override_email_address=None,
+        cc_cloud_support=False,
+        send_email=False,
     ):
         flavor_name_list = ["flavor1", "flavor2"]
-        from_projects = NonCallableMock()
+        limit_by_projects = NonCallableMock()
         all_projects = NonCallableMock()
         cloud_account = NonCallableMock()
         as_html = NonCallableMock()
         smtp_account = NonCallableMock()
         email_param_kwargs = {"arg1": "val1", "arg2": "val2"}
-        override_email_address = "override_email_address"
 
-        mock_find_users.return_value.to_list.return_value = {
+        mock_find_users.return_value.to_props.return_value = {
             "user_email1": [
                 {
                     "user_name": "user1",
@@ -229,25 +229,34 @@ def run_send_decom_flavor_email_test_case_fixture():
         }
 
         send_decom_flavor_email(
-            smtp_account,
-            cloud_account,
-            flavor_name_list,
-            from_projects,
-            all_projects,
-            as_html,
-            send_email,
-            override_email,
+            smtp_account=smtp_account,
+            cloud_account=cloud_account,
+            flavor_name_list=flavor_name_list,
+            limit_by_projects=limit_by_projects,
+            all_projects=all_projects,
+            as_html=as_html,
+            send_email=send_email,
             override_email_address=override_email_address,
+            cc_cloud_support=cc_cloud_support,
             **email_param_kwargs,
         )
 
         mock_validate.assert_called_once_with(
-            flavor_name_list, from_projects, all_projects
+            flavor_name_list, limit_by_projects, all_projects
         )
 
         mock_find_users.assert_called_once_with(
-            cloud_account, flavor_name_list, from_projects
+            cloud_account, flavor_name_list, limit_by_projects
         )
+
+        exp_email_to = ("user_email1", "user_email2")
+        exp_email_cc = None
+
+        if override_email_address:
+            exp_email_to = (override_email_address, override_email_address)
+
+        if cc_cloud_support:
+            exp_email_cc = ("cloud-support@stfc.ac.uk",)
 
         if send_email:
             mock_build_email.assert_has_calls(
@@ -256,20 +265,18 @@ def run_send_decom_flavor_email_test_case_fixture():
                         "user1",
                         "flavor1, flavor2",
                         mock_find_users.return_value.to_string.return_value,
-                        email_to="user_email1"
-                        if not override_email
-                        else override_email_address,
+                        email_to=exp_email_to[0],
                         as_html=as_html,
+                        email_cc=exp_email_cc,
                         **email_param_kwargs,
                     ),
                     call(
                         "user2",
                         "flavor1, flavor2",
                         mock_find_users.return_value.to_string.return_value,
-                        email_to="user_email2"
-                        if not override_email
-                        else override_email_address,
+                        email_to=exp_email_to[1],
                         as_html=as_html,
+                        email_cc=exp_email_cc,
                         **email_param_kwargs,
                     ),
                 ]
@@ -278,23 +285,23 @@ def run_send_decom_flavor_email_test_case_fixture():
             mock_emailer.assert_has_calls(
                 [
                     call(smtp_account),
-                    call().send_emails(mock_build_email.return_value),
+                    call().send_emails([mock_build_email.return_value]),
                     call(smtp_account),
-                    call().send_emails(mock_build_email.return_value),
+                    call().send_emails([mock_build_email.return_value]),
                 ]
             )
         else:
             mock_print_email.assert_has_calls(
                 [
                     call(
-                        "user_email1" if not override_email else override_email_address,
+                        exp_email_to[0],
                         "user1",
                         as_html,
                         "flavor1, flavor2",
                         mock_find_users.return_value.to_string.return_value,
                     ),
                     call(
-                        "user_email2" if not override_email else override_email_address,
+                        exp_email_to[1],
                         "user2",
                         as_html,
                         "flavor1, flavor2",
@@ -315,19 +322,27 @@ def test_send_decom_flavor_email_print_params(run_send_decom_flavor_email_test_c
     Tests that send_decom_flavor_email() function prints params when send_email set to false
     """
     run_send_decom_flavor_email_test_case(
-        override_email=False,
+        override_email_address=None,
         send_email=False,
     )
 
     # with override email set
-    run_send_decom_flavor_email_test_case(override_email=True, send_email=False)
+    run_send_decom_flavor_email_test_case(
+        override_email_address="example@example.com", send_email=False
+    )
 
 
 def test_send_decom_flavor_email(run_send_decom_flavor_email_test_case):
     """
     Tests that send_decom_flavor_email() function sends email with valid params
     """
-    run_send_decom_flavor_email_test_case(override_email=False, send_email=True)
+    run_send_decom_flavor_email_test_case(
+        override_email_address=None, cc_cloud_support=False, send_email=True
+    )
 
-    # with override email set
-    run_send_decom_flavor_email_test_case(override_email=True, send_email=True)
+    # with override email set and cc_cloud_support
+    run_send_decom_flavor_email_test_case(
+        override_email_address="example@example.com",
+        cc_cloud_support=True,
+        send_email=True,
+    )
