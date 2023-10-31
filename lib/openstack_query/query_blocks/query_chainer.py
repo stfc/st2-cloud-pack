@@ -71,23 +71,36 @@ class QueryChainer:
                 f"Query Chaining Error: Could not find a way to chain current query into {query_type}"
             )
 
-        # we group the current results by the link property as this is the way we forward results
-        current_query_results = current_query.group_by(link_props[0]).to_props()
-        if not current_query_results:
+        if not current_query.to_props():
             raise QueryChainingError(
                 "Query Chaining Error: No values found after running this query - aborting. "
                 "Have you run the query first?"
             )
 
+        selected_props = current_query.output.selected_props
+
+        # grab all link prop values - including duplicates
+        search_values = current_query.select(link_props[0]).to_props(flatten=True)[
+            link_props[0].name.lower()
+        ]
+
+        # reset select
+        current_query.select(*selected_props)
+
         to_forward = None
         if keep_previous_results:
-            to_forward = (link_props[1], current_query_results)
+            # we group the current results by the link property as this is the way we forward results
+            to_forward = (
+                link_props[1],
+                current_query.group_by(link_props[0]).to_props(),
+            )
 
         new_query = QueryAPI(
             QueryFactory.build_query_deps(query_type.value, to_forward)
         )
+
         return new_query.where(
             QueryPresetsGeneric.ANY_IN,
             link_props[1],
-            values=list(current_query_results.keys()),
+            values=search_values,
         )

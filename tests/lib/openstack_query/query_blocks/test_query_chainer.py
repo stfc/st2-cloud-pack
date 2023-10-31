@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, call
 
 import pytest
 
@@ -41,19 +41,25 @@ def run_parse_then_query_valid_fixture(instance):
         runs a then_query() test case with keep_previous_results being either True or False
         """
         mock_current_query = MagicMock()
+        # setting what link props we get
         mock_current_query.chainer.get_link_props.return_value = (
-            "current-prop",
-            "new-prop",
+            MockProperties.PROP_1,
+            MockProperties.PROP_2,
         )
 
-        mock_current_query_results = {"prop-val1": "out1", "prop-val2": "out2"}
-        mock_current_query.group_by.return_value.to_props.return_value = (
-            mock_current_query_results
-        )
+        # setting prop_values to configure where()
+        mock_current_query.select.return_value.to_props.return_value = {
+            "prop_1": ["val1", "val2", "val3"]
+        }
 
         to_forward = None
         if mock_keep_previous_results:
-            to_forward = ("new-prop", mock_current_query_results)
+            to_forward = (
+                MockProperties.PROP_2,
+                mock_current_query.group_by.return_value.to_props.return_value,
+            )
+
+        mock_current_query.output.selected_props = ["selected-prop1", "selected-props2"]
 
         res = instance.parse_then(
             current_query=mock_current_query,
@@ -62,9 +68,21 @@ def run_parse_then_query_valid_fixture(instance):
         )
 
         mock_query_types_cls.from_string.assert_called_once_with("query-type")
+        mock_current_query.to_props.assert_called_once()
 
-        mock_current_query.group_by.assert_called_once_with("current-prop")
-        mock_current_query.group_by.return_value.to_props.assert_called_once()
+        # test getting link prop values works
+        mock_current_query.select.assert_any_call(MockProperties.PROP_1)
+        mock_current_query.select.return_value.to_props.assert_any_call(flatten=True)
+        mock_current_query.select.assert_any_call("selected-prop1", "selected-props2")
+
+        if mock_keep_previous_results:
+            mock_group_by = mock_current_query.group_by
+            mock_group_by.assert_has_calls(
+                [
+                    call(MockProperties.PROP_1),
+                    call().to_props(),
+                ]
+            )
 
         mock_query_factory.build_query_deps.assert_called_once_with(
             mock_query_types_cls.from_string.return_value.value, to_forward
@@ -75,7 +93,9 @@ def run_parse_then_query_valid_fixture(instance):
         )
 
         mock_query_api.return_value.where.assert_called_once_with(
-            QueryPresetsGeneric.ANY_IN, "new-prop", values=["prop-val1", "prop-val2"]
+            QueryPresetsGeneric.ANY_IN,
+            MockProperties.PROP_2,
+            values=["val1", "val2", "val3"],
         )
         assert res == mock_query_api.return_value.where.return_value
 
@@ -182,7 +202,7 @@ def test_parse_then_no_results(instance):
         "current-prop",
         "new-prop",
     )
-    mock_current_query.group_by.return_value.to_props.return_value = None
+    mock_current_query.to_props.return_value = None
     mock_query_type = MagicMock()
 
     with pytest.raises(QueryChainingError):
@@ -192,5 +212,4 @@ def test_parse_then_no_results(instance):
             keep_previous_results=False,
         )
     mock_current_query.chainer.get_link_props.assert_called_once_with(mock_query_type)
-    mock_current_query.group_by.assert_called_once_with("current-prop")
-    mock_current_query.group_by.return_value.to_props.assert_called_once()
+    mock_current_query.to_props.assert_called_once()
