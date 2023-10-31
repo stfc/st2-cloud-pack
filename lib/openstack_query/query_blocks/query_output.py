@@ -305,6 +305,5 @@ class QueryOutput:
         keys = list(data[0].keys())
         res = {}
         for key in keys:
-            vals = [d[key] for d in data]
-            res[key] = list(vals)
+            res[key] = [d[key] for d in data]
         return res

@@ -563,6 +563,7 @@ def test_flatten_with_duplicates(instance):
     """
     Tests flatten_list() function with duplicates - should keep duplicates as is
     """
+    # pylint:disable=protected-access
     assert instance._flatten_list(
         [{"prop1": "val1", "prop2": "val2"}, {"prop1": "val1", "prop2": "val2"}]
     ) == {"prop1": ["val1", "val1"], "prop2": ["val2", "val2"]}
@@ -640,7 +641,7 @@ def test_parse_forwarded_outputs_many_set(instance):
 @patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
 def test_parse_forwarded_prop_value_not_found(mock_parse_property, instance):
     """
-    Tests parse_forwarded_prop() method
+    Tests parse_forwarded_outputs() method
     where a prop_value is not found - raise error
     """
     instance.update_forwarded_outputs("prop1", {"prop-val1": ["outputs"]})
@@ -649,3 +650,31 @@ def test_parse_forwarded_prop_value_not_found(mock_parse_property, instance):
     with pytest.raises(QueryChainingError):
         # pylint:disable=protected-access
         instance._parse_forwarded_outputs("obj1")
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
+def test_parse_forwarded_outputs_with_duplicates(mock_parse_property, instance):
+    """
+    Tests parse_forwarded_outputs() method - where forwarded outputs expects duplicates
+    cases where grouped results have a many-to-one relationship.
+    i.e. finding Users mapped to Servers - many servers can be mapped to one user - so duplicates of same user ids
+    are expected
+    """
+    expected_out1 = {"forwarded-prop1": "val1", "forwarded-prop2": "val2"}
+    expected_out2 = {"forwarded-prop3": "val3", "forwarded-prop4": "val4"}
+
+    instance.update_forwarded_outputs(
+        "prop1", {"prop_val1": [expected_out1, expected_out2]}
+    )
+    mock_parse_property.side_effect = ["prop_val1", "prop_val1"]
+    # pylint:disable=protected-access
+
+    # first duplicate - takes first item in list
+    res = instance._parse_forwarded_outputs("obj1")
+    assert res == expected_out1
+
+    # second duplicate - takes second item in list
+    res = instance._parse_forwarded_outputs("obj2")
+    assert res == expected_out2
+
+    mock_parse_property.assert_has_calls([call("prop1", "obj1"), call("prop1", "obj2")])
