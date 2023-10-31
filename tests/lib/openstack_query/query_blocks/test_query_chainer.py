@@ -59,8 +59,6 @@ def run_parse_then_query_valid_fixture(instance):
                 mock_current_query.group_by.return_value.to_props.return_value,
             )
 
-        mock_current_query.output.selected_props = ["selected-prop1", "selected-props2"]
-
         res = instance.parse_then(
             current_query=mock_current_query,
             query_type="query-type",
@@ -73,7 +71,6 @@ def run_parse_then_query_valid_fixture(instance):
         # test getting link prop values works
         mock_current_query.select.assert_any_call(MockProperties.PROP_1)
         mock_current_query.select.return_value.to_props.assert_any_call(flatten=True)
-        mock_current_query.select.assert_any_call("selected-prop1", "selected-props2")
 
         if mock_keep_previous_results:
             mock_group_by = mock_current_query.group_by

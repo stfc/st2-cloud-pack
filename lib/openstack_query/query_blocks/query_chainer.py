@@ -77,15 +77,14 @@ class QueryChainer:
                 "Have you run the query first?"
             )
 
-        selected_props = current_query.output.selected_props
+        prev_selected_props = current_query.output.selected_props
 
         # grab all link prop values - including duplicates
         search_values = current_query.select(link_props[0]).to_props(flatten=True)[
             link_props[0].name.lower()
         ]
 
-        # reset select
-        current_query.select(*selected_props)
+        current_query.output.selected_props = prev_selected_props
 
         to_forward = None
         if keep_previous_results:
