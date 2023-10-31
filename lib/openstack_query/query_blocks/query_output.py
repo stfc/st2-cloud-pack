@@ -201,8 +201,12 @@ class QueryOutput:
             # but sometimes resolving the property fails for whatever reason - fail noisily
             try:
                 output_list = outputs[prop_val]
-                # should only ever contain one element since it's grouped by a unique id
+                # we update with first result in grouped list and delete it
+
+                # forwarded properties might contain more than one value
+                # then() will keep duplicates so each one in the list will be shunted into an output
                 forwarded_output_dict.update(output_list[0])
+                del output_list[0]
             except KeyError as exp:
                 raise QueryChainingError(
                     "Error: Chaining failed. Could not attach forwarded outputs.\n"
@@ -301,9 +305,5 @@ class QueryOutput:
         keys = list(data[0].keys())
         res = {}
         for key in keys:
-            vals = [d[key] for d in data]
-            # converting into a set preserving order
-            # https://stackoverflow.com/a/53657523
-            vals = list(dict.fromkeys(vals))
-            res[key] = vals
+            res[key] = [d[key] for d in data]
         return res
