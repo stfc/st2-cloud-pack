@@ -158,6 +158,12 @@ class QueryAPI:
         This is either returned as a list if no groups are specified, or as a dict if they grouping was requested
         :param groups: a list of group keys to limit output by
         """
+        if self.output.forwarded_outputs:
+            logger.warning(
+                "This Query has properties from previous queries. Running to_objects WILL IGNORE THIS "
+                "Use to_props() instead if you want to include these properties"
+            )
+
         results, _ = self.executer.parse_results(
             parse_func=self.parser.run_parser, output_func=self.output.generate_output
         )

@@ -230,6 +230,20 @@ def test_to_objects(instance):
     method should just return _query_results_as_objects attribute when groups is None
     """
     # pylint: disable=protected-access
+    instance.output.forwarded_outputs = {}
+    instance.executer.parse_results.return_value = "object-list", ""
+    assert instance.to_objects() == "object-list"
+
+
+def test_to_objects_forwarded_outputs_warning(instance):
+    """
+    Tests that to_objects method functions expectedly
+    prints warning when forwarded_outputs is not empty
+    """
+    # pylint: disable=protected-access
+    instance.output.forwarded_outputs = {"out1": "val1"}
+
+    # should just continue running as normal after printing warning
     instance.executer.parse_results.return_value = "object-list", ""
     assert instance.to_objects() == "object-list"
 
@@ -260,6 +274,7 @@ def test_to_objects_with_groups_not_dict(instance):
     Tests that to_objects method functions expectedly
     method should raise error when given group and results are not dict
     """
+    instance.output.forwarded_outputs = {}
     instance.executer.parse_results.return_value = "", ["obj1", "obj2"]
     with pytest.raises(ParseQueryError):
         instance.to_objects(groups=["group1", "group2"])
@@ -284,6 +299,7 @@ def test_to_objects_groups_dict(instance):
     Tests that to_objects method functions expectedly
     method should return subset of results which match keys (groups) given
     """
+    instance.output.forwarded_outputs = {}
     mock_query_results = {
         "group1": ["obj1", "obj2"],
         "group2": ["obj3", "obj4"],
@@ -312,6 +328,7 @@ def test_to_objects_group_not_valid(instance):
     Tests that to_objects method functions expectedly
     method should raise error if group specified is not a key in results
     """
+    instance.output.forwarded_outputs = {}
     mock_query_results = {
         "group1": ["result1", "result2"],
         "group2": ["result3", "result4"],
