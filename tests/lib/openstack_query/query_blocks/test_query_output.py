@@ -678,3 +678,11 @@ def test_parse_forwarded_outputs_with_duplicates(mock_parse_property, instance):
     assert res == expected_out2
 
     mock_parse_property.assert_has_calls([call("prop1", "obj1"), call("prop1", "obj2")])
+
+
+def test_reset(instance):
+    """
+    Tests reset function resets selected props
+    """
+    instance.reset()
+    assert instance.selected_props == []
