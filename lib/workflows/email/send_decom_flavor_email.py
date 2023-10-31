@@ -176,7 +176,7 @@ def send_decom_flavor_email(
         cloud_account, flavor_name_list, from_projects
     )
 
-    for email_addr, outputs in user_query.to_list().items():
+    for email_addr, outputs in user_query.to_props().items():
         user_name = outputs[0]["user_name"]
 
         # if email_address not found - send to override_email_address
