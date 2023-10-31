@@ -306,8 +306,5 @@ class QueryOutput:
         res = {}
         for key in keys:
             vals = [d[key] for d in data]
-            # converting into a set preserving order
-            # https://stackoverflow.com/a/53657523
-            # vals = list(dict.fromkeys(vals))
             res[key] = list(vals)
         return res

@@ -559,6 +559,15 @@ def test_flatten_list_many_keys_many_items(instance):
     ) == {"prop1": ["val1", "val3"], "prop2": ["val2", "val4"]}
 
 
+def test_flatten_with_duplicates(instance):
+    """
+    Tests flatten_list() function with duplicates - should keep duplicates as is
+    """
+    assert instance._flatten_list(
+        [{"prop1": "val1", "prop2": "val2"}, {"prop1": "val1", "prop2": "val2"}]
+    ) == {"prop1": ["val1", "val1"], "prop2": ["val2", "val2"]}
+
+
 def test_update_forwarded_outputs(instance):
     """
     Tests update_forwarded_outputs() method
