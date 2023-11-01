@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import List, Dict, Union, Type, Set, Optional
 from tabulate import tabulate
 from enums.query.props.prop_enum import PropEnum
@@ -180,21 +181,22 @@ class QueryOutput:
         :return: List containing dictionaries of the requested properties obtained from the items
         """
         output = []
+        forwarded_outputs = deepcopy(self.forwarded_outputs)
         for item in openstack_resources:
             prop_list = self._parse_properties(item)
-            prop_list.update(self._parse_forwarded_outputs(item))
+            prop_list.update(self._parse_forwarded_outputs(item, forwarded_outputs))
             output.append(prop_list)
         return output
 
     def _parse_forwarded_outputs(
-        self, openstack_resource: OpenstackResourceObj
+        self, openstack_resource: OpenstackResourceObj, forwarded_outputs: Dict
     ) -> Dict[str, str]:
         """
         Generates a dictionary of forwarded outputs for the item given
         :param openstack_resource: openstack resource item to parse forwarded outputs for
         """
         forwarded_output_dict = {}
-        for grouped_property, outputs in self.forwarded_outputs.items():
+        for grouped_property, outputs in forwarded_outputs.items():
             prop_val = self._parse_property(grouped_property, openstack_resource)
 
             # this "should not" error because forwarded outputs should always be a super-set
