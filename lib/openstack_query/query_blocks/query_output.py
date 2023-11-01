@@ -206,7 +206,12 @@ class QueryOutput:
                 # forwarded properties might contain more than one value
                 # then() will keep duplicates so each one in the list will be shunted into an output
                 forwarded_output_dict.update(output_list[0])
-                del output_list[0]
+
+                # a hacky way to prevent one-to-many chaining erroring - keep at least one value
+                # one-to-many/one-to-one will only ever contain one value per grouped_value
+                # many-to-one will contain multiple values per grouped values
+                if len(output_list) > 1:
+                    del output_list[0]
             except KeyError as exp:
                 raise QueryChainingError(
                     "Error: Chaining failed. Could not attach forwarded outputs.\n"

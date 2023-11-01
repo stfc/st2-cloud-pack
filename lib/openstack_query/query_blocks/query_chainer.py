@@ -77,15 +77,19 @@ class QueryChainer:
                 "Have you run the query first?"
             )
 
-        selected_props = current_query.output.selected_props
+        # remove user-defined parsing
+        prev_selected_props = current_query.output.selected_props
+        prev_grouping = current_query.parser.group_by
+        current_query.parser.group_by = None
 
         # grab all link prop values - including duplicates
         search_values = current_query.select(link_props[0]).to_props(flatten=True)[
             link_props[0].name.lower()
         ]
 
-        # reset select
-        current_query.select(*selected_props)
+        # re-configure user-defined parsing
+        current_query.parser.group_by = prev_grouping
+        current_query.output.selected_props = prev_selected_props
 
         to_forward = None
         if keep_previous_results:
