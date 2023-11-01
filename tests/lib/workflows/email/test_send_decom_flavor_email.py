@@ -58,6 +58,9 @@ def test_validate_success():
     validate(["flavor1", "flavor2"], from_projects=None, all_projects=True)
 
 
+# pylint:disable=too-many-locals
+
+
 @patch("workflows.email.send_decom_flavor_email.FlavorQuery")
 def test_find_users_with_decom_flavor(mock_flavor_query):
     """
