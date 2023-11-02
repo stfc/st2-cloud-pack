@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch, call, NonCallableMock
 import pytest
 
 from exceptions.query_chaining_error import QueryChainingError
@@ -333,22 +333,26 @@ def test_generate_output_no_items(instance):
 
 @patch("openstack_query.query_blocks.query_output.QueryOutput._parse_properties")
 @patch("openstack_query.query_blocks.query_output.QueryOutput._parse_forwarded_outputs")
+@patch("openstack_query.query_blocks.query_output.deepcopy")
 def test_generate_output_one_item(
-    mock_parse_forwarded_outputs, mock_parse_properties, instance
+    mock_deepcopy, mock_parse_forwarded_outputs, mock_parse_properties, instance
 ):
     """
     Tests generate output method - with a list containing one item
     """
+    instance.update_forwarded_outputs(NonCallableMock(), NonCallableMock())
     mock_parse_properties.return_value = {"prop1": "val1", "prop2": "val2"}
-
     mock_parse_forwarded_outputs.return_value = {
         "output_prop3": "val3",
         "output_prop4": "val4",
     }
 
     res = instance.generate_output(["obj1"])
+    mock_deepcopy.assert_called_once_with(instance.forwarded_outputs)
     mock_parse_properties.assert_called_once_with("obj1")
-    mock_parse_forwarded_outputs.assert_called_once_with("obj1")
+    mock_parse_forwarded_outputs.assert_called_once_with(
+        "obj1", mock_deepcopy.return_value
+    )
     assert res == [
         {
             "prop1": "val1",
@@ -361,12 +365,15 @@ def test_generate_output_one_item(
 
 @patch("openstack_query.query_blocks.query_output.QueryOutput._parse_properties")
 @patch("openstack_query.query_blocks.query_output.QueryOutput._parse_forwarded_outputs")
+@patch("openstack_query.query_blocks.query_output.deepcopy")
 def test_generate_output_many_items(
-    mock_parse_forwarded_outputs, mock_parse_properties, instance
+    mock_deepcopy, mock_parse_forwarded_outputs, mock_parse_properties, instance
 ):
     """
     Tests generate output method - with a list containing one item
     """
+    instance.update_forwarded_outputs(NonCallableMock(), NonCallableMock())
+
     mock_parse_properties.side_effect = [
         {"prop1": "val1", "prop2": "val2"},
         {"prop1": "val3", "prop2": "val4"},
@@ -377,8 +384,15 @@ def test_generate_output_many_items(
     ]
 
     res = instance.generate_output(["obj1", "obj2"])
+    mock_deepcopy.assert_called_once_with(instance.forwarded_outputs)
+
     mock_parse_properties.assert_has_calls([call("obj1"), call("obj2")])
-    mock_parse_forwarded_outputs.asssert_has_calls([call("obj1"), call("obj2")])
+    mock_parse_forwarded_outputs.asssert_has_calls(
+        [
+            call("obj1", mock_deepcopy.return_value),
+            call("obj2", mock_deepcopy.return_value),
+        ]
+    )
 
     expected_vals = [
         {
@@ -594,7 +608,7 @@ def test_parse_forwarded_outputs_no_set(instance):
     should return empty dict
     """
     # pylint:disable=protected-access
-    assert instance._parse_forwarded_outputs("obj1") == {}
+    assert instance._parse_forwarded_outputs("obj1", {}) == {}
 
 
 @patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
@@ -603,18 +617,19 @@ def test_parse_forwarded_outputs_one_to_many(mock_parse_property, instance):
     Tests parse_forwarded_outputs() method - one set of forwarded_outputs
     """
     expected_out = {"forwarded-prop1": "val1", "forwarded-prop2": "val2"}
-    instance.update_forwarded_outputs("prop1", {"prop_val1": [expected_out]})
+    mock_forwarded_outputs = {"prop1": {"prop_val1": [expected_out]}}
+
     mock_parse_property.side_effect = ["prop_val1", "prop_val1"]
 
     # pylint:disable=protected-access
 
     # first match
-    res = instance._parse_forwarded_outputs("obj1")
+    res = instance._parse_forwarded_outputs("obj1", mock_forwarded_outputs)
     mock_parse_property.assert_has_calls([call("prop1", "obj1")])
     assert res == expected_out
 
     # second match
-    res = instance._parse_forwarded_outputs("obj2")
+    res = instance._parse_forwarded_outputs("obj2", mock_forwarded_outputs)
     mock_parse_property.assert_has_calls([call("prop1", "obj2")])
     assert res == expected_out
 
@@ -630,10 +645,10 @@ def test_parse_forwarded_outputs_multiple_sets(mock_parse_property, instance):
     many_to_one_out1 = {"forwarded-prop3": "val3", "forwarded-prop4": "val4"}
     many_to_one_out2 = {"forwarded-prop3": "new-val", "forwarded-prop4": "new-val2"}
 
-    instance.update_forwarded_outputs("prop1", {"prop_val1": [one_to_many_out]})
-    instance.update_forwarded_outputs(
-        "prop2", {"prop_val2": [many_to_one_out1, many_to_one_out2]}
-    )
+    mock_forwarded_outputs = {
+        "prop1": {"prop_val1": [one_to_many_out]},
+        "prop2": {"prop_val2": [many_to_one_out1, many_to_one_out2]},
+    }
 
     mock_parse_property.side_effect = [
         # first item calls
@@ -646,12 +661,12 @@ def test_parse_forwarded_outputs_multiple_sets(mock_parse_property, instance):
     # pylint:disable=protected-access
 
     # first item
-    res = instance._parse_forwarded_outputs("obj1")
+    res = instance._parse_forwarded_outputs("obj1", mock_forwarded_outputs)
     mock_parse_property.assert_has_calls([call("prop1", "obj1"), call("prop2", "obj1")])
     assert res == {**one_to_many_out, **many_to_one_out1}
 
     # second item
-    res = instance._parse_forwarded_outputs("obj1")
+    res = instance._parse_forwarded_outputs("obj1", mock_forwarded_outputs)
     mock_parse_property.assert_has_calls([call("prop1", "obj1"), call("prop2", "obj1")])
     assert res == {**one_to_many_out, **many_to_one_out2}
 
@@ -662,12 +677,12 @@ def test_parse_forwarded_prop_value_not_found(mock_parse_property, instance):
     Tests parse_forwarded_outputs() method
     where a prop_value is not found - raise error
     """
-    instance.update_forwarded_outputs("prop1", {"prop-val1": ["outputs"]})
+    mock_forwarded_outputs = {"prop1": {"prop-val1": ["outputs"]}}
 
     mock_parse_property.return_value = "invalid-prop"
     with pytest.raises(QueryChainingError):
         # pylint:disable=protected-access
-        instance._parse_forwarded_outputs("obj1")
+        instance._parse_forwarded_outputs("obj1", mock_forwarded_outputs)
 
 
 @patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
@@ -681,18 +696,16 @@ def test_parse_forwarded_outputs_many_to_one(mock_parse_property, instance):
     expected_out1 = {"forwarded-prop1": "val1", "forwarded-prop2": "val2"}
     expected_out2 = {"forwarded-prop3": "val3", "forwarded-prop4": "val4"}
 
-    instance.update_forwarded_outputs(
-        "prop1", {"prop_val1": [expected_out1, expected_out2]}
-    )
+    mock_forwarded_outputs = {"prop1": {"prop_val1": [expected_out1, expected_out2]}}
     mock_parse_property.side_effect = ["prop_val1", "prop_val1"]
     # pylint:disable=protected-access
 
     # first duplicate - takes first item in list
-    res = instance._parse_forwarded_outputs("obj1")
+    res = instance._parse_forwarded_outputs("obj1", mock_forwarded_outputs)
     assert res == expected_out1
 
     # second duplicate - takes second item in list
-    res = instance._parse_forwarded_outputs("obj2")
+    res = instance._parse_forwarded_outputs("obj2", mock_forwarded_outputs)
     assert res == expected_out2
 
     mock_parse_property.assert_has_calls([call("prop1", "obj1"), call("prop1", "obj2")])
