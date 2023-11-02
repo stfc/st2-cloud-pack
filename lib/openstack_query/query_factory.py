@@ -1,7 +1,5 @@
-from typing import Tuple, Type, Optional
+from typing import Type
 
-from enums.query.props.prop_enum import PropEnum
-from custom_types.openstack_query.aliases import GroupedReturn
 from openstack_query.mappings.mapping_interface import MappingInterface
 from openstack_query.query_blocks.query_builder import QueryBuilder
 from openstack_query.query_blocks.query_chainer import QueryChainer
