@@ -21,14 +21,10 @@ class QueryFactory:
     """
 
     @staticmethod
-    def build_query_deps(
-        mapping_cls: Type[MappingInterface],
-        forwarded_outputs: Optional[Tuple[PropEnum, GroupedReturn]] = None,
-    ) -> QueryComponents:
+    def build_query_deps(mapping_cls: Type[MappingInterface]) -> QueryComponents:
         """
         Composes objects that make up the query - to allow dependency injection
         :param mapping_cls: A mapping class which is used to configure query objects
-        :param forwarded_outputs: A tuple containing grouped outputs to forward from another query
         and the enum they are grouped by
         """
         prop_mapping = mapping_cls.get_prop_mapping()
@@ -43,11 +39,6 @@ class QueryFactory:
         executer = QueryExecuter(
             prop_enum_cls=prop_mapping, runner_cls=mapping_cls.get_runner_mapping()
         )
-        if forwarded_outputs:
-            executer.set_forwarded_values(
-                lambda obj: output.parse_property(forwarded_outputs[0], obj),
-                forwarded_outputs[1],
-            )
 
         chainer = QueryChainer(chain_mappings=mapping_cls.get_chain_mappings())
 

@@ -1,4 +1,5 @@
 import logging
+import copy
 from typing import Union, List, Optional, Dict, Tuple
 
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
@@ -147,6 +148,14 @@ class QueryAPI:
             from_subset=from_subset,
             **kwargs,
         )
+
+        link_prop, forwarded_vals = self.chainer.forwarded_info
+        if forwarded_vals:
+            self.executer.apply_forwarded_results(
+                copy.deepcopy(forwarded_vals),
+                lambda obj: self.output.parse_property(link_prop, obj),
+            )
+
         self._query_run = True
         return self
 
@@ -273,5 +282,11 @@ class QueryAPI:
         :param cloud_account: A String or a CloudDomains Enum for the clouds configuration to use
         :param props: list of props from new queries to get
         """
-        self.chainer.parse_append_from(self, query_type, cloud_account, *props)
+        link_prop, results = self.chainer.run_append_from_query(
+            self, query_type, cloud_account, *props
+        )
+        self.executer.apply_forwarded_results(
+            results,
+            lambda obj: self.output.parse_property(link_prop, obj),
+        )
         return self

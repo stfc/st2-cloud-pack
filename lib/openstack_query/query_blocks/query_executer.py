@@ -31,7 +31,7 @@ class QueryExecuter:
         self.runner = runner_cls(self._prop_enum_cls.get_marker_prop_func())
         self._client_side_filters = None
         self._server_side_filters = None
-        self._results = []
+        self._results: List[Tuple[OpenstackResourceObj, Dict]] = []
 
         # for chaining
         self._forwarded_values = {}
@@ -135,25 +135,20 @@ class QueryExecuter:
             **kwargs,
         )
 
-        forwarded_results = copy.deepcopy(self._forwarded_values)
-        self.results = self.apply_forwarded_results(
-            results, forwarded_results, self.link_prop_func
-        )
+        self.results = [(result, {}) for result in results]
         logger.debug("run completed - time elapsed: %s seconds", time.time() - start)
 
-    def apply_forwarded_results(self, query_results, forwarded_results, link_prop_func):
-        if not query_results:
-            return []
-
-        return [
-            (
-                obj,
-                self._get_forwarded_result(link_prop_func(obj), forwarded_results),
-            )
-            for obj in query_results
-        ]
-
-    def append_forwarded_results(self, forwarded_results, link_prop_func):
+    def apply_forwarded_results(
+        self, forwarded_results: Dict[PropValue, List[Dict]], link_prop_func
+    ):
+        """
+        public method that when called will concatenate forwarded results onto each result.
+        :param forwarded_results: a grouped set of forwarded results, grouped by a common property
+        :param link_prop_func: a function that takes a openstack resource object and computes its value for shared
+        common property to be used to attach appropriate forwarded result
+        """
+        if not self.results:
+            return
 
         self.results = [
             (
@@ -170,13 +165,36 @@ class QueryExecuter:
 
     @staticmethod
     def _get_forwarded_result(prop_val: str, forwarded_results: Dict[str, List]):
+        """
+        static helper method to return forwarded values that match a given property value. Used for chaining
+        This handles two chaining cases:
+            - many-to-one (or one-to-one as we're using duplicates)
+                - where multiple forwarded outputs maps to one openstack object in result
+                - the result will contain exact number of duplicate openstack objects so each forwarded output is
+                assigned to an appropriate copy
+
+            - one-to-many - where one forwarded output needs to map to multiple openstack objects in results
+
+        :param prop_val: common property value to use to find a set of forwarded values to return
+        :param forwarded_results: a grouped dictionary which holds forwarded values grouped by common property value
+        """
 
         if not forwarded_results:
             return {}
 
         result_to_attach = forwarded_results[prop_val][0]
+
+        # if forwarded_results group contains only one item:
+        #   - we assume we're chaining a one-to-many and keep at least one value
+
+        # if it contains multiple item:
+        #   - we assume many-to-one and delete the value
+
+        # deleting is a nice way of making sure each value is set - otherwise we need to keep track
+        # of the index position of last read item for each group
         if len(forwarded_results[prop_val]) > 1:
             del forwarded_results[prop_val][0]
+
         return result_to_attach
 
     def parse_results(
