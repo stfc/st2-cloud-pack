@@ -162,11 +162,12 @@ class QueryParser:
         )
 
     def run_parser(
-        self, obj_list: List[OpenstackResourceObj]
+        self, obj_list: List[Tuple[OpenstackResourceObj, Dict]]
     ) -> Union[List[OpenstackResourceObj], Dict[str, List[OpenstackResourceObj]]]:
         """
         Public method used to parse query runner output - performs specified sorting and grouping
-        :param obj_list: a list of openstack resource objects to parse
+        :param obj_list: a list of tuples containing openstack resource objects and outputs to forward
+        (which are ignored for now)
         """
         if not obj_list:
             return obj_list
@@ -181,12 +182,12 @@ class QueryParser:
 
     def _run_sort(
         self,
-        obj_list: List[OpenstackResourceObj],
-    ) -> List[OpenstackResourceObj]:
+        obj_list: List[Tuple[OpenstackResourceObj, Dict]],
+    ) -> List[Tuple[OpenstackResourceObj, Dict]]:
         """
         method which sorts a list of openstack objects based on a dictionary of sort_by specs
-        :param obj_list: A list of openstack objects to sort
-            - descending - True, ascending - False
+        :param obj_list: a list of tuples containing openstack resource objects and outputs to forward
+        which are to be sorted
         """
 
         logger.debug("running multi-sort")
@@ -197,7 +198,7 @@ class QueryParser:
             logger.debug("running sort %s / %s", i, sort_num)
             logger.debug("sorting by: %s, reverse=%s", sort_key, reverse)
             prop_func = self._prop_enum_cls.get_prop_mapping(sort_key)
-            obj_list.sort(key=prop_func, reverse=reverse)
+            obj_list.sort(key=lambda x: prop_func(x[0]), reverse=reverse)
         return obj_list
 
     def _build_unique_val_groups(
@@ -231,12 +232,13 @@ class QueryParser:
 
     def _run_group_by(
         self,
-        obj_list: List[OpenstackResourceObj],
-    ) -> Dict[str, List[OpenstackResourceObj]]:
+        obj_list: List[Tuple[OpenstackResourceObj, Dict]],
+    ) -> Dict[str, List[Tuple[OpenstackResourceObj, Dict]]]:
         """
         helper method apply a set of group mappings onto a list of openstack objects. Returns a dictionary of grouped
         values where the key is the group name and value is a list of openstack objects that belong to that group
-        :param obj_list: list of openstack objects to group
+        :param obj_list: a list of tuples containing openstack resource objects and outputs to forward
+        which are to be grouped
         """
 
         # if group mappings not specified - make a group for each unique value found for prop
@@ -245,9 +247,11 @@ class QueryParser:
                 "no group ranges specified - grouping by unique values of %s property",
                 self.group_by.name,
             )
-            self.group_mappings = self._build_unique_val_groups(obj_list)
+            self.group_mappings = self._build_unique_val_groups(
+                [item[0] for item in obj_list]
+            )
 
         return {
-            name: [item for item in obj_list if map_func(item)]
+            name: [item for item in obj_list if map_func(item[0])]
             for name, map_func in self.group_mappings.items()
         }

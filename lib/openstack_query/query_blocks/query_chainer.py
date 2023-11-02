@@ -1,5 +1,6 @@
 from typing import Tuple, List, Optional, Union
 
+from enums.cloud_domains import CloudDomains
 from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresetsGeneric
 from enums.query.query_types import QueryTypes
@@ -107,4 +108,33 @@ class QueryChainer:
             QueryPresetsGeneric.ANY_IN,
             link_props[1],
             values=search_values,
+        )
+
+    @staticmethod
+    def parse_append_from(
+        current_query,
+        query_type: Union[str, QueryTypes],
+        cloud_account: Union[str, CloudDomains],
+        *props: PropEnum,
+    ):
+        """
+        Public static method to parse an append_from call - which appends specific properties from another query onto
+        current query.
+        :param current_query: current QueryAPI object
+        :param query_type: an enum representing the new query we want to append properties from
+        :param cloud_account: A String or a CloudDomains Enum for the clouds configuration to use
+        :param props: one or more properties to collect described as enum
+        """
+        if isinstance(query_type, str):
+            query_type = QueryTypes.from_string(query_type)
+
+        new_query = current_query.then(query_type, keep_previous_results=False)
+        new_query.select(*props)
+        new_query.run(cloud_account)
+
+        link_props = current_query.chainer.get_link_props(query_type)
+
+        current_query.executer.append_forwarded_results(
+            new_query.group_by(link_props[1]).to_props(),
+            lambda obj: current_query.output.parse_property(link_props[0], obj),
         )

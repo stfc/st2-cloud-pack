@@ -34,8 +34,6 @@ class QueryFactory:
         prop_mapping = mapping_cls.get_prop_mapping()
 
         output = QueryOutput(prop_mapping)
-        if forwarded_outputs:
-            output.update_forwarded_outputs(forwarded_outputs[0], forwarded_outputs[1])
         parser = QueryParser(prop_mapping)
         builder = QueryBuilder(
             prop_enum_cls=prop_mapping,
@@ -45,6 +43,11 @@ class QueryFactory:
         executer = QueryExecuter(
             prop_enum_cls=prop_mapping, runner_cls=mapping_cls.get_runner_mapping()
         )
+        if forwarded_outputs:
+            executer.set_forwarded_values(
+                lambda obj: output.parse_property(forwarded_outputs[0], obj),
+                forwarded_outputs[1],
+            )
 
         chainer = QueryChainer(chain_mappings=mapping_cls.get_chain_mappings())
 

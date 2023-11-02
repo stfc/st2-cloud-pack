@@ -273,15 +273,5 @@ class QueryAPI:
         :param cloud_account: A String or a CloudDomains Enum for the clouds configuration to use
         :param props: list of props from new queries to get
         """
-        if isinstance(query_type, str):
-            query_type = QueryTypes.from_string(query_type)
-
-        new_query = self.then(query_type, keep_previous_results=False)
-        new_query.select(*props)
-        new_query.run(cloud_account)
-
-        link_props = self.chainer.get_link_props(query_type)
-        new_query.group_by(link_props[1])
-
-        self.output.update_forwarded_outputs(link_props[0], new_query.to_props())
+        self.chainer.parse_append_from(self, query_type, cloud_account, *props)
         return self

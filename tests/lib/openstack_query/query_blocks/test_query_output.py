@@ -331,7 +331,7 @@ def test_generate_output_no_items(instance):
     assert instance.generate_output([]) == []
 
 
-@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_properties")
+@patch("openstack_query.query_blocks.query_output.QueryOutput.parse_properties")
 @patch("openstack_query.query_blocks.query_output.QueryOutput._parse_forwarded_outputs")
 @patch("openstack_query.query_blocks.query_output.deepcopy")
 def test_generate_output_one_item(
@@ -363,7 +363,7 @@ def test_generate_output_one_item(
     ]
 
 
-@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_properties")
+@patch("openstack_query.query_blocks.query_output.QueryOutput.parse_properties")
 @patch("openstack_query.query_blocks.query_output.QueryOutput._parse_forwarded_outputs")
 @patch("openstack_query.query_blocks.query_output.deepcopy")
 def test_generate_output_many_items(
@@ -441,7 +441,7 @@ def test_parse_properties_no_props(instance):
     # mock get_prop_mapping to return a func string appropriate for that prop
     instance.selected_props = set()
     # pylint:disable=protected-access
-    assert instance._parse_properties("openstack-item") == {}
+    assert instance.parse_properties("openstack-item") == {}
 
 
 @patch.object(MockProperties, "get_prop_mapping")
@@ -457,7 +457,7 @@ def test_parse_properties_one_prop(mock_get_prop_func, instance):
 
     instance.selected_props = {MockProperties.PROP_1}
     # pylint:disable=protected-access
-    res = instance._parse_properties("openstack-item")
+    res = instance.parse_properties("openstack-item")
 
     mock_get_prop_func.assert_called_once_with(MockProperties.PROP_1)
     mock_prop_func.assert_called_once_with("openstack-item")
@@ -477,7 +477,7 @@ def test_parse_properties_many_props(mock_get_prop_func, instance):
         MockProperties, "get_prop_mapping", wraps=mock_get_prop_func
     ) as mock_get_prop_mapping:
         # pylint:disable=protected-access
-        res = instance._parse_properties("openstack-item")
+        res = instance.parse_properties("openstack-item")
 
     assert res == {"prop_1": "prop 1 out", "prop_2": "Not Found"}
     mock_get_prop_mapping.assert_has_calls(
@@ -611,7 +611,7 @@ def test_parse_forwarded_outputs_no_set(instance):
     assert instance._parse_forwarded_outputs("obj1", {}) == {}
 
 
-@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
+@patch("openstack_query.query_blocks.query_output.QueryOutput.parse_property")
 def test_parse_forwarded_outputs_one_to_many(mock_parse_property, instance):
     """
     Tests parse_forwarded_outputs() method - one set of forwarded_outputs
@@ -634,7 +634,7 @@ def test_parse_forwarded_outputs_one_to_many(mock_parse_property, instance):
     assert res == expected_out
 
 
-@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
+@patch("openstack_query.query_blocks.query_output.QueryOutput.parse_property")
 def test_parse_forwarded_outputs_multiple_sets(mock_parse_property, instance):
     """
     Tests parse_forwarded_outputs() method - a set of many forwarded_outputs
@@ -671,7 +671,7 @@ def test_parse_forwarded_outputs_multiple_sets(mock_parse_property, instance):
     assert res == {**one_to_many_out, **many_to_one_out2}
 
 
-@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
+@patch("openstack_query.query_blocks.query_output.QueryOutput.parse_property")
 def test_parse_forwarded_prop_value_not_found(mock_parse_property, instance):
     """
     Tests parse_forwarded_outputs() method
@@ -685,7 +685,7 @@ def test_parse_forwarded_prop_value_not_found(mock_parse_property, instance):
         instance._parse_forwarded_outputs("obj1", mock_forwarded_outputs)
 
 
-@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
+@patch("openstack_query.query_blocks.query_output.QueryOutput.parse_property")
 def test_parse_forwarded_outputs_many_to_one(mock_parse_property, instance):
     """
     Tests parse_forwarded_outputs() method - where forwarded outputs expects duplicates

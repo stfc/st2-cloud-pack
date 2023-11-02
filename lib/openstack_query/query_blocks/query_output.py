@@ -1,5 +1,4 @@
-from copy import deepcopy
-from typing import List, Dict, Union, Type, Set, Optional
+from typing import List, Dict, Union, Type, Set, Optional, Tuple
 from tabulate import tabulate
 from enums.query.props.prop_enum import PropEnum
 from custom_types.openstack_query.aliases import (
@@ -25,22 +24,6 @@ class QueryOutput:
     def __init__(self, prop_enum_cls: Type[PropEnum]):
         self._prop_enum_cls = prop_enum_cls
         self._props = set()
-        self._forwarded_outputs: Dict[PropEnum, GroupedReturn] = {}
-
-    def update_forwarded_outputs(self, link_prop: PropEnum, values: Dict[str, List]):
-        """
-        method to set outputs to forward from other queries
-        :param link_prop: the property that the results are grouped by
-        :param values: grouped properties to forward
-        """
-        self._forwarded_outputs[link_prop] = values
-
-    @property
-    def forwarded_outputs(self) -> Dict[PropEnum, GroupedReturn]:
-        """
-        A getter for forwarded properties
-        """
-        return self._forwarded_outputs
 
     @property
     def selected_props(self) -> List[PropEnum]:
@@ -170,58 +153,25 @@ class QueryOutput:
         self.selected_props = set(all_props)
 
     def generate_output(
-        self, openstack_resources: List[OpenstackResourceObj]
+        self, openstack_resources: List[Tuple[OpenstackResourceObj, Dict]]
     ) -> List[Dict[str, PropValue]]:
         """
         Generates a dictionary of queried properties from a list of openstack objects e.g. servers
         e.g. {['server_name': 'server1', 'server_id': 'server1_id'],
               ['server_name': 'server2', 'server_id': 'server2_id']} etc.
-        (if we selected 'server_name' and 'server_id' as properties
-        :param openstack_resources: List of openstack objects to obtain properties from - e.g. [Server1, Server2]
+        (if we selected 'server_name' and 'server_id' as properties).
+        We then concatenate those properties with any forwarded properties
+
+        :param openstack_resources: List of Tuples holding openstack objects to obtain properties from
+        - e.g. [Server1, Server2] and any forwarded properties to attach
         :return: List containing dictionaries of the requested properties obtained from the items
         """
         output = []
-        forwarded_outputs = deepcopy(self.forwarded_outputs)
-        for item in openstack_resources:
+        for item, forwarded_props in openstack_resources:
             prop_list = self._parse_properties(item)
-            prop_list.update(self._parse_forwarded_outputs(item, forwarded_outputs))
+            prop_list.update(forwarded_props)
             output.append(prop_list)
         return output
-
-    def _parse_forwarded_outputs(
-        self, openstack_resource: OpenstackResourceObj, forwarded_outputs: Dict
-    ) -> Dict[str, str]:
-        """
-        Generates a dictionary of forwarded outputs for the item given
-        :param openstack_resource: openstack resource item to parse forwarded outputs for
-        """
-        forwarded_output_dict = {}
-        for grouped_property, outputs in forwarded_outputs.items():
-            prop_val = self._parse_property(grouped_property, openstack_resource)
-
-            # this "should not" error because forwarded outputs should always be a super-set
-            # but sometimes resolving the property fails for whatever reason - fail noisily
-            try:
-                output_list = outputs[prop_val]
-                # we update with first result in grouped list and delete it
-
-                # forwarded properties might contain more than one value
-                # then() will keep duplicates so each one in the list will be shunted into an output
-                forwarded_output_dict.update(output_list[0])
-
-                # a hacky way to prevent one-to-many chaining erroring - keep at least one value
-                # one-to-many/one-to-one will only ever contain one value per grouped_value
-                # many-to-one will contain multiple values per grouped values
-                if len(output_list) > 1:
-                    del output_list[0]
-            except KeyError as exp:
-                raise QueryChainingError(
-                    "Error: Chaining failed. Could not attach forwarded outputs.\n"
-                    f"Property {grouped_property} extracted from has value {prop_val} which"
-                    "does not match any values from forwarded outputs. "
-                    "This is due to a mismatch in property mappings - likely an Openstack issue"
-                ) from exp
-        return forwarded_output_dict
 
     def _parse_properties(
         self, openstack_resource: OpenstackResourceObj
@@ -232,11 +182,11 @@ class QueryOutput:
         """
         obj_dict = {}
         for prop in self.selected_props:
-            val = self._parse_property(prop, openstack_resource)
+            val = self.parse_property(prop, openstack_resource)
             obj_dict[prop.name.lower()] = val
         return obj_dict
 
-    def _parse_property(
+    def parse_property(
         self, prop: PropEnum, openstack_resource: OpenstackResourceObj
     ) -> PropValue:
         """
@@ -256,7 +206,7 @@ class QueryOutput:
         results: List[Dict[str, PropValue]], return_html: bool, title=None, **kwargs
     ) -> str:
         """
-        Returns a table from the result of 'self._parse_properties'
+        Returns a table from the result of 'self.parse_properties'
         :param results: dict of query results
         :param return_html: True if output required in html table format else output plain text table
         :param kwargs: kwargs to pass to tabulate
