@@ -198,7 +198,7 @@ class QueryParser:
             logger.debug("running sort %s / %s", i, sort_num)
             logger.debug("sorting by: %s, reverse=%s", sort_key, reverse)
             prop_func = self._prop_enum_cls.get_prop_mapping(sort_key)
-            obj_list.sort(key=lambda x: prop_func(x[0]), reverse=reverse)
+            obj_list.sort(key=lambda x, fn=prop_func: fn(x[0]), reverse=reverse)
         return obj_list
 
     def _build_unique_val_groups(

@@ -1,7 +1,6 @@
-from unittest.mock import MagicMock, patch, call, NonCallableMock
+from unittest.mock import MagicMock, patch, call
 import pytest
 
-from exceptions.query_chaining_error import QueryChainingError
 from exceptions.parse_query_error import ParseQueryError
 from openstack_query.query_blocks.query_output import QueryOutput
 from enums.query.props.server_properties import ServerProperties

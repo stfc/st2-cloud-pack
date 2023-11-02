@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from openstack_query.query_factory import QueryFactory
-from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 
 @pytest.fixture(name="run_build_query_deps_test_case")

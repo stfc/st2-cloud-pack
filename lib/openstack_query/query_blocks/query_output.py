@@ -4,9 +4,7 @@ from enums.query.props.prop_enum import PropEnum
 from custom_types.openstack_query.aliases import (
     OpenstackResourceObj,
     PropValue,
-    GroupedReturn,
 )
-from exceptions.query_chaining_error import QueryChainingError
 from exceptions.parse_query_error import ParseQueryError
 
 
