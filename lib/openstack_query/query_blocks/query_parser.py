@@ -141,7 +141,7 @@ class QueryParser:
         for name, prop_list in group_ranges.items():
             group_vals = tuple(prop_list)
             self.group_mappings[name] = (
-                lambda obj, lst=group_vals: prop_func(obj) in lst
+                lambda obj, lst=group_vals: prop_func(obj[0]) in lst
             )
 
     def _add_include_missing_group(self, group_ranges: GroupRanges):
@@ -158,7 +158,7 @@ class QueryParser:
         prop_func = self._prop_enum_cls.get_prop_mapping(self.group_by)
         logger.debug("creating filter function for ungrouped group")
         self.group_mappings["ungrouped results"] = (
-            lambda obj: prop_func(obj) not in all_prop_list
+            lambda obj: prop_func(obj[0]) not in all_prop_list
         )
 
     def run_parser(
@@ -213,7 +213,7 @@ class QueryParser:
         prop_func = self._prop_enum_cls.get_prop_mapping(self.group_by)
         # ordered dict to mimic ordered set
         # this is to preserve order we see unique values in - in case a sort has been done already
-        unique_vals = OrderedDict({prop_func(obj): None for obj in obj_list})
+        unique_vals = OrderedDict({prop_func(obj[0]): None for obj in obj_list})
         logger.debug(
             "unique values found %s - each will become a group",
             ",".join(f"{val}" for val in unique_vals),
@@ -225,7 +225,7 @@ class QueryParser:
         for val in unique_vals.keys():
             group_key = val
             group_mappings[group_key] = (
-                lambda obj, test_val=val: prop_func(obj) == test_val
+                lambda obj, test_val=val: prop_func(obj[0]) == test_val
             )
 
         return group_mappings

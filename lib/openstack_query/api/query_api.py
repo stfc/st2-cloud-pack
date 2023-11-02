@@ -1,5 +1,5 @@
 import logging
-import copy
+from copy import deepcopy
 from typing import Union, List, Optional, Dict, Tuple
 
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
@@ -152,7 +152,7 @@ class QueryAPI:
         link_prop, forwarded_vals = self.chainer.forwarded_info
         if forwarded_vals:
             self.executer.apply_forwarded_results(
-                copy.deepcopy(forwarded_vals),
+                deepcopy(forwarded_vals),
                 lambda obj: self.output.parse_property(link_prop, obj),
             )
 

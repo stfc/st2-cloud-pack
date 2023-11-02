@@ -52,13 +52,6 @@ def run_parse_then_query_valid_fixture(instance):
             "prop_1": ["val1", "val2", "val3"]
         }
 
-        to_forward = None
-        if mock_keep_previous_results:
-            to_forward = (
-                MockProperties.PROP_2,
-                mock_current_query.group_by.return_value.to_props.return_value,
-            )
-
         res = instance.parse_then(
             current_query=mock_current_query,
             query_type="query-type",
@@ -73,6 +66,10 @@ def run_parse_then_query_valid_fixture(instance):
         mock_current_query.select.return_value.to_props.assert_any_call(flatten=True)
 
         if mock_keep_previous_results:
+            mock_query_api.return_value.chainer.set_forwarded_vals.assert_called_once_with(
+                MockProperties.PROP_2,
+                mock_current_query.group_by.return_value.to_props.return_value,
+            )
             mock_group_by = mock_current_query.group_by
             mock_group_by.assert_has_calls(
                 [
@@ -82,7 +79,7 @@ def run_parse_then_query_valid_fixture(instance):
             )
 
         mock_query_factory.build_query_deps.assert_called_once_with(
-            mock_query_types_cls.from_string.return_value.value, to_forward
+            mock_query_types_cls.from_string.return_value.value
         )
 
         mock_query_api.assert_called_once_with(

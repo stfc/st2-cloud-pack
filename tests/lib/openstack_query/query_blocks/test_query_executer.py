@@ -15,7 +15,9 @@ def instance_fixture():
     """
     mock_prop_enum_cls = MockProperties
     mock_runner_cls = MagicMock()
-    return QueryExecuter(mock_prop_enum_cls, mock_runner_cls)
+    query_executer = QueryExecuter(mock_prop_enum_cls, mock_runner_cls)
+    query_executer._results = MagicMock()
+    return query_executer
 
 
 def test_client_side_filter_func(instance):
@@ -118,6 +120,10 @@ def test_run_query(instance):
         **{"arg1": "val1", "arg2": "val2"}
     )
 
+    instance.result_container.set_from_query_results.assert_called_once_with(
+        instance.runner.run.return_value
+    )
+
     instance.runner.run.assert_called_once_with(
         cloud_account="prod",
         client_side_filters=instance.client_side_filters,
@@ -141,6 +147,10 @@ def test_run_query_with_string_domain(instance):
         **{"arg1": "val1", "arg2": "val2"}
     )
 
+    instance.result_container.set_from_query_results.assert_called_once_with(
+        instance.runner.run.return_value
+    )
+
     instance.runner.run.assert_called_once_with(
         cloud_account="domain",
         client_side_filters=instance.client_side_filters,
@@ -153,26 +163,33 @@ def test_run_query_with_string_domain(instance):
 def test_parse_results_no_parse_func(instance):
     """
     Tests that parse_results method works as expected
-    should return raw_results, and get_output(raw_results) tuple
+    should return list of openstack objects and output of get_output()
     """
-    instance.raw_results = MagicMock()
+    results = [("res1", {}), ("res2", {})]
+    instance.result_container.output.return_value = results
+
     with patch(
         "openstack_query.query_blocks.query_executer.QueryExecuter.get_output"
     ) as mock_get_output:
         res1, res2 = instance.parse_results(None, "output_func")
 
-    assert res1 == instance.raw_results
-    mock_get_output.assert_called_once_with("output_func", instance.raw_results)
+    instance.result_container.output.assert_called_once()
+    assert res1 == ["res1", "res2"]
+    mock_get_output.assert_called_once_with("output_func", results)
     assert res2 == mock_get_output.return_value
 
 
-def test_parse_results_with_parse_func(instance):
+def test_parse_results_with_parse_func_with_grouping(instance):
     """
     Tests that parse_results method works as expected
-    should return raw_results, and get_output(raw_results) tuple
+    should return grouped openstack resources, and get_output() output tuple
     """
-    instance.raw_results = MagicMock()
+    results = [("res1", {}), ("res2", {}), ("res3", {})]
+    parsed_results = {"group1": [("res1", {})], "group2": [("res2", {}), ("res3", {})]}
     parse_func = MagicMock()
+    parse_func.return_value = parsed_results
+    instance.result_container.output.return_value = results
+
     output_func = "output_func"
 
     with patch(
@@ -180,8 +197,36 @@ def test_parse_results_with_parse_func(instance):
     ) as mock_get_output:
         res1, res2 = instance.parse_results(parse_func, output_func)
 
-    parse_func.assert_called_once_with(instance.raw_results)
-    assert res1 == parse_func.return_value
+    instance.result_container.output.assert_called_once()
+    parse_func.assert_called_once_with(instance.result_container.output.return_value)
+    assert res1 == {"group1": ["res1"], "group2": ["res2", "res3"]}
 
-    mock_get_output.assert_called_once_with("output_func", parse_func.return_value)
+    mock_get_output.assert_called_once_with("output_func", parsed_results)
+    assert res2 == mock_get_output.return_value
+
+
+def test_parse_results_with_parse_func_no_grouping(instance):
+    """
+    Tests that parse_results method works as expected
+    should return openstack resources list, and get_output() output tuple
+    """
+    results = [("res1", {}), ("res2", {}), ("res3", {})]
+    parsed_results = [("res3", {}), ("res2", {}), ("res1", {})]
+
+    parse_func = MagicMock()
+    parse_func.return_value = parsed_results
+    instance.result_container.output.return_value = results
+
+    output_func = "output_func"
+
+    with patch(
+        "openstack_query.query_blocks.query_executer.QueryExecuter.get_output"
+    ) as mock_get_output:
+        res1, res2 = instance.parse_results(parse_func, output_func)
+
+    instance.result_container.output.assert_called_once()
+    parse_func.assert_called_once_with(instance.result_container.output.return_value)
+    assert res1 == ["res3", "res2", "res1"]
+
+    mock_get_output.assert_called_once_with("output_func", parsed_results)
     assert res2 == mock_get_output.return_value

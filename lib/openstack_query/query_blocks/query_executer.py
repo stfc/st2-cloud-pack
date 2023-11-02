@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 
 # pylint:disable=too-many-instance-attributes
-# TODO: streamline these instance attributes later
 
 
 class QueryExecuter:
@@ -36,6 +35,10 @@ class QueryExecuter:
     @property
     def results(self) -> List[Tuple[OpenstackResourceObj, Dict]]:
         return self._results.output()
+
+    @property
+    def result_container(self) -> ResultsContainer:
+        return self._results
 
     @property
     def client_side_filters(self):
@@ -89,7 +92,7 @@ class QueryExecuter:
 
         start = time.time()
 
-        self.results.set_from_query_results(
+        self.result_container.set_from_query_results(
             self.runner.run(
                 cloud_account=cloud_account,
                 client_side_filters=self.client_side_filters,
@@ -110,7 +113,7 @@ class QueryExecuter:
         :param link_prop_func: a function that takes a openstack resource object and computes its value for shared
         common property to be used to attach appropriate forwarded result
         """
-        self.results.apply_forwarded_results(link_prop_func, forwarded_results)
+        self.result_container.apply_forwarded_results(link_prop_func, forwarded_results)
 
     def parse_results(
         self,
@@ -124,19 +127,21 @@ class QueryExecuter:
         :param parse_func: function that groups and sorts object results
         :param output_func: function that takes object results and converts it into selected outputs
         """
-        results = self.results.output()
+        results = self.result_container.output()
+        as_object_results = [result[0] for result in results]
+
         if parse_func:
             results = parse_func(results)
 
-        if not isinstance(results, dict):
-            as_object_results = [result[0] for result in results]
-        else:
-            as_object_results = {
-                name: [result[0] for result in group] for name, group in results.items()
-            }
+            if not isinstance(results, dict):
+                as_object_results = [result[0] for result in results]
+            else:
+                as_object_results = {
+                    name: [result[0] for result in group]
+                    for name, group in results.items()
+                }
 
         as_prop_results = self.get_output(output_func, results)
-
         return as_object_results, as_prop_results
 
     @staticmethod
