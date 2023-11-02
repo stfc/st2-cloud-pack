@@ -34,8 +34,8 @@ class QueryExecuter:
         self._results = ResultsContainer()
 
     @property
-    def results(self) -> ResultsContainer:
-        return self._results
+    def results(self) -> List[Tuple[OpenstackResourceObj, Dict]]:
+        return self._results.output()
 
     @property
     def client_side_filters(self):
