@@ -1,14 +1,21 @@
-"""This file write directories to a csv files
-    based on the number of provided directories."""
+from pathlib import Path
 from typing import Union, List, Dict
 
 import csv
-"""
-Imports for the query libarary
-"""
+from enums.query.sort_order import SortOrder
 from openstack_query.api.query_objects import ServerQuery
 from enums.query.props.server_properties import ServerProperties
 from enums.query.query_presets import QueryPresetsGeneric
+
+"""
+    This file write directories to a csv files
+    based on the number of provided directories.
+"""
+
+"""
+Imports for the query libarary
+"""
+
 
 def get_query():
     """
@@ -17,17 +24,26 @@ def get_query():
     :return:
     """
 
-    data = ServerQuery().select(ServerProperties.SERVER_ID, ServerProperties.SERVER_NAME, ServerProperties.SERVER_STATUS)
+    data = ServerQuery().select(
+        ServerProperties.SERVER_ID,
+        ServerProperties.SERVER_NAME,
+        ServerProperties.SERVER_STATUS,
+    )
+    data.where(
+        QueryPresetsGeneric.ANY_IN,
+        ServerProperties.SERVER_STATUS,
+        values=["SHUTOFF", "ERROR"],
+    )
 
-    data.sort_by((ServerProperties.SERVER_NAME, True))
+    data.sort_by((ServerProperties.SERVER_NAME, SortOrder.DESC))
     data.group_by(ServerProperties.SERVER_STATUS)
 
-    data.run("openstack")
+    data.run("prod", as_admin=True, all_projects=True)
 
-    return data
+    return data.to_props()
 
 
-def to_csv_list(self, results: Union[List, Dict], data, output_filepath):
+def to_csv_list(data: Union[List, Dict], output_filepath):
     """
     Takes a list of dictionaries and outputs them into a designated csv file 'self._parse_properties'
     :param data: this is the list of dictionaries passed in to this function
@@ -45,52 +61,63 @@ def to_csv_list(self, results: Union[List, Dict], data, output_filepath):
         writer.writeheader()
         writer.writerows(data)
 
-    return print("List Written to csv")
+    print("List Written to csv")
 
 
-def to_csv_dictionary(self, results: Union[List, Dict], data, dir_path):
+def to_csv_dictionary(data: Union[List, Dict], dir_path):
     """
-        :Takes a dictionary of dictionaries and outputs them into separate designated csv file 'self._parse_properties'
-        :param data: this is the dictionary of dictionaries passed in to this function
-        :param dir_path: this is the output path the csv files will be created in
-        :return: Does it return anything.
+    Takes a dictionary of dictionaries and outputs them into separate designated csv file 'self._parse_properties'
+    :param data: this is the dictionary of dictionaries passed in to this function
+    :param dir_path: this is the output path the csv files will be created in
+    :return: Does it return anything.
     """
 
     for p_id, p_info in data.items():
-        file_path = f"{dir_path}{p_id}.csv"
+        file_path = dir_path / f"{p_id}.csv"
         to_csv_list(p_info, file_path)
 
-    return print("Dictionary written to csv")
+    print("Dictionary written to csv")
 
 
-def to_csv(self, results: Union[list, dict], data, filepath):
+def to_csv(data: Union[List, Dict], dir_path):
     """
-        :Takes a dictionary of dictionaries or list of dictionaries and a filepath or directory path.
-        :It then decides if the to_csv_list or to_csv_Dictionaries function is needed then call the required one.
-        :param data: this is the dictionary of dictionaries or list of dictionaries that is passed in to other functions
-        :param dir_path: this is the output path the csv files will be created in
-        :return: Does it return anything.
+    Takes a dictionary of dictionaries or list of dictionaries and a filepath or directory path.
+    It then decides if the to_csv_list or to_csv_Dictionaries function is needed then call the required one.
+    :param data: this is the dictionary of dictionaries or list of dictionaries that is passed in to other functions
+    :param dir_path: this is a directory path where csv files will be created in
+    :return: Does it return anything.
     """
-
-    # rewrite to use list/dict instead of filepath.spit(".")
-
-    # path_type = filepath.split(".")
-
-    data = get_query()
-
-    if results == List:
+    dir_path = Path(dir_path)
+    if isinstance(data, list):
+        filepath = dir_path / "query_out.csv"
         to_csv_list(data, filepath)
     else:
-        to_csv_dictionary(data, filepath)
+        to_csv_dictionary(data, dir_path)
     return
 
 
 if __name__ == "__main__":
+    data = get_query()
+    to_csv(
+        data,
+        "/home/vgc59244_local/Documents/workspace/cloud_workspace/st2-cloud-pack/lib/workflows/csv",
+    )
+    """
+    data = ServerQuery().select(ServerProperties.SERVER_ID, ServerProperties.SERVER_NAME, ServerProperties.SERVER_STATUS)
+    data.where(QueryPresetsGeneric.ANY_IN, ServerProperties.SERVER_STATUS, values=["SHUTOFF", "ERROR"])
 
-    #Connect to main run area and move components and tests in the correct areas in the st2-cloud-pack
+    data.sort_by((ServerProperties.SERVER_NAME, SortOrder.DESC))
+    data.group_by(ServerProperties.SERVER_STATUS)
 
-    result = get_query().to_list()
-    fu = 2
+    data.run("prod", as_admin=True, all_projects=True)
+    print(data.to_string())
+    """
+
+    # Connect to main run area and move components and tests in the correct areas in the st2-cloud-pack
+
+
+#    result = get_query().to_list()
+#    fu = 2
 
 #    example1 = [
 #        {
@@ -140,7 +167,7 @@ if __name__ == "__main__":
 #        ],
 #    }
 
-    # uncomment this part to test example 2
+# uncomment this part to test example 2
 #    OUTPUT_DIR_PATH = "./path/to/"
 #    to_csv_grouped(example2, OUTPUT_DIR_PATH)
 

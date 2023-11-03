@@ -1,0 +1,26 @@
+server_status,server_id,server_name
+ERROR,80c34870-7936-48a9-8116-f88c6dfe5c59,stfc-techops-production-k8s-gpu-md-0-6sfwk
+ERROR,47cbe26a-565f-47d2-99e8-c74ceda08b98,s_rally_fccc9485_LpFzcpRy
+ERROR,90aad628-14b0-487a-a8b8-a1bd5f99aaec,s_rally_f2effccf_NtTt7kY6
+ERROR,77cfa1cc-d01c-46df-a13e-57710616b0de,s_rally_d282d8af_f7lLwB6y
+ERROR,9a53ecbf-1d7b-44e1-bf0e-98abf0158491,s_rally_d201979b_GSQPdpO1
+ERROR,e8b7a62e-7e13-450f-be8f-879d8e3b6633,s_rally_bf513b06_9kfcUpDH
+ERROR,78edaadc-3733-4c97-b42b-1f9383d8aaf1,s_rally_b654e12f_4qaqqRJZ
+ERROR,c6bdae41-9826-42f0-8e30-cbe28216cf91,s_rally_a3e5a81a_uHCrOxaI
+ERROR,a356754a-889e-4167-9ba7-9924b2e0ba40,s_rally_943b0808_ssfy5EIp
+ERROR,2d1aa496-49a1-4af9-821b-6332112f882a,s_rally_55097650_dJdM7lpV
+ERROR,9d752af5-29ab-4546-b41d-c8f813214474,s_rally_44f2ad8a_FPNz1KXL
+ERROR,5919d1bf-2929-4ef7-bfe8-62b58e1760e1,s_rally_36c2f4b5_m9o8UneP
+ERROR,2b46ca1b-84f9-4d6d-a40a-2f245752ef70,s_rally_222e8adc_sCX0QJmy
+ERROR,240ebdce-e0f9-4bcb-99de-c9b14d11f120,s_rally_1e251a04_Pi8apRY5
+ERROR,e64c1976-57d7-4295-8673-12edeaacb87f,s_rally_1cd4eb95_dHz89ziB
+ERROR,8b04c0a0-b2f5-41f6-a80e-d24295e8501c,s_rally_1936de03_ZjFbBnEd
+ERROR,1b5b166c-5f7a-4f3b-b579-680d8abdd6e8,rfi-ai-scicat-vm
+ERROR,80dedbcb-22db-4090-9abc-ef8a82fbaea8,prod_platform_healthcheck_test
+ERROR,d66b09f6-2f75-4de0-a758-bca0de9b6ae5,prod_platform_healthcheck_test
+ERROR,baa538c1-cdff-47e0-a222-70f24abcc98c,preprod_platform_healthcheck_test
+ERROR,322a020d-ecf8-410d-9dc4-09bed274acb9,preprod_platform_healthcheck_test
+ERROR,cad06f22-da81-4bd2-a3bd-f561c1e1d2f1,mw-tomo4
+ERROR,44e6566d-316a-45c6-b651-d9cc9b3e84b9,benchkit-beta-2
+ERROR,e09e0ade-e1d1-4cfb-8df4-3f4d2bd9b246,Scientific Linux 7-1333
+ERROR,9a956972-d684-4b12-a971-a3bec7a04494,Disordered Materials

@@ -2,9 +2,8 @@ import pytest
 from unittest.mock import patch, mock_open
 from pathlib import Path
 
-from csv import to_csv
-from csv import to_csv_list
-from csv import to_csv_dictionary
+from workflows.csv.csv_actions import to_csv, to_csv_list, to_csv_dictionary
+
 
 @pytest.fixture
 def example_grouped_data():
@@ -39,6 +38,7 @@ def example_grouped_data():
         ],
     }
 
+
 @pytest.fixture
 def example_data():
     return [
@@ -46,14 +46,14 @@ def example_data():
             "server_id": "server_id1",
             "server_name": "server1",
             "user_id": "user_id1",
-            "user_name": "user1"
+            "user_name": "user1",
         },
         {
             "server_id": "server_id2",
             "server_name": "server2",
             "user_id": "user_id2",
-            "user_name": "user2"
-        }
+            "user_name": "user2",
+        },
     ]
 
 
@@ -78,7 +78,6 @@ def test_to_csv_fails():
 
 @patch("main.to_csv")
 def test_to_csv_grouped_loop_empty_input(mock_to_csv):
-
     """loop is given: 0 Items"""
     mock_to_csv.assert_not_called()
 
@@ -108,7 +107,9 @@ def test_to_csv_grouped_loop_one_input(mock_to_csv):
     to_csv_dictionary(example_grouped_data, "test")
 
     """loop is given: 1 Items"""
-    mock_to_csv.assert_called_once_with(example_grouped_data["user_name is user1"], Path("test/user_name is user1.csv"))
+    mock_to_csv.assert_called_once_with(
+        example_grouped_data["user_name is user1"], Path("test/user_name is user1.csv")
+    )
 
 
 @patch("main.to_csv")
@@ -122,5 +123,6 @@ def test_to_csv_grouped_loop_more_than_one_input(mock_to_csv, example_grouped_da
     loop is given: 1 Items
     This bit need rewriting to check for multiple outputs instead of 1.
     """
-    mock_to_csv.assert_called_with(example_grouped_data["user_name is user2"], Path("test/user_name is user2.csv"))
-
+    mock_to_csv.assert_called_with(
+        example_grouped_data["user_name is user2"], Path("test/user_name is user2.csv")
+    )
