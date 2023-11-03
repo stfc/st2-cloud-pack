@@ -59,7 +59,6 @@ def query_shutoff_vms(project_id: Optional[List[str]] = None):
 
     res = user_query.to_props()
 
-    print(res)
     return res
 
 
@@ -111,7 +110,5 @@ def main(smtp_account: SMTPAccount, project_id: Optional[List[str]] = None):
 
     for user in shutoff_vm.values():
         user_email, server_name_list = prepare_user_server_email(user) # shutoff_vm[user] is list of dictionaries
-        print('output: ', user_email, server_name_list)
-        # prepare and send blank test email
         send_user_email(smtp_account, user_email, server_name_list)
 
