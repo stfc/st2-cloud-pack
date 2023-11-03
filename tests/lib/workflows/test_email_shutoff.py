@@ -117,8 +117,7 @@ def test_send_user_email():
     email_object.send_emails.assert_called_once_with([expected_email_params])
 
 
-@patch('workflows.email_shutoff.Emailer')
-def test_send_user_email_no_email_given(mock_emailer):
+def test_send_user_email_no_email_given():
     """
     Tests that if no email address was associated with a user, then
     the Cloud Support email address is used by default.
@@ -126,8 +125,8 @@ def test_send_user_email_no_email_given(mock_emailer):
     mock_smtp_account = NonCallableMock()
     mock_email = None
     mock_subject = NonCallableMock()
-
-    send_user_email(mock_smtp_account, mock_email, mock_subject)
+    with patch('workflows.email_shutoff.Emailer') as mock_emailer:
+        send_user_email(mock_smtp_account, mock_email, mock_subject)
 
     expected_email_params = EmailParams(
         subject=mock_subject,
