@@ -1,4 +1,6 @@
 *.idea/
+lib/workflows/csv/ERROR.csv
+lib/workflows/csv/SHUTOFF.csv
 
 # Coverage Files
 .coverage

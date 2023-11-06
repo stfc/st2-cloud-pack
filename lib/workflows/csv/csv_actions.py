@@ -103,7 +103,9 @@ if __name__ == "__main__":
         "/home/vgc59244_local/Documents/workspace/cloud_workspace/st2-cloud-pack/lib/workflows/csv",
     )
     """
-    data = ServerQuery().select(ServerProperties.SERVER_ID, ServerProperties.SERVER_NAME, ServerProperties.SERVER_STATUS)
+    data = ServerQuery().select(
+        ServerProperties.SERVER_ID, ServerProperties.SERVER_NAME, ServerProperties.SERVER_STATUS
+    )
     data.where(QueryPresetsGeneric.ANY_IN, ServerProperties.SERVER_STATUS, values=["SHUTOFF", "ERROR"])
 
     data.sort_by((ServerProperties.SERVER_NAME, SortOrder.DESC))
