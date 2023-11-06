@@ -7,7 +7,7 @@ from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 
 class ResultsContainer:
     """
-    Helper class to store query results and forwarded results
+    Helper class to manage a list of query results as Result objects
     """
 
     DEFAULT_OUT = "Not Found"
