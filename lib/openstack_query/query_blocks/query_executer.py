@@ -25,20 +25,23 @@ class QueryExecuter:
     Helper class to handle executing the query - primarily performing 'run()' method
     """
 
-    def __init__(self, prop_enum_cls: Type[PropEnum], runner_cls: Type[RunnerWrapper]):
-        self._prop_enum_cls = prop_enum_cls
-        self.runner = runner_cls(self._prop_enum_cls.get_marker_prop_func())
+    def __init__(
+        self,
+        prop_enum_cls: Type[PropEnum],
+        runner_cls: Type[RunnerWrapper],
+    ):
+        self._results_container = ResultsContainer(prop_enum_cls)
+        self.runner = runner_cls(prop_enum_cls.get_marker_prop_func())
         self._client_side_filters = None
         self._server_side_filters = None
-        self._results = ResultsContainer()
+        self.has_forwarded_results = False
 
     @property
-    def results(self) -> List[Tuple[OpenstackResourceObj, Dict]]:
-        return self._results.output()
-
-    @property
-    def result_container(self) -> ResultsContainer:
-        return self._results
+    def results_container(self) -> ResultsContainer:
+        """
+        a getter method for results container object holding query results
+        """
+        return self._results_container
 
     @property
     def client_side_filters(self):
@@ -92,7 +95,7 @@ class QueryExecuter:
 
         start = time.time()
 
-        self.result_container.set_from_query_results(
+        self.results_container.store_query_results(
             self.runner.run(
                 cloud_account=cloud_account,
                 client_side_filters=self.client_side_filters,
@@ -104,60 +107,12 @@ class QueryExecuter:
         logger.debug("run completed - time elapsed: %s seconds", time.time() - start)
 
     def apply_forwarded_results(
-        self, forwarded_results: Dict[PropValue, List[Dict]], link_prop_func
+        self, link_prop: PropEnum, forwarded_results: Dict[PropValue, List[Dict]]
     ):
         """
-        public method to evaluate and attach forwarded results to query results.
-        run() should have been called first
-        :param forwarded_results: a grouped set of forwarded results, grouped by a common property
-        :param link_prop_func: a function that takes a openstack resource object and computes its value for shared
-        common property to be used to attach appropriate forwarded result
+        public method that attaches forwarded results to results stored in result container.
+        :param forwarded_results: A set of grouped results forwarded from a previous query to attach to results
+        :param link_prop: An prop enum that the forwarded results are grouped by
         """
-        self.result_container.apply_forwarded_results(link_prop_func, forwarded_results)
-
-    def parse_results(
-        self,
-        parse_func: Optional[Callable],
-        output_func: Optional[Callable],
-    ) -> Tuple[Union[List, Dict], Union[List, Dict]]:
-        """
-        This method takes the results computed in run_query() and applies the pre-set parser
-        and generate output functions - outputs results as object list/dict and as selected props list/dict
-        (including forwarded outputs)
-        :param parse_func: function that groups and sorts object results
-        :param output_func: function that takes object results and converts it into selected outputs
-        """
-        results = self.result_container.output()
-        as_object_results = [result[0] for result in results]
-
-        if parse_func:
-            results = parse_func(results)
-
-            if not isinstance(results, dict):
-                as_object_results = [result[0] for result in results]
-            else:
-                as_object_results = {
-                    name: [result[0] for result in group]
-                    for name, group in results.items()
-                }
-
-        as_prop_results = self.get_output(output_func, results)
-        return as_object_results, as_prop_results
-
-    @staticmethod
-    def get_output(
-        output_func: Optional[Callable],
-        results: List[Tuple[OpenstackResourceObj, Dict]],
-    ):
-        """
-        Helper method for getting the output using output func
-        :param output_func: function that takes raw results and returns parsed outputs
-        :param results: Either a list or group of Openstack Resource objects
-        """
-        if not output_func:
-            return []
-
-        if not isinstance(results, dict):
-            return output_func(results)
-
-        return {name: output_func(group) for name, group in results.items()}
+        self.has_forwarded_results = True
+        self.results_container.apply_forwarded_results(link_prop, forwarded_results)

@@ -6,6 +6,7 @@ from custom_types.openstack_query.aliases import (
     PropValue,
 )
 from exceptions.parse_query_error import ParseQueryError
+from openstack_query.query_blocks.results_container import ResultsContainer
 
 
 class QueryOutput:
@@ -40,43 +41,81 @@ class QueryOutput:
         """
         self._props = props
 
+    @staticmethod
+    def _validate_groups(
+        results: Union[List, Dict], groups: Optional[List[str]] = None
+    ):
+
+        if not groups:
+            return results
+
+        if not isinstance(results, dict):
+            raise ParseQueryError(
+                f"Result is not grouped - cannot filter by given group(s) {groups}"
+            )
+        if not all(group in results.keys() for group in groups):
+            raise ParseQueryError(
+                f"Group(s) given are invalid - valid groups {list(results.keys())}"
+            )
+        return {group_key: results[group_key] for group_key in groups}
+
+    def to_objects(
+        self, results_container: ResultsContainer, groups: Optional[List[str]] = None
+    ) -> Union[Dict[str, List], List]:
+        """
+        return results as openstack objects
+        :param results_container: container object which stores results
+        :param groups: a list of group keys to limit output by
+
+        """
+        results = results_container.to_objects()
+        return self._validate_groups(results, groups)
+
+    def to_props(
+        self,
+        results_container: ResultsContainer,
+        flatten: bool = False,
+        groups: Optional[List[str]] = None,
+    ) -> Union[Dict[str, List], List]:
+        """
+        return results as selected props
+        :param results_container: container object which stores results
+        :param flatten: boolean which will flatten results if true
+        :param groups: a list of group keys to limit output by
+        """
+        results = results_container.to_props(*self.selected_props)
+        results = self._validate_groups(results, groups)
+        if flatten:
+            results = self.flatten(results)
+        return results
+
     def to_string(
         self,
-        results: Union[List, Dict],
+        results_container: ResultsContainer,
         title: str = None,
         groups: Optional[List[str]] = None,
         **kwargs,
     ):
         """
-        method to return results as a table
-        :param results: a list of parsed query results - either a list or a dict of grouped results
-        :param title: a title for the table(s) when it gets outputted
-        :param groups: a list group to limit output by
+        return results as a table of selected properties
+        :param results_container: container object which stores results
+        :param title: an optional title for the table when it gets outputted
+        :param groups: a list of groups to limit output by
         :param kwargs: kwargs to pass to _generate_table method
         """
-        output = ""
-        if title:
-            output += f"{title}:\n"
+        results = results_container.to_props(*self.selected_props)
+        results = self._validate_groups(results, groups)
+
+        output = "" if not title else f"{title}:\n"
 
         if isinstance(results, dict):
-            if groups and any(group not in results.keys() for group in groups):
-                raise ParseQueryError(
-                    f"given group(s) {groups} not found - available groups {list(results.keys())}"
-                )
-
-            if not groups:
-                groups = list(results.keys())
-
-            for group_title in groups:
-                group_list = results[group_title]
+            for group_title in list(results.keys()):
                 output += self._generate_table(
-                    group_list, return_html=False, title=f"{group_title}:\n", **kwargs
+                    results[group_title],
+                    return_html=False,
+                    title=f"{group_title}:\n",
+                    **kwargs,
                 )
-        elif groups:
-            raise ParseQueryError(
-                f"Result is not grouped - cannot filter by given group(s) {groups}"
-            )
-
         else:
             output += self._generate_table(
                 results, return_html=False, title=None, **kwargs
@@ -85,44 +124,30 @@ class QueryOutput:
 
     def to_html(
         self,
-        results: Union[List, Dict],
+        results_container: ResultsContainer,
         title: str = None,
         groups: Optional[List[str]] = None,
         **kwargs,
     ) -> str:
         """
         method to return results as html table
-        :param results: a list of parsed query results - either a list or a dict of grouped results
+        :param results_container: container object which stores results
         :param title: a title for the table(s) when it gets outputted
-        :param groups: a list group to limit output by
+        :param groups: a list of groups to limit output by
         :param kwargs: kwargs to pass to generate table
         """
-        output = ""
-        if title:
-            output += f"<b> {title} </b><br/> "
+        results = results_container.to_props(*self.selected_props)
+        results = self._validate_groups(results, groups)
+        output = "" if not title else f"{title}:\n"
 
         if isinstance(results, dict):
-            if groups and any(group not in results.keys() for group in groups):
-                raise ParseQueryError(
-                    f"given group(s) {groups} not found - available groups {list(results.keys())}"
-                )
-
-            if not groups:
-                groups = list(results.keys())
-
-            for group_title in groups:
-                group_list = results[group_title]
+            for group_title in list(results.keys()):
                 output += self._generate_table(
-                    group_list,
+                    results[group_title],
                     return_html=True,
                     title=f"<b> {group_title}: </b><br/> ",
                     **kwargs,
                 )
-        elif groups:
-            raise ParseQueryError(
-                f"Result is not grouped - cannot filter by given group(s) {groups}"
-            )
-
         else:
             output += self._generate_table(
                 results, return_html=True, title=None, **kwargs
@@ -150,55 +175,6 @@ class QueryOutput:
 
         self.selected_props = set(all_props)
 
-    def generate_output(
-        self, openstack_resources: List[Tuple[OpenstackResourceObj, Dict]]
-    ) -> List[Dict[str, PropValue]]:
-        """
-        Generates a dictionary of queried properties from a list of openstack objects e.g. servers
-        e.g. {['server_name': 'server1', 'server_id': 'server1_id'],
-              ['server_name': 'server2', 'server_id': 'server2_id']} etc.
-        (if we selected 'server_name' and 'server_id' as properties).
-        We then concatenate those properties with any forwarded properties
-
-        :param openstack_resources: List of Tuples holding openstack objects to obtain properties from
-        - e.g. [Server1, Server2] and any forwarded properties to attach
-        :return: List containing dictionaries of the requested properties obtained from the items
-        """
-        output = []
-        for item, forwarded_props in openstack_resources:
-            prop_list = self._parse_properties(item)
-            prop_list.update(forwarded_props)
-            output.append(prop_list)
-        return output
-
-    def _parse_properties(
-        self, openstack_resource: OpenstackResourceObj
-    ) -> Dict[str, PropValue]:
-        """
-        Generates a dictionary of queried properties from a single openstack object
-        :param openstack_resource: openstack resource item to obtain properties from
-        """
-        obj_dict = {}
-        for prop in self.selected_props:
-            val = self.parse_property(prop, openstack_resource)
-            obj_dict[prop.name.lower()] = val
-        return obj_dict
-
-    def parse_property(
-        self, prop: PropEnum, openstack_resource: OpenstackResourceObj
-    ) -> PropValue:
-        """
-        Parse single property from an openstack_object and return result
-        :param prop: property to parse
-        :param openstack_resource: openstack resource item to obtain property from
-        """
-        prop_func = self._prop_enum_cls.get_prop_mapping(prop)
-        try:
-            val = str(prop_func(openstack_resource))
-        except AttributeError:
-            val = self.DEFAULT_OUT
-        return val
-
     @staticmethod
     def _generate_table(
         results: List[Dict[str, PropValue]], return_html: bool, title=None, **kwargs
@@ -210,9 +186,7 @@ class QueryOutput:
         :param kwargs: kwargs to pass to tabulate
         :return: String (html or plaintext table of results)
         """
-        output = ""
-        if title:
-            output += f"{title}\n"
+        output = "" if not title else f"{title}:\n"
 
         if results:
             headers = list(results[0].keys())

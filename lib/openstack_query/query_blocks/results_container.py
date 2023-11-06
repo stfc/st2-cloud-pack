@@ -1,4 +1,6 @@
-from typing import List, Tuple, Dict, Callable
+from enums.query.props.prop_enum import PropEnum
+from openstack_query.query_blocks.result import Result
+from typing import Union, List, Dict, Callable
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 
 
@@ -7,49 +9,69 @@ class ResultsContainer:
     Helper class to store query results and forwarded results
     """
 
-    def __init__(self):
-        self._results: List[Tuple[OpenstackResourceObj, Dict]] = []
+    def __init__(self, prop_enum_cls):
+        self._prop_enum_cls = prop_enum_cls
+        self._results: List = []
+        self._parsed_results: Union[List, Dict] = []
 
-    def output(self) -> List[Tuple[OpenstackResourceObj, Dict]]:
+    def to_props(self, *props: PropEnum) -> Union[Dict, List]:
         """
-        output the results stored
+        Output the stored results, only outputting the properties given
+        :props: A set of prop enums to select
         """
-        return self._results
+        results = self._parsed_results or self._results
+        if not results:
+            return []
 
-    def set_from_query_results(self, query_results: List[OpenstackResourceObj]):
+        if isinstance(results, list):
+            return [item.as_props(*props) for item in results]
+        return {
+            name: [item.as_props(*props) for item in group]
+            for name, group in results.items()
+        }
+
+    def to_objects(self) -> Union[Dict, List]:
+        """
+        Output the results stored - as openstack objects
+        """
+
+        results = self._parsed_results or self._results
+        if not results:
+            return []
+
+        if isinstance(results, list):
+            return [item.as_object() for item in results]
+        return {name: [item.as_object() for item in group] for name, group in results}
+
+    def store_query_results(self, query_results: List[OpenstackResourceObj]):
         """
         a setter to set results after running the query with query results
         :param query_results: A list of openstack objects returned after running query
         """
-        # initialise with no forwarded outputs set
-        self._results = [(result, {}) for result in query_results]
+        self._results = [Result(self._prop_enum_cls, item) for item in query_results]
 
     def apply_forwarded_results(
         self,
-        link_prop_func: Callable[[OpenstackResourceObj], PropValue],
+        link_prop: PropEnum,
         forwarded_results: Dict[PropValue, List[Dict]],
     ):
         """
-        public method that when called will concatenate forwarded results onto each result.
-        :param forwarded_results: a grouped set of forwarded results, grouped by a common property
-        :param link_prop_func: a function that takes a openstack resource object and computes its value for shared
-        common property to be used to attach appropriate forwarded result
+        public method that when called will add appropriate forwarded result entry onto each result.
+        (expects results to be a list)
+        :param forwarded_results: A set of grouped results forwarded from a previous query to attach to results
+        :param link_prop: An prop enum that the forwarded results are grouped by
         """
+
         if not self._results:
             return
 
-        self._results = [
-            (
-                tup[0],
-                {
-                    **tup[1],
-                    **self._get_forwarded_result(
-                        link_prop_func(tup[0]), forwarded_results
-                    ),
-                },
-            )
-            for tup in self._results
-        ]
+        for item in self._results:
+            prop_val = item.get_prop(link_prop)
+
+            # NOTE: This mutates forwarded_results
+            forwarded_result = self._get_forwarded_result(prop_val, forwarded_results)
+
+            item.update_forwarded_properties(forwarded_result)
 
     @staticmethod
     def _get_forwarded_result(prop_val: str, forwarded_results: Dict[str, List]):
@@ -84,3 +106,10 @@ class ResultsContainer:
             del forwarded_results[prop_val][0]
 
         return result_to_attach
+
+    def parse_results(self, parse_func: Callable[[List[Result]], Union[List]]):
+        """
+        This method applies a pre-set parse function which will sort and/or group the results
+        :param parse_func: parse function
+        """
+        self._parsed_results = parse_func(self._results)

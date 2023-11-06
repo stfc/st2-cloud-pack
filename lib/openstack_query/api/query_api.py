@@ -25,7 +25,7 @@ class QueryAPI:
         self.parser = query_components.parser
         self.output = query_components.output
         self.chainer = query_components.chainer
-        self._query_run = False
+        self.results_container = None
 
     def select(self, *props: PropEnum):
         """
@@ -152,11 +152,11 @@ class QueryAPI:
         link_prop, forwarded_vals = self.chainer.forwarded_info
         if forwarded_vals:
             self.executer.apply_forwarded_results(
+                link_prop,
                 deepcopy(forwarded_vals),
-                lambda obj: self.output.parse_property(link_prop, obj),
             )
 
-        self._query_run = True
+        self.results_container = self.executer.results_container
         return self
 
     def to_objects(
@@ -167,26 +167,14 @@ class QueryAPI:
         This is either returned as a list if no groups are specified, or as a dict if they grouping was requested
         :param groups: a list of group keys to limit output by
         """
-        if self.output.forwarded_outputs:
+        if self.executer.has_forwarded_results:
             logger.warning(
                 "This Query has properties from previous queries. Running to_objects WILL IGNORE THIS "
                 "Use to_props() instead if you want to include these properties"
             )
 
-        results, _ = self.executer.parse_results(
-            parse_func=self.parser.run_parser, output_func=self.output.generate_output
-        )
-        if groups:
-            if not isinstance(results, dict):
-                raise ParseQueryError(
-                    f"Result is not grouped - cannot filter by given group(s) {groups}"
-                )
-            if not all(group in results.keys() for group in groups):
-                raise ParseQueryError(
-                    f"Group(s) given are invalid - valid groups {list(results.keys())}"
-                )
-            return {group_key: results[group_key] for group_key in groups}
-        return results
+        self.results_container.parse_results(self.parser.run_parser)
+        return self.output.to_objects(self.results_container, groups)
 
     def to_props(
         self, flatten: bool = False, groups: Optional[List[str]] = None
@@ -197,23 +185,8 @@ class QueryAPI:
         :param flatten: boolean which will flatten results if true
         :param groups: a list of group keys to limit output by
         """
-        _, results = self.executer.parse_results(
-            parse_func=self.parser.run_parser, output_func=self.output.generate_output
-        )
-        if groups:
-            if not isinstance(results, dict):
-                raise ParseQueryError(
-                    f"Result is not grouped - cannot filter by given group(s) {groups}"
-                )
-            if not all(group in results.keys() for group in groups):
-                raise ParseQueryError(
-                    f"Group(s) given are invalid - valid groups {list(results.keys())}"
-                )
-            return {group_key: results[group_key] for group_key in groups}
-
-        if flatten:
-            return self.output.flatten(results)
-        return results
+        self.results_container.parse_results(self.parser.run_parser)
+        return self.output.to_props(self.results_container, flatten, groups)
 
     def to_string(
         self, title: Optional[str] = None, groups: Optional[List[str]] = None, **kwargs
@@ -224,11 +197,8 @@ class QueryAPI:
         :param groups: a list group to limit output by
         :param kwargs: kwargs to pass to generate table
         """
-        _, selected_results = self.executer.parse_results(
-            parse_func=self.parser.run_parser, output_func=self.output.generate_output
-        )
-
-        return self.output.to_string(selected_results, title, groups, **kwargs)
+        self.results_container.parse_results(self.parser.run_parser)
+        return self.output.to_string(self.results_container, title, groups, **kwargs)
 
     def to_html(
         self, title: Optional[str] = None, groups: Optional[List[str]] = None, **kwargs
@@ -239,10 +209,8 @@ class QueryAPI:
         :param groups: a list group to limit output by
         :param kwargs: kwargs to pass to generate table
         """
-        _, selected_results = self.executer.parse_results(
-            parse_func=self.parser.run_parser, output_func=self.output.generate_output
-        )
-        return self.output.to_html(selected_results, title, groups, **kwargs)
+        self.results_container.parse_results(self.parser.run_parser)
+        return self.output.to_html(self.results_container, title, groups, **kwargs)
 
     def then(
         self, query_type: Union[str, QueryTypes], keep_previous_results: bool = True
@@ -285,8 +253,5 @@ class QueryAPI:
         link_prop, results = self.chainer.run_append_from_query(
             self, query_type, cloud_account, *props
         )
-        self.executer.apply_forwarded_results(
-            results,
-            lambda obj: self.output.parse_property(link_prop, obj),
-        )
+        self.results_container.apply_forwarded_results(link_prop, results)
         return self
