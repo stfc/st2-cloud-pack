@@ -198,6 +198,17 @@ def test_run_with_kwargs_and_subset(run_with_test_case):
     )
 
 
+def test_run_with_forwarded_vals(run_with_test_case):
+    """
+    Tests that run method works - with forwarded vals
+    method run query as normal, then run executer.apply_forwarded_results
+    """
+    run_with_test_case(
+        data_subset=NonCallableMock(),
+        mock_forwarded_info=(NonCallableMock(), NonCallableMock()),
+    )
+
+
 def test_to_props(instance):
     """
     Tests that to_props method functions expectedly - with no extra params
@@ -224,6 +235,26 @@ def test_to_objects(instance):
     mock_flatten = NonCallableMock()
 
     instance.executer.has_forwarded_results = False
+
+    res = instance.to_objects(mock_flatten)
+    instance.results_container.parse_results.assert_called_once_with(
+        instance.parser.run_parser
+    )
+    instance.output.to_objects.assert_called_once_with(
+        instance.results_container,
+        mock_flatten,
+    )
+    assert res == instance.output.to_objects.return_value
+
+
+def test_to_objects_with_forwarded_results(instance):
+    """
+    Tests that to_objects method - but where forwarded_results are given
+    method should output a warning but continue as normal
+    """
+    mock_flatten = NonCallableMock()
+
+    instance.executer.has_forwarded_results = True
 
     res = instance.to_objects(mock_flatten)
     instance.results_container.parse_results.assert_called_once_with(

@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch, call, NonCallableMock
 
 import pytest
 
@@ -94,6 +94,17 @@ def run_parse_then_query_valid_fixture(instance):
         assert res == mock_query_api.return_value.where.return_value
 
     return _run_parse_then_query_valid
+
+
+def test_forwarded_info(instance):
+    """
+    Tests forwarded info property outputs a tuple of link_prop and
+    forwarded_values attributes. Uses set_forwarded_vals to set the properties
+    """
+    mock_forwarded_values = NonCallableMock()
+    mock_link_prop = NonCallableMock()
+    instance.set_forwarded_vals(mock_link_prop, mock_forwarded_values)
+    assert instance.forwarded_info == (mock_link_prop, mock_forwarded_values)
 
 
 def test_get_chaining_props(instance):
@@ -207,3 +218,39 @@ def test_parse_then_no_results(instance):
         )
     mock_current_query.chainer.get_link_props.assert_called_once_with(mock_query_type)
     mock_current_query.to_props.assert_called_once()
+
+
+@patch("openstack_query.query_blocks.query_chainer.QueryTypes")
+def test_run_append_from_query(mock_query_types, instance):
+    """
+    tests run_append_from_query method - calls then() to get a new query and runs it, selecting
+    given props and return grouped values
+    """
+    mock_current_query = NonCallableMock()
+    mock_cloud_account = NonCallableMock()
+    query_type = "query_type"
+    mock_props = ["prop1", "prop2"]
+
+    mock_current_query.chainer.get_link_props.return_value = (
+        "current_link_prop",
+        "new_link_prop",
+    )
+    mock_new_query = mock_current_query.then.return_value
+
+    res = instance.run_append_from_query(
+        mock_current_query, query_type, mock_cloud_account, *mock_props
+    )
+
+    mock_query_types.from_string.assert_called_once_with(query_type)
+    mock_current_query.then.assert_called_once_with(
+        mock_query_types.from_string.return_value, keep_previous_results=False
+    )
+    mock_new_query.select.assert_called_once_with(*mock_props)
+    mock_new_query.run.assert_called_once_with(mock_cloud_account)
+    mock_current_query.chainer.get_link_props.assert_called_once_with(
+        mock_query_types.from_string.return_value
+    )
+    assert res == (
+        "current_link_prop",
+        mock_new_query.group_by.return_value.to_props.return_value,
+    )

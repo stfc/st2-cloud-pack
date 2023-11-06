@@ -6,10 +6,13 @@ from enums.query.props.prop_enum import PropEnum
 class Result:
     """Class that holds a single result item"""
 
-    def __init__(self, prop_enum_cls, obj_result: OpenstackResourceObj):
+    def __init__(
+        self, prop_enum_cls, obj_result: OpenstackResourceObj, default_value="Not Found"
+    ):
         self._prop_enum_cls = prop_enum_cls
         self._obj_result = obj_result
         self._forwarded_props = {}
+        self._default_prop_value = default_value
 
     def as_object(self) -> OpenstackResourceObj:
         return self._obj_result
@@ -31,7 +34,10 @@ class Result:
         return value of prop enum for stored result
         :prop: a prop enum to select
         """
-        return self._prop_enum_cls.get_prop_mapping(prop)(self._obj_result)
+        try:
+            return self._prop_enum_cls.get_prop_mapping(prop)(self._obj_result)
+        except AttributeError:
+            return self._default_prop_value
 
     def update_forwarded_properties(self, forwarded_props: Dict[str, PropValue]):
         """

@@ -129,6 +129,15 @@ def test_parse_sort_by_invalid(instance):
         instance.parse_sort_by((ServerProperties.SERVER_ID, True))
 
 
+def test_parse_group_by_invalid(instance):
+    """
+    Tests parse_group_by - when given an invalid group by prop
+    """
+    with pytest.raises(ParseQueryError):
+        # we gave an unexpected enum value (sort-order) that's not supported
+        instance.parse_group_by(SortOrder.DESC)
+
+
 def test_parse_group_by_no_ranges(instance):
     """
     Tests parse_group_by functions expectedly - with no ranges

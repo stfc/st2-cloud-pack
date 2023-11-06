@@ -9,6 +9,8 @@ class ResultsContainer:
     Helper class to store query results and forwarded results
     """
 
+    DEFAULT_OUT = "Not Found"
+
     def __init__(self, prop_enum_cls):
         self._prop_enum_cls = prop_enum_cls
         self._results: List = []
@@ -41,14 +43,20 @@ class ResultsContainer:
 
         if isinstance(results, list):
             return [item.as_object() for item in results]
-        return {name: [item.as_object() for item in group] for name, group in results}
+        return {
+            name: [item.as_object() for item in group]
+            for name, group in results.items()
+        }
 
     def store_query_results(self, query_results: List[OpenstackResourceObj]):
         """
         a setter to set results after running the query with query results
         :param query_results: A list of openstack objects returned after running query
         """
-        self._results = [Result(self._prop_enum_cls, item) for item in query_results]
+        self._results = [
+            Result(self._prop_enum_cls, item, self.DEFAULT_OUT)
+            for item in query_results
+        ]
 
     def apply_forwarded_results(
         self,

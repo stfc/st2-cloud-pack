@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, NonCallableMock
 import pytest
 
 from enums.cloud_domains import CloudDomains
@@ -75,3 +75,17 @@ def test_run_query(mock_cloud_account, expected_cloud_account_str, instance):
         from_subset="some-subset",
         **{"arg1": "val1", "arg2": "val2"}
     )
+
+
+def test_apply_forwarded_results(instance):
+    """
+    Test apply_forwarded_results method - should forward to results_container
+    and set has_forwarded_results flag to True
+    """
+    mock_link_prop = NonCallableMock()
+    mock_results = NonCallableMock()
+    instance.apply_forwarded_results(mock_link_prop, mock_results)
+    instance.results_container.apply_forwarded_results.assert_called_once_with(
+        mock_link_prop, mock_results
+    )
+    assert instance.has_forwarded_results

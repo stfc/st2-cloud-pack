@@ -22,7 +22,7 @@ class QueryChainer:
     @property
     def forwarded_info(self) -> Optional[Tuple[PropEnum, Dict]]:
         """
-        return forwarded info, a tuple of
+        return forwarded info, a tuple of link prop and grouped results to forward
         """
         return self._link_prop, self._forwarded_values
 

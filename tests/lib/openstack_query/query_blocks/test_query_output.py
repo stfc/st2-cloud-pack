@@ -31,6 +31,13 @@ def test_selected_props(instance):
     assert instance.selected_props == list(val)
 
 
+def test_selected_props_empty(instance):
+    """
+    Tests selected property method returns empty list when no props selected
+    """
+    assert instance.selected_props == []
+
+
 def test_validate_groups_empty(instance):
     """
     Tests validate groups returns result if groups empty
@@ -475,27 +482,6 @@ def test_parse_select_overwrites_old(instance):
     instance.selected_props = [MockProperties.PROP_1]
     instance.parse_select(MockProperties.PROP_2)
     assert instance.selected_props == [MockProperties.PROP_2]
-
-
-@pytest.fixture(name="mock_get_prop_func")
-def get_prop_func_fixture():
-    """
-    Stubs out get_prop_func method to return a
-    stub callable based on prop enum
-    """
-    mock_prop_1_func = MagicMock()
-    mock_prop_1_func.return_value = "prop 1 out"
-
-    mock_prop_2_func = MagicMock()
-    mock_prop_2_func.side_effect = AttributeError
-
-    def _mock_get_prop_func(prop):
-        return {
-            MockProperties.PROP_1: mock_prop_1_func,
-            MockProperties.PROP_2: mock_prop_2_func,
-        }.get(prop, None)
-
-    return _mock_get_prop_func
 
 
 def test_flatten_empty(instance):
