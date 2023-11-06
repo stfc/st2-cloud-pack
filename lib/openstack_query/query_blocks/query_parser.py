@@ -1,8 +1,8 @@
 from typing import List, Dict, Tuple, Union, Optional, Type
 import logging
+from collections import OrderedDict
 
 from openstack_query.query_blocks.result import Result
-from collections import OrderedDict
 from enums.query.props.prop_enum import PropEnum
 from enums.query.sort_order import SortOrder
 from custom_types.openstack_query.aliases import (

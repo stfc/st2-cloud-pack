@@ -1,10 +1,7 @@
-from typing import List, Dict, Union, Type, Set, Optional, Tuple
+from typing import List, Dict, Union, Type, Set, Optional
 from tabulate import tabulate
 from enums.query.props.prop_enum import PropEnum
-from custom_types.openstack_query.aliases import (
-    OpenstackResourceObj,
-    PropValue,
-)
+from custom_types.openstack_query.aliases import PropValue
 from exceptions.parse_query_error import ParseQueryError
 from openstack_query.query_blocks.results_container import ResultsContainer
 
@@ -45,7 +42,6 @@ class QueryOutput:
     def _validate_groups(
         results: Union[List, Dict], groups: Optional[List[str]] = None
     ):
-
         if not groups:
             return results
 

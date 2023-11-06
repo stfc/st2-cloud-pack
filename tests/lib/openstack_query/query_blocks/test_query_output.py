@@ -37,7 +37,7 @@ def test_validate_groups_empty(instance):
     """
     mock_results = {"group1": "val1", "group2": "val2", "group3": "val3"}
     mock_groups = None
-
+    # pylint:disable=protected-access
     assert instance._validate_groups(mock_results, mock_groups) == mock_results
 
 
@@ -48,6 +48,7 @@ def test_validate_groups_valid(instance):
     mock_results = {"group1": "val1", "group2": "val2", "group3": "val3"}
     mock_groups = ["group1", "group2"]
 
+    # pylint:disable=protected-access
     assert instance._validate_groups(mock_results, mock_groups) == {
         "group1": "val1",
         "group2": "val2",
@@ -62,6 +63,7 @@ def test_validate_groups_invalid_keys(instance):
     mock_results = {"group1": "val1", "group2": "val2", "group3": "val3"}
     mock_groups = ["invalid_group"]
     with pytest.raises(ParseQueryError):
+        # pylint:disable=protected-access
         instance._validate_groups(mock_results, mock_groups)
 
 
@@ -71,6 +73,7 @@ def test_validate_groups_results_not_dict(instance):
     """
     mock_results = ["val1", "val2"]
     with pytest.raises(ParseQueryError):
+        # pylint:disable=protected-access
         instance._validate_groups(mock_results, NonCallableMock())
 
 

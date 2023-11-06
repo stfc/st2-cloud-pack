@@ -1,6 +1,6 @@
 import time
 import logging
-from typing import Tuple, Callable, Optional, Dict, List, Any, Union, Type
+from typing import Optional, Dict, List, Any, Union, Type
 
 from openstack_query.query_blocks.results_container import ResultsContainer
 from openstack_query.runners.runner_wrapper import RunnerWrapper
@@ -8,7 +8,6 @@ from enums.cloud_domains import CloudDomains
 from enums.query.props.prop_enum import PropEnum
 
 from custom_types.openstack_query.aliases import (
-    OpenstackResourceObj,
     ServerSideFilters,
     ClientSideFilters,
     PropValue,

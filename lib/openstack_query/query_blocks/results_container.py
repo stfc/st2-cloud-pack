@@ -1,6 +1,6 @@
+from typing import Union, List, Dict, Callable
 from enums.query.props.prop_enum import PropEnum
 from openstack_query.query_blocks.result import Result
-from typing import Union, List, Dict, Callable
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 
 
