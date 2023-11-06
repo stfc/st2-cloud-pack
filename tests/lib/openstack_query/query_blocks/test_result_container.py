@@ -14,6 +14,7 @@ def setup_instance_with_results_fixture():
 
     def _setup_instance_with_results(mock_results):
         val = ResultsContainer(prop_enum_cls=MockProperties)
+        # pylint:disable=protected-access
         val._results = mock_results
         return val
 
@@ -246,6 +247,8 @@ def test_get_forwarded_results_many_to_one():
     forwarded_values = {
         "grouped_value": ["value1", "value2", "value3"],
     }
+    # pylint:disable=protected-access
+
     assert (
         ResultsContainer._get_forwarded_result("grouped_value", forwarded_values)
         == "value1"
@@ -274,6 +277,8 @@ def test_get_forwarded_result_one_to_many():
         "grouped_value2": ["value2"],
         "grouped_value3": ["value3"],
     }
+    # pylint:disable=protected-access
+
     assert (
         ResultsContainer._get_forwarded_result("grouped_value1", forwarded_values)
         == "value1"
@@ -292,4 +297,4 @@ def test_get_forwarded_result_one_to_many():
         == "value2"
     )
 
-    assert all([len(val) == 1 for val in forwarded_values.values()])
+    assert all(len(val) == 1 for val in forwarded_values.values())
