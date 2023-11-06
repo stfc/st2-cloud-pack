@@ -27,7 +27,6 @@ class QueryParser:
         self._sort_by = {}
         self._group_by = None
         self._group_mappings = {}
-        self._updated_parse_info = False
 
     @property
     def group_by(self):
@@ -105,8 +104,6 @@ class QueryParser:
             ),
         )
 
-        self._updated_parse_info = True
-
     def parse_group_by(
         self,
         group_by: PropEnum,
@@ -134,8 +131,6 @@ class QueryParser:
 
         if include_missing:
             self._add_include_missing_group(group_ranges)
-
-        self._updated_parse_info = True
 
     def _parse_group_ranges(self, group_ranges: Optional[Dict[str, List[PropValue]]]):
         """
@@ -179,15 +174,13 @@ class QueryParser:
         if not obj_list:
             return obj_list
 
-        if not self._updated_parse_info:
-            return obj_list
-
         # we sort first - assuming sorting is commutative to grouping
         if self.sort_by:
             obj_list = self._run_sort(obj_list)
 
         if self.group_by:
             obj_list = self._run_group_by(obj_list)
+
         return obj_list
 
     def _run_sort(self, obj_list: List[Result]) -> List[Result]:

@@ -138,7 +138,7 @@ class QueryOutput:
         """
         results = results_container.to_props(*self.selected_props)
         results = self._validate_groups(results, groups)
-        output = "" if not title else f"{title}:\n"
+        output = "" if not title else f"<b> {title}: </b><br/> "
 
         if isinstance(results, dict):
             for group_title in list(results.keys()):

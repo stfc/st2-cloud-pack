@@ -9,6 +9,28 @@ from exceptions.parse_query_error import ParseQueryError
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 
+@pytest.fixture(name="mock_results_container")
+def results_container_fixture():
+    """
+    Returns a list of mock results with each as_object return value set to
+    given values
+    """
+
+    def _setup_results_container(mock_as_objects):
+        """
+        function which sets up a list of mock Result objects each with
+        a different as_object return value - as specified by mock_as_objects input
+        :param mock_as_objects: a list of values that is to be assigned as the
+         return_value for each mock Result object
+        """
+        mock_results = [MagicMock() for _ in mock_as_objects]
+        for i, mock_result in enumerate(mock_results):
+            mock_result.as_object.return_value = mock_as_objects[i]
+        return mock_results
+
+    return _setup_results_container
+
+
 @pytest.fixture(name="instance")
 def instance_fixture():
     """
@@ -50,7 +72,8 @@ def run_sort_by_tests_fixture(instance, mock_get_prop_mapping):
         ) as mock_get_prop_func:
             # pylint:disable=protected-access
             res = instance._run_sort(obj_list)
-            assert res == expected_list
+            # test that res object list is sorted properly
+            assert [item.as_object() for item in res] == expected_list
             mock_get_prop_func.assert_has_calls(
                 [call(sort_key) for sort_key in reversed(sort_by_specs.keys())]
             )
@@ -165,11 +188,16 @@ def test_run_parse_group_ranges(instance, mock_get_prop_mapping):
 
     assert instance.group_mappings
 
-    assert instance.group_mappings["group1"](({"prop_1": "val1"}, {}))
-    assert not instance.group_mappings["group2"](({"prop_1": "val1"}, {}))
+    prop_to_check = MagicMock()
+    prop_to_check.as_object.return_value = {"prop_1": "val1"}
+
+    assert instance.group_mappings["group1"](prop_to_check)
+    assert not instance.group_mappings["group2"](prop_to_check)
 
 
-def test_add_include_missing_group(instance, mock_get_prop_mapping):
+def test_add_include_missing_group(
+    instance, mock_get_prop_mapping, mock_results_container
+):
     """
     Tests add_include_missing_group functions expectedly
     Should create an extra "ungrouped results" group which includes values
@@ -186,9 +214,13 @@ def test_add_include_missing_group(instance, mock_get_prop_mapping):
         instance._add_include_missing_group(mock_group_ranges)
         mock_get_prop_func.assert_called_once_with(mock_group_by)
 
-    assert instance.group_mappings["ungrouped results"](({"prop_1": "val5"}, {}))
-    assert not instance.group_mappings["ungrouped results"](({"prop_1": "val1"}, {}))
-    assert not instance.group_mappings["ungrouped results"](({"prop_1": "val4"}, {}))
+    results_to_check = mock_results_container(
+        [{"prop_1": "val5"}, {"prop_1": "val1"}, {"prop_1": "val4"}]
+    )
+
+    assert instance.group_mappings["ungrouped results"](results_to_check[0])
+    assert not instance.group_mappings["ungrouped results"](results_to_check[1])
+    assert not instance.group_mappings["ungrouped results"](results_to_check[2])
 
 
 @patch("openstack_query.query_blocks.query_parser.QueryParser._run_sort")
@@ -197,9 +229,7 @@ def test_run_parser_with_sort_by(mock_run_sort, instance):
     Tests that run_parser functions expectedly - when giving only sort_by
     Should call run_sort method, and return result
     """
-    instance.sort_by = {MockProperties.PROP_1: False}
-    instance.group_by = None
-    instance.group_mappings = {}
+    instance.parse_sort_by((MockProperties.PROP_1, SortOrder.DESC))
 
     mock_run_sort.return_value = "sort-out"
     mock_obj_list = ["obj1", "obj2", "obj3"]
@@ -215,9 +245,7 @@ def test_run_parser_no_sort_with_group_mappings(mock_run_group_by, instance):
     Tests that run_parser functions expectedly - when giving group_mappings
     Should call run_group_by with group mappings and return
     """
-    instance.sort_by = {}
-    instance.group_by = MockProperties.PROP_1
-    instance.group_mappings = {"group1": "some-mapping_func"}
+    instance.parse_group_by(MockProperties.PROP_1)
 
     mock_obj_list = ["obj1", "obj2", "obj3"]
     mock_run_group_by.return_value = "group-out"
@@ -235,11 +263,10 @@ def test_run_parser_with_sort_and_group(mock_run_group_by, mock_run_sort, instan
     Tests that run_parser functions expectedly - when giving both group_by and sort_by
     Should call run_sort method and then run_group_by on that output, then return
     """
-    instance.sort_by = {MockProperties.PROP_1: False}
-    instance.group_by = MockProperties.PROP_1
-    instance.group_mappings = {"group1": "some-mapping_func"}
-    mock_obj_list = ["obj1", "obj2", "obj3"]
+    instance.parse_sort_by((MockProperties.PROP_1, SortOrder.DESC))
+    instance.parse_group_by(MockProperties.PROP_1)
 
+    mock_obj_list = ["obj1", "obj2", "obj3"]
     mock_run_group_by.return_value = "group-out"
     mock_run_sort.return_value = "sort-out"
 
@@ -247,6 +274,13 @@ def test_run_parser_with_sort_and_group(mock_run_group_by, mock_run_sort, instan
     assert res == "group-out"
     mock_run_sort.assert_called_once_with(mock_obj_list)
     mock_run_group_by.assert_called_once_with("sort-out")
+
+
+def test_run_parser_empty_list(instance):
+    """
+    Tests run_parser - when given empty list - output empty list
+    """
+    assert instance.run_parser([]) == []
 
 
 @pytest.mark.parametrize(
@@ -258,26 +292,29 @@ def test_run_parser_with_sort_and_group(mock_run_group_by, mock_run_sort, instan
         {MockProperties.PROP_2: True},
     ],
 )
-def test_run_sort_with_one_key(mock_sort_by_specs, run_sort_by_tests):
+def test_run_sort_with_one_key(
+    mock_sort_by_specs, run_sort_by_tests, mock_results_container
+):
     """
     Tests that run_sort functions expectedly - with one sorting key
     Should call run_sort method which should get the appropriate sorting
     key lambda function and sort dict accordingly
     """
-
-    mock_obj_list = [
-        ({"prop_1": "a", "prop_2": 2}, {}),
-        ({"prop_1": "c", "prop_2": 4}, {}),
-        ({"prop_1": "d", "prop_2": 3}, {}),
-        ({"prop_1": "b", "prop_2": 1}, {}),
+    mock_as_object_vals = [
+        {"prop_1": "a", "prop_2": 2},
+        {"prop_1": "c", "prop_2": 4},
+        {"prop_1": "d", "prop_2": 3},
+        {"prop_1": "b", "prop_2": 1},
     ]
+
+    mock_obj_list = mock_results_container(mock_as_object_vals)
 
     # sorting by only one property so get first key in sort specs
     mock_enum = list(mock_sort_by_specs.keys())[0]
     reverse = mock_sort_by_specs[mock_enum]
     mock_prop_name = mock_enum.name.lower()
     expected_list = sorted(
-        mock_obj_list, key=lambda k: k[0][mock_prop_name], reverse=reverse
+        mock_as_object_vals, key=lambda k: k[mock_prop_name], reverse=reverse
     )
     run_sort_by_tests(mock_obj_list, mock_sort_by_specs, expected_list)
 
@@ -288,56 +325,56 @@ def test_run_sort_with_one_key(mock_sort_by_specs, run_sort_by_tests):
         (
             {MockProperties.PROP_1: False, MockProperties.PROP_2: True},
             [
-                ({"prop_1": "a", "prop_2": 2}, {}),
-                ({"prop_1": "a", "prop_2": 1}, {}),
-                ({"prop_1": "b", "prop_2": 2}, {}),
-                ({"prop_1": "b", "prop_2": 1}, {}),
+                {"prop_1": "a", "prop_2": 2},
+                {"prop_1": "a", "prop_2": 1},
+                {"prop_1": "b", "prop_2": 2},
+                {"prop_1": "b", "prop_2": 1},
             ],
         ),
         (
             {MockProperties.PROP_1: True, MockProperties.PROP_2: False},
             [
-                ({"prop_1": "b", "prop_2": 1}, {}),
-                ({"prop_1": "b", "prop_2": 2}, {}),
-                ({"prop_1": "a", "prop_2": 1}, {}),
-                ({"prop_1": "a", "prop_2": 2}, {}),
+                {"prop_1": "b", "prop_2": 1},
+                {"prop_1": "b", "prop_2": 2},
+                {"prop_1": "a", "prop_2": 1},
+                {"prop_1": "a", "prop_2": 2},
             ],
         ),
         (
             {MockProperties.PROP_2: False, MockProperties.PROP_1: True},
             [
-                ({"prop_1": "b", "prop_2": 1}, {}),
-                ({"prop_1": "a", "prop_2": 1}, {}),
-                ({"prop_1": "b", "prop_2": 2}, {}),
-                ({"prop_1": "a", "prop_2": 2}, {}),
+                {"prop_1": "b", "prop_2": 1},
+                {"prop_1": "a", "prop_2": 1},
+                {"prop_1": "b", "prop_2": 2},
+                {"prop_1": "a", "prop_2": 2},
             ],
         ),
         (
             {MockProperties.PROP_2: True, MockProperties.PROP_1: False},
             [
-                ({"prop_1": "a", "prop_2": 2}, {}),
-                ({"prop_1": "b", "prop_2": 2}, {}),
-                ({"prop_1": "a", "prop_2": 1}, {}),
-                ({"prop_1": "b", "prop_2": 1}, {}),
+                {"prop_1": "a", "prop_2": 2},
+                {"prop_1": "b", "prop_2": 2},
+                {"prop_1": "a", "prop_2": 1},
+                {"prop_1": "b", "prop_2": 1},
             ],
         ),
     ],
 )
 def test_run_sort_with_multiple_key(
-    mock_sort_by_specs, expected_list, run_sort_by_tests
+    mock_sort_by_specs, expected_list, run_sort_by_tests, mock_results_container
 ):
     """
     Tests that run_sort functions expectedly - with one sorting key
     Should call run_sort method which should get the appropriate sorting
     key lambda function and sort dict accordingly
     """
-
-    mock_obj_list = [
-        ({"prop_1": "a", "prop_2": 1}, {}),
-        ({"prop_1": "b", "prop_2": 1}, {}),
-        ({"prop_1": "a", "prop_2": 2}, {}),
-        ({"prop_1": "b", "prop_2": 2}, {}),
+    mock_as_object_vals = [
+        {"prop_1": "a", "prop_2": 1},
+        {"prop_1": "b", "prop_2": 1},
+        {"prop_1": "a", "prop_2": 2},
+        {"prop_1": "b", "prop_2": 2},
     ]
+    mock_obj_list = mock_results_container(mock_as_object_vals)
     run_sort_by_tests(mock_obj_list, mock_sort_by_specs, expected_list)
 
 
@@ -345,23 +382,23 @@ def test_run_sort_with_multiple_key(
     "mock_sort_by_specs",
     [{MockProperties.PROP_1: False}, {MockProperties.PROP_1: True}],
 )
-def test_run_sort_with_boolean(mock_sort_by_specs, instance, run_sort_by_tests):
+def test_run_sort_with_boolean(
+    mock_sort_by_specs, instance, run_sort_by_tests, mock_results_container
+):
     """
     Tests that run_sort functions expectedly - sorting by boolean
     Should call run_sort method which should get the appropriate sorting
     key lambda function and sort dict accordingly
     """
-    mock_obj_list = [
-        ({"prop_1": False}, {}),
-        ({"prop_1": True}, {}),
-    ]
+    mock_as_object_vals = [{"prop_1": False}, {"prop_1": True}]
+    mock_obj_list = mock_results_container(mock_as_object_vals)
     instance.sort_by = mock_sort_by_specs
     mock_enum = list(mock_sort_by_specs.keys())[0]
     reverse = mock_sort_by_specs[mock_enum]
     mock_prop_name = mock_enum.name.lower()
 
     expected_list = sorted(
-        mock_obj_list, key=lambda k: k[0][mock_prop_name], reverse=reverse
+        mock_as_object_vals, key=lambda k: k[mock_prop_name], reverse=reverse
     )
     run_sort_by_tests(mock_obj_list, mock_sort_by_specs, expected_list)
 
@@ -373,18 +410,18 @@ def test_run_sort_with_boolean(mock_sort_by_specs, instance, run_sort_by_tests):
             MockProperties.PROP_1,
             {
                 "a": [
-                    ({"prop_1": "a", "prop_2": 1}, {}),
-                    ({"prop_1": "a", "prop_2": 3}, {}),
+                    {"prop_1": "a", "prop_2": 1},
+                    {"prop_1": "a", "prop_2": 3},
                 ],
-                "b": [({"prop_1": "b", "prop_2": 2}, {})],
+                "b": [{"prop_1": "b", "prop_2": 2}],
             },
         ),
         (
             MockProperties.PROP_2,
             {
-                1: [({"prop_1": "a", "prop_2": 1}, {})],
-                2: [({"prop_1": "b", "prop_2": 2}, {})],
-                3: [({"prop_1": "a", "prop_2": 3}, {})],
+                1: [{"prop_1": "a", "prop_2": 1}],
+                2: [{"prop_1": "b", "prop_2": 2}],
+                3: [{"prop_1": "a", "prop_2": 3}],
             },
         ),
     ],
@@ -399,9 +436,9 @@ def test_build_unique_val_groups(
     """
 
     obj_list = [
-        ({"prop_1": "a", "prop_2": 1}, {}),
-        ({"prop_1": "b", "prop_2": 2}, {}),
-        ({"prop_1": "a", "prop_2": 3}, {}),
+        {"prop_1": "a", "prop_2": 1},
+        {"prop_1": "b", "prop_2": 2},
+        {"prop_1": "a", "prop_2": 3},
     ]
     instance.group_by = mock_group_by
 
@@ -422,7 +459,9 @@ def test_build_unique_val_groups(
 
 
 @patch("openstack_query.query_blocks.query_parser.QueryParser._build_unique_val_groups")
-def test_run_group_by_no_group_mappings(mock_build_unique_val_groups, instance):
+def test_run_group_by_no_group_mappings(
+    mock_build_unique_val_groups, instance, mock_results_container
+):
     """
     Tests run group_by method functions expectedly - when using no group mappings
     Should call build_unique_val_group and use the mappings returned to apply onto given object list
@@ -437,26 +476,33 @@ def test_run_group_by_no_group_mappings(mock_build_unique_val_groups, instance):
     }
     mock_build_unique_val_groups.return_value = mock_group_mappings
 
-    mock_obj_list = [
-        ({"prop_1": "a", "prop_2": 1}, {}),
-        ({"prop_1": "b", "prop_2": 2}, {}),
-        ({"prop_1": "c", "prop_2": 3}, {}),
+    mock_as_object_vals = [
+        {"prop_1": "a", "prop_2": 1},
+        {"prop_1": "b", "prop_2": 2},
+        {"prop_1": "c", "prop_2": 3},
     ]
+    mock_obj_list = mock_results_container(mock_as_object_vals)
     # pylint:disable=protected-access
     res = instance._run_group_by(mock_obj_list)
     mock_build_unique_val_groups.assert_called_once_with(
-        [tup[0] for tup in mock_obj_list]
+        [item.as_object() for item in mock_obj_list]
     )
 
-    assert res == {
-        "group1": [({"prop_1": "a", "prop_2": 1}, {})],
-        "group2": [({"prop_1": "b", "prop_2": 2}, {})],
-        "group3": [({"prop_1": "c", "prop_2": 3}, {})],
-    }
+    assert [item.as_object() for item in res["group1"]] == [
+        {"prop_1": "a", "prop_2": 1}
+    ]
+    assert [item.as_object() for item in res["group2"]] == [
+        {"prop_1": "b", "prop_2": 2}
+    ]
+    assert [item.as_object() for item in res["group3"]] == [
+        {"prop_1": "c", "prop_2": 3}
+    ]
 
 
 @patch("openstack_query.query_blocks.query_parser.QueryParser._build_unique_val_groups")
-def test_run_group_by_with_group_mappings(mock_build_unique_val_groups, instance):
+def test_run_group_by_with_group_mappings(
+    mock_build_unique_val_groups, instance, mock_results_container
+):
     """
     Tests run group_by method functions expectedly - when using group mappings
     Should use the preset mappings and apply them onto given object list
@@ -469,20 +515,22 @@ def test_run_group_by_with_group_mappings(mock_build_unique_val_groups, instance
     }
     instance.group_mappings = mock_group_mappings
 
-    mock_obj_list = [
-        ({"prop_1": "a", "prop_2": 1}, {}),
-        ({"prop_1": "b", "prop_2": 2}, {}),
-        ({"prop_1": "c", "prop_2": 3}, {}),
+    mock_as_object_vals = [
+        {"prop_1": "a", "prop_2": 1},
+        {"prop_1": "b", "prop_2": 2},
+        {"prop_1": "c", "prop_2": 3},
     ]
+    mock_obj_list = mock_results_container(mock_as_object_vals)
 
     # pylint:disable=protected-access
     res = instance._run_group_by(mock_obj_list)
     mock_build_unique_val_groups.assert_not_called()
 
-    assert res == {
-        "group1": [
-            ({"prop_1": "a", "prop_2": 1}, {}),
-            ({"prop_1": "b", "prop_2": 2}, {}),
-        ],
-        "group2": [({"prop_1": "c", "prop_2": 3}, {})],
-    }
+    assert [item.as_object() for item in res["group1"]] == [
+        {"prop_1": "a", "prop_2": 1},
+        {"prop_1": "b", "prop_2": 2},
+    ]
+
+    assert [item.as_object() for item in res["group2"]] == [
+        {"prop_1": "c", "prop_2": 3}
+    ]
