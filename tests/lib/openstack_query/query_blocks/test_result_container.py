@@ -114,7 +114,8 @@ def test_to_objects_results_empty(setup_instance_with_results):
     Test to_objects method when results are empty - return empty list
     """
     instance = setup_instance_with_results([])
-    instance.to_objects()
+    res = instance.to_objects()
+    assert res == []
 
 
 def test_to_objects_not_parsed(setup_instance_with_results):
