@@ -1,6 +1,6 @@
 import pytest
-from unittest.mock import patch, mock_open
-from pathlib import Path
+from unittest.mock import patch, mock_open, NonCallableMock
+from pathlib import Path, WindowsPath
 
 from workflows.csv.csv_actions import to_csv, to_csv_list, to_csv_dictionary
 
@@ -61,9 +61,9 @@ def example_data():
 @patch("csv.DictWriter")
 def test_to_csv_with_valid_parameters(mock_dict_writer, mock_file, example_data):
     """With Valid Parameters"""
-    to_csv(example_data, "test")
+    to_csv(example_data, "csv_files")
 
-    mock_file.assert_called_once_with("test", "w", encoding="utf-8")
+    mock_file.assert_called_once_with(WindowsPath('csv_files/query_out.csv'), 'w', encoding='utf-8')
     mock_dict_writer.assert_called_once_with(
         mock_file.return_value, fieldnames=example_data[0].keys()
     )
@@ -73,16 +73,16 @@ def test_to_csv_with_valid_parameters(mock_dict_writer, mock_file, example_data)
 
 def test_to_csv_fails():
     with pytest.raises(RuntimeError):
-        to_csv([], "test")
+        to_csv([], "invalid path")
 
 
-@patch("main.to_csv")
+@patch("workflows.csv.csv_actions.to_csv")
 def test_to_csv_grouped_loop_empty_input(mock_to_csv):
     """loop is given: 0 Items"""
     mock_to_csv.assert_not_called()
 
 
-@patch("main.to_csv")
+@patch("workflows.csv.csv_actions.to_csv_list")
 def test_to_csv_grouped_loop_one_input(mock_to_csv):
     """mock to_cs outputs"""
 
@@ -104,25 +104,26 @@ def test_to_csv_grouped_loop_one_input(mock_to_csv):
     }
 
     """Run To csv"""
-    to_csv_dictionary(example_grouped_data, "test")
+    to_csv_dictionary(example_grouped_data, "csv_files")
 
     """loop is given: 1 Items"""
     mock_to_csv.assert_called_once_with(
-        example_grouped_data["user_name is user1"], Path("test/user_name is user1.csv")
+        example_grouped_data["user_name is user1"], Path("csv_files/user_name is user1.csv")
+
     )
 
 
-@patch("main.to_csv")
+@patch("workflows.csv.csv_actions.to_csv_list")
 def test_to_csv_grouped_loop_more_than_one_input(mock_to_csv, example_grouped_data):
     """mock to_cs outputs"""
 
     """Run To csv"""
-    to_csv_dictionary(example_grouped_data, "test")
+    to_csv_dictionary(example_grouped_data, "csv_files")
 
     """
     loop is given: 1 Items
     This bit need rewriting to check for multiple outputs instead of 1.
     """
     mock_to_csv.assert_called_with(
-        example_grouped_data["user_name is user2"], Path("test/user_name is user2.csv")
+        example_grouped_data["user_name is user2"], Path("csv_files/user_name is user2.csv")
     )

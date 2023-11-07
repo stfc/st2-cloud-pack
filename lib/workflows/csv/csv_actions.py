@@ -73,7 +73,7 @@ def to_csv_dictionary(data: Union[List, Dict], dir_path):
     """
 
     for p_id, p_info in data.items():
-        file_path = dir_path / f"{p_id}.csv"
+        file_path = Path(dir_path) / f"{p_id}.csv"
         to_csv_list(p_info, file_path)
 
     print("Dictionary written to csv")
@@ -120,58 +120,3 @@ if __name__ == "__main__":
 
 #    result = get_query().to_list()
 #    fu = 2
-
-#    example1 = [
-#        {
-#            "server_id": "server_id1",
-#            "server_name": "server1",
-#            "user_id": "user_id1",
-#            "user_name": "user1"
-#        },
-#        {
-#            "server_id": "server_id2",
-#            "server_name": "server2",
-#            "user_id": "user_id2",
-#            "user_name": "user2"
-#        }
-#    ]
-#    OUTPUT_FILEPATH = "./path/to/file.csv"
-#    to_csv(example1, OUTPUT_FILEPATH)
-
-#    example2 = {
-#        "user_name is user1": [
-#            {
-#                "server_id": "server_id1",
-#                "server_name": "server1",
-#                "user_id": "user_id1",
-#                "user_name": "user1",
-#            },
-#            {
-#                "server_id": "server_id2",
-#                "server_name": "server2",
-#                "user_id": "user_id1",
-#                "user_name": "user1",
-#            },
-#        ],
-#        "user_name is user2": [
-#            {
-#                "server_id": "server_id3",
-#                "server_name": "server3",
-#                "user_id": "user_id2",
-#                "user_name": "user2",
-#            },
-#            {
-#                "server_id": "server_id4",
-#                "server_name": "server4",
-#                "user_id": "user_id2",
-#                "user_name": "user2",
-#            },
-#        ],
-#    }
-
-# uncomment this part to test example 2
-#    OUTPUT_DIR_PATH = "./path/to/"
-#    to_csv_grouped(example2, OUTPUT_DIR_PATH)
-
-#    pats = get_csv_directory(OUTPUT_FILEPATH)
-#    print(pats)
