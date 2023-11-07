@@ -17,6 +17,18 @@ from structs.email.email_params import EmailParams
 from email_api.emailer import Emailer
 
 
+def get_flavor_list_html(flavor_list: List[str]):
+    """
+    prints flavor list in html format (as unordered list)
+    :parma flavor_list a list of flavor strings
+    """
+    unordered_list = "<ul> "
+    for item in flavor_list:
+        unordered_list += f"<li> {item} </li> "
+    unordered_list += "</ul>"
+    return unordered_list
+
+
 def validate(
     flavor_name_list: List[str],
     from_projects: List[str] = None,
@@ -132,7 +144,7 @@ def build_email_params(
         template_name="decom_email",
         template_params={
             "username": user_name,
-            "affected_flavors_table": flavor_table,
+            "affected_flavors": flavor_table,
             "decom_table": decom_table,
         },
     )
@@ -152,7 +164,8 @@ def send_decom_flavor_email(
     all_projects: bool = False,
     as_html: bool = False,
     send_email: bool = False,
-    override_email_address: Optional[str] = None,
+    use_override: bool = False,
+    override_email_address: Optional[str] = "cloud-support@stfc.ac.uk",
     cc_cloud_support: bool = False,
     **email_params_kwargs,
 ):
@@ -166,11 +179,11 @@ def send_decom_flavor_email(
     :param all_projects: A boolean which if selected will search in all projects
     :param send_email: Actually send the email instead of printing what will be sent
     :param as_html: Send email as html
+    :param use_override: flag if set will use override email address
     :param override_email_address: an overriding email address to use if override_email set
     :param cc_cloud_support: flag if set will cc cloud-support email address to each generated email
     :param email_params_kwargs: see EmailParams dataclass class docstring
     """
-
     validate(flavor_name_list, limit_by_projects, all_projects)
     user_query = find_users_with_decom_flavors(
         cloud_account, flavor_name_list, limit_by_projects
@@ -182,13 +195,13 @@ def send_decom_flavor_email(
         # if email_address not found - send to override_email_address
         # also send to override_email_address if override_email set
 
-        send_to = email_addr
-        if override_email_address or not email_addr:
-            send_to = override_email_address
+        send_to = [email_addr]
+        if use_override or not email_addr:
+            send_to = [override_email_address]
 
         if not send_email:
             print_email_params(
-                send_to,
+                send_to[0],
                 user_name,
                 as_html,
                 ", ".join(flavor_name_list),
@@ -198,11 +211,13 @@ def send_decom_flavor_email(
         else:
             email_params = build_email_params(
                 user_name,
-                ", ".join(flavor_name_list),
-                user_query.to_string(groups=[email_addr]),
-                email_to=email_addr
-                if not override_email_address
-                else override_email_address,
+                ", ".join(flavor_name_list)
+                if not as_html
+                else get_flavor_list_html(flavor_name_list),
+                user_query.to_string(groups=[email_addr])
+                if not as_html
+                else user_query.to_html(groups=[email_addr]),
+                email_to=send_to,
                 as_html=as_html,
                 email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
                 **email_params_kwargs,
