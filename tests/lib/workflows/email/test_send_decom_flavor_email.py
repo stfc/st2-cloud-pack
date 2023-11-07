@@ -14,6 +14,7 @@ from workflows.email.send_decom_flavor_email import (
     print_email_params,
     build_email_params,
     send_decom_flavor_email,
+    get_flavor_list_html,
 )
 
 
@@ -43,6 +44,20 @@ def test_validate_from_projects_and_all_projects():
             from_projects=["project1", "project2"],
             all_projects=True,
         )
+
+
+def test_get_flavor_list_html():
+    """tests get_flavor_list_html converts list of flavors to a html string"""
+    mock_flavors = ["flavor1", "flavor2"]
+    res = get_flavor_list_html(mock_flavors)
+    assert res == "<ul> <li> flavor1 </li> <li> flavor2 </li> </ul>"
+
+
+def test_get_flavor_list_html_empty():
+    """tests get_flavor_list_html converts an empty list to an empty unorded list html string"""
+    mock_flavors = []
+    res = get_flavor_list_html(mock_flavors)
+    assert res == "<ul>  </ul>"
 
 
 def test_validate_success():
