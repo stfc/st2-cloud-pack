@@ -85,7 +85,9 @@ class ResultsContainer:
             item.update_forwarded_properties(forwarded_result)
 
     @staticmethod
-    def _get_forwarded_result(prop_val: str, forwarded_results: Dict[str, List]):
+    def _get_forwarded_result(
+        prop_val: str, forwarded_results: Dict[str, List]
+    ) -> Dict:
         """
         static helper method to return forwarded values that match a given property value. Used for chaining
         This handles two chaining cases:
