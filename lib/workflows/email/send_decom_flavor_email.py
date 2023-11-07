@@ -23,9 +23,8 @@ def get_flavor_list_html(flavor_list: List[str]):
     :parma flavor_list a list of flavor strings
     """
     unordered_list = "<ul> "
-    for item in flavor_list:
-        unordered_list += f"<li> {item} </li> "
-    unordered_list += "</ul>"
+    unordered_list += " ".join(f"<li> {item} </li>" for item in flavor_list)
+    unordered_list += " </ul>"
     return unordered_list
 
 
