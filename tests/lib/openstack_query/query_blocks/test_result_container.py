@@ -306,4 +306,5 @@ def test_get_forwarded_result_empty():
     Tests get_forwarded_results static method, where forwarded results are empty
     should return an empty dict
     """
+    # pylint:disable=protected-access
     assert ResultsContainer._get_forwarded_result("grouped_value1", {}) == {}
