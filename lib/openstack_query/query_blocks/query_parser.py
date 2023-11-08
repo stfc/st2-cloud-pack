@@ -1,6 +1,8 @@
 from typing import List, Dict, Tuple, Union, Optional, Type
 import logging
 from collections import OrderedDict
+
+from openstack_query.query_blocks.result import Result
 from enums.query.props.prop_enum import PropEnum
 from enums.query.sort_order import SortOrder
 from custom_types.openstack_query.aliases import (
@@ -113,7 +115,7 @@ class QueryParser:
         :param group_by: name of the property to group by
         :param group_ranges: a dictionary containing names of the group and list of prop values
         to select for that group
-        :param include_missing: a flag which if set includes an extra grouping for values
+        :param include_missing: a flag which, if set, will include an extra grouping for values
         that don't fall into any group specified in group_ranges
         """
 
@@ -141,7 +143,7 @@ class QueryParser:
         for name, prop_list in group_ranges.items():
             group_vals = tuple(prop_list)
             self.group_mappings[name] = (
-                lambda obj, lst=group_vals: prop_func(obj) in lst
+                lambda obj, lst=group_vals: prop_func(obj.as_object()) in lst
             )
 
     def _add_include_missing_group(self, group_ranges: GroupRanges):
@@ -158,15 +160,16 @@ class QueryParser:
         prop_func = self._prop_enum_cls.get_prop_mapping(self.group_by)
         logger.debug("creating filter function for ungrouped group")
         self.group_mappings["ungrouped results"] = (
-            lambda obj: prop_func(obj) not in all_prop_list
+            lambda obj: prop_func(obj.as_object()) not in all_prop_list
         )
 
     def run_parser(
-        self, obj_list: List[OpenstackResourceObj]
-    ) -> Union[List[OpenstackResourceObj], Dict[str, List[OpenstackResourceObj]]]:
+        self, obj_list: List[Result]
+    ) -> Union[List[Result], Dict[str, List[Result]]]:
         """
         Public method used to parse query runner output - performs specified sorting and grouping
-        :param obj_list: a list of openstack resource objects to parse
+        :param obj_list: a list of Result objects containing query results to parse
+        (runs both sorting and grouping)
         """
         if not obj_list:
             return obj_list
@@ -177,16 +180,13 @@ class QueryParser:
 
         if self.group_by:
             obj_list = self._run_group_by(obj_list)
+
         return obj_list
 
-    def _run_sort(
-        self,
-        obj_list: List[OpenstackResourceObj],
-    ) -> List[OpenstackResourceObj]:
+    def _run_sort(self, obj_list: List[Result]) -> List[Result]:
         """
-        method which sorts a list of openstack objects based on a dictionary of sort_by specs
-        :param obj_list: A list of openstack objects to sort
-            - descending - True, ascending - False
+        method which sorts a list of query results based on a dictionary of sort_by specs
+        :param obj_list: a list of Result objects containing query results to sort
         """
 
         logger.debug("running multi-sort")
@@ -197,7 +197,9 @@ class QueryParser:
             logger.debug("running sort %s / %s", i, sort_num)
             logger.debug("sorting by: %s, reverse=%s", sort_key, reverse)
             prop_func = self._prop_enum_cls.get_prop_mapping(sort_key)
-            obj_list.sort(key=prop_func, reverse=reverse)
+            obj_list.sort(
+                key=lambda x, fn=prop_func: fn(x.as_object()), reverse=reverse
+            )
         return obj_list
 
     def _build_unique_val_groups(
@@ -207,7 +209,7 @@ class QueryParser:
         """
         helper method to find all unique values for a given property in query results, and then,
         for each unique value, create a group mapping
-        :param obj_list: A list of openstack objects to group
+        :param obj_list: A list of openstack objects to build unique groups for
         """
         prop_func = self._prop_enum_cls.get_prop_mapping(self.group_by)
         # ordered dict to mimic ordered set
@@ -229,14 +231,11 @@ class QueryParser:
 
         return group_mappings
 
-    def _run_group_by(
-        self,
-        obj_list: List[OpenstackResourceObj],
-    ) -> Dict[str, List[OpenstackResourceObj]]:
+    def _run_group_by(self, obj_list: List[Result]) -> Dict[str, List[Result]]:
         """
         helper method apply a set of group mappings onto a list of openstack objects. Returns a dictionary of grouped
-        values where the key is the group name and value is a list of openstack objects that belong to that group
-        :param obj_list: list of openstack objects to group
+        values where the key is the group name and value is a list of result objects that belong to that group
+        :param obj_list: a list of Result objects containing query results to group by
         """
 
         # if group mappings not specified - make a group for each unique value found for prop
@@ -245,9 +244,11 @@ class QueryParser:
                 "no group ranges specified - grouping by unique values of %s property",
                 self.group_by.name,
             )
-            self.group_mappings = self._build_unique_val_groups(obj_list)
+            self.group_mappings = self._build_unique_val_groups(
+                [item.as_object() for item in obj_list]
+            )
 
         return {
-            name: [item for item in obj_list if map_func(item)]
+            name: [item for item in obj_list if map_func(item.as_object())]
             for name, map_func in self.group_mappings.items()
         }
