@@ -1,7 +1,5 @@
-from typing import Tuple, Type, Optional
+from typing import Type
 
-from enums.query.props.prop_enum import PropEnum
-from custom_types.openstack_query.aliases import GroupedReturn
 from openstack_query.mappings.mapping_interface import MappingInterface
 from openstack_query.query_blocks.query_builder import QueryBuilder
 from openstack_query.query_blocks.query_chainer import QueryChainer
@@ -21,21 +19,15 @@ class QueryFactory:
     """
 
     @staticmethod
-    def build_query_deps(
-        mapping_cls: Type[MappingInterface],
-        forwarded_outputs: Optional[Tuple[PropEnum, GroupedReturn]] = None,
-    ) -> QueryComponents:
+    def build_query_deps(mapping_cls: Type[MappingInterface]) -> QueryComponents:
         """
         Composes objects that make up the query - to allow dependency injection
         :param mapping_cls: A mapping class which is used to configure query objects
-        :param forwarded_outputs: A tuple containing grouped outputs to forward from another query
         and the enum they are grouped by
         """
         prop_mapping = mapping_cls.get_prop_mapping()
 
         output = QueryOutput(prop_mapping)
-        if forwarded_outputs:
-            output.update_forwarded_outputs(forwarded_outputs[0], forwarded_outputs[1])
         parser = QueryParser(prop_mapping)
         builder = QueryBuilder(
             prop_enum_cls=prop_mapping,
