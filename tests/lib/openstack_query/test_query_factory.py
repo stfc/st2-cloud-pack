@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from openstack_query.query_factory import QueryFactory
-from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 
 @pytest.fixture(name="run_build_query_deps_test_case")
@@ -18,7 +17,6 @@ def run_build_query_deps_test_case_fixture():
     @patch("openstack_query.query_factory.QueryChainer")
     @patch("openstack_query.query_factory.QueryComponents")
     def _run_build_query_deps_test_case(
-        mock_forwarded_outputs,
         mock_query_components,
         mock_chainer,
         mock_executer,
@@ -31,14 +29,7 @@ def run_build_query_deps_test_case_fixture():
         if provided forwarded outputs or not
         """
         mock_mapping_cls = MagicMock()
-        res = QueryFactory.build_query_deps(
-            mock_mapping_cls, forwarded_outputs=mock_forwarded_outputs
-        )
-
-        if mock_forwarded_outputs:
-            mock_output.return_value.update_forwarded_outputs.assert_called_once_with(
-                MockProperties.PROP_1, {"val_1": ["output1", "output2"]}
-            )
+        res = QueryFactory.build_query_deps(mock_mapping_cls)
 
         mock_mapping_cls.get_prop_mapping.assert_called_once()
         mock_prop_mapping = mock_mapping_cls.get_prop_mapping.return_value
@@ -71,19 +62,9 @@ def run_build_query_deps_test_case_fixture():
     return _run_build_query_deps_test_case
 
 
-def test_build_query_deps_no_forwarded_outputs(run_build_query_deps_test_case):
+def test_build_query_deps(run_build_query_deps_test_case):
     """
     Test that function build_query_deps works - with no forwarded outputs
     should build all query blocks and return QueryComponent dataclass using them
     """
-    run_build_query_deps_test_case(None)
-
-
-def test_build_query_deps_with_forwarded_outputs(run_build_query_deps_test_case):
-    """
-    Test that function build_query_deps works - with forwarded outputs
-    should build all query blocks and return QueryComponent dataclass using them
-    """
-    run_build_query_deps_test_case(
-        (MockProperties.PROP_1, {"val_1": ["output1", "output2"]}),
-    )
+    run_build_query_deps_test_case()
