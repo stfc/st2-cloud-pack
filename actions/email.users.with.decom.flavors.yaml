@@ -47,6 +47,11 @@ parameters:
     description: "tick to search in all projects - default True"
     required: true
     default: true
+  use_override:
+    type: boolean
+    description: "TESTING: Set this flag so ALL emails will be redirected to override email"
+    required: true
+    default: False
   as_html:
     type: boolean
     description: "Send email body as HTML"
