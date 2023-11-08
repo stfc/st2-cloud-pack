@@ -42,6 +42,16 @@ class QueryOutput:
     def _validate_groups(
         results: Union[List, Dict], groups: Optional[List[str]] = None
     ):
+        """
+        helper method which takes a set of grouped results and a list of groups and
+        outputs a subset of results where each key in subset matches a value in given set of groups.
+        method will return all results if groups not given.
+        Outputs error if:
+            - groups contains a value not in results
+            - given results aren't grouped
+        :param results: results to get subset for if grouped and groups given
+        :param groups: an optional list of keys to get a subset of results
+        """
         if not groups:
             return results
 
