@@ -77,76 +77,139 @@ def test_validate_success():
 
 
 @patch("workflows.email.send_decom_flavor_email.FlavorQuery")
-def test_find_users_with_decom_flavor(mock_flavor_query):
+def test_find_users_with_decom_flavor_valid(mock_flavor_query):
     """
     Tests find_users_with_decom_flavors() function
     should run a complex FlavorQuery query - chaining into servers, then users and return final query
     """
+    mock_flavor_query_obj = mock_flavor_query.return_value
+    mock_server_query_obj = mock_flavor_query_obj.then.return_value
+    mock_user_query_obj = mock_server_query_obj.then.return_value
+
     res = find_users_with_decom_flavors(
         "test-cloud-account", ["flavor1", "flavor2"], ["project1", "project2"]
     )
 
     mock_flavor_query.assert_called_once()
-    flavor_query_where_1 = mock_flavor_query.return_value.where
-    flavor_query_where_1.assert_called_once_with(
+    mock_flavor_query_obj.where.assert_any_call(
         QueryPresetsGeneric.EQUAL_TO,
         FlavorProperties.FLAVOR_IS_PUBLIC,
         value=True,
     )
-
-    flavor_query_where_2 = flavor_query_where_1.return_value.where
-    flavor_query_where_2.assert_called_once_with(
+    mock_flavor_query_obj.where.assert_any_call(
         QueryPresetsGeneric.ANY_IN,
         FlavorProperties.FLAVOR_NAME,
         values=["flavor1", "flavor2"],
     )
-
-    flavor_query_run = flavor_query_where_2.return_value.run
-    flavor_query_run.assert_called_once_with("test-cloud-account")
-
-    flavor_query_sort_by = flavor_query_run.return_value.sort_by
-    flavor_query_sort_by.assert_called_once_with(
+    mock_flavor_query_obj.run.assert_called_once_with("test-cloud-account")
+    mock_flavor_query_obj.sort_by.assert_called_once_with(
         (FlavorProperties.FLAVOR_ID, SortOrder.ASC)
     )
+    mock_flavor_query_obj.to_props.assert_called_once()
 
-    flavor_query_then = flavor_query_sort_by.return_value.then
-    flavor_query_then.assert_called_once_with(
+    mock_flavor_query_obj.then.assert_called_once_with(
         "SERVER_QUERY", keep_previous_results=True
     )
-
-    server_query_run = flavor_query_then.return_value.run
-    server_query_run.assert_called_once_with(
+    mock_server_query_obj.run.assert_called_once_with(
         "test-cloud-account",
         as_admin=True,
         from_projects=["project1", "project2"],
         all_projects=False,
     )
-
-    server_query_append_from = server_query_run.return_value.append_from
-    server_query_append_from.assert_called_once_with(
-        "PROJECT_QUERY", "test-cloud-account", ProjectProperties.PROJECT_NAME
-    )
-
-    server_query_select = server_query_append_from.return_value.select
-    server_query_select.assert_called_once_with(
+    mock_server_query_obj.select.assert_called_once_with(
         ServerProperties.SERVER_ID,
         ServerProperties.SERVER_NAME,
         ServerProperties.ADDRESSES,
     )
+    mock_server_query_obj.to_props.assert_called_once()
 
-    server_query_then = server_query_select.return_value.then
-    server_query_then.assert_called_once_with("USER_QUERY", keep_previous_results=True)
+    mock_server_query_obj.append_from.assert_called_once_with(
+        "PROJECT_QUERY", "test-cloud-account", ProjectProperties.PROJECT_NAME
+    )
 
-    user_query_run = server_query_then.return_value.run
-    user_query_run.assert_called_once_with("test-cloud-account")
+    mock_server_query_obj.then.assert_called_once_with(
+        "USER_QUERY", keep_previous_results=True
+    )
 
-    user_query_select = user_query_run.return_value.select
-    user_query_select.assert_called_once_with(UserProperties.USER_NAME)
+    mock_user_query_obj.run.assert_called_once_with("test-cloud-account")
+    mock_user_query_obj.select.assert_called_once_with(UserProperties.USER_NAME)
+    mock_user_query_obj.group_by.assert_called_once_with(UserProperties.USER_EMAIL)
 
-    user_query_group_by = user_query_select.return_value.group_by
-    user_query_group_by.assert_called_once_with(UserProperties.USER_EMAIL)
+    assert res == mock_user_query_obj
 
-    assert res == user_query_group_by.return_value
+
+@patch("workflows.email.send_decom_flavor_email.FlavorQuery")
+def test_find_users_with_decom_flavor_invalid_flavor(mock_flavor_query):
+    """
+    Tests that find_user_with_decom_flavors fails when provided invalid flavor name
+    """
+    mock_flavor_query_obj = mock_flavor_query.return_value
+    mock_flavor_query_obj.to_props.return_value = None
+
+    with pytest.raises(RuntimeError):
+        find_users_with_decom_flavors("test-cloud-account", ["invalid-flavor"])
+
+    mock_flavor_query.assert_called_once()
+    mock_flavor_query_obj.where.assert_any_call(
+        QueryPresetsGeneric.EQUAL_TO,
+        FlavorProperties.FLAVOR_IS_PUBLIC,
+        value=True,
+    )
+    mock_flavor_query_obj.where.assert_any_call(
+        QueryPresetsGeneric.ANY_IN,
+        FlavorProperties.FLAVOR_NAME,
+        values=["invalid-flavor"],
+    )
+    mock_flavor_query_obj.run.assert_called_once_with("test-cloud-account")
+    mock_flavor_query_obj.sort_by.assert_called_once_with(
+        (FlavorProperties.FLAVOR_ID, SortOrder.ASC)
+    )
+    mock_flavor_query_obj.to_props.assert_called_once()
+
+
+@patch("workflows.email.send_decom_flavor_email.FlavorQuery")
+def test_find_users_with_decom_flavor_no_servers_found(mock_flavor_query):
+    """
+    Tests that find_user_with_decom_flavors fails when no servers found with given flavors
+    """
+    mock_flavor_query_obj = mock_flavor_query.return_value
+    mock_server_query_obj = mock_flavor_query_obj.then.return_value
+    mock_server_query_obj.to_props.return_value = None
+
+    with pytest.raises(RuntimeError):
+        find_users_with_decom_flavors(
+            "test-cloud-account", ["flavor1", "flavor2"], ["project1", "project2"]
+        )
+
+    mock_flavor_query.assert_called_once()
+    mock_flavor_query_obj.where.assert_any_call(
+        QueryPresetsGeneric.EQUAL_TO,
+        FlavorProperties.FLAVOR_IS_PUBLIC,
+        value=True,
+    )
+    mock_flavor_query_obj.where.assert_any_call(
+        QueryPresetsGeneric.ANY_IN,
+        FlavorProperties.FLAVOR_NAME,
+        values=["flavor1", "flavor2"],
+    )
+    mock_flavor_query_obj.run.assert_called_once_with("test-cloud-account")
+    mock_flavor_query_obj.sort_by.assert_called_once_with(
+        (FlavorProperties.FLAVOR_ID, SortOrder.ASC)
+    )
+    mock_flavor_query_obj.to_props.assert_called_once()
+
+    mock_server_query_obj.run.assert_called_once_with(
+        "test-cloud-account",
+        as_admin=True,
+        from_projects=["project1", "project2"],
+        all_projects=False,
+    )
+    mock_server_query_obj.select.assert_called_once_with(
+        ServerProperties.SERVER_ID,
+        ServerProperties.SERVER_NAME,
+        ServerProperties.ADDRESSES,
+    )
+    mock_server_query_obj.to_props.assert_called_once()
 
 
 def test_print_email_params():
