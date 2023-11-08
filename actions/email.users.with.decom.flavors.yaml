@@ -21,7 +21,7 @@ parameters:
     default: "STFC Cloud Flavor Decommissioning Notice"
   smtp_account_name:
     type: string
-    description: "Name of SMTP Account to use. Must be configured in in the pack settings."
+    description: "Name of SMTP Account to use. Must be configured in the pack settings."
     required: true
     default: "default"
   cloud_account:

@@ -7,9 +7,9 @@ class WorkflowActions(Action):
     def run(self, submodule_name: str, action_name: str, **kwargs):
         """
         Dynamically dispatches to the function wanted
-            :param submodule_name: submodule name which corresponds to module in workflow
-            :param action_name: name of file/function which corresponds to function that will handle the action
-            :param kwargs: all user-defined kwargs to pass to the function
+        :param submodule_name: submodule name which corresponds to module in workflow
+        :param action_name: name of file/function which corresponds to function that will handle the action
+        :param kwargs: all user-defined kwargs to pass to the function
         """
         workflow = __import__(f"workflows.{submodule_name}.{action_name}")
         submodule = getattr(workflow, f"{submodule_name}")
