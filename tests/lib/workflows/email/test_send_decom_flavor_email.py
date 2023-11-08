@@ -14,6 +14,7 @@ from workflows.email.send_decom_flavor_email import (
     print_email_params,
     build_email_params,
     send_decom_flavor_email,
+    get_flavor_list_html,
 )
 
 
@@ -43,6 +44,20 @@ def test_validate_from_projects_and_all_projects():
             from_projects=["project1", "project2"],
             all_projects=True,
         )
+
+
+def test_get_flavor_list_html():
+    """tests get_flavor_list_html converts list of flavors to a html string"""
+    mock_flavors = ["flavor1", "flavor2"]
+    res = get_flavor_list_html(mock_flavors)
+    assert res == "<ul> <li> flavor1 </li> <li> flavor2 </li> </ul>"
+
+
+def test_get_flavor_list_html_empty():
+    """tests get_flavor_list_html converts an empty list to an empty unorded list html string"""
+    mock_flavors = []
+    res = get_flavor_list_html(mock_flavors)
+    assert res == "<ul>  </ul>"
 
 
 def test_validate_success():
@@ -175,7 +190,7 @@ def test_build_params(mock_email_params, mock_email_template_details):
                 template_name="decom_email",
                 template_params={
                     "username": user_name,
-                    "affected_flavors_table": flavor_table,
+                    "affected_flavors": flavor_table,
                     "decom_table": decom_table,
                 },
             ),
@@ -195,157 +210,412 @@ def test_build_params(mock_email_params, mock_email_template_details):
     assert res == mock_email_params.return_value
 
 
-@pytest.fixture(name="run_send_decom_flavor_email_test_case")
-def run_send_decom_flavor_email_test_case_fixture():
-    # pylint: disable=too-many-arguments
-    @patch("workflows.email.send_decom_flavor_email.validate")
-    @patch("workflows.email.send_decom_flavor_email.find_users_with_decom_flavors")
-    @patch("workflows.email.send_decom_flavor_email.build_email_params")
-    @patch("workflows.email.send_decom_flavor_email.print_email_params")
-    @patch("workflows.email.send_decom_flavor_email.Emailer")
-    def _run_send_decom_flavor_email_test_case(
-        mock_emailer,
-        mock_print_email,
-        mock_build_email,
-        mock_find_users,
-        mock_validate,
-        override_email_address=None,
-        cc_cloud_support=False,
-        send_email=False,
-    ):
-        flavor_name_list = ["flavor1", "flavor2"]
-        limit_by_projects = NonCallableMock()
-        all_projects = NonCallableMock()
-        cloud_account = NonCallableMock()
-        as_html = NonCallableMock()
-        smtp_account = NonCallableMock()
-        email_param_kwargs = {"arg1": "val1", "arg2": "val2"}
-
-        mock_find_users.return_value.to_props.return_value = {
-            "user_email1": [
-                {
-                    "user_name": "user1",
-                    # doesn't matter what else we find since we use to_string()
-                },
-            ],
-            "user_email2": [{"user_name": "user2"}],
-        }
-
-        send_decom_flavor_email(
-            smtp_account=smtp_account,
-            cloud_account=cloud_account,
-            flavor_name_list=flavor_name_list,
-            limit_by_projects=limit_by_projects,
-            all_projects=all_projects,
-            as_html=as_html,
-            send_email=send_email,
-            override_email_address=override_email_address,
-            cc_cloud_support=cc_cloud_support,
-            **email_param_kwargs,
-        )
-
-        mock_validate.assert_called_once_with(
-            flavor_name_list, limit_by_projects, all_projects
-        )
-
-        mock_find_users.assert_called_once_with(
-            cloud_account, flavor_name_list, limit_by_projects
-        )
-
-        exp_email_to = ("user_email1", "user_email2")
-        exp_email_cc = None
-
-        if override_email_address:
-            exp_email_to = (override_email_address, override_email_address)
-
-        if cc_cloud_support:
-            exp_email_cc = ("cloud-support@stfc.ac.uk",)
-
-        if send_email:
-            mock_build_email.assert_has_calls(
-                [
-                    call(
-                        "user1",
-                        "flavor1, flavor2",
-                        mock_find_users.return_value.to_string.return_value,
-                        email_to=exp_email_to[0],
-                        as_html=as_html,
-                        email_cc=exp_email_cc,
-                        **email_param_kwargs,
-                    ),
-                    call(
-                        "user2",
-                        "flavor1, flavor2",
-                        mock_find_users.return_value.to_string.return_value,
-                        email_to=exp_email_to[1],
-                        as_html=as_html,
-                        email_cc=exp_email_cc,
-                        **email_param_kwargs,
-                    ),
-                ]
-            )
-
-            mock_emailer.assert_has_calls(
-                [
-                    call(smtp_account),
-                    call().send_emails([mock_build_email.return_value]),
-                    call(smtp_account),
-                    call().send_emails([mock_build_email.return_value]),
-                ]
-            )
-        else:
-            mock_print_email.assert_has_calls(
-                [
-                    call(
-                        exp_email_to[0],
-                        "user1",
-                        as_html,
-                        "flavor1, flavor2",
-                        mock_find_users.return_value.to_string.return_value,
-                    ),
-                    call(
-                        exp_email_to[1],
-                        "user2",
-                        as_html,
-                        "flavor1, flavor2",
-                        mock_find_users.return_value.to_string.return_value,
-                    ),
-                ]
-            )
-
-            mock_find_users.return_value.to_string.assert_has_calls(
-                [call(groups=["user_email1"]), call(groups=["user_email2"])]
-            )
-
-    return _run_send_decom_flavor_email_test_case
-
-
-def test_send_decom_flavor_email_print_params(run_send_decom_flavor_email_test_case):
+@patch("workflows.email.send_decom_flavor_email.validate")
+@patch("workflows.email.send_decom_flavor_email.find_users_with_decom_flavors")
+@patch("workflows.email.send_decom_flavor_email.build_email_params")
+@patch("workflows.email.send_decom_flavor_email.Emailer")
+def test_send_decom_flavor_email_send_plaintext(
+    mock_emailer, mock_build_email_params, mock_find_users, mock_validate
+):
     """
-    Tests that send_decom_flavor_email() function prints params when send_email set to false
+    Tests send_decom_flavor() function actually sends email - as_html false
     """
-    run_send_decom_flavor_email_test_case(
-        override_email_address=None,
-        send_email=False,
-    )
 
-    # with override email set
-    run_send_decom_flavor_email_test_case(
-        override_email_address="example@example.com", send_email=False
-    )
+    flavor_name_list = ["flavor1", "flavor2"]
+    limit_by_projects = NonCallableMock()
+    all_projects = NonCallableMock()
+    cloud_account = NonCallableMock()
+    smtp_account = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
+    mock_query = mock_find_users.return_value
+    mock_query.to_props.return_value = {
+        "user_email1": [
+            {
+                "user_name": "user1",
+                # doesn't matter what else we find since we use to_string()
+            },
+        ],
+        "user_email2": [{"user_name": "user2"}],
+    }
 
-def test_send_decom_flavor_email(run_send_decom_flavor_email_test_case):
-    """
-    Tests that send_decom_flavor_email() function sends email with valid params
-    """
-    run_send_decom_flavor_email_test_case(
-        override_email_address=None, cc_cloud_support=False, send_email=True
-    )
-
-    # with override email set and cc_cloud_support
-    run_send_decom_flavor_email_test_case(
-        override_email_address="example@example.com",
-        cc_cloud_support=True,
+    send_decom_flavor_email(
+        smtp_account=smtp_account,
+        cloud_account=cloud_account,
+        flavor_name_list=flavor_name_list,
+        limit_by_projects=limit_by_projects,
+        all_projects=all_projects,
+        as_html=False,
         send_email=True,
+        use_override=False,
+        **mock_kwargs,
+    )
+
+    mock_validate.assert_called_once_with(
+        flavor_name_list, limit_by_projects, all_projects
+    )
+    mock_find_users.assert_called_once_with(
+        cloud_account, flavor_name_list, limit_by_projects
+    )
+    mock_query.to_props.assert_called_once()
+
+    mock_build_email_params.assert_has_calls(
+        [
+            call(
+                "user1",
+                "flavor1, flavor2",
+                mock_query.to_string.return_value,
+                email_to=["user_email1"],
+                as_html=False,
+                email_cc=None,
+                **mock_kwargs,
+            ),
+            call(
+                "user2",
+                "flavor1, flavor2",
+                mock_query.to_string.return_value,
+                email_to=["user_email2"],
+                as_html=False,
+                email_cc=None,
+                **mock_kwargs,
+            ),
+        ]
+    )
+
+    mock_query.to_string.assert_has_calls(
+        [call(groups=["user_email1"]), call(groups=["user_email2"])]
+    )
+
+    mock_emailer.assert_has_calls(
+        [
+            call(smtp_account),
+            call().send_emails([mock_build_email_params.return_value]),
+            call(smtp_account),
+            call().send_emails([mock_build_email_params.return_value]),
+        ]
+    )
+
+
+@patch("workflows.email.send_decom_flavor_email.validate")
+@patch("workflows.email.send_decom_flavor_email.find_users_with_decom_flavors")
+@patch("workflows.email.send_decom_flavor_email.build_email_params")
+@patch("workflows.email.send_decom_flavor_email.get_flavor_list_html")
+@patch("workflows.email.send_decom_flavor_email.Emailer")
+def test_send_decom_flavor_email_send_html(
+    mock_emailer,
+    mock_get_flavor_list_html,
+    mock_build_email_params,
+    mock_find_users,
+    mock_validate,
+):
+    """
+    Tests send_decom_flavor() function actually sends email - as_html True
+    """
+
+    flavor_name_list = ["flavor1", "flavor2"]
+    limit_by_projects = NonCallableMock()
+    all_projects = NonCallableMock()
+    cloud_account = NonCallableMock()
+    smtp_account = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+
+    mock_query = mock_find_users.return_value
+    mock_query.to_props.return_value = {
+        "user_email1": [
+            {
+                "user_name": "user1",
+                # doesn't matter what else we find since we use to_string()
+            },
+        ],
+        "user_email2": [{"user_name": "user2"}],
+    }
+
+    send_decom_flavor_email(
+        smtp_account=smtp_account,
+        cloud_account=cloud_account,
+        flavor_name_list=flavor_name_list,
+        limit_by_projects=limit_by_projects,
+        all_projects=all_projects,
+        as_html=True,
+        send_email=True,
+        use_override=False,
+        **mock_kwargs,
+    )
+
+    mock_validate.assert_called_once_with(
+        flavor_name_list, limit_by_projects, all_projects
+    )
+    mock_find_users.assert_called_once_with(
+        cloud_account, flavor_name_list, limit_by_projects
+    )
+    mock_query.to_props.assert_called_once()
+
+    mock_build_email_params.assert_has_calls(
+        [
+            call(
+                "user1",
+                mock_get_flavor_list_html.return_value,
+                mock_query.to_html.return_value,
+                email_to=["user_email1"],
+                as_html=True,
+                email_cc=None,
+                **mock_kwargs,
+            ),
+            call(
+                "user2",
+                mock_get_flavor_list_html.return_value,
+                mock_query.to_html.return_value,
+                email_to=["user_email2"],
+                as_html=True,
+                email_cc=None,
+                **mock_kwargs,
+            ),
+        ]
+    )
+
+    mock_get_flavor_list_html.assert_has_calls(
+        [call(["flavor1", "flavor2"]), call(["flavor1", "flavor2"])]
+    )
+
+    mock_query.to_html.assert_has_calls(
+        [call(groups=["user_email1"]), call(groups=["user_email2"])]
+    )
+
+    mock_emailer.assert_has_calls(
+        [
+            call(smtp_account),
+            call().send_emails([mock_build_email_params.return_value]),
+            call(smtp_account),
+            call().send_emails([mock_build_email_params.return_value]),
+        ]
+    )
+
+
+@patch("workflows.email.send_decom_flavor_email.validate")
+@patch("workflows.email.send_decom_flavor_email.find_users_with_decom_flavors")
+@patch("workflows.email.send_decom_flavor_email.print_email_params")
+def test_send_decom_flavor_email_print(
+    mock_print_email_params, mock_find_users, mock_validate
+):
+    """
+    Tests send_decom_flavor() function prints when send_email=False
+    """
+
+    flavor_name_list = ["flavor1", "flavor2"]
+    limit_by_projects = NonCallableMock()
+    all_projects = NonCallableMock()
+    cloud_account = NonCallableMock()
+    smtp_account = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+
+    mock_query = mock_find_users.return_value
+    mock_query.to_props.return_value = {
+        "user_email1": [
+            {
+                "user_name": "user1",
+                # doesn't matter what else we find since we use to_string()
+            },
+        ],
+        "user_email2": [{"user_name": "user2"}],
+    }
+
+    send_decom_flavor_email(
+        smtp_account=smtp_account,
+        cloud_account=cloud_account,
+        flavor_name_list=flavor_name_list,
+        limit_by_projects=limit_by_projects,
+        all_projects=all_projects,
+        as_html=True,
+        send_email=False,
+        use_override=False,
+        **mock_kwargs,
+    )
+
+    mock_validate.assert_called_once_with(
+        flavor_name_list, limit_by_projects, all_projects
+    )
+    mock_find_users.assert_called_once_with(
+        cloud_account, flavor_name_list, limit_by_projects
+    )
+    mock_query.to_props.assert_called_once()
+
+    mock_print_email_params.assert_has_calls(
+        [
+            call(
+                "user_email1",
+                "user1",
+                True,
+                "flavor1, flavor2",
+                mock_query.to_string.return_value,
+            ),
+            call(
+                "user_email2",
+                "user2",
+                True,
+                "flavor1, flavor2",
+                mock_query.to_string.return_value,
+            ),
+        ]
+    )
+
+    mock_query.to_string.assert_has_calls(
+        [call(groups=["user_email1"]), call(groups=["user_email2"])]
+    )
+
+
+@patch("workflows.email.send_decom_flavor_email.validate")
+@patch("workflows.email.send_decom_flavor_email.find_users_with_decom_flavors")
+@patch("workflows.email.send_decom_flavor_email.build_email_params")
+@patch("workflows.email.send_decom_flavor_email.Emailer")
+def test_send_decom_flavor_email_use_override(
+    mock_emailer, mock_build_email_params, mock_find_users, mock_validate
+):
+    """
+    Tests send_decom_flavor() function sends email to override email - when use_override set
+    """
+
+    flavor_name_list = ["flavor1", "flavor2"]
+    limit_by_projects = NonCallableMock()
+    all_projects = NonCallableMock()
+    cloud_account = NonCallableMock()
+    smtp_account = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+
+    mock_query = mock_find_users.return_value
+    mock_query.to_props.return_value = {
+        "user_email1": [
+            {
+                "user_name": "user1",
+                # doesn't matter what else we find since we use to_string()
+            },
+        ],
+        "user_email2": [{"user_name": "user2"}],
+    }
+    override_email_address = "example@stfc.ac.uk"
+
+    send_decom_flavor_email(
+        smtp_account=smtp_account,
+        cloud_account=cloud_account,
+        flavor_name_list=flavor_name_list,
+        limit_by_projects=limit_by_projects,
+        all_projects=all_projects,
+        as_html=False,
+        send_email=True,
+        use_override=True,
+        override_email_address=override_email_address,
+        **mock_kwargs,
+    )
+
+    mock_validate.assert_called_once_with(
+        flavor_name_list, limit_by_projects, all_projects
+    )
+    mock_find_users.assert_called_once_with(
+        cloud_account, flavor_name_list, limit_by_projects
+    )
+    mock_query.to_props.assert_called_once()
+
+    mock_build_email_params.assert_has_calls(
+        [
+            call(
+                "user1",
+                "flavor1, flavor2",
+                mock_query.to_string.return_value,
+                email_to=[override_email_address],
+                as_html=False,
+                email_cc=None,
+                **mock_kwargs,
+            ),
+            call(
+                "user2",
+                "flavor1, flavor2",
+                mock_query.to_string.return_value,
+                email_to=[override_email_address],
+                as_html=False,
+                email_cc=None,
+                **mock_kwargs,
+            ),
+        ]
+    )
+
+    mock_query.to_string.assert_has_calls(
+        [call(groups=["user_email1"]), call(groups=["user_email2"])]
+    )
+
+    mock_emailer.assert_has_calls(
+        [
+            call(smtp_account),
+            call().send_emails([mock_build_email_params.return_value]),
+            call(smtp_account),
+            call().send_emails([mock_build_email_params.return_value]),
+        ]
+    )
+
+
+@patch("workflows.email.send_decom_flavor_email.validate")
+@patch("workflows.email.send_decom_flavor_email.find_users_with_decom_flavors")
+@patch("workflows.email.send_decom_flavor_email.build_email_params")
+@patch("workflows.email.send_decom_flavor_email.Emailer")
+def test_send_decom_flavor_email_when_result_email_none(
+    mock_emailer, mock_build_email_params, mock_find_users, mock_validate
+):
+    """
+    Tests send_decom_flavor() function sends to override email - when email set to None
+    """
+
+    flavor_name_list = ["flavor1", "flavor2"]
+    limit_by_projects = NonCallableMock()
+    all_projects = NonCallableMock()
+    cloud_account = NonCallableMock()
+    smtp_account = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+
+    mock_query = mock_find_users.return_value
+    mock_query.to_props.return_value = {
+        None: [
+            {
+                "user_name": "user1",
+                # doesn't matter what else we find since we use to_string()
+            },
+        ],
+    }
+    override_email_address = "example@stfc.ac.uk"
+
+    send_decom_flavor_email(
+        smtp_account=smtp_account,
+        cloud_account=cloud_account,
+        flavor_name_list=flavor_name_list,
+        limit_by_projects=limit_by_projects,
+        all_projects=all_projects,
+        as_html=False,
+        send_email=True,
+        use_override=False,
+        override_email_address=override_email_address,
+        **mock_kwargs,
+    )
+
+    mock_validate.assert_called_once_with(
+        flavor_name_list, limit_by_projects, all_projects
+    )
+    mock_find_users.assert_called_once_with(
+        cloud_account, flavor_name_list, limit_by_projects
+    )
+    mock_query.to_props.assert_called_once()
+
+    mock_build_email_params.assert_called_once_with(
+        "user1",
+        "flavor1, flavor2",
+        mock_query.to_string.return_value,
+        email_to=[override_email_address],
+        as_html=False,
+        email_cc=None,
+        **mock_kwargs,
+    )
+
+    mock_query.to_string.assert_called_once_with(groups=[None])
+
+    mock_emailer.assert_has_calls(
+        [
+            call(smtp_account),
+            call().send_emails([mock_build_email_params.return_value]),
+        ]
     )
