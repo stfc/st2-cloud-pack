@@ -65,44 +65,52 @@ def find_users_with_decom_flavors(
     :param from_projects: A list of project identifiers to limit search in
     """
 
-    flavor_query = (
-        FlavorQuery()
-        .where(
-            QueryPresetsGeneric.EQUAL_TO, FlavorProperties.FLAVOR_IS_PUBLIC, value=True
-        )
-        .where(
-            QueryPresetsGeneric.ANY_IN,
-            FlavorProperties.FLAVOR_NAME,
-            values=flavor_name_list,
-        )
-        .run(cloud_account)
-        .sort_by((FlavorProperties.FLAVOR_ID, SortOrder.ASC))
+    flavor_query = FlavorQuery()
+    flavor_query.where(
+        QueryPresetsGeneric.EQUAL_TO, FlavorProperties.FLAVOR_IS_PUBLIC, value=True
     )
+    flavor_query.where(
+        QueryPresetsGeneric.ANY_IN,
+        FlavorProperties.FLAVOR_NAME,
+        values=flavor_name_list,
+    )
+    flavor_query.run(cloud_account)
+    flavor_query.sort_by((FlavorProperties.FLAVOR_ID, SortOrder.ASC))
+
+    if not flavor_query.to_props():
+        raise RuntimeError(
+            f"None of the Flavors provided {', '.join(flavor_name_list)} were found"
+        )
 
     # find the VMs using flavors we found from the flavor query
-    server_query = (
-        flavor_query.then("SERVER_QUERY", keep_previous_results=True)
-        .run(
-            cloud_account,
-            as_admin=True,
-            from_projects=from_projects if from_projects else None,
-            all_projects=not from_projects,
+    server_query = flavor_query.then("SERVER_QUERY", keep_previous_results=True)
+    server_query.run(
+        cloud_account,
+        as_admin=True,
+        from_projects=from_projects if from_projects else None,
+        all_projects=not from_projects,
+    )
+    server_query.select(
+        ServerProperties.SERVER_ID,
+        ServerProperties.SERVER_NAME,
+        ServerProperties.ADDRESSES,
+    )
+
+    if not server_query.to_props():
+        raise RuntimeError(
+            f"No servers found with flavors {', '.join(flavor_name_list)} on projects "
+            f"{','.join(from_projects) if from_projects else '[all projects]'}"
         )
-        .append_from("PROJECT_QUERY", cloud_account, ProjectProperties.PROJECT_NAME)
-        .select(
-            ServerProperties.SERVER_ID,
-            ServerProperties.SERVER_NAME,
-            ServerProperties.ADDRESSES,
-        )
+
+    server_query.append_from(
+        "PROJECT_QUERY", cloud_account, ProjectProperties.PROJECT_NAME
     )
 
     # find the users who own the VMs we found from the server query
-    user_query = (
-        server_query.then("USER_QUERY", keep_previous_results=True)
-        .run(cloud_account)
-        .select(UserProperties.USER_NAME)
-        .group_by(UserProperties.USER_EMAIL)
-    )
+    user_query = server_query.then("USER_QUERY", keep_previous_results=True)
+    user_query.run(cloud_account)
+    user_query.select(UserProperties.USER_NAME)
+    user_query.group_by(UserProperties.USER_EMAIL)
 
     return user_query
 
