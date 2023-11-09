@@ -49,7 +49,7 @@ parameters:
     default: true
   use_override:
     type: boolean
-    description: "TESTING: Set this flag so ALL emails will be redirected to override email"
+    description: "Set this flag so ALL emails will be redirected to override email"
     required: true
     default: False
   as_html:
