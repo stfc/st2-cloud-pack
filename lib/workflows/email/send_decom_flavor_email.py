@@ -1,6 +1,6 @@
 from typing import List, Optional, Union
 
-from openstack_query import FlavorQuery
+from openstack_query import FlavorQuery, UserQuery
 
 from enums.query.sort_order import SortOrder
 from enums.cloud_domains import CloudDomains
@@ -53,7 +53,7 @@ def validate(
         )
 
 
-def find_users_with_decom_flavors(
+def find_servers_with_decom_flavors(
     cloud_account: str,
     flavor_name_list: List[str],
     from_projects: Optional[List[str]] = None,
@@ -105,14 +105,9 @@ def find_users_with_decom_flavors(
     server_query.append_from(
         "PROJECT_QUERY", cloud_account, ProjectProperties.PROJECT_NAME
     )
+    server_query.group_by(ServerProperties.USER_ID)
 
-    # find the users who own the VMs we found from the server query
-    user_query = server_query.then("USER_QUERY", keep_previous_results=True)
-    user_query.run(cloud_account)
-    user_query.select(UserProperties.USER_NAME)
-    user_query.group_by(UserProperties.USER_EMAIL)
-
-    return user_query
+    return server_query
 
 
 def print_email_params(
@@ -161,6 +156,24 @@ def build_email_params(
     return EmailParams(email_templates=[body, footer], **email_kwargs)
 
 
+def find_user_info(user_id, cloud_account, override_email_address):
+    """
+    run a UserQuery to find the email address and user name associated for a user id.
+    :param user_id: the openstack user id to find email address for
+    :param override_email_address: email address to return if no email address found via UserQuery
+    """
+    user_query = UserQuery()
+    user_query.select(UserProperties.USER_NAME, UserProperties.USER_EMAIL)
+    user_query.where(
+        QueryPresetsGeneric.EQUAL_TO, UserProperties.USER_ID, value=user_id
+    )
+    user_query.run(cloud_account=cloud_account)
+    res = user_query.to_props(flatten=True)
+    if not res:
+        return "", override_email_address
+    return res["user_name"][0], res["user_email"][0]
+
+
 # pylint:disable=too-many-arguments
 # pylint:disable=too-many-locals
 def send_decom_flavor_email(
@@ -192,18 +205,18 @@ def send_decom_flavor_email(
     :param email_params_kwargs: see EmailParams dataclass class docstring
     """
     validate(flavor_name_list, limit_by_projects, all_projects)
-    user_query = find_users_with_decom_flavors(
+    server_query = find_servers_with_decom_flavors(
         cloud_account, flavor_name_list, limit_by_projects
     )
 
-    for email_addr, outputs in user_query.to_props().items():
-        user_name = outputs[0]["user_name"]
-
+    for user_id in server_query.to_props().keys():
         # if email_address not found - send to override_email_address
         # also send to override_email_address if override_email set
-
+        user_name, email_addr = find_user_info(
+            user_id, cloud_account, override_email_address
+        )
         send_to = [email_addr]
-        if use_override or not email_addr:
+        if use_override:
             send_to = [override_email_address]
 
         if not send_email:
@@ -212,7 +225,7 @@ def send_decom_flavor_email(
                 user_name,
                 as_html,
                 ", ".join(flavor_name_list),
-                user_query.to_string(groups=[email_addr]),
+                server_query.to_string(groups=[user_id]),
             )
 
         else:
@@ -221,9 +234,9 @@ def send_decom_flavor_email(
                 ", ".join(flavor_name_list)
                 if not as_html
                 else get_flavor_list_html(flavor_name_list),
-                user_query.to_string(groups=[email_addr])
+                server_query.to_string(groups=[user_id])
                 if not as_html
-                else user_query.to_html(groups=[email_addr]),
+                else server_query.to_html(groups=[user_id]),
                 email_to=send_to,
                 as_html=as_html,
                 email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
