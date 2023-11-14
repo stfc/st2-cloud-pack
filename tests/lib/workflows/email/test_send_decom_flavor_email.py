@@ -418,6 +418,7 @@ def test_send_decom_flavor_email_send_plaintext(
     )
 
 
+# pylint:disable=too-many-arguments
 @patch("workflows.email.send_decom_flavor_email.validate")
 @patch("workflows.email.send_decom_flavor_email.find_servers_with_decom_flavors")
 @patch("workflows.email.send_decom_flavor_email.build_email_params")
