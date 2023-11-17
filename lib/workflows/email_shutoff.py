@@ -1,11 +1,22 @@
+import dataclasses
 from typing import List, Optional, Dict, Tuple
-from openstack_query.api.query_objects import ServerQuery
+from openstack_query.api.query_objects import ServerQuery, UserQuery
 from enums.query.props.server_properties import ServerProperties
 from enums.query.props.user_properties import UserProperties
 from structs.email.email_params import EmailParams
 from enums.query.query_presets import QueryPresetsGeneric, QueryPresetsDateTime
 from email_api.emailer import Emailer
 from structs.email.smtp_account import SMTPAccount
+
+
+@dataclasses.dataclass
+class UserDetails:
+    """
+    Dataclass for user details
+    """
+    id: str
+    name: str
+    email: str
 
 
 def query_shutoff_vms(
@@ -50,20 +61,45 @@ def query_shutoff_vms(
     return res
 
 
-def prepare_user_server_email(server_query_result: List[Dict]) -> Tuple[str, List[str]]:
+def find_user_info(user_id:str, cloud_account:str, override_email_address:str)-> UserDetails:
     """
-    Extracts the user email and list of server names from a
-    query object
+    Run UserQuery to find user name and user email associated with a VM
+    :param user_id: openstack user id
+    :param cloud_account: openstack account to use to run the query
+    :param override_email_address: email address if user does not have an email address
+    :returns: Tuple containing user name and user email
+    """
+
+    user_query = UserQuery()
+    user_query.select(
+            UserProperties.USER_NAME,
+            UserProperties.USER_EMAIL
+    ).where(
+        QueryPresetsGeneric.EQUAL_TO,
+        UserProperties.USER_ID,
+        value=user_id
+    )
+
+    user_query.run(cloud_account=cloud_account)
+
+    res = user_query.to_props(flatten=True)
+
+    if not res:
+        return UserDetails(user_id, "", override_email_address)
+
+    return UserDetails(user_id, res["user_name"][0], res["user_email"][0])
+
+
+def extract_server_list(server_query_result: List[Dict]) -> List[str]:
+    """
+    Extracts the list of server names from a query object
     :param server_query_result: A list of dictionaries containing results from a query
     :returns: A tuple containing the user email and list of VM names
     """
-    details = server_query_result
-    # store user email
-    assert all(details[0]["user_email"] == i["user_email"] for i in details)
-    user_email = details[0]["user_email"]
+
     # extract list of server names
     server_names = [d["server_name"] for d in server_query_result]
-    return user_email, server_names
+    return server_names
 
 
 def send_user_email(
@@ -71,7 +107,7 @@ def send_user_email(
     email_from: str,
     user_email: str,
     server_list: List[str],
-    email_templates=None,
+    email_templates,
 ):
     """
     Sends an email to a user
@@ -91,16 +127,17 @@ def send_user_email(
         subject=subject,
         email_from=email_from,
         email_to=[user_email],
-        email_templates=[],
+        email_templates=[email_templates],
     )
 
     Emailer(smtp_account).send_emails([email_params])
 
 
-def main(
+def send_shutoff_emails(
     smtp_account: SMTPAccount,
     cloud_account: str = "openstack",
     email_from: str = "cloud-support@stfc.ac.uk",
+    override_email_address: str = "cloud-support@stfc.ac.uk",
     limit_by_project: Optional[List[str]] = None,
     days_threshold: int = 30,
 ):
@@ -109,6 +146,7 @@ def main(
     :param smtp_account: SMTPAccount object to use for emailing
     :param cloud_account: Name of cloud account to use e.g. "openstack"
     :param email_from: Email to send from
+    :param override_email_address: Default address for a user if query not valid
     :param limit_by_project: (Optional) A list of project IDs to query from
     :param days_threshold: Check for VMs updated in last 30 days in SHUTOFF state
     """
@@ -117,8 +155,10 @@ def main(
     shutoff_vm = query_shutoff_vms(cloud_account, limit_by_project, days_threshold)
 
     for user in shutoff_vm.values():
-        user_email, server_name_list = prepare_user_server_email(
-            user
-        )  # shutoff_vm[user] is list of dictionaries
+        # extract username and user email
+        user_details = find_user_info(user, cloud_account, override_email_address)
+        # extract list of VM names
+        server_name_list = extract_server_list(user)
+        # send email
+        send_user_email(smtp_account, email_from, user_details.email, server_name_list)
 
-        send_user_email(smtp_account, email_from, user_email, server_name_list)
