@@ -212,6 +212,20 @@ class QueryAPI:
         self.results_container.parse_results(self.parser.run_parser)
         return self.output.to_html(self.results_container, title, groups, **kwargs)
 
+    def to_csv(
+        self, title: Optional[str] = None, groups: Optional[List[str]] = None, **kwargs
+    ) -> str:
+
+        #TODO Change the doc strng
+        """
+        Public method to return results as html table
+        :param title: an optional title for the table(s) - will be converted to html automatically
+        :param groups: a list group to limit output by
+        :param kwargs: kwargs to pass to generate table
+        """
+        self.results_container.parse_results(self.parser.run_parser)
+        return self.output.to_csv(self.results_container, **kwargs)
+
     def then(
         self, query_type: Union[str, QueryTypes], keep_previous_results: bool = True
     ):
