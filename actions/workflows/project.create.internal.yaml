@@ -8,6 +8,7 @@ input:
   - project_email
   - project_description
   - project_immutable
+  - parent_id
   - admin_user_list
   - stfc_user_list
   - network_name: "Internal"
@@ -24,6 +25,7 @@ tasks:
       email=<% ctx().project_email %>
       description=<% ctx().project_description %>
       immutable=<% ctx().project_immutable %>
+      parent_id=<% ctx().parent_id %>
     next:
       - when: <% succeeded() %>
         publish:

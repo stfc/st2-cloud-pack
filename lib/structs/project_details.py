@@ -10,3 +10,4 @@ class ProjectDetails:
     is_enabled: Optional[bool] = None
     openstack_id: Optional[str] = None
     immutable: Optional[bool] = None
+    parent_id: Optional[str] = None

@@ -92,6 +92,7 @@ class ProjectAction(Action):
         description: str,
         is_enabled: bool,
         immutable: bool,
+        parent_id: str,
     ) -> Tuple[bool, Optional[Project]]:
         """
         Find and return a given project's properties. Expected
@@ -102,6 +103,7 @@ class ProjectAction(Action):
         :param description: Description for new project
         :param is_enabled: Set if new project enabled or disabled
         :param immutable: Set if new project is immutable or not
+        :param parent_id: Set if new project has a parent id other than Default
         :return: status, optional project
         """
         details = ProjectDetails(
@@ -110,6 +112,7 @@ class ProjectAction(Action):
             description=description,
             is_enabled=is_enabled,
             immutable=immutable,
+            parent_id=parent_id or None,
         )
         project = self._identity_api.create_project(
             cloud_account=cloud_account, project_details=details
