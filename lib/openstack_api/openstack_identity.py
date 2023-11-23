@@ -29,18 +29,22 @@ class OpenstackIdentity(OpenstackWrapperBase):
         if "@" not in project_details.email:
             raise ValueError("The project contact email is invalid")
 
+        create_project_kwargs = {
+            "name": project_details.name,
+            "description": project_details.description,
+            "is_enabled": project_details.is_enabled,
+        }
+        if project_details.parent_id:
+            create_project_kwargs["parent_id"] = project_details.parent_id
+
         tags = [project_details.email]
         if project_details.immutable:
             tags.append("immutable")
+        create_project_kwargs["tags"] = tags
 
         with self._connection_cls(cloud_account) as conn:
             try:
-                return conn.identity.create_project(
-                    name=project_details.name,
-                    description=project_details.description,
-                    is_enabled=project_details.is_enabled,
-                    tags=tags,
-                )
+                return conn.identity.create_project(**create_project_kwargs)
             except ConflictException as err:
                 # Strip out frames that are noise by rethrowing
                 raise ConflictException(err.message) from err

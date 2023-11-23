@@ -44,7 +44,11 @@ class OpenstackIdentityTests(unittest.TestCase):
         self.instance.create_project(
             "",
             ProjectDetails(
-                name="", description="", email="Test@Test.com", is_enabled=False
+                name="",
+                description="",
+                email="Test@Test.com",
+                is_enabled=False,
+                parent_id=None,
             ),
         )
 
@@ -54,7 +58,10 @@ class OpenstackIdentityTests(unittest.TestCase):
         Tests calling the API wrapper without an email will throw
         """
         self.instance.create_project(
-            "", ProjectDetails(name="Test", email="", description="", is_enabled=False)
+            "",
+            ProjectDetails(
+                name="Test", email="", description="", is_enabled=False, parent_id=None
+            ),
         )
 
     @raises(ValueError)
@@ -65,7 +72,11 @@ class OpenstackIdentityTests(unittest.TestCase):
         self.instance.create_project(
             "",
             ProjectDetails(
-                name="Test", email="NotAnEmail", description="", is_enabled=False
+                name="Test",
+                email="NotAnEmail",
+                description="",
+                is_enabled=False,
+                parent_id=None,
             ),
         )
 
@@ -80,6 +91,7 @@ class OpenstackIdentityTests(unittest.TestCase):
             email="Test@Test.com",
             description=NonCallableMock(),
             is_enabled=NonCallableMock(),
+            parent_id=NonCallableMock(),
         )
 
         found = self.instance.create_project(
@@ -93,6 +105,7 @@ class OpenstackIdentityTests(unittest.TestCase):
             name=expected_details.name,
             description=expected_details.description,
             is_enabled=expected_details.is_enabled,
+            parent_id=expected_details.parent_id,
             tags=[expected_details.email],
         )
 
@@ -107,6 +120,7 @@ class OpenstackIdentityTests(unittest.TestCase):
             email="Test@Test.com",
             description=NonCallableMock(),
             is_enabled=NonCallableMock(),
+            parent_id=NonCallableMock(),
             immutable=True,
         )
 
@@ -121,8 +135,37 @@ class OpenstackIdentityTests(unittest.TestCase):
             name=expected_details.name,
             description=expected_details.description,
             is_enabled=expected_details.is_enabled,
+            parent_id=expected_details.parent_id,
             tags=[expected_details.email, "immutable"],
         )
+
+    def test_create_project_with_no_parent_id(self):
+        """
+        Tests that if parent_id is blank, then no parent_id kwarg is passed to identity_api.create_project
+        """
+
+        expected_details = ProjectDetails(
+            name=NonCallableMock(),
+            email="Test@Test.com",
+            description=NonCallableMock(),
+            is_enabled=NonCallableMock(),
+            parent_id=None,
+        )
+        found = self.instance.create_project(
+            cloud_account="test", project_details=expected_details
+        )
+
+        self.mocked_connection.assert_called_once_with("test")
+
+        assert found == self.identity_api.create_project.return_value
+        self.identity_api.create_project.assert_called_once_with(
+            name=expected_details.name,
+            description=expected_details.description,
+            is_enabled=expected_details.is_enabled,
+            tags=[expected_details.email],
+        )
+
+        self.instance.create_project(NonCallableMock(), expected_details)
 
     @raises(ConflictException)
     def test_create_project_forwards_conflict_exception(self):
@@ -136,6 +179,7 @@ class OpenstackIdentityTests(unittest.TestCase):
             email="Test@Test.com",
             description=NonCallableMock(),
             is_enabled=NonCallableMock(),
+            parent_id=NonCallableMock(),
         )
         self.instance.create_project(NonCallableMock(), project_details)
 

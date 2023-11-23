@@ -50,7 +50,7 @@ class TestProjectAction(OpenstackActionTestBase):
         """
         expected_proj_params = {
             i: NonCallableMock()
-            for i in ["name", "description", "is_enabled", "immutable"]
+            for i in ["name", "description", "is_enabled", "immutable", "parent_id"]
         }
         expected_proj_params.update({"email": "Test@Test.com"})
 
@@ -67,15 +67,54 @@ class TestProjectAction(OpenstackActionTestBase):
         assert returned_values[0] is True
         assert returned_values[1] == self.identity_mock.create_project.return_value
 
+    def test_create_project_when_parent_id_blank(self):
+        """
+        Tests that create project forwards the result when successful
+        - when parent_id is blank, it passes parent_id = None
+        """
+        expected_proj_params = {
+            i: NonCallableMock()
+            for i in ["name", "description", "is_enabled", "immutable"]
+        }
+        expected_proj_params["parent_id"] = ""
+
+        expected_proj_params.update({"email": "Test@Test.com"})
+
+        # Check that default gets hard-coded in too
+        packaged_proj = ProjectDetails(
+            name=expected_proj_params["name"],
+            description=expected_proj_params["description"],
+            is_enabled=expected_proj_params["is_enabled"],
+            immutable=expected_proj_params["immutable"],
+            email="Test@Test.com",
+            parent_id=None,
+        )
+
+        returned_values = self.action.project_create(
+            cloud_account="foo",
+            name=expected_proj_params["name"],
+            description=expected_proj_params["description"],
+            is_enabled=expected_proj_params["is_enabled"],
+            immutable=expected_proj_params["immutable"],
+            email="Test@Test.com",
+            parent_id=None,
+        )
+        self.identity_mock.create_project.assert_called_once_with(
+            cloud_account="foo", project_details=packaged_proj
+        )
+
+        assert returned_values[0] is True
+        assert returned_values[1] == self.identity_mock.create_project.return_value
+
     def test_project_create_when_failed(self):
         """
         Tests that create project returns None and an error
-        when the domain is not found
+        when the cloud domain is not found
         """
         self.identity_mock.create_project.return_value = None
 
         returned_values = self.action.project_create(
-            *{NonCallableMock() for _ in range(6)}
+            *{NonCallableMock() for _ in range(7)}
         )
         assert returned_values[0] is False
         assert returned_values[1] is None
