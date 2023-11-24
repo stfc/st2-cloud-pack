@@ -589,7 +589,9 @@ def test_to_csv_with_valid_parameters(mock_dict_writer, mock_file, example_data)
     """With Valid Parameters"""
     QueryOutput.to_csv(example_data, "csv_files")
 
-    mock_file.assert_called_once_with(WindowsPath('csv_files/query_out.csv'), 'w', encoding='utf-8')
+    mock_file.assert_called_once_with(
+        WindowsPath("csv_files/query_out.csv"), "w", encoding="utf-8"
+    )
     mock_dict_writer.assert_called_once_with(
         mock_file.return_value, fieldnames=example_data[0].keys()
     )
@@ -634,8 +636,8 @@ def test_to_csv_grouped_loop_one_input(mock_to_csv):
 
     """loop is given: 1 Items"""
     mock_to_csv.assert_called_once_with(
-        example_grouped_data["user_name is user1"], Path("csv_files/user_name is user1.csv")
-
+        example_grouped_data["user_name is user1"],
+        Path("csv_files/user_name is user1.csv"),
     )
 
 
@@ -651,5 +653,6 @@ def test_to_csv_grouped_loop_more_than_one_input(mock_to_csv, example_grouped_da
     This bit need rewriting to check for multiple outputs instead of 1.
     """
     mock_to_csv.assert_called_with(
-        example_grouped_data["user_name is user2"], Path("csv_files/user_name is user2.csv")
+        example_grouped_data["user_name is user2"],
+        Path("csv_files/user_name is user2.csv"),
     )

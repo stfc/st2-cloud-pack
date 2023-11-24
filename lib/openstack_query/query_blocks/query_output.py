@@ -1,11 +1,12 @@
 import csv
 from typing import List, Dict, Union, Type, Set, Optional
+from pathlib import Path
 from tabulate import tabulate
 from enums.query.props.prop_enum import PropEnum
 from custom_types.openstack_query.aliases import PropValue
 from exceptions.parse_query_error import ParseQueryError
 from openstack_query.query_blocks.results_container import ResultsContainer
-from pathlib import Path
+
 
 
 class QueryOutput:
@@ -296,4 +297,3 @@ class QueryOutput:
             self.to_csv_list(data, filepath)
         else:
             self.to_csv_dictionary(data, dir_path)
-        return
