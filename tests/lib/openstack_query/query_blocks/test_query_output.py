@@ -587,7 +587,7 @@ def test_flatten_with_duplicates(instance):
 @patch("csv.DictWriter")
 def test_to_csv_with_valid_parameters(mock_dict_writer, mock_file, example_data):
     """With Valid Parameters"""
-    to_csv(example_data, "csv_files")
+    QueryOutput.to_csv(example_data, "csv_files")
 
     mock_file.assert_called_once_with(WindowsPath('csv_files/query_out.csv'), 'w', encoding='utf-8')
     mock_dict_writer.assert_called_once_with(
@@ -599,7 +599,7 @@ def test_to_csv_with_valid_parameters(mock_dict_writer, mock_file, example_data)
 
 def test_to_csv_fails():
     with pytest.raises(RuntimeError):
-        to_csv([], "invalid path")
+        QueryOutput.to_csv([], "invalid path")
 
 
 @patch("workflows.csv.csv_actions.to_csv")
@@ -630,7 +630,7 @@ def test_to_csv_grouped_loop_one_input(mock_to_csv):
     }
 
     """Run To csv"""
-    to_csv_dictionary(example_grouped_data, "csv_files")
+    QueryOutput.to_csv_dictionary(example_grouped_data, "csv_files")
 
     """loop is given: 1 Items"""
     mock_to_csv.assert_called_once_with(
@@ -644,7 +644,7 @@ def test_to_csv_grouped_loop_more_than_one_input(mock_to_csv, example_grouped_da
     """mock to_cs outputs"""
 
     """Run To csv"""
-    to_csv_dictionary(example_grouped_data, "csv_files")
+    QueryOutput.to_csv_dictionary(example_grouped_data, "csv_files")
 
     """
     loop is given: 1 Items
