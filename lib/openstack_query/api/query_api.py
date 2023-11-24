@@ -215,8 +215,7 @@ class QueryAPI:
     def to_csv(
         self, title: Optional[str] = None, groups: Optional[List[str]] = None, **kwargs
     ) -> str:
-
-        #TODO Change the doc strng
+        # TODO Change the doc strng
         """
         Public method to return results as html table
         :param title: an optional title for the table(s) - will be converted to html automatically

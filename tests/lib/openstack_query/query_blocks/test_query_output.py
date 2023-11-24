@@ -580,6 +580,3 @@ def test_flatten_with_duplicates(instance):
     assert instance._flatten_list(
         [{"prop1": "val1", "prop2": "val2"}, {"prop1": "val1", "prop2": "val2"}]
     ) == {"prop1": ["val1", "val1"], "prop2": ["val2", "val2"]}
-
-
-

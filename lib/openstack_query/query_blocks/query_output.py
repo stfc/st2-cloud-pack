@@ -297,4 +297,3 @@ class QueryOutput:
         else:
             self.to_csv_dictionary(data, dir_path)
         return
-
