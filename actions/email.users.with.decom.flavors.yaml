@@ -6,10 +6,6 @@ name: email.users.with.decom.flavors
 parameters:
   timeout:
     default: 5400
-  submodule_name:
-    default: email
-    immutable: true
-    type: string
   action_name:
     default: send_decom_flavor_email
     immutable: true
