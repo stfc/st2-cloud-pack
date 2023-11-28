@@ -138,7 +138,7 @@ To add a Runner Class:
            filter_kwargs: Optional[ServerSideFilters] = None,
            **meta_params,
        )
-           # Deine logic here that will setup keyword arguments - merging server-side kwargs (filter_kwargs) and meta_param
+           # Define logic here that will setup keyword arguments - merging server-side kwargs (filter_kwargs) and meta_param
            # and call run_paginated_query
            ...
 
@@ -200,7 +200,7 @@ class ResourceMapping(MappingInterface):
 
 ```
 
-### 4. Create entry in query_objects.py
+#### 4. Create entry in query_objects.py
 
 Now that the functionality has been added, you can make it available by creating a function in `query_objects` which
 will call `QueryFactory` with the `ResourceMapping` class we just created.

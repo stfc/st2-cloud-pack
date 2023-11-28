@@ -41,12 +41,12 @@ This section shows what queries can be chained together. Applies for both `then(
 ## QueryTypes
 `then()` and `append()` take a QueryTypes enum or (equivalent alias) which represents the Query you want to chain into
 
-| QueryTypes Enum Aliases | Equivalent Enum        | Represents Query |
-|-------------------------|----------------| |
-| FLAVOR_QUERY            | QueryTypes.FLAVOR_QUERY  | `FlavorQuery`|
-| PROJECT_QUERY           | QueryTypes.PROJECT_QUERY | `ProjectQuery`|
-| SERVER_QUERY            | QueryTypes.SERVER_QUERY  | `ServerQuery`|
-| USER_QUERY              | QueryTypes.USER_QUERY    | `UserQuery`|
+| QueryTypes Enum Aliases | Equivalent Enum          | Represents Query |
+|-------------------------|--------------------------|------------------|
+| FLAVOR_QUERY            | QueryTypes.FLAVOR_QUERY  | `FlavorQuery`    |
+| PROJECT_QUERY           | QueryTypes.PROJECT_QUERY | `ProjectQuery`   |
+| SERVER_QUERY            | QueryTypes.SERVER_QUERY  | `ServerQuery`    |
+| USER_QUERY              | QueryTypes.USER_QUERY    | `UserQuery`      |
 
 further aliases are WIP
 

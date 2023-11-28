@@ -92,17 +92,17 @@ Evaluate what datatypes you want your preset to work on - and assign them to one
 
 #### **1. Add the preset name to the corresponding enum class in `/lib/enums/query/query_presets.py`**
 
-    e.g.
-    ```python
-    class QueryPresetsGeneric(QueryPresets):
-        """
-        Enum class which holds generic query comparison operators
-        """
+e.g.
+```python
+class QueryPresetsGeneric(QueryPresets):
+    """
+    Enum class which holds generic query comparison operators
+    """
 
-        EQUAL_TO = auto()
-        ...
-        NEW_PRESET = auto() # <- we add this line to repesent a new preset enum belonging to the 'Generic' group
-    ```
+    EQUAL_TO = auto()
+    ...
+    NEW_PRESET = auto() # <- we add this line to repesent a new preset enum belonging to the 'Generic' group
+```
 
 #### **2. Edit the corresponding handler class in `/lib/openstack_query/handlers/client_side_handler_<preset-group>.py`.**
 
