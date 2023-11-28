@@ -8,7 +8,7 @@ from enums.query.props.server_properties import ServerProperties
 from enums.query.props.user_properties import UserProperties
 from enums.query.query_presets import QueryPresetsGeneric
 from enums.query.sort_order import SortOrder
-from workflows.email.send_decom_flavor_email import (
+from workflows.send_decom_flavor_email import (
     validate,
     find_user_info,
     find_servers_with_decom_flavors,
