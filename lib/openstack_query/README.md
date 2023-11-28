@@ -1,6 +1,14 @@
 ### Note: This is under active development
 ### TODO: The Query Library needs to be moved out of StackStorm and into a standalone repo
 
+# Quick Links
+- [API Reference](docs/API.md)
+- [Overview](docs/QUERIES.md)
+- [Chaining Reference](docs/CHAINING.md)
+- [Filter Mapping reference (for where())](docs/FILTER_MAPPINGS.md)
+- [Properties reference](docs/PROPERTIES.md)
+- [Presets reference](docs/PRESETS.md)
+
 # Openstack Query Library
 
 A Python Package to query for Openstack Resources.
