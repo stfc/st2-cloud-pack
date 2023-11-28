@@ -69,18 +69,18 @@ For each Query object, there is a corresponding enum class `<Resource>Properties
 `FlavorProperties`
 
 
-| Property Enum               | Aliases | Description                                                                                     |
-|-----------------------------|---------|-------------------------------------------------------------------------------------------------|
-| FLAVOR_DESCRIPTION = auto() | `None`  | The description of the flavor                                                                   |
-| FLAVOR_DISK = auto()        | `None`  | Size of the disk this flavor offers. Type: int                                                  |
-| FLAVOR_EPHEMERAL = auto()   | `None`  | Size of the ephemeral data disk attached to this server. Type: int                              |
-| FLAVOR_ID = auto()          | `None`  | Unique ID Openstack has assigned the flavor.                                                    |
-| FLAVOR_IS_DISABLED = auto() | `None`  | Indicates whether flavor is disabled. <br/>True if disabled, False if not                       |
-| FLAVOR_IS_PUBLIC = auto()   | `None`  | Indicates if flavor is available to all projects. <br/>True if publicly available, False if not |
-| FLAVOR_NAME = auto()        | `None`  | Name of the flavor                                                                              |
-| FLAVOR_RAM = auto()         | `None`  | The amount of RAM (in MB) this flavor offers. Type: int                                         |
-| FLAVOR_SWAP = auto()        | `None`  | Size of the swap partitions.                                                                    |
-| FLAVOR_VCPU = auto()        | `None`  | The number of virtual CPUs this flavor offers. Type: int                                        |
+| Property Enum      | Aliases | Description                                                                                     |
+|--------------------|---------|-------------------------------------------------------------------------------------------------|
+| FLAVOR_DESCRIPTION | `None`  | The description of the flavor                                                                   |
+| FLAVOR_DISK        | `None`  | Size of the disk this flavor offers. Type: int                                                  |
+| FLAVOR_EPHEMERAL   | `None`  | Size of the ephemeral data disk attached to this server. Type: int                              |
+| FLAVOR_ID          | `None`  | Unique ID Openstack has assigned the flavor.                                                    |
+| FLAVOR_IS_DISABLED | `None`  | Indicates whether flavor is disabled. <br/>True if disabled, False if not                       |
+| FLAVOR_IS_PUBLIC   | `None`  | Indicates if flavor is available to all projects. <br/>True if publicly available, False if not |
+| FLAVOR_NAME        | `None`  | Name of the flavor                                                                              |
+| FLAVOR_RAM         | `None`  | The amount of RAM (in MB) this flavor offers. Type: int                                         |
+| FLAVOR_SWAP        | `None`  | Size of the swap partitions.                                                                    |
+| FLAVOR_VCPU        | `None`  | The number of virtual CPUs this flavor offers. Type: int                                        |
 
 
 ## Adding a property related to an existing resource
