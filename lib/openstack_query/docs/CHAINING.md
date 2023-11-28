@@ -5,6 +5,40 @@ A feature that the query library adds is the ability to chain queries together.
 Chaining, in this context means taking the results of a query, and using them to configure and run another query
     - be it on the same resource, or on another resource.
 
+## Reference
+This section shows what queries can be chained together. Applies for both `then()` and `append_from()`
+
+`ServerQuery` available chains
+
+| Prop 1                      | Prop 2                       | Type        | Maps                            |
+|-----------------------------|------------------------------|-------------|---------------------------------|
+| ServerProperties.USER_ID    | UserProperties.USER_ID       | Many-to-One | `ServerQuery` to `UserQuery`    |
+| ServerProperties.PROJECT_ID | ProjectProperties.PROJECT_ID | Many-to-One | `ServerQuery` to `ProjectQuery` |
+| ServerProperties.FLAVOR_ID  | FlavorProperties.FLAVOR_ID   | Many-to-One | `ServerQuery` to `FlavorQuery`  |
+
+
+`UserQuery` available chains
+
+| Prop 1                 | Prop 2                   | Type        | Maps                         |
+|------------------------|--------------------------|-------------|------------------------------|
+| UserProperties.USER_ID | ServerProperties.USER_ID | One-to-Many | `UserQuery` to `ServerQuery` |
+
+
+`ProjectQuery` available chains
+
+| Prop 1                       | Prop 2                      | Type        | Maps                            |
+|------------------------------|-----------------------------|-------------|---------------------------------|
+| ProjectProperties.PROJECT_ID | ServerProperties.PROJECT_ID | One-to-Many | `ProjectQuery` to `ServerQuery` |
+
+
+`FlavorQuery` available chains
+
+| Prop 1                     | Prop 2                     | Type        | Maps                           |
+|----------------------------|----------------------------|-------------|--------------------------------|
+| FlavorProperties.FlAVOR_ID | ServerProperties.FLAVOR_ID | One-to-Many | `FlavorQuery` to `ServerQuery` |
+
+
+
 ## How then() works
 
 The diagram below shows how we can use `then()` to perform chaining between two different Openstack Resources.
@@ -58,24 +92,17 @@ A common workflow may want to keep certain results from previous chained queries
 **Note Many-to-one property chaining can lead to duplicates** - this is left to the user to sort out
 
 
-#
-#### Adding a new shared property Mapping
+## Workflows
+
+
+#### 1. Adding a new shared property Mapping
 
 Before adding a shared property mapping - ensure that both properties contain the same information
-```python
-@staticmethod
-def get_chain_mappings()
-```
 
-chain mappings map 'shared common property pairs' between different queries.
+1. Edit the `<resource>_mapping.py` file located in `opentack_query/mappngs`
+2. Locate the method `get_chain_mappings` and add chain mappings.
 
-A 'shared common property pair' are two enums that represent the same property.
-
-**Example:**
-
-Openstack `Servers` have a `user_id` property, and Openstack `Users` also have a `user_id` property
-
-Thus we define a mapping like so
+we can add mapping like so:
 ```python
 class ServerMapping(MappingInterface):
 
@@ -83,8 +110,10 @@ class ServerMapping(MappingInterface):
     def get_chain_mappings():
         ...
         return {
+            # Here we map the user_id enum stored in ServerProperties to the user_id enum stored in UserProperties
+            # These two properties store the same info - NOTE: enums that map together do not require same name
             ServerProperties.USER_ID: UserProperties.USER_ID,
-            ...
+            ... # add a new chain mapping here - the key must be a ServerProperties enum
         }
     ...
 ```
