@@ -3,12 +3,11 @@
 A Stackstorm pack for running Openstack scripts built for the STFC Cloud team
 
 ### Documentation Links
+- [Actions](docs/ACTIONS.md)
+- [Rules](docs/RULES.md)
+- [Contributing](docs/CONTRIBUTING.md)
+- [Developer Notes](docs/DEVELOPER_NOTES.md)
 
-- [Rules](https://github.com/stfc/st2-cloud-pack/blob/main/RULES.md)
-- [Actions](https://github.com/stfc/st2-cloud-pack/blob/main/ACTIONS.md)
-- [ChatOps](https://github.com/stfc/st2-cloud-pack/blob/main/CHATOPS.md)
-- [Contributing](https://github.com/stfc/st2-cloud-pack/blob/main/CONTRIBUTING.md)
-- [Developer Notes](https://github.com/stfc/st2-cloud-pack/blob/main/DEVELOPER_NOTES.md)
 
 ### Pack Features
 
