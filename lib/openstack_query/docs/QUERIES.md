@@ -1,6 +1,6 @@
 # Queries
 
-The class diagram for how a Query object is created is shown below (see API.md for usage)
+The class diagram for how a Query object is created is shown below (see [API.md](API.md) for usage)
 
 ![Diagram Showing how Query Object is created](./imgs/queryapi-workflow.png)
 
@@ -18,35 +18,35 @@ These mappings include:
 Each Query has a corresponding file called `<name_of_resource>_mapping`. The files is located in `/lib/openstack_query/mappings/`
 This file is used to configure the above.
 
-**Note**: see PROPERTIES.md for how to change property mappings
+**Note**: see [PROPERTIES.md](PROPERTIES.md) for how to change property mappings
 
 ## Reference
 
 #### get\_chain\_mappings
 
 This method allows us to define how to chain between these two different queries.
-See Chaining.md for details
+See [CHAINING.md](CHAINING.md) for details
 
 #
 ### get\_runner\_mapping
 
 This method allows us to attach a `Runner` Class which will be used to run the command against
 openstacksdk and handle any meta-parameters.
-See RUNNERS.md for details
+See [RUNNERS.md](RUNNERS.md) for details
 
 #
 ### get\_prop\_mapping
 
 This method allows us to attach a `PropEnum` Class which will be used to specify which properties the query
 can work on and handle any mappings.
-See PROPERTIES.md for details
+See [PROPERTIES.md](PROPERTIES.md) for details
 
 #
 #### get\_server\_side\_handler
 
 This method allows us to configure server-side key-word arguments to pass directly to Openstack API servers so that they
 can execute the query at the server-side. This allows for much quicker results than using client-side filter functions.
-See PRESETS.md for details
+See [PRESETS.md](PRESETS.md) for details
 
 
 #
@@ -104,7 +104,7 @@ resource. To do this, you must:
 #### 2. Create a Runner Class
 A new subclass of the `RunnerWrapper` class is required to store how to actually run the query using openstacksdk. It
 will also be the place where we can define extra parameters that can be used to fine-tune the query.
-See meta-parameters in RUNNERS.md for examples.
+See meta-parameters in [RUNNERS.md](RUNNERS.md) for examples.
 
 To add a Runner Class:
 1. Create a new file under `/openstack_query/runners/` called `<resource>_runner.py` replace `<resource>` with openstack resource name you want to query

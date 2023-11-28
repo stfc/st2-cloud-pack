@@ -86,7 +86,7 @@ Presets are grouped based on data types they work on - current groups are:
 
 
 Evaluate what datatypes you want your preset to work on - and assign them to one of the groups above.
-- you can add a new group if your preset doesn't belong to any of the groups above (see Adding Groups)
+- you can add a new group if your preset doesn't belong to any of the groups above (see Adding Preset Group below)
 
 ## Adding a Preset to a Group
 
@@ -147,7 +147,7 @@ def _new_preset_filter_func(self, prop: Any, arg1, arg2):
 ```
 
 #### **3. Edit the query class mappings for each Query class you wish to use the preset in**
-Each Query Class has a set of mappings which configures certain aspects of the Query (See Mappings for details).
+Each Query Class has a set of mappings which configures certain aspects of the Query (See [FILTER_MAPPINGS.md](FILTER_MAPPINGS.md) for details).
 
 One of these aspects is which preset-property pair can be used together when calling `where()` on the class.
 

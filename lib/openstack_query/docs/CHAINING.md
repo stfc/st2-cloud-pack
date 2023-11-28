@@ -54,7 +54,7 @@ further aliases are WIP
 
 The diagram below shows how we can use `then()` to perform chaining between two different Openstack Resources.
 `then()` will return the new query, shunting any results into new query if `keep_previous_results = True`
-see API.md for usage details
+see [API.md](API.md) for usage details
 
 ![Diagram showing how then() works when going from ServerQuery to UserQuery](./imgs/then-workflow.png)
 
@@ -68,7 +68,7 @@ what was returned in the first query
 
 The diagram below show how we can use `append_from()` to perform chaining between two different Openstack Resources.
 `append_from()` will run a separate query internally, and shunt the results into original query, it will return the original query
-see API.md for usage details
+see [API.md](API.md) for usage details
 
 ![Diagram showing how append_from() works when going from ServerQuery to UserQuery](./imgs/append-from-workflow.png)
 
@@ -95,7 +95,7 @@ Query Library supports both instances.
 
 ### Keeping Previous Results
 
-A common workflow may want to keep certain results from previous chained queries (see API.md for how to do that)
+A common workflow may want to keep certain results from previous chained queries (see [API.md](API.md) for how to do that)
 
 - `append_from` will automatically forward selected values as `forwarded_props` to results
 - `then` gives the user the option to

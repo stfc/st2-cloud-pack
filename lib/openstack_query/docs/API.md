@@ -67,12 +67,12 @@ def where(preset: QueryPresets, prop: PropEnum, **kwargs)
 
 **Arguments**:
 
-- `preset`: QueryPreset Enum to use - this is a special enum that specifies the logic to refine the query by. see PRESETS.md.
+- `preset`: QueryPreset Enum to use - this is a special enum that specifies the logic to refine the query by. See [PRESETS.md](PRESETS.md).
 - `prop`: Property Enum that the query preset will be used on -
   - e.g. If you're querying servers with `ServerQuery` - appropriate enum is `ServerProperties`
-  - some presets only accept certain props - see QUERY_MAPPINGS.md
+  - some presets only accept certain props - see [FILTER_MAPPINGS.md](FILTER_MAPPINGS.md)
 - `kwargs`: a set of optional arguments to pass along with the query preset
-  - these kwargs are dependent on the preset - see PRESETS.md
+  - these kwargs are dependent on the preset - see [PRESETS.md](PRESETS.md)
 
 **Example(s)**
 
@@ -161,7 +161,7 @@ def run(cloud_account: Union[str, CloudDomains],
 - `from_subset`: (optional) a subset of openstack resources to run query on instead of querying for them using openstacksdk
 
 - `kwargs`: keyword args that can be used to configure details of how query is run
-  - see QUERY_MAPPINGS.md for valid keyword args for each Query
+  - see [RUNNERS.md](RUNNERS.md) for valid keyword args for each Query
 
 #
 ### to\_objects
@@ -200,7 +200,7 @@ This is either returned as a list if `to_groups` has not been set, or as a dict 
 
 **Arguments**:
 
-- `flatten`: (optional) boolean flag which will flatten results if true - see README.md for examples (default is `False`)
+- `flatten`: (optional) boolean flag which will flatten results if true - see [README.md](../README.md) for examples (default is `False`)
 - `groups`: a list of group keys to limit output by - this will only work if `to_groups()` has been set - else it produces an error
 
 #
@@ -266,14 +266,14 @@ Public method to return results as html table
 #
 ### then
 `then()` chains current query onto another query of a different type.
-It takes the results of the current query and uses them to run another query - see README.md for more details
+It takes the results of the current query and uses them to run another query - see [README.md](../README.md) for more details
 
-This can only work if the current query and the next query have a shared common property - see MAPPINGS.md for more details
+This can only work if the current query and the next query have a shared common property - see [CHAINING.md](CHAINING.md) for more details
 
 - Query must be run first by calling `run()` before calling `then()`
 - A shared common property must exist between this query and the new query
    - i.e. both ServerQuery and UserQuery share the 'USER_ID' property so chaining is possible between them
-   - see CHAINING.md for more on chaining
+   - see [CHAINING.md](CHAINING.md) for more on chaining
 
 **NOTE:** Any parsing calls - i.e. `group_by` or `sort_by` will be ignored
 
@@ -286,13 +286,13 @@ def then(query_type: Union[str, QueryTypes],
 
 **Arguments**:
 
-- `query_type`: an enum representing the new query to chain into - See MAPPINGS.md
+- `query_type`: an enum representing the new query to chain into -  see [CHAINING.md](CHAINING.md)
 - `keep_previous_results`: flag that:
   - If True - will forward outputs from this query (and previous chained queries) onto new query.
   - If False - runs the query based on the previous results as a filter without adding additional fields
 
 **Examples:**
-See README.md for examples
+See [README.md](../README.md) for examples
 
 #
 ### append\_from
@@ -303,7 +303,7 @@ This method will run a secondary query on top of this one to get required proper
 - Query must be run first by calling `run()` before calling `append_from()`
 - A shared common property must exist between this query and the new query
    - i.e. both ServerQuery and UserQuery share the 'USER_ID' property so `append_from` is possible between them
-   - see CHAINING.md for more on chaining
+   - see [CHAINING.md](CHAINING.md) for more on chaining
 
 **NOTE:** You will NOT be able to group/sort by forwarded properties in the new query
 
@@ -320,6 +320,5 @@ def append_from(query_type: Union[str, QueryTypes],
 - `props`: one or more properties to collect described as enum from new query.
   - e.g. If you're appending server properties (i.e. `append_from("ServerQuery" ...)`) the appropriate enum is `ServerProperties`
 
-
 **Examples:**
-see README.md for examples
+See [README.md](../README.md) for examples
