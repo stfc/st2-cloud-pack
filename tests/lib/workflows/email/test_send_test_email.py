@@ -7,11 +7,21 @@ from workflows.email.send_test_email import send_test_email
 
 @pytest.fixture(name="send_test_email_test_case")
 def send_test_email_test_case_fixture():
+    """
+    Fixture to run send_test_email test cases
+    """
+
     @patch("workflows.email.send_test_email.Emailer")
     @patch("workflows.email.send_test_email.EmailParams")
     def _send_test_email_test_case(
-        mock_kwargs, expected_kwargs, mock_email_params, mock_emailer, cc_cloud_support
+        mock_kwargs, expected_kwargs, cc_cloud_support, mock_email_params, mock_emailer
     ):
+        """
+        runs a test case for send_test_email function
+        :param mock_kwargs: The kwargs to pass to send_test_email
+        :param expected_kwargs: what kwargs we expect to pass to EmailParams dataclass
+        :param
+        """
         mock_smtp_account = NonCallableMock()
         mock_username = "user1"
         mock_test_message = "This is a test email"
@@ -70,7 +80,7 @@ def test_send_test_email_with_cc(send_test_email_test_case):
     # since cc_cloud_support=True, expected email_cc should include it
     expected_kwargs["email_cc"].append("cloud-support@stfc.ac.uk")
 
-    send_test_email_test_case(mock_kwargs, expected_kwargs, cc_cloud_support=True)
+    send_test_email_test_case(mock_kwargs, expected_kwargs, True)
 
 
 def test_send_test_email_no_cc(send_test_email_test_case):
@@ -88,4 +98,4 @@ def test_send_test_email_no_cc(send_test_email_test_case):
         "as_html": True,
     }
     expected_kwargs = mock_kwargs
-    send_test_email_test_case(mock_kwargs, expected_kwargs, cc_cloud_support=False)
+    send_test_email_test_case(mock_kwargs, expected_kwargs, False)

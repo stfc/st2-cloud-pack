@@ -15,7 +15,7 @@ def send_test_email(
     **kwargs
 ):
     """
-    Method to send a test email using 'test' template - maps to email.test Action.
+    Function to send a test email using 'test' template - maps to email.test Action.
     :param smtp_account: (SMTPAccount): SMTP config
     :param username: name required for test template
     :param test_message: message body required for test template
