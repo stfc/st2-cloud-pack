@@ -8,6 +8,11 @@ A Stackstorm pack for running Openstack scripts built for the STFC Cloud team
 - [Contributing](docs/CONTRIBUTING.md)
 - [Developer Notes](docs/DEVELOPER_NOTES.md)
 
+#### References
+- [email_api](docs/EMAIL_API.md)
+
+#### How Tos
+- [Add an Action to the pack](docs/ADDING_ACTIONS.md)
 
 ### Pack Features
 
