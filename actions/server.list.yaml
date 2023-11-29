@@ -1,13 +1,21 @@
 ---
 description: List all servers
 enabled: true
-entry_point: src/server_query_actions.py
+entry_point: src/workflow_actions.py
 name: server.list
 parameters:
   timeout:
     default: 5400
-  submodule:
-    default: "search_all"
+  submodule_name:
+    default: query
+    immutable: true
+    type: string
+  action_name:
+    default: list_all_openstack
+    immutable: true
+    type: string
+  query_type:
+    default: ServerQuery
     immutable: true
     type: string
   as_admin:
@@ -56,9 +64,9 @@ parameters:
     type: string
     enum:
       - "to_html"
-      - "to_object_list"
-      - "to_list"
-      - "to_str"
+      - "to_objects"
+      - "to_props"
+      - "to_string"
     description: "
     A string representing how to return the results of the query
       - 'to_html' - a tabulate table (in html)
