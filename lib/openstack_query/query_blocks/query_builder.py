@@ -240,7 +240,7 @@ class QueryBuilder:
                 return i
 
         logger.error(
-            "Error: if you are here as a developer"
+            "Error: if you are here as a developer "
             "you have likely forgotten to add client-side mappings for the preset '%s' and property '%s' "
             "under mappings/<resource>_mapping",
             preset.name,

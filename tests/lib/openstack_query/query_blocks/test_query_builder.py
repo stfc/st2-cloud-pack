@@ -29,17 +29,11 @@ def mock_valid_client_handler_fixture():
 
     def _mock_preset_known(preset):
         """A dummy function to mock the preset_known method on the client handler"""
-        return (
-            True
-            if preset in [MockQueryPresets.ITEM_1, MockQueryPresets.ITEM_3]
-            else False
-        )
+        return preset in [MockQueryPresets.ITEM_1, MockQueryPresets.ITEM_3]
 
     def _mock_check_supported(preset, prop):
         """A dummy function to mock the check_supported method on the client handler"""
-        if preset == MockQueryPresets.ITEM_1 and prop == MockProperties.PROP_1:
-            return True
-        return False
+        return preset == MockQueryPresets.ITEM_1 and prop == MockProperties.PROP_1
 
     mock_invalid_client_handler = MagicMock()
     mock_invalid_client_handler.preset_known = MagicMock(wraps=_mock_preset_known)
@@ -304,7 +298,7 @@ def test_parse_where_preset_misconfigured(instance):
     # when preset_known returns True, but client_side filter missing
     with patch.object(MockProperties, "get_prop_mapping") as mock_prop_func:
         with pytest.raises(QueryPresetMappingError):
-            instance.parse_where(MockQueryPresets.ITEM_2, MockProperties.PROP_1)
+            instance.parse_where(MockQueryPresets.ITEM_3, MockProperties.PROP_1)
     mock_prop_func.assert_called_once_with(MockProperties.PROP_1)
 
 
