@@ -27,15 +27,22 @@ def mock_valid_client_handler_fixture():
     Return a client handler - mocks one handler which does contain preset
     """
 
+    def _mock_preset_known(preset):
+        """A dummy function to mock the preset_known method on the client handler"""
+        return (
+            True
+            if preset in [MockQueryPresets.ITEM_1, MockQueryPresets.ITEM_3]
+            else False
+        )
+
     def _mock_check_supported(preset, prop):
         """A dummy function to mock the check_supported method on the client handler"""
-        if preset == MockQueryPresets.ITEM_1:
-            if prop == MockProperties.PROP_1:
-                return True
+        if preset == MockQueryPresets.ITEM_1 and prop == MockProperties.PROP_1:
+            return True
         return False
 
     mock_invalid_client_handler = MagicMock()
-    mock_invalid_client_handler.preset_known.return_value = True
+    mock_invalid_client_handler.preset_known = MagicMock(wraps=_mock_preset_known)
     mock_invalid_client_handler.check_supported = MagicMock(wraps=_mock_check_supported)
     return mock_invalid_client_handler
 
@@ -276,11 +283,25 @@ def test_add_filter_conflicting_presets(
     )
 
 
-def test_parse_where_preset_invalid(instance):
+def test_parse_where_preset_unknown(instance):
     """
     Tests that parse_where errors if no handler found which supports given preset
     """
 
+    # when preset_known returns false
+    with patch.object(MockProperties, "get_prop_mapping") as mock_prop_func:
+        with pytest.raises(QueryPresetMappingError):
+            instance.parse_where(MockQueryPresets.ITEM_2, MockProperties.PROP_1)
+    mock_prop_func.assert_called_once_with(MockProperties.PROP_1)
+
+
+def test_parse_where_preset_misconfigured(instance):
+    """
+    Tests that parse_where errors if preset should be handled by handler, but
+    no client-side mapping found for property
+    """
+
+    # when preset_known returns True, but client_side filter missing
     with patch.object(MockProperties, "get_prop_mapping") as mock_prop_func:
         with pytest.raises(QueryPresetMappingError):
             instance.parse_where(MockQueryPresets.ITEM_2, MockProperties.PROP_1)
@@ -298,3 +319,30 @@ def test_parse_where_prop_invalid(instance):
         with pytest.raises(QueryPropertyMappingError):
             instance.parse_where(MockQueryPresets.ITEM_1, MockProperties.PROP_1)
     mock_prop_func.assert_called_once_with(MockProperties.PROP_1)
+
+
+def test_client_side_filters(instance):
+    """
+    Tests client_side_filter property methods
+    """
+    instance.client_side_filter = ["some-client-side-filter"]
+    res = instance.client_side_filter
+    assert res == ["some-client-side-filter"]
+
+
+def test_server_side_filters(instance):
+    """
+    Tests server_side_filters property methods
+    """
+    instance.server_side_filters = ["some-server-side-filter"]
+    res = instance.server_side_filters
+    assert res == ["some-server-side-filter"]
+
+
+def test_server_filter_fallback(instance):
+    """
+    Tests server_filter_fallback property methods
+    """
+    instance.server_filter_fallback = ["some-client-side-filter"]
+    res = instance.server_filter_fallback
+    assert res == ["some-client-side-filter"]
