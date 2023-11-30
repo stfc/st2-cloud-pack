@@ -1,5 +1,5 @@
-import pytest
 from unittest.mock import patch, NonCallableMock, MagicMock
+import pytest
 
 from enums.query.sort_order import SortOrder
 from workflows.query.search_by_datetime import search_by_datetime
@@ -74,11 +74,9 @@ def test_search_by_datetime_errors_when_args_all_zero():
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
-def test_search_by_datetime_minimal(
-    mock_preset_enum, mock_openstack_query, output_type
-):
+def test_search_by_datetime_all(mock_preset_enum, mock_openstack_query, output_type):
     """
-    Runs search_by_datetime only providing required values
+    Runs search_by_datetime providing all available params
     """
 
     mock_query = MagicMock()

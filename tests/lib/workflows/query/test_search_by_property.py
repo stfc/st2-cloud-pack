@@ -1,5 +1,5 @@
-import pytest
 from unittest.mock import patch, NonCallableMock, MagicMock
+import pytest
 
 from enums.query.sort_order import SortOrder
 from workflows.query.search_by_property import search_by_property
@@ -70,11 +70,9 @@ def test_search_by_property_errors_when_no_values_given():
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
-def test_search_by_property_minimal(
-    mock_preset_enum, mock_openstack_query, output_type
-):
+def test_search_by_property_all(mock_preset_enum, mock_openstack_query, output_type):
     """
-    Runs search_by_property only providing required values
+    Runs search_by_property providing all values
     """
 
     mock_query = MagicMock()

@@ -2,6 +2,8 @@ from typing import List, Optional
 from enums.query.sort_order import SortOrder
 import openstack_query
 
+# pylint:disable=too-many-arguments
+
 
 def list_all_openstack(
     cloud_account: str,
@@ -28,7 +30,7 @@ def list_all_openstack(
     if not properties_to_select:
         query.select_all()
     else:
-        query.select(*[p for p in properties_to_select])
+        query.select(*properties_to_select)
 
     if sort_by:
         query.sort_by(*[(p, SortOrder.DESC) for p in sort_by])

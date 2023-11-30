@@ -1,5 +1,5 @@
-import pytest
 from unittest.mock import patch, NonCallableMock, MagicMock
+import pytest
 
 from enums.query.query_presets import QueryPresetsString
 from enums.query.sort_order import SortOrder
@@ -51,9 +51,9 @@ def test_search_by_regex_minimal(mock_openstack_query, output_type):
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
-def test_search_by_regex_minimal(mock_openstack_query, output_type):
+def test_search_by_regex_all(mock_openstack_query, output_type):
     """
-    Runs search_by_regex only providing required values
+    Runs search_by_regex providing all values
     """
 
     mock_query = MagicMock()

@@ -3,6 +3,8 @@ from enums.query.query_presets import QueryPresetsDateTime
 from enums.query.sort_order import SortOrder
 import openstack_query
 
+# pylint:disable=too-many-arguments
+
 
 def search_by_datetime(
     cloud_account: str,
@@ -38,7 +40,7 @@ def search_by_datetime(
     :param sort_by: an optional set of tuples representing way which properties to sort results by
     :param kwargs: A set of optional meta params to pass to the query
     """
-    if all([x <= 0 for x in [days, minutes, seconds, hours]]):
+    if all(x <= 0 for x in [days, minutes, seconds, hours]):
         raise RuntimeError(
             "At least one value for days, hours, minutes, seconds must be > 0"
         )
@@ -47,7 +49,7 @@ def search_by_datetime(
     if not properties_to_select:
         query.select_all()
     else:
-        query.select(*[p for p in properties_to_select])
+        query.select(*properties_to_select)
 
     query.where(
         preset=QueryPresetsDateTime.from_string(search_mode),

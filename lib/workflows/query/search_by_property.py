@@ -3,6 +3,8 @@ from enums.query.query_presets import QueryPresetsGeneric
 from enums.query.sort_order import SortOrder
 import openstack_query
 
+# pylint:disable=too-many-arguments
+
 
 def search_by_property(
     cloud_account: str,
@@ -40,7 +42,7 @@ def search_by_property(
     if not properties_to_select:
         query.select_all()
     else:
-        query.select(*[p for p in properties_to_select])
+        query.select(*properties_to_select)
 
     query.where(
         preset=QueryPresetsGeneric.from_string(search_mode),
