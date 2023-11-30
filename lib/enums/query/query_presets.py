@@ -97,3 +97,21 @@ class QueryPresetsString(QueryPresets):
                 f"Could not find preset type {val}. "
                 f"Available preset types are {','.join([prop.name for prop in QueryPresetsString])}"
             ) from err
+
+
+def get_preset_from_string(val: str):
+    """
+    function that takes a string and returns a preset Enum if that string is an alias for that preset
+    :param val: a string alias to convert
+    """
+    for preset_cls in [
+        QueryPresetsGeneric,
+        QueryPresetsString,
+        QueryPresetsDateTime,
+        QueryPresetsInteger,
+    ]:
+        try:
+            return preset_cls.from_string(val)
+        except ParseQueryError:
+            continue
+    raise ParseQueryError(f"Could not find preset that matches alias {val}.")

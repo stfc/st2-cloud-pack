@@ -24,3 +24,10 @@ class PropEnum(Enum):
         """
         A getter method to return marker property function for pagination
         """
+
+    @staticmethod
+    @abstractmethod
+    def from_string(val: str):
+        """
+        A method that converts string alias to enum
+        """

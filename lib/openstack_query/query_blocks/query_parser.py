@@ -75,11 +75,32 @@ class QueryParser:
         """
         self._group_mappings = group_mappings
 
-    def parse_sort_by(self, *sort_by: Tuple[PropEnum, SortOrder]) -> None:
+    def _parse_sort_by_inputs(
+        self, *sort_by: Tuple[Union[PropEnum, str], Union[SortOrder, str]]
+    ) -> List[Tuple[PropEnum, SortOrder]]:
+        """
+        Converts list of sort_by() user inputs into Enums, any string aliases will be converted into Enums
+        :param sort_by: one or more tuples of property Enum/String alias to sort by and order Enum/string alias
+        """
+        parsed_sort_by = []
+        for prop, order in sort_by:
+            if isinstance(prop, str):
+                prop = self._prop_enum_cls.from_string(prop)
+            if isinstance(order, str):
+                order = SortOrder.from_string(order)
+            parsed_sort_by.append((prop, order))
+        return parsed_sort_by
+
+    def parse_sort_by(
+        self, *sort_by: Tuple[Union[PropEnum, str], Union[SortOrder, str]]
+    ) -> None:
         """
         Public method used to configure sorting results
-        :param sort_by: one or more tuples of property name to sort by and order enum
+        :param sort_by: one or more tuples of property Enum/String alias to sort by and order enum/string alias
+        e.g. ("server_name", "asc") or (ServerProperties.SERVER_NAME", SortOrder.ASC) - both parsed the same
         """
+        sort_by = self._parse_sort_by_inputs(*sort_by)
+
         sort_by_dict = {}
         for user_selected_prop, _ in sort_by:
             if user_selected_prop not in self._prop_enum_cls:
@@ -104,21 +125,30 @@ class QueryParser:
             ),
         )
 
+    def _parse_group_by_inputs(self, prop):
+        """
+        Converts list of select() 'prop' user inputs into Enums, any string aliases will be converted into Enums
+        :param prop: property to group by
+        """
+        if isinstance(prop, str):
+            prop = self._prop_enum_cls.from_string(prop)
+        return prop
+
     def parse_group_by(
         self,
-        group_by: PropEnum,
+        group_by: Union[PropEnum, str],
         group_ranges: Optional[GroupRanges] = None,
         include_missing: Optional[bool] = False,
     ) -> None:
         """
         Public method used to configure grouping results.
-        :param group_by: name of the property to group by
+        :param group_by: Enum/string alias of the property to group by
         :param group_ranges: a dictionary containing names of the group and list of prop values
         to select for that group
         :param include_missing: a flag which, if set, will include an extra grouping for values
         that don't fall into any group specified in group_ranges
         """
-
+        group_by = self._parse_group_by_inputs(group_by)
         if group_by not in self._prop_enum_cls:
             raise ParseQueryError(
                 f"Error: Given property to group by: {group_by.name} is not supported by query"
