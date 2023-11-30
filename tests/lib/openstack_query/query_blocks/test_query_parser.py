@@ -137,9 +137,7 @@ def test_parse_sort_by_with_string_aliases():
     mock_prop_enum_cls = ServerProperties
     instance = QueryParser(prop_enum_cls=mock_prop_enum_cls)
 
-    instance.parse_sort_by(
-        ("server_id", SortOrder.ASC), ("server_name", SortOrder.DESC)
-    )
+    instance.parse_sort_by(("server_id", "asc"), ("server_name", "descending"))
     assert instance.sort_by == {
         ServerProperties.SERVER_ID: False,
         ServerProperties.SERVER_NAME: True,
