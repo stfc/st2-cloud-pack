@@ -5,6 +5,7 @@ from enums.query.query_presets import (
     QueryPresetsInteger,
     QueryPresetsString,
     QueryPresetsDateTime,
+    get_preset_from_string,
 )
 from exceptions.parse_query_error import ParseQueryError
 
@@ -186,3 +187,27 @@ def test_invalid_serialization():
     ]:
         with pytest.raises(ParseQueryError):
             enum_cls.from_string("some-invalid-string")
+
+
+@pytest.mark.parametrize(
+    "alias, expected_preset",
+    [
+        ("equal_to", QueryPresetsGeneric.EQUAL_TO),
+        ("matches_regex", QueryPresetsString.MATCHES_REGEX),
+        ("older_than", QueryPresetsDateTime.OLDER_THAN),
+        ("greater_than", QueryPresetsInteger.GREATER_THAN),
+    ],
+)
+def test_get_preset_from_string_valid(alias, expected_preset):
+    """
+    Tests that get_preset_from_string works for a valid preset alias from each preset type
+    """
+    assert get_preset_from_string(alias) == expected_preset
+
+
+def test_get_preset_from_string_invalid():
+    """
+    Tests that get_preset_from_string returns error if given an invalid alias
+    """
+    with pytest.raises(ParseQueryError):
+        get_preset_from_string("invalid-alias")

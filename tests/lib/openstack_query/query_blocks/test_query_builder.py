@@ -391,3 +391,54 @@ def test_server_filter_fallback(instance):
     instance.server_filter_fallback = ["some-client-side-filter"]
     res = instance.server_filter_fallback
     assert res == ["some-client-side-filter"]
+
+
+@patch("openstack_query.query_blocks.query_builder.get_preset_from_string")
+def test_parse_where_with_string_aliases(
+    mock_get_preset_from_string,
+    instance,
+    mock_server_side_handler,
+    mock_valid_client_handler,
+):
+    """
+    tests parse_where works when using string aliases as input for preset and prop.
+    """
+    mock_client_filter_func = NonCallableMock()
+    mock_server_filters = [{"filter1": "val1"}]
+    mock_kwargs = {"arg1": "val1"}
+
+    mock_server_side_handler.get_filters.return_value = mock_server_filters
+    mock_valid_client_handler.get_filter_func.return_value = mock_client_filter_func
+
+    mock_prop_from_string = MagicMock()
+    mock_prop_from_string.return_value = MockProperties.PROP_1
+
+    mock_get_preset_from_string.return_value = MockQueryPresets.ITEM_1
+
+    mock_get_prop_mapping = MagicMock()
+
+    with patch.multiple(
+        MockProperties,
+        get_prop_mapping=mock_get_prop_mapping,
+        from_string=mock_prop_from_string,
+    ):
+        instance.parse_where("mock-preset", "mock-prop", mock_kwargs)
+
+    mock_get_preset_from_string.assert_called_once_with("mock-preset")
+    mock_prop_from_string.assert_called_once_with("mock-prop")
+
+    mock_valid_client_handler.get_filter_func.assert_called_once_with(
+        preset=MockQueryPresets.ITEM_1,
+        prop=MockProperties.PROP_1,
+        prop_func=mock_get_prop_mapping.return_value,
+        filter_func_kwargs=mock_kwargs,
+    )
+    mock_server_side_handler.get_filters.assert_called_once_with(
+        preset=MockQueryPresets.ITEM_1,
+        prop=MockProperties.PROP_1,
+        params=mock_kwargs,
+    )
+
+    assert instance.client_side_filters == []
+    assert instance.server_side_filters == [{"filter1": "val1"}]
+    assert instance.server_filter_fallback == [mock_client_filter_func]

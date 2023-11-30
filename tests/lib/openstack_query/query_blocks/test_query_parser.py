@@ -129,6 +129,23 @@ def test_parse_sort_by_invalid(instance):
         instance.parse_sort_by((ServerProperties.SERVER_ID, True))
 
 
+def test_parse_sort_by_with_string_aliases():
+    """
+    Tests that parse_sort_by method can handle string aliases as well as enums
+    """
+    # we create a new local instance since MockProperties doesn't implement the from_string method
+    mock_prop_enum_cls = ServerProperties
+    instance = QueryParser(prop_enum_cls=mock_prop_enum_cls)
+
+    instance.parse_sort_by(
+        ("server_id", SortOrder.ASC), ("server_name", SortOrder.DESC)
+    )
+    assert instance.sort_by == {
+        ServerProperties.SERVER_ID: False,
+        ServerProperties.SERVER_NAME: True,
+    }
+
+
 def test_parse_group_by_invalid(instance):
     """
     Tests parse_group_by - when given an invalid group by prop
@@ -177,6 +194,18 @@ def test_parse_group_by_with_group_ranges_and_include_missing(
     assert instance.group_by == MockProperties.PROP_1
     mock_parse_group_ranges.assert_called_once_with(mock_group_ranges)
     mock_add_include_missing_group.assert_called_once_with(mock_group_ranges)
+
+
+def test_parse_group_by_with_string_aliases():
+    """
+    Tests that parse_group_by method can handle string aliases as well as enums
+    """
+    # we create a new local instance since MockProperties doesn't implement the from_string method
+    mock_prop_enum_cls = ServerProperties
+    instance = QueryParser(prop_enum_cls=mock_prop_enum_cls)
+
+    instance.parse_group_by("server_id")
+    assert instance.group_by == ServerProperties.SERVER_ID
 
 
 def test_run_parse_group_ranges(instance, mock_get_prop_mapping):

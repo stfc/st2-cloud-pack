@@ -16,10 +16,12 @@ class SortOrder(Enum):
         """
         Converts a given string in a case-insensitive way to the enum values
         """
-        try:
-            return SortOrder[val.upper()]
-        except KeyError as err:
-            raise ParseQueryError(
-                f"Could not find convert {val} into a sort order enum. "
-                f"Available orders are {','.join([order.name for order in SortOrder])}"
-            ) from err
+        if val.upper() in ["ASC", "ASCENDING"]:
+            return SortOrder["ASC"]
+        if val.upper() in ["DESCENDING", "DESC"]:
+            return SortOrder["DESC"]
+
+        raise ParseQueryError(
+            f"Could not find convert {val} into a sort order enum. "
+            f"Available orders are {','.join([order.name for order in SortOrder])}"
+        )

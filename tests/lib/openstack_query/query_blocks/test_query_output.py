@@ -516,6 +516,21 @@ def test_parse_select_given_args(instance):
     assert instance.selected_props, [MockProperties.PROP_1, MockProperties.PROP_2]
 
 
+def test_parse_select_with_string_aliases():
+    """
+    tests that parse select works with string aliases. They should get converted to Enums automatically
+    """
+    # we create a new local instance since MockProperties doesn't implement the from_string method
+    mock_prop_enum_cls = ServerProperties
+    instance = QueryOutput(prop_enum_cls=mock_prop_enum_cls)
+
+    instance.parse_select("server_id", "server_name")
+    assert instance.selected_props, [
+        ServerProperties.SERVER_ID,
+        ServerProperties.SERVER_NAME,
+    ]
+
+
 def test_parse_select_given_invalid(instance):
     """
     Tests that parse_select works expectedly
