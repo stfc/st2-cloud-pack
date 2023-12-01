@@ -212,9 +212,7 @@ class QueryAPI:
         self.results_container.parse_results(self.parser.run_parser)
         return self.output.to_html(self.results_container, title, groups, **kwargs)
 
-    def to_csv(
-        self, dir_path:str
-    ) -> str:
+    def to_csv(self, dir_path: str) -> str:
         """
         Creates csv files
         :param dir_path: string representing directory to store csv files.

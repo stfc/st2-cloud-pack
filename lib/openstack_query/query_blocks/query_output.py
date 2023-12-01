@@ -8,7 +8,6 @@ from exceptions.parse_query_error import ParseQueryError
 from openstack_query.query_blocks.results_container import ResultsContainer
 
 
-
 class QueryOutput:
     """
     Helper class for generating output for the query as a formatted table or selected properties - either as
