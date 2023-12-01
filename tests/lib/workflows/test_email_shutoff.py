@@ -7,9 +7,9 @@ from workflows.email_shutoff import (
     send_user_email,
     query_shutoff_vms,
     find_user_info,
-    #main,
+    extract_server_list,
+    UserDetails,
     send_shutoff_emails,
-    extract_server_list, UserDetails, send_shutoff_emails,
 )
 
 
@@ -100,7 +100,7 @@ def test_query_server_get_user_details():
 @patch("workflows.email_shutoff.UserQuery")
 def test_find_user_info_with_email(mock_user_query):
     """
-    Test that we can run a user query to get the user name and 
+    Test that we can run a user query to get the user name and
     user email using a user id.
     This is the case where a user has an email address.
     """
@@ -117,14 +117,15 @@ def test_find_user_info_with_email(mock_user_query):
     res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
 
     user_object = mock_user_query.return_value
-    user_object.select.assert_called_once_with(UserProperties.USER_NAME,
-                                               UserProperties.USER_EMAIL)
+    user_object.select.assert_called_once_with(
+        UserProperties.USER_NAME, UserProperties.USER_EMAIL
+    )
 
     select_object = user_object.select.return_value
 
-    select_object.where.assert_called_once_with(QueryPresetsGeneric.EQUAL_TO,
-                                                UserProperties.USER_ID,
-                                                value=mock_user_id)
+    select_object.where.assert_called_once_with(
+        QueryPresetsGeneric.EQUAL_TO, UserProperties.USER_ID, value=mock_user_id
+    )
 
     user_object.run.assert_called_once_with(cloud_account=mock_cloud_account)
 
@@ -187,7 +188,11 @@ def test_send_user_email():
 
     with patch("workflows.email_shutoff.Emailer") as mock_emailer:
         send_user_email(
-            mock_smtp_account, mock_email_from, mock_user_email, mock_server_list, mock_email_template
+            mock_smtp_account,
+            mock_email_from,
+            mock_user_email,
+            mock_server_list,
+            mock_email_template,
         )
 
     mock_emailer.assert_called_once()
@@ -215,7 +220,11 @@ def test_send_user_email_no_email_given():
     mock_email_template = NonCallableMock()
     with patch("workflows.email_shutoff.Emailer") as mock_emailer:
         send_user_email(
-            mock_smtp_account, mock_email_from, mock_user_email, mock_server_list, mock_email_template
+            mock_smtp_account,
+            mock_email_from,
+            mock_user_email,
+            mock_server_list,
+            mock_email_template,
         )
 
     expected_email_params = EmailParams(
@@ -233,7 +242,12 @@ def test_send_user_email_no_email_given():
 @patch("workflows.email_shutoff.find_user_info")
 @patch("workflows.email_shutoff.extract_server_list")
 @patch("workflows.email_shutoff.send_user_email")
-def test_send_shutoff_emails(mock_send_user_email, mock_extract_server_list,  mock_find_user_info, mock_query_shutoff):
+def test_send_shutoff_emails(
+    mock_send_user_email,
+    mock_extract_server_list,
+    mock_find_user_info,
+    mock_query_shutoff,
+):
     """
     Test that we can query for shutoff VMs, get user info and list of servers to build and send
     an email
@@ -254,11 +268,18 @@ def test_send_shutoff_emails(mock_send_user_email, mock_extract_server_list,  mo
     # mock list of servers
     mocked_user_a_servers = [NonCallableMock(), NonCallableMock()]
     mocked_user_b_servers = [NonCallableMock(), NonCallableMock()]
-    mock_extract_server_list.side_effect = [mocked_user_a_servers, mocked_user_b_servers]
+    mock_extract_server_list.side_effect = [
+        mocked_user_a_servers,
+        mocked_user_b_servers,
+    ]
 
     mock_data = {
-        "user_id_a": [{"user_email": NonCallableMock(), "server_name": NonCallableMock()}],
-        "user_id_b": [{"user_email": NonCallableMock(), "server_name": NonCallableMock()}],
+        "user_id_a": [
+            {"user_email": NonCallableMock(), "server_name": NonCallableMock()}
+        ],
+        "user_id_b": [
+            {"user_email": NonCallableMock(), "server_name": NonCallableMock()}
+        ],
     }
     mock_query_shutoff.return_value = mock_data
 
@@ -272,15 +293,20 @@ def test_send_shutoff_emails(mock_send_user_email, mock_extract_server_list,  mo
     )
 
     mock_query_shutoff.assert_called_once_with(
-        mock_cloud_account, mock_limit_by_project, mock_days_threshold)
+        mock_cloud_account, mock_limit_by_project, mock_days_threshold
+    )
 
     assert mock_find_user_info.call_count == 2
     mock_find_user_info.assert_has_calls(
-         [
-             call(mock_data["user_id_a"], mock_cloud_account, mock_override_email_address),
-             call(mock_data["user_id_b"], mock_cloud_account, mock_override_email_address)
-         ],
-     )
+        [
+            call(
+                mock_data["user_id_a"], mock_cloud_account, mock_override_email_address
+            ),
+            call(
+                mock_data["user_id_b"], mock_cloud_account, mock_override_email_address
+            ),
+        ],
+    )
 
     assert mock_extract_server_list.call_count == 2
     mock_extract_server_list.assert_has_calls(
@@ -291,8 +317,18 @@ def test_send_shutoff_emails(mock_send_user_email, mock_extract_server_list,  mo
 
     mock_send_user_email.assert_has_calls(
         [
-            call(mock_smtp_account, mock_email_from, mocked_user_a.email, mocked_user_a_servers),
-            call(mock_smtp_account, mock_email_from, mocked_user_b.email, mocked_user_b_servers),
+            call(
+                mock_smtp_account,
+                mock_email_from,
+                mocked_user_a.email,
+                mocked_user_a_servers,
+            ),
+            call(
+                mock_smtp_account,
+                mock_email_from,
+                mocked_user_b.email,
+                mocked_user_b_servers,
+            ),
         ]
     )
 
