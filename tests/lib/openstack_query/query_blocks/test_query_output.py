@@ -8,6 +8,40 @@ from enums.query.props.server_properties import ServerProperties
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 
+@pytest.fixture
+def example_grouped_data():
+    return {
+        "user_name is user1": [
+            {
+                "server_id": "server_id1",
+                "server_name": "server1",
+                "user_id": "user_id1",
+                "user_name": "user1",
+            },
+            {
+                "server_id": "server_id2",
+                "server_name": "server2",
+                "user_id": "user_id1",
+                "user_name": "user1",
+            },
+        ],
+        "user_name is user2": [
+            {
+                "server_id": "server_id3",
+                "server_name": "server3",
+                "user_id": "user_id2",
+                "user_name": "user2",
+            },
+            {
+                "server_id": "server_id4",
+                "server_name": "server4",
+                "user_id": "user_id2",
+                "user_name": "user2",
+            },
+        ],
+    }
+
+
 @pytest.fixture(name="instance")
 def instance_fixture():
     """
@@ -611,7 +645,7 @@ def test_to_csv_grouped_loop_empty_input(mock_to_csv):
 
 
 @patch("openstack_query.query_blocks.query_output.to_csv")
-def test_to_csv_grouped_loop_one_input(mock_to_csv):
+def test_to_csv_grouped_loop_one_input(instance, mock_to_csv):
     """mock to_cs outputs"""
 
     example_grouped_data = {
