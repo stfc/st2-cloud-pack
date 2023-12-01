@@ -604,13 +604,13 @@ def test_to_csv_fails():
         QueryOutput.to_csv([], "invalid path")
 
 
-@patch("workflows.csv.csv_actions.to_csv")
+@patch("openstack_query.query_blocks.query_output.to_csv")
 def test_to_csv_grouped_loop_empty_input(mock_to_csv):
     """loop is given: 0 Items"""
     mock_to_csv.assert_not_called()
 
 
-@patch("workflows.csv.csv_actions.to_csv_list")
+@patch("openstack_query.query_blocks.query_output.to_csv")
 def test_to_csv_grouped_loop_one_input(mock_to_csv):
     """mock to_cs outputs"""
 
@@ -641,7 +641,7 @@ def test_to_csv_grouped_loop_one_input(mock_to_csv):
     )
 
 
-@patch("workflows.csv.csv_actions.to_csv_list")
+@patch("openstack_query.query_blocks.query_output.to_csv_list")
 def test_to_csv_grouped_loop_more_than_one_input(mock_to_csv, example_grouped_data):
     """mock to_cs outputs"""
 
