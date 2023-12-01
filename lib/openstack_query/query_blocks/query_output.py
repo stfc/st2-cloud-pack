@@ -275,7 +275,7 @@ class QueryOutput:
         """
 
         for p_id, p_info in data.items():
-            file_path = Path(dir_path) / f"{p_id}.csv"
+            file_path = Path(dir_path).joinpath(f"{p_id}.csv")
             self.to_csv_list(p_info, file_path)
 
         print("Dictionary written to csv")
@@ -293,7 +293,7 @@ class QueryOutput:
         data = self.to_props(results_container)
 
         if isinstance(data, list):
-            filepath = dir_path / "query_out.csv"
+            filepath = dir_path.joinpath("query_out.csv")
             self.to_csv_list(data, filepath)
         else:
             self.to_csv_dictionary(data, dir_path)

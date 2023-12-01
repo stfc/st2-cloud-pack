@@ -42,6 +42,24 @@ def example_grouped_data():
     }
 
 
+@pytest.fixture
+def example_data():
+    return [
+        {
+            "server_id": "server_id1",
+            "server_name": "server1",
+            "user_id": "user_id1",
+            "user_name": "user1",
+        },
+        {
+            "server_id": "server_id2",
+            "server_name": "server2",
+            "user_id": "user_id2",
+            "user_name": "user2",
+        },
+    ]
+
+
 @pytest.fixture(name="instance")
 def instance_fixture():
     """
@@ -619,12 +637,14 @@ def test_flatten_with_duplicates(instance):
 
 @patch("builtins.open", new_callable=mock_open)
 @patch("csv.DictWriter")
-def test_to_csv_with_valid_parameters(mock_dict_writer, mock_file, example_data):
-    """With Valid Parameters"""
-    QueryOutput.to_csv(example_data, "csv_files")
+def test_to_csv_list_with_valid_parameters(mock_dict_writer, mock_file, example_data, instance):
+    """
+    Tests to_csv_list With Valid Parameter inputs.
+    """
+    instance.to_csv_list(example_data, "csv_files")
 
     mock_file.assert_called_once_with(
-        WindowsPath("csv_files/query_out.csv"), "w", encoding="utf-8"
+        "csv_files", "w", encoding="utf-8"
     )
     mock_dict_writer.assert_called_once_with(
         mock_file.return_value, fieldnames=example_data[0].keys()
@@ -633,20 +653,30 @@ def test_to_csv_with_valid_parameters(mock_dict_writer, mock_file, example_data)
     mock_dict_writer.return_value.writerows.assert_called_once_with(example_data)
 
 
-def test_to_csv_fails():
+def test_to_csv_list_fails(instance):
+    """
+        Tests to_csv_list raises an error when input data is empty
+    """
     with pytest.raises(RuntimeError):
-        QueryOutput.to_csv([], "invalid path")
+        instance.to_csv_list([], "invalid path")
 
 
-@patch("openstack_query.query_blocks.query_output.to_csv")
-def test_to_csv_grouped_loop_empty_input(mock_to_csv):
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_list")
+def test_to_csv_grouped_loop_empty_input(mock_to_csv_list, instance):
+    """
+        Tests to_csv_dictionary does not loop if an empty input is made
+    """
     """loop is given: 0 Items"""
-    mock_to_csv.assert_not_called()
+    instance.to_csv_dictionary({}, "path")
+    mock_to_csv_list.assert_not_called()
 
 
-@patch("openstack_query.query_blocks.query_output.to_csv")
-def test_to_csv_grouped_loop_one_input(instance, mock_to_csv):
-    """mock to_cs outputs"""
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_list")
+@patch("openstack_query.query_blocks.query_output.Path")
+def test_to_csv_grouped_loop_one_input(mock_path, mock_to_csv_list, instance):
+    """
+        Tests to_csv_dictionary does loop once if a single input is made
+    """
 
     example_grouped_data = {
         "user_name is user1": [
@@ -666,21 +696,23 @@ def test_to_csv_grouped_loop_one_input(instance, mock_to_csv):
     }
 
     """Run To csv"""
-    QueryOutput.to_csv_dictionary(example_grouped_data, "csv_files")
+    instance.to_csv_dictionary(example_grouped_data, "csv_files")
 
     """loop is given: 1 Items"""
-    mock_to_csv.assert_called_once_with(
+    mock_to_csv_list.assert_called_once_with(
         example_grouped_data["user_name is user1"],
-        Path("csv_files/user_name is user1.csv"),
+        mock_path.return_value.joinpath.return_value
     )
 
 
-@patch("openstack_query.query_blocks.query_output.to_csv_list")
-def test_to_csv_grouped_loop_more_than_one_input(mock_to_csv, example_grouped_data):
-    """mock to_cs outputs"""
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_list")
+def test_to_csv_grouped_loop_more_than_one_input(mock_to_csv, example_grouped_data, instance):
+    """
+        Tests to_csv_dictionary loops more than once if more than one input is made
+    """
 
     """Run To csv"""
-    QueryOutput.to_csv_dictionary(example_grouped_data, "csv_files")
+    instance.to_csv_dictionary(example_grouped_data, "csv_files")
 
     """
     loop is given: 1 Items
@@ -690,3 +722,43 @@ def test_to_csv_grouped_loop_more_than_one_input(mock_to_csv, example_grouped_da
         example_grouped_data["user_name is user2"],
         Path("csv_files/user_name is user2.csv"),
     )
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_props")
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_dictionary")
+@patch("openstack_query.query_blocks.query_output.Path")
+def test_to_csv_grouped_input(mock_path, mock_to_dictionary, mock_to_props, instance):
+    """
+        Tests to_csv correctly identifies an input as a dictionary
+    """
+
+    mock_results_container = NonCallableMock()
+    mock_dir_path = NonCallableMock()
+
+    mock_to_props.return_value = {"prop1": "val1", "prop2": "val2"}
+
+    instance.to_csv(mock_results_container, mock_dir_path)
+
+    mock_path.assert_called_once_with(mock_dir_path)
+    mock_to_props.assert_called_once_with(mock_results_container)
+    mock_to_dictionary.assert_called_once_with(mock_to_props.return_value, mock_path.return_value)
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_props")
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_list")
+@patch("openstack_query.query_blocks.query_output.Path")
+def test_to_csv_ungrouped_input(mock_path, mock_to_list, mock_to_props, instance):
+    """
+            Tests to_csv correctly identifies an input as a list
+    """
+
+    mock_results_container = NonCallableMock()
+    mock_dir_path = NonCallableMock()
+
+    mock_to_props.return_value = ["val1", "val2"]
+
+    instance.to_csv(mock_results_container, mock_dir_path)
+
+    mock_path.assert_called_once_with(mock_dir_path)
+    mock_to_props.assert_called_once_with(mock_results_container)
+    mock_to_list.assert_called_once_with(mock_to_props.return_value, mock_path.return_value.joinpath.return_value)
