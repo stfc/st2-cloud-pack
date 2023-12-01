@@ -1,11 +1,12 @@
 import dataclasses
-from typing import List, Optional, Dict, Tuple
-from openstack_query.api.query_objects import ServerQuery, UserQuery
+from typing import List, Optional, Dict
+
+from email_api.emailer import Emailer
 from enums.query.props.server_properties import ServerProperties
 from enums.query.props.user_properties import UserProperties
-from structs.email.email_params import EmailParams
 from enums.query.query_presets import QueryPresetsGeneric, QueryPresetsDateTime
-from email_api.emailer import Emailer
+from openstack_query.api.query_objects import ServerQuery, UserQuery
+from structs.email.email_params import EmailParams
 from structs.email.smtp_account import SMTPAccount
 
 
@@ -14,6 +15,7 @@ class UserDetails:
     """
     Dataclass for user details
     """
+
     id: str
     name: str
     email: str
@@ -61,7 +63,9 @@ def query_shutoff_vms(
     return res
 
 
-def find_user_info(user_id:str, cloud_account:str, override_email_address:str)-> UserDetails:
+def find_user_info(
+    user_id: str, cloud_account: str, override_email_address: str
+) -> UserDetails:
     """
     Run UserQuery to find user name and user email associated with a VM
     :param user_id: openstack user id
@@ -71,13 +75,8 @@ def find_user_info(user_id:str, cloud_account:str, override_email_address:str)->
     """
 
     user_query = UserQuery()
-    user_query.select(
-            UserProperties.USER_NAME,
-            UserProperties.USER_EMAIL
-    ).where(
-        QueryPresetsGeneric.EQUAL_TO,
-        UserProperties.USER_ID,
-        value=user_id
+    user_query.select(UserProperties.USER_NAME, UserProperties.USER_EMAIL).where(
+        QueryPresetsGeneric.EQUAL_TO, UserProperties.USER_ID, value=user_id
     )
 
     user_query.run(cloud_account=cloud_account)
@@ -161,4 +160,3 @@ def send_shutoff_emails(
         server_name_list = extract_server_list(user)
         # send email
         send_user_email(smtp_account, email_from, user_details.email, server_name_list)
-
