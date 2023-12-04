@@ -57,8 +57,8 @@ class UserMapping(MappingInterface):
         on the control plane, rather than locally.
 
         valid filters documented here:
-            https://docs.openstack.org/openstacksdk/latest/user/proxies/compute.html
-            https://docs.openstack.org/api-ref/compute/?expanded=list-servers-detail#list-server-request
+            https://docs.openstack.org/openstacksdk/latest/user/proxies/identity_v3.html
+            https://docs.openstack.org/api-ref/identity/v3/#list-users
         """
         return ServerSideHandler(
             {
