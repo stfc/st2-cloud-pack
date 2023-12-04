@@ -666,7 +666,6 @@ def test_to_csv_grouped_loop_empty_input(mock_to_csv_list, instance):
     """
     Tests to_csv_dictionary does not loop if an empty input is made
     """
-    """loop is given: 0 Items"""
     instance.to_csv_dictionary({}, "path")
     mock_to_csv_list.assert_not_called()
 
@@ -695,10 +694,8 @@ def test_to_csv_grouped_loop_one_input(mock_path, mock_to_csv_list, instance):
         ],
     }
 
-    """Run To csv"""
     instance.to_csv_dictionary(looping_data, "csv_files")
 
-    """loop is given: 1 Items"""
     mock_to_csv_list.assert_called_once_with(
         looping_data["user_name is user1"],
         mock_path.return_value.joinpath.return_value,
@@ -713,13 +710,8 @@ def test_to_csv_grouped_loop_more_than_one_input(
     Tests to_csv_dictionary loops more than once if more than one input is made
     """
 
-    """Run To csv"""
     instance.to_csv_dictionary(instance_grouped_data, "csv_files")
 
-    """
-    loop is given: 1 Items
-    This bit need rewriting to check for multiple outputs instead of 1.
-    """
     mock_to_csv.assert_called_with(
         instance_grouped_data["user_name is user2"],
         Path("csv_files/user_name is user2.csv"),
