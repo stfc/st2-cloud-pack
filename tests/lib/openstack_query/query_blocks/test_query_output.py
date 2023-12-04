@@ -8,8 +8,8 @@ from enums.query.props.server_properties import ServerProperties
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 
-@pytest.fixture
-def instance_grouped_data():
+@pytest.fixture(name="instance_grouped_data")
+def instance_grouped_data_fixture():
     return {
         "user_name is user1": [
             {
@@ -42,8 +42,8 @@ def instance_grouped_data():
     }
 
 
-@pytest.fixture
-def instance_data():
+@pytest.fixture(name="instance_data")
+def instance_data_fixture():
     return [
         {
             "server_id": "server_id1",
