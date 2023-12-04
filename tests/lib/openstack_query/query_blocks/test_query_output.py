@@ -1,4 +1,4 @@
-from pathlib import WindowsPath, Path
+from pathlib import Path
 from unittest.mock import MagicMock, patch, call, NonCallableMock, mock_open
 import pytest
 
