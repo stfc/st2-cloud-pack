@@ -250,7 +250,7 @@ class QueryOutput:
         Takes a list of dictionaries and outputs them into a designated csv file 'self._parse_properties'
         :param data: this is the list of dictionaries passed in to this function
         :param output_filepath: this is the output path that is passed in to the function for it to use
-        :return: Does it return anything.
+        :return: Does not return anything.
         """
 
         if data and len(data) > 0:
@@ -270,7 +270,7 @@ class QueryOutput:
         Takes a dictionary of dictionaries and outputs them into separate designated csv file 'self._parse_properties'
         :param data: this is the dictionary of dictionaries passed in to this function
         :param dir_path: this is the output path the csv files will be created in
-        :return: Does it return anything.
+        :return: Does not return anything.
         """
 
         for p_id, p_info in data.items():
@@ -286,7 +286,7 @@ class QueryOutput:
         :param results_container: this is the dictionary of dictionaries or list of dictionaries that is passed in to
         other functions.
         :param dir_path: this is a directory path where csv files will be created in.
-        :return: Does it return anything.
+        :return: Does not return anything.
         """
         dir_path = Path(dir_path)
         data = self.to_props(results_container)
