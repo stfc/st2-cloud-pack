@@ -643,7 +643,7 @@ def test_to_csv_list_with_valid_parameters(
     """
     Tests to_csv_list With Valid Parameter inputs.
     """
-    instance.to_csv_list(data, "csv_files")
+    instance.to_csv_list(instance_data, "csv_files")
 
     mock_file.assert_called_once_with("csv_files", "w", encoding="utf-8")
     mock_dict_writer.assert_called_once_with(
