@@ -637,7 +637,9 @@ def test_flatten_with_duplicates(instance):
 
 @patch("builtins.open", new_callable=mock_open)
 @patch("csv.DictWriter")
-def test_to_csv_list_with_valid_parameters(mock_dict_writer, mock_file, instance_data, instance):
+def test_to_csv_list_with_valid_parameters(
+    mock_dict_writer, mock_file, instance_data, instance
+):
     """
     Tests to_csv_list With Valid Parameter inputs.
     """
@@ -704,7 +706,9 @@ def test_to_csv_grouped_loop_one_input(mock_path, mock_to_csv_list, instance):
 
 
 @patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_list")
-def test_to_csv_grouped_loop_more_than_one_input(mock_to_csv, instance_grouped_data, instance):
+def test_to_csv_grouped_loop_more_than_one_input(
+    mock_to_csv, instance_grouped_data, instance
+):
     """
     Tests to_csv_dictionary loops more than once if more than one input is made
     """
