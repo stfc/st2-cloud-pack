@@ -294,7 +294,7 @@ class QueryOutput:
         if isinstance(data, list):
             filepath = dir_path.joinpath("query_out.csv")
             self.to_csv_list(data, filepath)
-        elif isinstance(data, list):
+        elif isinstance(data, dict):
             self.to_csv_dictionary(data, dir_path)
         else:
             raise RuntimeError("Error: The enter data is not a list or dictionary")
