@@ -286,7 +286,7 @@ class QueryOutput:
         :param results_container: this is the dictionary of dictionaries or list of dictionaries that is passed in to
         other functions.
         :param dir_path: this is a directory path where csv files will be created in.
-        :return: Does it return anything.
+        :return: Does not return anything.
         """
         dir_path = Path(dir_path)
         data = self.to_props(results_container)
