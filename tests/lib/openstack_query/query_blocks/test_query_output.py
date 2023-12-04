@@ -9,7 +9,7 @@ from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 
 @pytest.fixture
-def grouped_data():
+def instance_grouped_data():
     return {
         "user_name is user1": [
             {
@@ -43,7 +43,7 @@ def grouped_data():
 
 
 @pytest.fixture
-def data():
+def instance_data():
     return [
         {
             "server_id": "server_id1",
@@ -637,7 +637,7 @@ def test_flatten_with_duplicates(instance):
 
 @patch("builtins.open", new_callable=mock_open)
 @patch("csv.DictWriter")
-def test_to_csv_list_with_valid_parameters(mock_dict_writer, mock_file, data, instance):
+def test_to_csv_list_with_valid_parameters(mock_dict_writer, mock_file, instance_data, instance):
     """
     Tests to_csv_list With Valid Parameter inputs.
     """
@@ -645,10 +645,10 @@ def test_to_csv_list_with_valid_parameters(mock_dict_writer, mock_file, data, in
 
     mock_file.assert_called_once_with("csv_files", "w", encoding="utf-8")
     mock_dict_writer.assert_called_once_with(
-        mock_file.return_value, fieldnames=data[0].keys()
+        mock_file.return_value, fieldnames=instance_data[0].keys()
     )
     mock_dict_writer.return_value.writeheader.assert_called_once()
-    mock_dict_writer.return_value.writerows.assert_called_once_with(data)
+    mock_dict_writer.return_value.writerows.assert_called_once_with(instance_data)
 
 
 def test_to_csv_list_fails(instance):
@@ -676,7 +676,7 @@ def test_to_csv_grouped_loop_one_input(mock_path, mock_to_csv_list, instance):
     Tests to_csv_dictionary does loop once if a single input is made
     """
 
-    looping_grouped_data = {
+    looping_data = {
         "user_name is user1": [
             {
                 "server_id": "server_id1",
@@ -694,30 +694,30 @@ def test_to_csv_grouped_loop_one_input(mock_path, mock_to_csv_list, instance):
     }
 
     """Run To csv"""
-    instance.to_csv_dictionary(looping_grouped_data, "csv_files")
+    instance.to_csv_dictionary(looping_data, "csv_files")
 
     """loop is given: 1 Items"""
     mock_to_csv_list.assert_called_once_with(
-        looping_grouped_data["user_name is user1"],
+        looping_data["user_name is user1"],
         mock_path.return_value.joinpath.return_value,
     )
 
 
 @patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_list")
-def test_to_csv_grouped_loop_more_than_one_input(mock_to_csv, grouped_data, instance):
+def test_to_csv_grouped_loop_more_than_one_input(mock_to_csv, instance_grouped_data, instance):
     """
     Tests to_csv_dictionary loops more than once if more than one input is made
     """
 
     """Run To csv"""
-    instance.to_csv_dictionary(grouped_data, "csv_files")
+    instance.to_csv_dictionary(instance_grouped_data, "csv_files")
 
     """
     loop is given: 1 Items
     This bit need rewriting to check for multiple outputs instead of 1.
     """
     mock_to_csv.assert_called_with(
-        grouped_data["user_name is user2"],
+        instance_grouped_data["user_name is user2"],
         Path("csv_files/user_name is user2.csv"),
     )
 
