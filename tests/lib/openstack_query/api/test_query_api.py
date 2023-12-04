@@ -227,6 +227,22 @@ def test_to_props(instance):
     assert res == instance.output.to_props.return_value
 
 
+def test_to_csv(instance):
+    """
+    Tests to_csv method, method should call results_container.parse_results and forward that result
+    onto output.to_csv with given dir_path param
+    """
+    mock_dir_path = NonCallableMock()
+    res = instance.to_csv(mock_dir_path)
+    instance.results_container.parse_results.assert_called_once_with(
+        instance.parser.run_parser
+    )
+    instance.output.to_csv.assert_called_once_with(
+        instance.results_container, mock_dir_path
+    )
+    assert res == instance.output.to_csv.return_value
+
+
 def test_to_objects(instance):
     """
     Tests that to_objects method functions expectedly - with no extra params
