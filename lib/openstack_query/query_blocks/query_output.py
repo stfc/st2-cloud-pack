@@ -273,9 +273,9 @@ class QueryOutput:
         :return: Does not return anything.
         """
 
-        for p_id, p_info in data.items():
-            file_path = Path(dir_path).joinpath(f"{p_id}.csv")
-            self.to_csv_list(p_info, file_path)
+        for group_name, group_item in data.items():
+            file_path = Path(dir_path).joinpath(f"{group_name}.csv")
+            self.to_csv_list(group_item, file_path)
 
         print("Dictionary written to csv")
 
