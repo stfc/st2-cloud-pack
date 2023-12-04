@@ -21,22 +21,22 @@ def instance_grouped_data_fixture():
             {
                 "server_id": "server_id2",
                 "server_name": "server2",
-                "user_id": "user_id1",
-                "user_name": "user1",
+                "user_id": "user_id2",
+                "user_name": "user2",
             },
         ],
         "user_name is user2": [
             {
                 "server_id": "server_id3",
                 "server_name": "server3",
-                "user_id": "user_id2",
-                "user_name": "user2",
+                "user_id": "user_id3",
+                "user_name": "user3",
             },
             {
                 "server_id": "server_id4",
                 "server_name": "server4",
-                "user_id": "user_id2",
-                "user_name": "user2",
+                "user_id": "user_id4",
+                "user_name": "user4",
             },
         ],
     }
@@ -688,8 +688,8 @@ def test_to_csv_grouped_loop_one_input(mock_path, mock_to_csv_list, instance):
             {
                 "server_id": "server_id2",
                 "server_name": "server2",
-                "user_id": "user_id1",
-                "user_name": "user1",
+                "user_id": "user_id2",
+                "user_name": "user2",
             },
         ],
     }
