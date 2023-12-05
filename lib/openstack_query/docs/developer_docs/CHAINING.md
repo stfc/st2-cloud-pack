@@ -61,5 +61,3 @@ A common workflow may want to keep certain results from previous chained queries
 - `then` gives the user the option to
 
 **Note Many-to-one property chaining can lead to duplicates** - this is left to the user to sort out
-
-## Workflows
