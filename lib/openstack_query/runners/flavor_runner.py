@@ -4,12 +4,11 @@ import logging
 from openstack.compute.v2.flavor import Flavor
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_query.runners.runner_wrapper import RunnerWrapper
+from openstack_query.runners.runner_utils import RunnerUtils
 
 from custom_types.openstack_query.aliases import ServerSideFilters
 
 logger = logging.getLogger(__name__)
-
-# pylint:disable=too-few-public-methods
 
 
 class FlavorRunner(RunnerWrapper):
@@ -20,11 +19,15 @@ class FlavorRunner(RunnerWrapper):
 
     RESOURCE_TYPE = Flavor
 
-    def _parse_meta_params(self, _: OpenstackConnection, **__):
+    def parse_meta_params(self, conn: OpenstackConnection, **kwargs):
+        """
+        This method is a helper function that will parse a set of meta params specific to the resource and
+        return a set of parsed meta-params to pass to _run_query
+        """
         logger.debug("FlavorQuery has no meta-params available")
-        return {}
+        return super().parse_meta_params(conn, **kwargs)
 
-    def _run_query(
+    def run_query(
         self,
         conn: OpenstackConnection,
         filter_kwargs: Optional[ServerSideFilters] = None,
@@ -46,4 +49,6 @@ class FlavorRunner(RunnerWrapper):
             "running openstacksdk command conn.compute.flavors(%s)",
             ",".join(f"{key}={value}" for key, value in filter_kwargs.items()),
         )
-        return self._run_paginated_query(conn.compute.flavors, filter_kwargs)
+        return RunnerUtils.run_paginated_query(
+            conn.compute.flavors, self._page_marker_prop_func, filter_kwargs
+        )
