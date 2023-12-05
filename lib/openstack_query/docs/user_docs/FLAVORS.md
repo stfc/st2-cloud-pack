@@ -2,6 +2,8 @@
 Flavors refer to Openstack Compute Flavors. Flavors define the compute, memory, and storage capacity of nova computing instances.
 See [Openstack Docs](https://docs.openstack.org/api-ref/compute/#flavors) for more info
 
+**NOTE: `FlavorQuery` will only work with admin credentials - set by `clouds.yaml`**
+
 ## Querying
 
 To Query for Flavors using the Query Library, you can import `FlavorQuery()` like so:
@@ -22,25 +24,25 @@ from enums.query.props.flavor_properties import FlavorProperties
 
 `FlavorProperties` exposes the following properties:
 
-| Property Enum      | Aliases | Description                                                                                     |
-|--------------------|---------|-------------------------------------------------------------------------------------------------|
-| FLAVOR_DESCRIPTION | `None`  | The description of the flavor                                                                   |
-| FLAVOR_DISK        | `None`  | Size of the disk this flavor offers. Type: int                                                  |
-| FLAVOR_EPHEMERAL   | `None`  | Size of the ephemeral data disk attached to this server. Type: int                              |
-| FLAVOR_ID          | `None`  | Unique ID Openstack has assigned the flavor.                                                    |
-| FLAVOR_IS_DISABLED | `None`  | Indicates whether flavor is disabled. <br/>True if disabled, False if not                       |
-| FLAVOR_IS_PUBLIC   | `None`  | Indicates if flavor is available to all projects. <br/>True if publicly available, False if not |
-| FLAVOR_NAME        | `None`  | Name of the flavor                                                                              |
-| FLAVOR_RAM         | `None`  | The amount of RAM (in MB) this flavor offers. Type: int                                         |
-| FLAVOR_SWAP        | `None`  | Size of the swap partitions.                                                                    |
-| FLAVOR_VCPU        | `None`  | The number of virtual CPUs this flavor offers. Type: int                                        |
+| Property Enum      | Type     | Aliases | Description                                                                                     |
+|--------------------|----------|---------|-------------------------------------------------------------------------------------------------|
+| FLAVOR_DESCRIPTION | `string` | `None`  | The description of the flavor                                                                   |
+| FLAVOR_DISK        | `int`    | `None`  | Size of the disk this flavor offers. Type: int                                                  |
+| FLAVOR_EPHEMERAL   | `int`    | `None`  | Size of the ephemeral data disk attached to this server. Type: int                              |
+| FLAVOR_ID          | `string` | `None`  | Unique ID Openstack has assigned the flavor.                                                    |
+| FLAVOR_IS_DISABLED | `bool`   | `None`  | Indicates whether flavor is disabled. <br/>True if disabled, False if not                       |
+| FLAVOR_IS_PUBLIC   | `bool`   | `None`  | Indicates if flavor is available to all projects. <br/>True if publicly available, False if not |
+| FLAVOR_NAME        | `string` | `None`  | Name of the flavor                                                                              |
+| FLAVOR_RAM         | `int`    | `None`  | The amount of RAM (in MB) this flavor offers. Type: int                                         |
+| FLAVOR_SWAP        | `int`    | `None`  | Size of the swap partitions.                                                                    |
+| FLAVOR_VCPU        | `int`    | `None`  | The number of virtual CPUs this flavor offers. Type: int                                        |
 
 Any of these properties can be used for any of the API methods that takes a property - like `select`, `where`, `sort_by` etc
 Alternatively, you can pass property aliases (passed as string) instead (currently WIP)
 
 ## Chaining
 This section details valid mappings you can use to chain onto other queries or from other queries to chain into a `FlavorQuery` object.
-This applies to API calls `then` and `append_from` - see (API.md)[API.md] for details
+This applies to API calls `then` and `append_from` - see [API.md](API.md) for details
 
 
 ## Chaining from
@@ -63,4 +65,3 @@ Chaining from other `FlavorQuery` requires passing `FLAVOR_QUERY` as the `query_
 ## run() meta-parameters
 
 `FlavorQuery()` accepts no extra meta-parameters when calling `run()`
-**NOTE: This query will only work with admin credentials - set by `clouds.yaml`**

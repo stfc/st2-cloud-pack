@@ -56,7 +56,7 @@ with openstack.
 The API must be unchanging - as a developer you will not need to interact with this file unless you are adding a new
 API method - e.g. adding a new way to output results
 
-**NOTE: Deleting or Altering a API method requires approval and a good reason since it may break existing workflows **
+**NOTE: Deleting or Altering a API method requires approval and a good reason since it may break existing workflows**
 
 
 ### Client-Side Filters vs Server-Side Filters

@@ -263,7 +263,8 @@ def run(cloud_account: Union[str, CloudDomains],
   - this should be the domain set in the `clouds.yaml` file located in `.config/openstack/clouds.yaml`
 
 - `from_subset`: (optional) a subset of openstack resources to run query on instead of querying for them using openstacksdk
-  - **NOTE:** this is going to be deprecated soon - look at chaining for a better way to do this
+  - **NOTE:** this is going to be deprecated soon - look at using `then()` or `append_from()` for a better way to
+  chain the result of one query onto another
 
 - `kwargs`: keyword args that can be used to configure details of how query is run
   - see specific documentation for resource for valid keyword args you can pass to `run()`

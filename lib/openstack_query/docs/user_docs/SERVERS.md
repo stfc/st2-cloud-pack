@@ -1,8 +1,11 @@
-# Projects
+# Servers
 Servers refer to Openstack Servers. A Server refers to a VM (Virtual Machine) that Openstack manages. Servers are
 owned by a Project and a User.
 
 See [Openstack Docs](https://docs.openstack.org/api-ref/identity/v3/index.html#servers-servers) for more info
+
+**NOTE: `ServerQuery` will work with non-admin credentials.**
+**However, for specific projects or to query all projects you may need to have admin credentials - set in `clouds.yaml`**
 
 ## Querying
 
@@ -24,28 +27,29 @@ from enums.query.props.server_properties import ServerProperties
 
 `ServerProperties` exposes the following properties:
 
-| Property Enum            | Aliases | Description                                                                                                                                                                                                                                          |
-|--------------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| FLAVOR_ID                | `None`  | The ID of the Flavor the Server is using                                                                                                                                                                                                             |
-| HYPERVISOR_ID            | `None`  | The ID of the Hypervisor the Server is being hosted on                                                                                                                                                                                               |
-| IMAGE_ID                 | `None`  | The ID of the Image the Server is using                                                                                                                                                                                                              |
-| PROJECT_ID               | `None`  | The ID of the Project the Server is associated with                                                                                                                                                                                                  |
-| SERVER_CREATION_DATE     | `None`  | Timestamp of when the server was created.                                                                                                                                                                                                            |
-| SERVER_DESCRIPTION       | `None`  | User provided description of the server.                                                                                                                                                                                                             |
-| SERVER_ID                | `None`  | Unique ID Openstack has assigned the server.                                                                                                                                                                                                         |
-| SERVER_LAST_UPDATED_DATE | `None`  | Timestamp of when this server was last updated.                                                                                                                                                                                                      |
-| SERVER_NAME              | `None`  | User provided name for server                                                                                                                                                                                                                        |
-| SERVER_STATUS            | `None`  | The state this server is in. Valid values include <br/>ACTIVE, BUILDING, DELETED, ERROR, HARD_REBOOT, PASSWORD, PAUSED, <br/>REBOOT, REBUILD, RESCUED, RESIZED, REVERT_RESIZE, SHUTOFF, SOFT_DELETED, STOPPED, SUSPENDED, UNKNOWN, or VERIFY_RESIZE. |
-| USER_ID                  | `None`  | The ID of the User that owns the server                                                                                                                                                                                                              |
-| ADDRESSES                | `None`  | Comma-separated list of IP addresses this server can be accessed through                                                                                                                                                                             |
+| Property Enum            | Type         | Aliases | Description                                                                                                                                                                                                                                          |
+|--------------------------|--------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| FLAVOR_ID                | `string`     | `None`  | The ID of the Flavor the Server is using                                                                                                                                                                                                             |
+| HYPERVISOR_ID            | `string`     | `None`  | The ID of the Hypervisor the Server is being hosted on                                                                                                                                                                                               |
+| IMAGE_ID                 | `string`     | `None`  | The ID of the Image the Server is using                                                                                                                                                                                                              |
+| PROJECT_ID               | `string`     | `None`  | The ID of the Project the Server is associated with                                                                                                                                                                                                  |
+| SERVER_CREATION_DATE     | `string` (x) | `None`  | Timestamp of when the server was created.                                                                                                                                                                                                            |
+| SERVER_DESCRIPTION       | `string`     | `None`  | User provided description of the server.                                                                                                                                                                                                             |
+| SERVER_ID                | `string`     | `None`  | Unique ID Openstack has assigned the server.                                                                                                                                                                                                         |
+| SERVER_LAST_UPDATED_DATE | `string` (x) | `None`  | Timestamp of when this server was last updated.                                                                                                                                                                                                      |
+| SERVER_NAME              | `string`     | `None`  | User provided name for server                                                                                                                                                                                                                        |
+| SERVER_STATUS            | `string`     | `None`  | The state this server is in. Valid values include <br/>ACTIVE, BUILDING, DELETED, ERROR, HARD_REBOOT, PASSWORD, PAUSED, <br/>REBOOT, REBUILD, RESCUED, RESIZED, REVERT_RESIZE, SHUTOFF, SOFT_DELETED, STOPPED, SUSPENDED, UNKNOWN, or VERIFY_RESIZE. |
+| USER_ID                  | `string`     | `None`  | The ID of the User that owns the server                                                                                                                                                                                                              |
+| ADDRESSES                | `string`     | `None`  | Comma-separated list of IP addresses this server can be accessed through                                                                                                                                                                             |
 
+(x) - These are UTC timestamps in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format
 
 Any of these properties can be used for any of the API methods that takes a property - like `select`, `where`, `sort_by` etc
 Alternatively, you can pass property aliases (passed as string) instead (currently WIP)
 
 ## Chaining
 This section details valid mappings you can use to chain onto other queries or from other queries to chain into a `ProjectQuery` object.
-This applies to API calls `then` and `append_from` - see (API.md)[API.md] for details
+This applies to API calls `then` and `append_from` - see [API.md](API.md) for details
 
 
 ## Chaining from
@@ -90,6 +94,3 @@ To query on specific projects (you may not have access to) call `run()` like so 
 ```python
     ServerQuery.run(as_admin=True, projects=["name-or-id1", "name-or-id2"])
 ```
-
-**NOTE: This query will work with non-admin credentials.**
-**However, to query on all projects (or specific projects) you may need admin credentials - set by `clouds.yaml`**

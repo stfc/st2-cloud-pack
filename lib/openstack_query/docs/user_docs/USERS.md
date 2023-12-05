@@ -1,7 +1,9 @@
-# Projects
+# Users
 Users refer to Openstack Users. A User in Openstack is an individual who has access to the Openstack API and is owned
 by a domain.
 See [Openstack Docs](https://docs.openstack.org/api-ref/identity/v3/index.html#users) for more info
+
+**NOTE: `UserQuery` will only work with admin credentials - set by `clouds.yaml`**
 
 ## Querying
 
@@ -23,13 +25,13 @@ from enums.query.props.user_properties import UserProperties
 
 `UserProperties` exposes the following properties:
 
-| Property Enum    | Aliases | Description                               |
-|------------------|---------|-------------------------------------------|
-| USER_DOMAIN_ID   | `None`  | The ID for the domain which owns the user |
-| USER_DESCRIPTION | `None`  | The description of this user.             |
-| USER_EMAIL       | `None`  | The email address of this user.           |
-| USER_ID          | `None`  | Unique ID Openstack has assigned the user |
-| USER_NAME        | `None`  | Unique user name (within the domain)      |
+| Property Enum    | Type     | Aliases | Description                               |
+|------------------|----------|---------|-------------------------------------------|
+| USER_DOMAIN_ID   | `string` | `None`  | The ID for the domain which owns the user |
+| USER_DESCRIPTION | `string` | `None`  | The description of this user.             |
+| USER_EMAIL       | `string` | `None`  | The email address of this user.           |
+| USER_ID          | `string` | `None`  | Unique ID Openstack has assigned the user |
+| USER_NAME        | `string` | `None`  | Unique user name (within the domain)      |
 
 
 Any of these properties can be used for any of the API methods that takes a property - like `select`, `where`, `sort_by` etc
@@ -37,7 +39,7 @@ Alternatively, you can pass property aliases (passed as string) instead (current
 
 ## Chaining
 This section details valid mappings you can use to chain onto other queries or from other queries to chain into a `ProjectQuery` object.
-This applies to API calls `then` and `append_from` - see (API.md)[API.md] for details
+This applies to API calls `then` and `append_from` - see [API.md](API.md) for details
 
 
 ## Chaining from
@@ -64,5 +66,3 @@ Chaining from other `UserQuery` requires passing `USER_QUERY` as the `query_type
 | Parameter Definition                                             | Optional? | Description                                                                                                                                                                                                                                  |
 |------------------------------------------------------------------|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `from_domain: UserDomains` <br/><br/>(see `/enums/user_domains`) | Yes       | A User Domain to limit User query to<br/>Optional, if not given will run search on DEFAULT_DOMAIN - `UserDomains.STFC` <br/><br /> NOTE: it is possible to specify user domain via `where()` - if both are provided then an error is raised) |
-
-**NOTE: This query will only work with admin credentials - set by `clouds.yaml`**

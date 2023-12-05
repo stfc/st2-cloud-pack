@@ -2,6 +2,8 @@
 Projects refer to Openstack Projects. Projects are organizational units in the cloud to which you can assign users
 See [Openstack Docs](https://docs.openstack.org/api-ref/identity/v3/index.html#projects) for more info
 
+**NOTE: `ProjectQuery` will only work with admin credentials - set by `clouds.yaml`**
+
 ## Querying
 
 To Query for Projects using the Query Library, you can import `ProjectQuery()` like so:
@@ -23,22 +25,22 @@ from enums.query.props.project_properties import ProjectProperties
 `ProjectProperties` exposes the following properties:
 
 
-| Property Enum       | Aliases | Description                                                                                                                                                        |
-|---------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| PROJECT_DESCRIPTION | `None`  | The description of the project                                                                                                                                     |
-| PROJECT_DOMAIN_ID   | `None`  | The ID of the domain which owns the project;                                                                                                                       |
-| PROJECT_ID          | `None`  | Unique ID Openstack has assigned the project.                                                                                                                      |
-| PROJECT_IS_DOMAIN   | `None`  | Indicates whether the project also acts as a domain. <br/>If set to True, the project acts as both a project and a domain.                                         |
-| PROJECT_IS_ENABLED  | `None`  | Indicates whether users can authorize against this project. <br/>if set to False, users cannot access project, additionally all authorized tokens are invalidated. |
-| PROJECT_NAME        | `None`  | Name of the project                                                                                                                                                |
-| PROJECT_PARENT_ID   | `None`  | The ID of the parent of the project.                                                                                                                               |
+| Property Enum       | Type     | Aliases | Description                                                                                                                                                        |
+|---------------------|----------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| PROJECT_DESCRIPTION | `string` | `None`  | The description of the project.                                                                                                                                    |
+| PROJECT_DOMAIN_ID   | `string` | `None`  | The ID of the domain which owns the project.                                                                                                                       |
+| PROJECT_ID          | `string` | `None`  | Unique ID Openstack has assigned the project.                                                                                                                      |
+| PROJECT_IS_DOMAIN   | `bool`   | `None`  | Indicates whether the project also acts as a domain. <br/>If set to True, the project acts as both a project and a domain.                                         |
+| PROJECT_IS_ENABLED  | `bool`   | `None`  | Indicates whether users can authorize against this project. <br/>if set to False, users cannot access project, additionally all authorized tokens are invalidated. |
+| PROJECT_NAME        | `string` | `None`  | Name of the project.                                                                                                                                               |
+| PROJECT_PARENT_ID   | `string` | `None`  | The ID of the parent of the project.                                                                                                                               |
 
 Any of these properties can be used for any of the API methods that takes a property - like `select`, `where`, `sort_by` etc
 Alternatively, you can pass property aliases (passed as string) instead (currently WIP)
 
 ## Chaining
 This section details valid mappings you can use to chain onto other queries or from other queries to chain into a `ProjectQuery` object.
-This applies to API calls `then` and `append_from` - see (API.md)[API.md] for details
+This applies to API calls `then` and `append_from` - see [API.md](API.md) for details
 
 
 ## Chaining from
@@ -62,4 +64,3 @@ Chaining from other `ProjectQuery` requires passing `PROJECT_QUERY` as the `quer
 ## run() meta-parameters
 
 `ProjectQuery()` accepts no extra meta-parameters when calling `run()`.
-**NOTE: This query will only work with admin credentials - set by `clouds.yaml`**
