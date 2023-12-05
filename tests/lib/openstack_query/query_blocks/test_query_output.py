@@ -1,10 +1,63 @@
-from unittest.mock import MagicMock, patch, call, NonCallableMock
+from pathlib import Path
+from unittest.mock import MagicMock, patch, call, NonCallableMock, mock_open
 import pytest
 
 from exceptions.parse_query_error import ParseQueryError
 from openstack_query.query_blocks.query_output import QueryOutput
 from enums.query.props.server_properties import ServerProperties
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
+
+
+@pytest.fixture(name="instance_grouped_data")
+def instance_grouped_data_fixture():
+    return {
+        "user_name is user1": [
+            {
+                "server_id": "server_id1",
+                "server_name": "server1",
+                "user_id": "user_id1",
+                "user_name": "user1",
+            },
+            {
+                "server_id": "server_id2",
+                "server_name": "server2",
+                "user_id": "user_id2",
+                "user_name": "user2",
+            },
+        ],
+        "user_name is user2": [
+            {
+                "server_id": "server_id3",
+                "server_name": "server3",
+                "user_id": "user_id3",
+                "user_name": "user3",
+            },
+            {
+                "server_id": "server_id4",
+                "server_name": "server4",
+                "user_id": "user_id4",
+                "user_name": "user4",
+            },
+        ],
+    }
+
+
+@pytest.fixture(name="instance_data")
+def instance_data_fixture():
+    return [
+        {
+            "server_id": "server_id1",
+            "server_name": "server1",
+            "user_id": "user_id1",
+            "user_name": "user1",
+        },
+        {
+            "server_id": "server_id2",
+            "server_name": "server2",
+            "user_id": "user_id2",
+            "user_name": "user2",
+        },
+    ]
 
 
 @pytest.fixture(name="instance")
@@ -580,3 +633,130 @@ def test_flatten_with_duplicates(instance):
     assert instance._flatten_list(
         [{"prop1": "val1", "prop2": "val2"}, {"prop1": "val1", "prop2": "val2"}]
     ) == {"prop1": ["val1", "val1"], "prop2": ["val2", "val2"]}
+
+
+@patch("builtins.open", new_callable=mock_open)
+@patch("csv.DictWriter")
+def test_to_csv_list_with_valid_parameters(
+    mock_dict_writer, mock_file, instance_data, instance
+):
+    """
+    Tests to_csv_list With Valid Parameter inputs.
+    """
+    instance.to_csv_list(instance_data, "csv_files")
+
+    mock_file.assert_called_once_with("csv_files", "w", encoding="utf-8")
+    mock_dict_writer.assert_called_once_with(
+        mock_file.return_value, fieldnames=instance_data[0].keys()
+    )
+    mock_dict_writer.return_value.writeheader.assert_called_once()
+    mock_dict_writer.return_value.writerows.assert_called_once_with(instance_data)
+
+
+def test_to_csv_list_fails(instance):
+    """
+    Tests to_csv_list raises an error when input data is empty
+    """
+    with pytest.raises(RuntimeError):
+        instance.to_csv_list([], "invalid path")
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_list")
+def test_to_csv_grouped_loop_empty_input(mock_to_csv_list, instance):
+    """
+    Tests to_csv_dictionary does not loop if an empty input is made
+    """
+    instance.to_csv_dictionary({}, "path")
+    mock_to_csv_list.assert_not_called()
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_list")
+@patch("openstack_query.query_blocks.query_output.Path")
+def test_to_csv_grouped_loop_one_input(mock_path, mock_to_csv_list, instance):
+    """
+    Tests to_csv_dictionary does loop once if a single input is made
+    """
+
+    looping_data = {
+        "user_name is user1": [
+            {
+                "server_id": "server_id1",
+                "server_name": "server1",
+                "user_id": "user_id1",
+                "user_name": "user1",
+            },
+            {
+                "server_id": "server_id2",
+                "server_name": "server2",
+                "user_id": "user_id2",
+                "user_name": "user2",
+            },
+        ],
+    }
+
+    instance.to_csv_dictionary(looping_data, "csv_files")
+
+    mock_to_csv_list.assert_called_once_with(
+        looping_data["user_name is user1"],
+        mock_path.return_value.joinpath.return_value,
+    )
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_list")
+def test_to_csv_grouped_loop_more_than_one_input(
+    mock_to_csv, instance_grouped_data, instance
+):
+    """
+    Tests to_csv_dictionary loops more than once if more than one input is made
+    """
+
+    instance.to_csv_dictionary(instance_grouped_data, "csv_files")
+
+    mock_to_csv.assert_called_with(
+        instance_grouped_data["user_name is user2"],
+        Path("csv_files/user_name is user2.csv"),
+    )
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_props")
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_dictionary")
+@patch("openstack_query.query_blocks.query_output.Path")
+def test_to_csv_grouped_input(mock_path, mock_to_dictionary, mock_to_props, instance):
+    """
+    Tests to_csv correctly identifies an input as a dictionary
+    """
+
+    mock_results_container = NonCallableMock()
+    mock_dir_path = NonCallableMock()
+
+    mock_to_props.return_value = {"prop1": "val1", "prop2": "val2"}
+
+    instance.to_csv(mock_results_container, mock_dir_path)
+
+    mock_path.assert_called_once_with(mock_dir_path)
+    mock_to_props.assert_called_once_with(mock_results_container)
+    mock_to_dictionary.assert_called_once_with(
+        mock_to_props.return_value, mock_path.return_value
+    )
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_props")
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_list")
+@patch("openstack_query.query_blocks.query_output.Path")
+def test_to_csv_ungrouped_input(mock_path, mock_to_list, mock_to_props, instance):
+    """
+    Tests to_csv correctly identifies an input as a list
+    """
+
+    mock_results_container = NonCallableMock()
+    mock_dir_path = NonCallableMock()
+
+    mock_to_props.return_value = ["val1", "val2"]
+
+    instance.to_csv(mock_results_container, mock_dir_path)
+
+    mock_path.assert_called_once_with(mock_dir_path)
+    mock_to_props.assert_called_once_with(mock_results_container)
+    mock_to_list.assert_called_once_with(
+        mock_to_props.return_value, mock_path.return_value.joinpath.return_value
+    )

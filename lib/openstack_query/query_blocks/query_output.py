@@ -1,4 +1,6 @@
+import csv
 from typing import List, Dict, Union, Type, Set, Optional
+from pathlib import Path
 from tabulate import tabulate
 from enums.query.props.prop_enum import PropEnum
 from custom_types.openstack_query.aliases import PropValue
@@ -242,3 +244,57 @@ class QueryOutput:
         for key in keys:
             res[key] = [d[key] for d in data]
         return res
+
+    def to_csv_list(self, data: Union[List, Dict], output_filepath):
+        """
+        Takes a list of dictionaries and outputs them into a designated csv file 'self._parse_properties'
+        :param data: this is the list of dictionaries passed in to this function
+        :param output_filepath: this is the output path that is passed in to the function for it to use
+        :return: Does not return anything.
+        """
+
+        if data and len(data) > 0:
+            fields = data[0].keys()
+        else:
+            raise RuntimeError("data is empty")
+
+        with open(output_filepath, "w", encoding="utf-8") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fields)
+            writer.writeheader()
+            writer.writerows(data)
+
+        print("List Written to csv")
+
+    def to_csv_dictionary(self, data: Union[List, Dict], dir_path):
+        """
+        Takes a dictionary of dictionaries and outputs them into separate designated csv file 'self._parse_properties'
+        :param data: this is the dictionary of dictionaries passed in to this function
+        :param dir_path: this is the output path the csv files will be created in
+        :return: Does not return anything.
+        """
+
+        for group_name_id, group_item_info in data.items():
+            file_path = Path(dir_path).joinpath(f"{group_name_id}.csv")
+            self.to_csv_list(group_item_info, file_path)
+
+        print("Dictionary written to csv")
+
+    def to_csv(self, results_container: ResultsContainer, dir_path):
+        """
+        Takes a dictionary of dictionaries or list of dictionaries and a filepath or directory path.
+        It then decides if the to_csv_list or to_csv_Dictionaries function is needed then call the required one.
+        :param results_container: this is the dictionary of dictionaries or list of dictionaries that is passed in to
+        other functions.
+        :param dir_path: this is a directory path where csv files will be created in.
+        :return: Does not return anything.
+        """
+        dir_path = Path(dir_path)
+        data = self.to_props(results_container)
+
+        if isinstance(data, list):
+            filepath = dir_path.joinpath("query_out.csv")
+            self.to_csv_list(data, filepath)
+        elif isinstance(data, dict):
+            self.to_csv_dictionary(data, dir_path)
+        else:
+            raise RuntimeError("Error: The enter data is not a list or dictionary")
