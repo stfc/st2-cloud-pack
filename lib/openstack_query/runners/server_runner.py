@@ -6,6 +6,7 @@ from openstack.compute.v2.server import Server
 from openstack.exceptions import ResourceNotFound
 
 from openstack_api.openstack_connection import OpenstackConnection
+from openstack_query.runners.runner_utils import RunnerUtils
 from openstack_query.runners.runner_wrapper import RunnerWrapper
 
 from exceptions.parse_query_error import ParseQueryError
@@ -14,10 +15,7 @@ from custom_types.openstack_query.aliases import (
     ServerSideFilters,
 )
 
-
 logger = logging.getLogger(__name__)
-
-# pylint:disable=too-few-public-methods
 
 
 class ServerRunner(RunnerWrapper):
@@ -28,7 +26,7 @@ class ServerRunner(RunnerWrapper):
 
     RESOURCE_TYPE = Server
 
-    def _parse_meta_params(
+    def parse_meta_params(
         self,
         conn: OpenstackConnection,
         from_projects: Optional[List[ProjectIdentifier]] = None,
@@ -91,7 +89,7 @@ class ServerRunner(RunnerWrapper):
             res_list.append(project)
         return {"all_tenants": True, "projects": res_list}
 
-    def _run_query(
+    def run_query(
         self,
         conn: OpenstackConnection,
         filter_kwargs: Optional[ServerSideFilters] = None,
@@ -126,7 +124,9 @@ class ServerRunner(RunnerWrapper):
                 "running openstacksdk command conn.compute.servers (%s)",
                 ", ".join(f"{key}={value}" for key, value in filter_kwargs.items()),
             )
-            return self._run_paginated_query(conn.compute.servers, dict(filter_kwargs))
+            return RunnerUtils.run_paginated_query(
+                conn.compute.servers, self._page_marker_prop_func, dict(filter_kwargs)
+            )
 
         query_res = []
         project_num = len(meta_params["projects"])
@@ -141,6 +141,10 @@ class ServerRunner(RunnerWrapper):
                 ", ".join(f"{key}={value}" for key, value in filter_kwargs.items()),
             )
             query_res.extend(
-                self._run_paginated_query(conn.compute.servers, dict(filter_kwargs))
+                RunnerUtils.run_paginated_query(
+                    conn.compute.servers,
+                    self._page_marker_prop_func,
+                    dict(filter_kwargs),
+                )
             )
         return query_res

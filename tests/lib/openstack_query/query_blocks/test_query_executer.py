@@ -1,11 +1,9 @@
-from unittest.mock import MagicMock, NonCallableMock
+from unittest.mock import MagicMock, NonCallableMock, patch
 import pytest
 
 from enums.cloud_domains import CloudDomains
 from openstack_query.query_blocks.query_executer import QueryExecuter
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
-
-# pylint:disable=protected-access
 
 
 @pytest.fixture(name="instance")
@@ -15,17 +13,8 @@ def instance_fixture():
     """
     mock_prop_enum_cls = MockProperties
     mock_runner_cls = MagicMock()
-    query_executer = QueryExecuter(mock_prop_enum_cls, mock_runner_cls)
-    query_executer._results_container = MagicMock()
-    return query_executer
-
-
-def test_results_container(instance):
-    """
-    Tests that results container property works as expected
-    """
-    mock_results_container = instance._results_container
-    assert instance.results_container == mock_results_container
+    with patch("openstack_query.query_blocks.query_executer.ResultsContainer"):
+        return QueryExecuter(mock_prop_enum_cls, mock_runner_cls)
 
 
 def test_client_side_filter_func(instance):
