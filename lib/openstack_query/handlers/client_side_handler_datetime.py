@@ -1,3 +1,4 @@
+from typing import Union
 from datetime import datetime
 
 from enums.query.query_presets import QueryPresetsDateTime
@@ -17,20 +18,18 @@ class ClientSideHandlerDateTime(ClientSideHandler):
     Filter functions which map to QueryPresetsDateTime are defined here
     """
 
-    def __init__(self, filter_function_mappings: PresetPropMappings):
-        super().__init__(filter_function_mappings)
-
-        self._filter_functions = {
+    def __init__(self, preset_prop_mappings: PresetPropMappings):
+        filter_mappings = {
             QueryPresetsDateTime.OLDER_THAN: self._prop_older_than,
             QueryPresetsDateTime.YOUNGER_THAN: self._prop_younger_than,
             QueryPresetsDateTime.OLDER_THAN_OR_EQUAL_TO: self._prop_older_than_or_equal_to,
             QueryPresetsDateTime.YOUNGER_THAN_OR_EQUAL_TO: self._prop_younger_than_or_equal_to,
         }
+        super().__init__(filter_mappings, preset_prop_mappings)
 
-    # pylint: disable=too-many-arguments
+    @staticmethod
     def _prop_older_than(
-        self,
-        prop: str,
+        prop: Union[str, None],
         days: int = 0,
         hours: int = 0,
         minutes: int = 0,
@@ -49,6 +48,8 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         You must give at least one non-zero argument (days, hours, minutes, seconds) otherwise a
         MissingMandatoryArgument exception will be thrown
         """
+        if prop is None:
+            return False
         prop_timestamp = datetime.strptime(prop, "%Y-%m-%dT%H:%M:%SZ").timestamp()
         given_timestamp = TimeUtils.get_timestamp_in_seconds(
             days, hours, minutes, seconds
@@ -56,10 +57,9 @@ class ClientSideHandlerDateTime(ClientSideHandler):
 
         return prop_timestamp > given_timestamp
 
-    # pylint: disable=too-many-arguments
+    @staticmethod
     def _prop_younger_than_or_equal_to(
-        self,
-        prop: str,
+        prop: Union[str, None],
         days: int = 0,
         hours: int = 0,
         minutes: int = 0,
@@ -78,12 +78,17 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         You must give at least one non-zero argument (days, hours, minutes, seconds) otherwise a
         MissingMandatoryArgument exception will be thrown
         """
-        return not self._prop_older_than(prop, days, hours, minutes, seconds)
+        if prop is None:
+            return False
+        prop_timestamp = datetime.strptime(prop, "%Y-%m-%dT%H:%M:%SZ").timestamp()
+        given_timestamp = TimeUtils.get_timestamp_in_seconds(
+            days, hours, minutes, seconds
+        )
+        return not prop_timestamp > given_timestamp
 
-    # pylint: disable=too-many-arguments
+    @staticmethod
     def _prop_younger_than(
-        self,
-        prop: str,
+        prop: Union[str, None],
         days: int = 0,
         hours: int = 0,
         minutes: int = 0,
@@ -101,15 +106,16 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         You must give at least one non-zero argument (days, hours, minutes, seconds) otherwise a
         MissingMandatoryArgument exception will be thrown
         """
+        if prop is None:
+            return False
         prop_datetime = datetime.strptime(prop, "%Y-%m-%dT%H:%M:%SZ").timestamp()
         return prop_datetime < TimeUtils.get_timestamp_in_seconds(
             days, hours, minutes, seconds
         )
 
-    # pylint: disable=too-many-arguments
+    @staticmethod
     def _prop_older_than_or_equal_to(
-        self,
-        prop: str,
+        prop: Union[str, None],
         days: int = 0,
         hours: int = 0,
         minutes: int = 0,
@@ -128,4 +134,9 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         You must give at least one non-zero argument (days, hours, minutes, seconds) otherwise a
         MissingMandatoryArgument exception will be thrown
         """
-        return not self._prop_younger_than(prop, days, hours, minutes, seconds)
+        if prop is None:
+            return False
+        prop_datetime = datetime.strptime(prop, "%Y-%m-%dT%H:%M:%SZ").timestamp()
+        return not prop_datetime < TimeUtils.get_timestamp_in_seconds(
+            days, hours, minutes, seconds
+        )
