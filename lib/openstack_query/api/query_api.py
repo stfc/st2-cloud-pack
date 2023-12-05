@@ -119,7 +119,7 @@ class QueryAPI:
 
     def run(
         self,
-        cloud_account: Union[str, CloudDomains],
+        cloud_account: Union[str, CloudDomains] = None,
         from_subset: Optional[List[OpenstackResourceObj]] = None,
         **kwargs,
     ):
@@ -130,24 +130,27 @@ class QueryAPI:
         :param kwargs: keyword args that can be used to configure details of how query is run
             - valid kwargs specific to resource
         """
+        if not cloud_account and not from_subset:
+            raise ParseQueryError(
+                "please provide either:"
+                "\n\tcloud_account - a cloud domain to run query using openstacksdk"
+                "\n\tfrom_subset - a set of openstack objects"
+            )
 
         if from_subset:
-            logger.debug(
-                "'from_subset' optional param given - will run client-side filters only"
-            )
-            self.executer.client_side_filters = (
+            filters = (
                 self.builder.client_side_filters + self.builder.server_filter_fallback
             )
-            self.executer.server_side_filters = None
+            self.executer.run_with_subset(
+                subset=from_subset, client_side_filters=filters
+            )
         else:
-            self.executer.client_side_filters = self.builder.client_side_filters
-            self.executer.server_side_filters = self.builder.server_side_filters
-
-        self.executer.run_query(
-            cloud_account=cloud_account,
-            from_subset=from_subset,
-            **kwargs,
-        )
+            self.executer.run_with_openstacksdk(
+                cloud_account=cloud_account,
+                client_side_filters=self.builder.client_side_filters,
+                server_side_filters=self.builder.server_side_filters,
+                **kwargs,
+            )
 
         link_prop, forwarded_vals = self.chainer.forwarded_info
         if forwarded_vals:
