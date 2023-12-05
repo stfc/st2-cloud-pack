@@ -4,20 +4,20 @@ from enums.query.query_presets import QueryPresets
 
 from openstack.identity.v3.project import Project
 
-PropValue = Union[str, bool, int]
+PropValue = Union[str, bool, int, None]
 
 # A type alias for a single openstack resource - i.e Server, Hypervisor etc
 OpenstackResourceObj = Any
 
 # A type alias for a Prop Func which takes an openstack resource and returns its corresponding property value
-PropFunc = Callable[[OpenstackResourceObj], Any]
+PropFunc = Callable[[OpenstackResourceObj], PropValue]
 
 # A type alias for a dictionary which contains mappings between PropEnum and PropFunc
 PropertyMappings = Dict[PropEnum, PropFunc]
 
 # A type alias for a dictionary of params to pass to either client_side or server_side filters
 FilterParams = Dict[str, Union[PropValue, List[PropValue]]]
-FilterFunc = Callable[[PropFunc, FilterParams], bool]
+FilterFunc = Callable[[PropValue, FilterParams], bool]
 
 # A type alias for a client-side filter func
 ClientSideFilterFunc = Callable[[OpenstackResourceObj], bool]
@@ -43,6 +43,9 @@ ServerSideFilterMappings = Dict[QueryPresets, PropToServerSideFilterFunc]
 # can also accept a literal ['*'] to indicate preset works for all enum values
 # NOTE: can't use Literal typing for ['*'] with python 3.6 so using generic List
 PresetPropMappings = Dict[QueryPresets, Union[List, List[PropEnum]]]
+
+# type alias for mapping preset to a client side filter function
+PresetToClientSideFilterFunc = Dict[QueryPresets, ClientSideFilterFunc]
 
 # type alias for project identifier - either name/id or Project object
 ProjectIdentifier = Union[str, Project]

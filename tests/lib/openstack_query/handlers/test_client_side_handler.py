@@ -1,52 +1,49 @@
-from typing import Union
-from unittest.mock import MagicMock, patch, NonCallableMock
+from unittest.mock import MagicMock, NonCallableMock, call
 
 import pytest
 
-from openstack_query.handlers.client_side_handler import ClientSideHandler
+from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
+from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_preset_mapping_error import QueryPresetMappingError
+
+from openstack_query.handlers.client_side_handler import ClientSideHandler
 
 from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
-# pylint:disable=protected-access
 
-
-@pytest.fixture(name="mock_filter_func")
-def filter_func_fixture():
+@pytest.fixture(name="mock_preset_prop_mappings")
+def preset_prop_mappings_fixture():
     """
-    Stubs out something callable for the method
-    under test. We don't want any side effects from
-    this function, so we just pass.
+    Sets up a set of mock mappings of valid presets for handler against a
+    list of mock properties that preset can work on
     """
-
-    # pylint:disable=unused-argument
-    def _mock_filter_func(prop, *args, **kwargs):
-        # We're not testing filter functions in this test, so
-        # pass instead of returning a value
-        pass
-
-    return _mock_filter_func
-
-
-@pytest.fixture(name="instance")
-def instance_fixture(mock_filter_func):
-    """
-    Returns an instance with a mocked filter function
-    injects, and various properties to query presets
-    pre-defined
-    """
-    _filter_function_mappings = {
+    return {
         MockQueryPresets.ITEM_1: ["*"],
         MockQueryPresets.ITEM_2: [MockProperties.PROP_1, MockProperties.PROP_2],
         MockQueryPresets.ITEM_3: [MockProperties.PROP_3, MockProperties.PROP_4],
     }
-    instance = ClientSideHandler(_filter_function_mappings)
 
-    instance._filter_functions = {
-        MockQueryPresets.ITEM_1: mock_filter_func,
+
+@pytest.fixture(name="mock_filter")
+def mock_filter_instance():
+    """
+    Returns a mocked filter that will always fail
+    """
+
+    return MagicMock()
+
+
+@pytest.fixture(name="instance")
+def instance_fixture(mock_preset_prop_mappings, mock_filter):
+    """
+    Returns a function that will setup a client_side_handler with mocks
+    """
+
+    mock_filter_mappings = {
+        MockQueryPresets.ITEM_1: mock_filter,
     }
-    return instance
+    return ClientSideHandler(mock_filter_mappings, mock_preset_prop_mappings)
 
 
 def test_get_supported_props(instance):
@@ -61,72 +58,140 @@ def test_get_supported_props(instance):
     ]
 
 
-def test_check_supported_true(instance):
+def test_check_supported_preset_unknown(instance):
     """
-    Tests that check_supported method works expectedly
-    returns True if Prop Enum and Preset Enum have client-side mapping
+    Tests that check_supported method, when preset_known returns False, return False
     """
-    # when preset has '*' mapping - accepts all props
-    assert instance.check_supported(MockQueryPresets.ITEM_1, MockProperties.PROP_1)
+    mock_preset = MockQueryPresets.ITEM_4
+    mock_prop = NonCallableMock()
+    res = instance.check_supported(mock_preset, mock_prop)
+    assert not res
 
-    # when preset has explicit prop mapping
-    assert instance.check_supported(MockQueryPresets.ITEM_2, MockProperties.PROP_2)
+
+def test_check_supported_prop_unknown(instance):
+    """
+    Tests that check_supported method, when prop not supported by preset, return False
+    """
+    mock_preset = MockQueryPresets.ITEM_4
+    mock_prop = NonCallableMock()
+    res = instance.check_supported(mock_preset, mock_prop)
+    assert not res
 
 
-def test_check_preset_supported_false(instance):
+def test_check_supported_for_preset_that_supports_all(instance):
+    """
+    Tests that check_supported method, for a preset with '*' - check that it supports all props,
+    all props should return True
+    """
+    mock_preset = MockQueryPresets.ITEM_1
+    assert all(instance.check_supported(mock_preset, i) for i in list(MockProperties))
+
+
+def test_check_preset_and_prop_supported(instance):
     """
     Tests that check_supported method works expectedly
     returns False if either Preset is not supported or Preset-Prop does not have a mapping
     """
-
-    # when preset is not supported
-    assert not instance.check_supported(MockQueryPresets.ITEM_4, MockProperties.PROP_1)
-
-    # when preset found, but prop is not supported
-    assert not instance.check_supported(MockQueryPresets.ITEM_2, MockProperties.PROP_3)
+    assert instance.check_supported(MockQueryPresets.ITEM_2, MockProperties.PROP_1)
+    assert instance.check_supported(MockQueryPresets.ITEM_2, MockProperties.PROP_2)
+    assert instance.check_supported(MockQueryPresets.ITEM_3, MockProperties.PROP_3)
+    assert instance.check_supported(MockQueryPresets.ITEM_3, MockProperties.PROP_4)
 
 
-@patch(
-    "openstack_query.handlers.client_side_handler.ClientSideHandler._check_filter_func"
-)
-@patch(
-    "openstack_query.handlers.client_side_handler.ClientSideHandler._filter_func_wrapper"
-)
-def test_get_filter_func_valid(
-    mock_filter_func_wrapper, mock_check_filter_func, instance, mock_filter_func
-):
+@pytest.fixture(name="get_filter_func_runner")
+def get_filter_func_runner_fixture(instance):
+    """fixture that runs get_filter_func with valid kwargs"""
+
+    def _get_filter_func_runner(mock_prop_func, mock_filter_func_kwargs=None):
+        """
+        function that runs get_filter_func with valid kwargs
+        :param mock_prop_func: a mocked prop func
+        :param mock_filter_func_kwargs: a mocked set of filter kwargs
+        """
+
+        filter_func = instance.get_filter_func(
+            MockQueryPresets.ITEM_1,
+            MockProperties.PROP_1,
+            mock_prop_func,
+            mock_filter_func_kwargs,
+        )
+
+        # run the filter function - invokes _filter_func_wrapper
+        mock_obj = NonCallableMock()
+        res = filter_func(mock_obj)
+        mock_prop_func.assert_called_once_with(mock_obj)
+        return res
+
+    return _get_filter_func_runner
+
+
+def test_get_filter_func_valid_kwargs(get_filter_func_runner, mock_filter):
     """
-    Tests that get_filter_func method works expectedly - with valid inputs
-    sets up and returns a function that when given an openstack object will return a boolean value on
-    whether it passes the filter
+    Tests calling get_filter_func with valid kwargs.
+    get_filter_func will get a simple stub method that will output whatever value that kwarg "out" holds
     """
-    # define inputs
     mock_prop_func = MagicMock()
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
-    # mock function return values
-    mock_check_filter_func.return_value = True, ""
-    mock_filter_func_wrapper.return_value = "a-boolean-value"
+    res = get_filter_func_runner(mock_prop_func, mock_kwargs)
 
-    res = instance.get_filter_func(
-        MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_prop_func, mock_kwargs
+    mock_filter.assert_has_calls(
+        [
+            # first call from _check_filter_func
+            call(None, **mock_kwargs),
+            # second call from _filter_func_wrapper
+            call(mock_prop_func.return_value, **mock_kwargs),
+        ]
     )
-    val = res("test-openstack-res")
+    assert res == mock_filter.return_value
 
-    # MockQueryPresets.ITEM_1 and MockProperties.PROP_1 are valid and should return 'item1_func'
-    # - which represents a function mapping
-    mock_check_filter_func.assert_called_once_with(mock_filter_func, mock_kwargs)
-    mock_filter_func_wrapper.assert_called_once_with(
-        "test-openstack-res", mock_filter_func, mock_prop_func, mock_kwargs
+
+def test_get_filter_func_valid_kwargs_no_params(mock_filter, get_filter_func_runner):
+    """
+    Tests calling get_filter_func with valid kwargs - filter takes no extra params.
+    get_filter_func will get a simple stub method that will output whatever value that kwarg "out" holds
+    """
+    mock_prop_func = MagicMock()
+    mock_kwargs = None
+
+    res = get_filter_func_runner(mock_prop_func, mock_kwargs)
+
+    mock_filter.assert_has_calls(
+        [
+            # first call from _check_filter_func
+            call(None),
+            # second call from _filter_func_wrapper
+            call(mock_prop_func.return_value),
+        ]
     )
+    assert res == mock_filter.return_value
 
-    assert val == "a-boolean-value"
+
+def test_get_filter_func_prop_func_raises_error(mock_filter, get_filter_func_runner):
+    """
+    Tests calling get_filter_func with prop func that raises AttributeError when invoked
+    filter_func_wrapper should return False in this case
+    """
+    mock_prop_func = MagicMock()
+    mock_prop_func.side_effect = AttributeError
+    mock_kwargs = None
+
+    res = get_filter_func_runner(mock_prop_func, mock_kwargs)
+
+    mock_filter.assert_has_calls(
+        [
+            # first call from _check_filter_func
+            call(None),
+            # second call doesn't happen since prop func fails
+        ]
+    )
+    assert res is False
 
 
 def test_get_filter_func_preset_invalid(instance):
     """
-    Tests that get_filter_func method works expectedly - with invalid inputs
-    raises QueryPresetMappingError if preset invalid
+    Tests get_filter_func method with invalid preset
+    should raise QueryPresetMappingError
     """
     mock_prop_func = MagicMock()
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
@@ -143,8 +208,8 @@ def test_get_filter_func_preset_invalid(instance):
 
 def test_get_filter_func_prop_invalid(instance):
     """
-    Tests that get_filter_func method works expectedly - with invalid inputs
-    raises QueryPresetMappingError if prop invalid
+    Tests get_filter_func when prop is not valid.
+    Should raise QueryPresetMappingError
     """
 
     # when the preset is valid, but property is invalid
@@ -159,18 +224,18 @@ def test_get_filter_func_prop_invalid(instance):
         )
 
 
-@patch(
-    "openstack_query.handlers.client_side_handler.ClientSideHandler._check_filter_func"
+@pytest.mark.parametrize(
+    "error_type", [ParseQueryError, TypeError, NameError, MissingMandatoryParamError]
 )
-def test_get_filter_func_arguments_invalid(mock_check_filter_func, instance):
+def test_get_filter_func_filter_raises_error(error_type, instance, mock_filter):
     """
-    Tests that get_filter_func method works expectedly - with invalid inputs
-    raises QueryPresetMappingError if filter_func_kwargs are invalid
+    Tests get_filter_func method when filter function raises an error.
+    Should raise QueryPresetMappingError
     """
     mock_prop_func = MagicMock()
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
-    # when check_filter_func is false
-    mock_check_filter_func.return_value = False, "some-error"
+    mock_filter.side_effect = error_type
+
     with pytest.raises(QueryPresetMappingError):
         instance.get_filter_func(
             MockQueryPresets.ITEM_1,
@@ -179,129 +244,4 @@ def test_get_filter_func_arguments_invalid(mock_check_filter_func, instance):
             mock_kwargs,
         )
 
-
-def test_filter_func_wrapper_prop_func_error(instance):
-    """
-    Tests that get_filter_func method works expectedly - with invalid inputs
-    raises QueryPresetMappingError if filter_func_kwargs are invalid
-    """
-    mock_item = NonCallableMock()
-
-    mock_filter_func = MagicMock()
-    mock_filter_func.return_value = "a-boolean-value"
-
-    mock_prop_func = MagicMock()
-    mock_filter_func_kwargs = {"arg1": "val1", "arg2": "val2"}
-
-    # when prop_func raises exception - i.e. property not found
-    mock_prop_func.side_effect = AttributeError()
-    res = instance._filter_func_wrapper(
-        mock_item, mock_filter_func, mock_prop_func, mock_filter_func_kwargs
-    )
-    assert not res
-
-
-def test_filter_func_wrapper_valid(instance):
-    """
-    Tests that filter_func_wrapper method works expectedly - with valid inputs
-    returns a function that takes an openstack item as input and returns either True or False
-    on whether that item passes the set filter condition.
-        - Prop Enum and Preset Enum are supported
-        - and filter_func_kwargs are valid
-    """
-    mock_item = NonCallableMock()
-
-    mock_filter_func = MagicMock()
-    mock_filter_func.return_value = "a-boolean-value"
-
-    mock_prop_func = MagicMock()
-    mock_filter_func_kwargs = {"arg1": "val1", "arg2": "val2"}
-
-    # when prop_func is valid and filter_kwargs given
-    mock_prop_func.return_value = "some-prop-val"
-    mock_prop_func.side_effect = None
-    res = instance._filter_func_wrapper(
-        mock_item, mock_filter_func, mock_prop_func, mock_filter_func_kwargs
-    )
-    assert res == "a-boolean-value"
-    mock_filter_func.assert_called_once_with("some-prop-val", **mock_filter_func_kwargs)
-
-    # when prop_func is valid and filter_kwargs not given
-    mock_prop_func.reset_mock()
-    mock_filter_func.reset_mock()
-    mock_prop_func.return_value = "some-prop-val"
-    mock_prop_func.side_effect = None
-    res = instance._filter_func_wrapper(mock_item, mock_filter_func, mock_prop_func)
-    assert res == "a-boolean-value"
-    mock_filter_func.assert_called_once_with("some-prop-val")
-
-
-@pytest.mark.parametrize(
-    "input_val",
-    [
-        # required args only
-        {"arg1": 12},
-        # required and default
-        {"arg1": 12, "arg2": "non-default"},
-        # required and kwarg
-        {"arg1": 12, "some_kwarg": "some-val"},
-        # all possible
-        {"arg1": 12, "arg2": "non-default", "some_kwarg": "some-val"},
-        # different order
-        {"arg2": "non-default", "some_kwarg": "some-val", "arg1": 12},
-    ],
-)
-def test_check_filter_func_valid_filters(input_val, instance):
-    """
-    Tests that check_filter_func method works expectedly - for filter_func which takes extra params
-    returns True only if args match expected args required by client-side filter function
-    """
-
-    # pylint:disable=unused-argument
-    def _mock_filter_func(
-        prop: str, arg1: Union[int, float], arg2: str = "some-default", **kwargs
-    ):
-        # Fake the filter function not finding anything,
-        # so we can test that it handles when args not matched extra args available
-        # based on the arguments in this function, e.g. arg2
-        return None
-
-    res = instance._check_filter_func(_mock_filter_func, func_kwargs=input_val)
-    assert res[0]
-    assert res[1] == ""
-
-
-def test_check_filter_func_invalid_entry(instance):
-    """
-    Tests that check_filter_func method works expectedly - for filter_func which takes extra params
-    when given invalid args
-    """
-
-    def _mock_filter_func(
-        prop: str, arg1: Union[int, float], arg2: str = "some-default", **kwargs
-    ):
-        # Fake the filter function not finding anything,
-        # so we can test that it handles when args not matched extra args available
-        # based on the arguments in this function, e.g. arg2
-        raise TypeError("some error")
-
-    mock_func_kwargs = {"arg1": "val1", "arg2": "val2"}
-    res = instance._check_filter_func(_mock_filter_func, mock_func_kwargs)
-    assert not res[0]
-    assert res[1] == "some error"
-
-
-def test_check_filter_func_no_params_needed(instance):
-    """
-    Tests that check_filter_func method works expectedly - for filter_func which needs no extra params
-    """
-
-    # need prop since we essentially 'mock' it in check_filter_func - to check the function works
-    # pylint:disable=unused-argument
-
-    def _mock_filter_func(prop: str):
-        pass
-
-    res = instance._check_filter_func(_mock_filter_func, None)
-    assert res[0]
-    assert res[1] == ""
+    mock_filter.assert_called_once_with(None, **mock_kwargs)
