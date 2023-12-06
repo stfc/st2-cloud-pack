@@ -1,24 +1,18 @@
 from unittest.mock import patch, NonCallableMock
-import pytest
-
+from importlib import import_module
 from src.workflow_actions import WorkflowActions
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase
 
 
-@pytest.mark.parametrize(
-    "submodule_name, action_name", [("email", "send_decom_flavor_email")]
-)
-def test_submodules_exist(submodule_name, action_name):
+def test_module_exists():
     """
-    Test that each submodule and action entry-points exist for each workflow action
+    Test that each action's entry-point module exists
     """
-    workflow_module = __import__(f"workflows.{submodule_name}.{action_name}")
-    assert hasattr(workflow_module, f"{submodule_name}")
-    submodule = getattr(workflow_module, f"{submodule_name}")
+    action_name = "send_decom_flavor_email"
+    workflow_module = import_module("workflows")
 
-    assert hasattr(submodule, action_name)
-    action_module = getattr(submodule, action_name)
-
+    assert hasattr(workflow_module, action_name)
+    action_module = getattr(workflow_module, action_name)
     assert hasattr(action_module, action_name)
 
 
@@ -39,24 +33,22 @@ class TestWorkflowActions(OpenstackActionTestBase):
             "kwarg2": NonCallableMock(),
         }
 
-    @patch("builtins.__import__")
+    @patch("src.workflow_actions.import_module")
     def test_run(self, mock_import):
         """
         Tests that run method can dispatch to workflow methods
         """
 
-        mock_submodule_name = "submodule"
         mock_action_module_name = "action"
 
         with patch.object(self.action, "parse_configs") as mock_parse_configs:
             self.action.run(
-                submodule_name=mock_submodule_name,
                 action_name=mock_action_module_name,
                 **self.mock_kwargs,
             )
 
         mock_parse_configs.assert_called_once_with(**self.mock_kwargs)
-        mock_import.return_value.submodule.action.action.assert_called_once_with(
+        mock_import.return_value.action.action.assert_called_once_with(
             **mock_parse_configs.return_value
         )
 
