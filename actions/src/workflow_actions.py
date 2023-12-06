@@ -1,5 +1,5 @@
-from st2common.runners.base_action import Action
 from importlib import import_module
+from st2common.runners.base_action import Action
 from structs.email.smtp_account import SMTPAccount
 
 

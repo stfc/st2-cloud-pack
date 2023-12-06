@@ -4,7 +4,6 @@ from src.workflow_actions import WorkflowActions
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase
 
 
-
 def test_module_exists():
     """
     Test that each action's entry-point module exists
