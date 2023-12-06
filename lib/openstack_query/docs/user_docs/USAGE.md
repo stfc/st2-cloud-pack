@@ -141,149 +141,9 @@ server_query.group_by(ServerProperties.PROJECT_ID)
 # This will print out results and includes project name for every VM too
 server_query.to_string()
 ```
-
 ### NOTE - requirement to use enums for properties and query presets will be removed soon - see issue [88](https://github.com/stfc/st2-cloud-pack/issues/88)
 
-
-# Outputting
-
-you can output the results of your query in the following ways:
-
-`to_props()` - output the info to a list or a dict (if grouped)
-
-- will output selected props as dictionary of property name to property value for each openstack resource found
-
-**optional params:**
-
-- `flatten`: `bool`
-
-If True will flatten the results by selected for properties:
-
-Instead of returning:
-```python
-print(query.to_props(flatten=False))
-
-[
-
-  # first result
-  { "project_name": "foo", "project_id": "bar" },
-
-  # second result
-  { "project_name": "foo1", "project_id": "bar1" },
-  ...
-]
-```
-
-it will return:
-```python
-print(query.to_props(flatten=True))
-
-{
-    "project_name": ["foo", "foo1"],
-    "project_id": ["bar", "bar1"]
-}
-```
-
-If the results are grouped:
-
-Instead of returning:
-```python
-print(grouped_query.to_props(flatten=False))
-
-{
-    "group1": [
-        { "project_name": "foo", "project_id": "bar" },
-        { "project_name": "foo1", "project_id": "bar1" },
-    ],
-    "group2": [
-        {"project_name": "biz", "project_id": "baz"},
-        {"project_name": "biz1", "project_id": "baz1"}
-    ]
-}
-```
-It will return:
-```python
-print(grouped_query.to_props(flatten=True))
-
-{
-    "group1": {
-        "project_name": ["foo", "foo1"],
-        "project_id": ["bar", "bar1"]
-    },
-    "group2": {
-        "project_name": ["biz", "biz1"],
-        "project_id": ["baz", "baz1"]
-    }
-}
-```
-
-  - `groups`: List[str] - limit output to only a set of specified group keys
-
-
-`to_objects()` - output results as objects
-- optional param `groups` works same as `to_props`
-
-
-
-`to_string()` - output results as a tabulate table
-
-- accepts tabulate kwargs - see [tabulate](https://pypi.org/project/tabulate/)
-- optional param `groups` works same as `to_props`
-- optional param `title` - allows you to set a heading title for the table
-
-`to_html()`- output results as a tabulate html compatible table
-
-- accepts tabulate kwargs - see [tabulate](https://pypi.org/project/tabulate/)
-- optional param `title` - allows you to set a html heading title for the table
-- optional param `groups` works same as  `to_props`
-
-`to_csv` - in development
-
-`to_json` - in development
-
-other output possibilities coming soon
-
-# Sorting
-You can sort the results using `sort_by`
-
-query library allows sorting by multiple keys.
-The keys can currently only be supported properties of the query.
-
-`sort_by` takes a number of tuples of property and sort order enum
-
-```python
-query = ServerQuery().select(ServerProperties.SERVER_ID, ServerProperties.SERVER_NAME)
-query.where(QueryPresetsGeneric.ANY_IN, ServerProperties.SERVER_STATUS, values=["ERROR", "SHUTOFF"])
-query.run("prod")
-
-# sort by project_id (ascending), then sort by server_id (descending)
-query.sort_by(
-    (ServerProperties.PROJECT_ID, SortOrder.ASC),
-    (ServerProperties.SERVER_ID, SortOrder.DESC)
-)
-
-# sorting will only happen when the output is evaluated.
-query.to_string()
-
-# sort by flavor_id (ascending) - overrides previous sort function
-query.sort_by(
-    (ServerProperties.FLAVOR_ID, SortOrder.ASC)
-)
-
-# new sorting config takes effect here
-query.to_string()
-
-```
-
-
-
-# Grouping
-
-You can group results using `group_by`
-
-Group by partitions results based on a 'group_key'. Like sorting, grouping only works on supported properties of the query
-
-The Query Library currently supports:
+# Grouping Usage
 
 ## Group By Unique Values
 By default - the unique values of a given property found in results as the 'group_key'
@@ -297,7 +157,6 @@ query.run("prod")
 #   - in this case we'll get 2 groups - 'ERROR' and 'SHUTOFF' are the group keys
 query.group_by(ServerProperties.SERVER_STATUS)
 ```
-
 
 ## Group By Given Group Keys
 You can specify you're own group_keys by setting the values that belong to each group like so:
@@ -320,10 +179,4 @@ group_keys = {
 #   - group2 will contain VMs belonging to project with ids project-id3 and project-id4
 #   - all other VMs will be ignored
 query.group_by(ServerProperties.PROJECT_ID, group_keys=group_keys)
-
 ```
-
-## Note:  Include Missing
-If you are specifying group_keys, you can provide an additional flag `include_missing`
-
-if True: Group by will add an extra group which contains all the values found in results that won't be part of any pre-configured group
