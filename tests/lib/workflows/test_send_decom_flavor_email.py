@@ -132,6 +132,35 @@ def test_find_user_info_invalid(mock_user_query):
     assert res[1] == mock_override_email
 
 
+@patch("workflows.email.send_decom_flavor_email.UserQuery")
+def test_find_user_info_no_email_address(mock_user_query):
+    """
+    Tests find_user_info where query result contains no email address
+    """
+    mock_user_id = NonCallableMock()
+    mock_cloud_account = NonCallableMock()
+    mock_override_email = NonCallableMock()
+    mock_user_query.return_value.to_props.return_value = {
+        "user_id": ["foo"],
+        "user_email": [None],
+    }
+    res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
+    mock_user_query.assert_called_once()
+    mock_user_query.return_value.select.assert_called_once_with(
+        UserProperties.USER_NAME, UserProperties.USER_EMAIL
+    )
+    mock_user_query.return_value.where.assert_called_once_with(
+        QueryPresetsGeneric.EQUAL_TO, UserProperties.USER_ID, value=mock_user_id
+    )
+    mock_user_query.return_value.run.assert_called_once_with(
+        cloud_account=mock_cloud_account
+    )
+    mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
+
+    assert res[0] == ""
+    assert res[1] == mock_override_email
+
+
 @patch("workflows.email.send_decom_flavor_email.FlavorQuery")
 def test_find_users_with_decom_flavor_valid(mock_flavor_query):
     """

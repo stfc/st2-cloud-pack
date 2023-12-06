@@ -169,7 +169,7 @@ def find_user_info(user_id, cloud_account, override_email_address):
     )
     user_query.run(cloud_account=cloud_account)
     res = user_query.to_props(flatten=True)
-    if not res:
+    if not res or not res["user_email"][0]:
         return "", override_email_address
     return res["user_name"][0], res["user_email"][0]
 
