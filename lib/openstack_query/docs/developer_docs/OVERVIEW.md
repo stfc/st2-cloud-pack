@@ -90,3 +90,8 @@ There are two types of handlers - client-side and server-side.
 You likely will not need to worry about handlers - unless you are adding new presets
 
 In the case of client-side handlers this is where the client-side filter functions are defined.
+
+#
+#### Note about diagrams
+The diagrams were created with [draw.io](https://app.diagrams.net/).
+The source code is available under `developer_docs/imgs/src.draw.io`

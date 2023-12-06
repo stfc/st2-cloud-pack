@@ -1,0 +1,377 @@
+<mxfile host="app.diagrams.net" modified="2023-12-06T13:37:58.189Z" agent="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0" etag="r_qOwktagKtDaaeOjr_2" version="22.1.5" type="device">
+  <diagram name="Page-1" id="RvLt6-O_KsgavEf6NqLh">
+    <mxGraphModel dx="1933" dy="609" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" target="Zf0h4nbJOsK2uje8tg-D-3" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="90" y="170" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-7" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&amp;nbsp;1) imports &amp;lt;Resource&amp;gt;Query&lt;/font&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="Zf0h4nbJOsK2uje8tg-D-6" vertex="1" connectable="0">
+          <mxGeometry x="0.0308" relative="1" as="geometry">
+            <mxPoint x="-3" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-2" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;query_blocks&lt;/font&gt;" style="swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="390" y="325" width="200" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-25" value="QueryBuilder" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-2" vertex="1">
+          <mxGeometry x="10" y="30" width="180" height="31" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-26" value="QueryChainer" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-2" vertex="1">
+          <mxGeometry x="10" y="70" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-27" value="QueryExecutor" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-2" vertex="1">
+          <mxGeometry x="10" y="105" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-28" value="QueryOutput" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-2" vertex="1">
+          <mxGeometry x="10" y="145" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-29" value="QueryParser" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-2" vertex="1">
+          <mxGeometry x="10" y="185" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-113" value="&amp;lt;Query Runner&amp;gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-2" vertex="1">
+          <mxGeometry x="10" y="225" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-9" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;2) Finds Mapping Class&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="Zf0h4nbJOsK2uje8tg-D-3" target="Zf0h4nbJOsK2uje8tg-D-4" edge="1">
+          <mxGeometry x="-0.3913" y="20" relative="1" as="geometry">
+            <mxPoint x="320" y="370" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="340" y="240" />
+              <mxPoint x="230" y="240" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-16" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;3) Sets up using Mapping Class&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="Zf0h4nbJOsK2uje8tg-D-3" target="Zf0h4nbJOsK2uje8tg-D-2" edge="1">
+          <mxGeometry x="0.2444" y="22" relative="1" as="geometry">
+            <mxPoint x="570" y="320" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="380" y="240" />
+              <mxPoint x="480" y="240" />
+            </Array>
+            <mxPoint x="-2" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-17" value="&lt;div style=&quot;font-size: 14px;&quot;&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;4) Instantiates QueryAPI with&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 14px;&quot;&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;query block classes&lt;/font&gt;&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="Zf0h4nbJOsK2uje8tg-D-3" target="Zf0h4nbJOsK2uje8tg-D-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-3" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;query_factory&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="320" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-4" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;mappings&lt;/font&gt;" style="swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="130" y="320" width="200" height="220" as="geometry">
+            <mxRectangle x="80" y="320" width="100" height="30" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-20" value="ServerMapping" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-4" vertex="1">
+          <mxGeometry x="10" y="30" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-21" value="UserMapping" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-4" vertex="1">
+          <mxGeometry x="10" y="70" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-22" value="ProjectMapping" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-4" vertex="1">
+          <mxGeometry x="10" y="110" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-23" value="FlavorMapping" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-4" vertex="1">
+          <mxGeometry x="10" y="150" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-24" value="... Many More" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-4" vertex="1">
+          <mxGeometry x="10" y="190" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-5" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;query_api&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="660" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.442;entryY=0.02;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="Zf0h4nbJOsK2uje8tg-D-5" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="64.20000000000005" y="146" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="700" y="110" />
+              <mxPoint x="64" y="110" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-19" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;5) API methods made available via QueryAPI&lt;/font&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="Zf0h4nbJOsK2uje8tg-D-18" vertex="1" connectable="0">
+          <mxGeometry x="-0.0737" y="-1" relative="1" as="geometry">
+            <mxPoint x="-15" y="-9" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-30" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
+          <mxGeometry x="50" y="150" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-56" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="Zf0h4nbJOsK2uje8tg-D-77" target="Zf0h4nbJOsK2uje8tg-D-79" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="900" y="160" as="sourcePoint" />
+            <mxPoint x="1130" y="160" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1110" y="180" />
+              <mxPoint x="1110" y="180" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-57" value="&lt;div align=&quot;left&quot;&gt;&amp;nbsp;1)&amp;nbsp; Calls&amp;nbsp;&lt;/div&gt;&lt;div&gt;ServerQuery().then(&quot;USER_QUERY&quot;)&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="Zf0h4nbJOsK2uje8tg-D-56" vertex="1" connectable="0">
+          <mxGeometry x="0.0308" relative="1" as="geometry">
+            <mxPoint x="-29" y="20" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-75" value="UserQuery has preset where() filter to filter by unique values found in original query" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.438;exitY=-0.07;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="Zf0h4nbJOsK2uje8tg-D-95" target="Zf0h4nbJOsK2uje8tg-D-77" edge="1">
+          <mxGeometry x="0.0831" y="10" relative="1" as="geometry">
+            <mxPoint x="874.2" y="136" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1534" y="100" />
+              <mxPoint x="874" y="100" />
+              <mxPoint x="874" y="150" />
+            </Array>
+            <mxPoint x="1510.0400000000002" y="130" as="sourcePoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-76" value="7) New Query Object API methods made available" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="Zf0h4nbJOsK2uje8tg-D-75" vertex="1" connectable="0">
+          <mxGeometry x="-0.0737" y="-1" relative="1" as="geometry">
+            <mxPoint x="-95" y="-9" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-77" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
+          <mxGeometry x="860" y="150" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-81" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="Zf0h4nbJOsK2uje8tg-D-79" target="Zf0h4nbJOsK2uje8tg-D-80" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1220" y="260" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-82" value="2) forwards onto parse_then()" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="Zf0h4nbJOsK2uje8tg-D-81" vertex="1" connectable="0">
+          <mxGeometry x="-0.3096" y="1" relative="1" as="geometry">
+            <mxPoint x="-1" y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-79" value="QueryAPI" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1170" y="160" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-84" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;startArrow=classic;startFill=1;" parent="1" source="Zf0h4nbJOsK2uje8tg-D-80" target="Zf0h4nbJOsK2uje8tg-D-83" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1190" y="310" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="1195" y="340" />
+              <mxPoint x="1061" y="340" />
+              <mxPoint x="1061" y="420" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-85" value="3) Looks for shared&amp;nbsp;&lt;div&gt;common properties&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="Zf0h4nbJOsK2uje8tg-D-84" vertex="1" connectable="0">
+          <mxGeometry x="0.0171" y="-1" relative="1" as="geometry">
+            <mxPoint x="-7" y="-19" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-89" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.654;exitY=1.05;exitDx=0;exitDy=0;exitPerimeter=0;startArrow=classic;startFill=1;" parent="1" source="Zf0h4nbJOsK2uje8tg-D-80" target="Zf0h4nbJOsK2uje8tg-D-88" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1235" y="340" />
+              <mxPoint x="1270" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-90" value="&lt;div&gt;5) Creates and&amp;nbsp;&lt;/div&gt;&lt;div&gt;returns UserQuery&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="Zf0h4nbJOsK2uje8tg-D-89" vertex="1" connectable="0">
+          <mxGeometry x="0.0677" y="2" relative="1" as="geometry">
+            <mxPoint x="48" y="21" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-96" value="With Preset-property pair.&lt;br&gt;UserProperties.USER_ID ANY_IN, " style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="Zf0h4nbJOsK2uje8tg-D-80" target="Zf0h4nbJOsK2uje8tg-D-95" edge="1">
+          <mxGeometry y="-20" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-97" value="6) Calls UserQuery().where()" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="Zf0h4nbJOsK2uje8tg-D-96" vertex="1" connectable="0">
+          <mxGeometry x="-0.3636" relative="1" as="geometry">
+            <mxPoint x="36" y="-20" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-80" value="QueryChainer" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1170" y="260" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-83" value="ServerMapping" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1010" y="430" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-88" value="QueryFactory" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1230" y="430" width="90" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-91" value="&lt;div&gt;&amp;nbsp; 4) Returns&lt;/div&gt;&lt;div&gt;&amp;nbsp;ServerProperties.USER_ID,&lt;/div&gt;&lt;div&gt;UserProperties.USER_ID&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="1140" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-95" value="QueryAPI" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1490" y="260" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-121" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.53;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="Zf0h4nbJOsK2uje8tg-D-114" target="Zf0h4nbJOsK2uje8tg-D-4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-114" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;runners&lt;/font&gt;" style="swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-20" y="650" width="200" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-115" value="ServerRunner" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-114" vertex="1">
+          <mxGeometry x="10" y="40" width="180" height="21" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-116" value="UserRunner" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-114" vertex="1">
+          <mxGeometry x="10" y="70" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-117" value="ProjectRunner" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-114" vertex="1">
+          <mxGeometry x="10" y="100" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-118" value="FlavorRunner" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-114" vertex="1">
+          <mxGeometry x="10" y="130" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-119" value="... Many More" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-114" vertex="1">
+          <mxGeometry x="10" y="160" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-128" value="&lt;div style=&quot;font-size: 14px;&quot;&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;maps 1:1 with&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 14px;&quot;&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;corresponding&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 14px;&quot;&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;mapping&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/font&gt;&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="Zf0h4nbJOsK2uje8tg-D-122" target="Zf0h4nbJOsK2uje8tg-D-4" edge="1">
+          <mxGeometry x="0.5769" y="-35" relative="1" as="geometry">
+            <mxPoint x="230" y="550" as="targetPoint" />
+            <mxPoint x="-35" y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-122" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;enums/props&lt;/font&gt;" style="swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="280" y="650" width="200" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-123" value="ServerProperties" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-122" vertex="1">
+          <mxGeometry x="10" y="41" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-124" value="UserProperties" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-122" vertex="1">
+          <mxGeometry x="10" y="70" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-125" value="ProjectProperties" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-122" vertex="1">
+          <mxGeometry x="10" y="100" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-126" value="FlavorProperties" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-122" vertex="1">
+          <mxGeometry x="10" y="130" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="Zf0h4nbJOsK2uje8tg-D-127" value="... Many More" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" parent="Zf0h4nbJOsK2uje8tg-D-122" vertex="1">
+          <mxGeometry x="10" y="160" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="OIl6CHLB7g7eajttn7sP-5" target="OIl6CHLB7g7eajttn7sP-8">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="895" y="680" as="sourcePoint" />
+            <mxPoint x="1125" y="680" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1105" y="700" />
+              <mxPoint x="1105" y="700" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-2" value="&lt;div&gt;&amp;nbsp;1)&amp;nbsp; Calls ServerQuery().append_from(&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; &quot;USER_QUERY&quot;, &lt;br&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp; UserProperties.USER_NAME)&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="OIl6CHLB7g7eajttn7sP-1">
+          <mxGeometry x="0.0308" relative="1" as="geometry">
+            <mxPoint x="-129" y="30" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="OIl6CHLB7g7eajttn7sP-8" target="OIl6CHLB7g7eajttn7sP-5">
+          <mxGeometry x="0.0833" y="10" relative="1" as="geometry">
+            <mxPoint x="869.2" y="656" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1210" y="680" />
+              <mxPoint x="1210" y="620" />
+              <mxPoint x="869" y="620" />
+            </Array>
+            <mxPoint x="1505.0400000000002" y="650" as="sourcePoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-4" value="9) Updated reference to the same &lt;br&gt;ServerQuery() object is returned" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="OIl6CHLB7g7eajttn7sP-3">
+          <mxGeometry x="-0.0737" y="-1" relative="1" as="geometry">
+            <mxPoint x="-24" y="-19" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-5" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="855" y="670" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="OIl6CHLB7g7eajttn7sP-8" target="OIl6CHLB7g7eajttn7sP-15">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1215" y="780" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-7" value="&lt;div&gt;2) forwards onto parse_append_from()&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="OIl6CHLB7g7eajttn7sP-6">
+          <mxGeometry x="-0.3096" y="1" relative="1" as="geometry">
+            <mxPoint x="-1" y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="OIl6CHLB7g7eajttn7sP-8" target="OIl6CHLB7g7eajttn7sP-21">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1360" y="700" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-8" value="QueryAPI" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1165" y="680" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="OIl6CHLB7g7eajttn7sP-15" target="OIl6CHLB7g7eajttn7sP-16">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1185" y="830" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="1190" y="860" />
+              <mxPoint x="1056" y="860" />
+              <mxPoint x="1056" y="940" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-10" value="3) Looks for shared&amp;nbsp;&lt;div&gt;common properties&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="OIl6CHLB7g7eajttn7sP-9">
+          <mxGeometry x="0.0171" y="-1" relative="1" as="geometry">
+            <mxPoint x="-7" y="-19" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.654;exitY=1.05;exitDx=0;exitDy=0;exitPerimeter=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="OIl6CHLB7g7eajttn7sP-15" target="OIl6CHLB7g7eajttn7sP-17">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1230" y="860" />
+              <mxPoint x="1265" y="860" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-12" value="&lt;div&gt;5) Creates and&amp;nbsp;&lt;/div&gt;&lt;div&gt;returns UserQuery&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="OIl6CHLB7g7eajttn7sP-11">
+          <mxGeometry x="0.0677" y="2" relative="1" as="geometry">
+            <mxPoint x="48" y="21" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-13" value="With Preset-property pair.&lt;br&gt;UserProperties.USER_ID ANY_IN, " style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="OIl6CHLB7g7eajttn7sP-15" target="OIl6CHLB7g7eajttn7sP-19">
+          <mxGeometry x="0.8806" y="60" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-14" value="6) Calls UserQuery().where()" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="OIl6CHLB7g7eajttn7sP-13">
+          <mxGeometry x="-0.3636" relative="1" as="geometry">
+            <mxPoint x="88" y="30" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-15" value="QueryChainer" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1165" y="780" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-16" value="ServerMapping" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1005" y="950" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-17" value="QueryFactory" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1225" y="950" width="90" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-18" value="&lt;div&gt;&amp;nbsp; 4) Returns&lt;/div&gt;&lt;div&gt;&amp;nbsp;ServerProperties.USER_ID,&lt;/div&gt;&lt;div&gt;UserProperties.USER_ID&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="1135" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-19" value="QueryAPI" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1480" y="900" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-21" value="&lt;div&gt;ResultsContainer&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1480" y="680" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="OIl6CHLB7g7eajttn7sP-21" target="OIl6CHLB7g7eajttn7sP-21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-23" value="8) Concatenates USER_NAME results&lt;br&gt;onto original ServerQuery() results" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="1340" y="670" as="geometry">
+            <mxPoint x="29" y="5" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OIl6CHLB7g7eajttn7sP-24" value="7) Calls Select(UserProperties.USER_NAME) and run() on new query and return the results via to_props()" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="945" width="300" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
