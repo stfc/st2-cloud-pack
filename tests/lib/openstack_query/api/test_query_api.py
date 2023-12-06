@@ -15,46 +15,10 @@ def instance_fixture():
     """
     Returns an instance to run tests with
     """
-    return QueryAPI(query_components=MagicMock())
-
-
-@pytest.fixture(name="run_with_test_case_with_subset")
-def run_with_test_case_with_subset_fixture(instance):
-    """
-    Fixture for running run() with a subset
-    """
-
-    def _run_with_test_case(mock_kwargs):
-        """
-        Runs a test case for the run() method
-        """
-        mock_query_results = ("object-list", "property-list")
-        instance.executer.run_query.return_value = mock_query_results
-        instance.builder.client_side_filters = ["client-filters"]
-        instance.builder.server_filter_fallback = ["fallback-client-filters"]
-        instance.builder.server_side_filters = ["server-filters"]
-
-        if not mock_kwargs:
-            mock_kwargs = {}
-
-        res = instance.run("test-account", ["item1", "item2"], **mock_kwargs)
-        instance.executer.run_query.assert_called_once_with(
-            cloud_account="test-account", from_subset=["item1", "item2"], **mock_kwargs
-        )
-
-        # test that data is marshalled correctly to executer
-        # - this differs based on if from_subset is given
-        client_filters = (
-            instance.builder.client_side_filters
-            + instance.builder.server_filter_fallback
-        )
-        server_filters = None
-
-        assert instance.executer.client_side_filters == client_filters
-        assert instance.executer.server_side_filters == server_filters
-        assert res == instance
-
-    return _run_with_test_case
+    res = QueryAPI(query_components=MagicMock())
+    # pylint: disable=protected-access
+    res.results_container = MagicMock()
+    return res
 
 
 @pytest.fixture(name="run_with_test_case")
@@ -63,12 +27,20 @@ def run_with_test_case_fixture(instance):
     Fixture for running run() with various test arguments
     """
 
-    def _run_with_test_case(data_subset, mock_kwargs):
+    @patch("openstack_query.api.query_api.deepcopy")
+    def _run_with_test_case(
+        mock_deepcopy,
+        mock_forwarded_info=(None, None),
+        data_subset=None,
+        mock_kwargs=None,
+    ):
         """
         Runs a test case for the run() method
         """
         mock_query_results = ("object-list", "property-list")
         instance.executer.run_query.return_value = mock_query_results
+        instance.chainer.forwarded_info = mock_forwarded_info
+
         instance.builder.client_side_filters = ["client-filters"]
         instance.builder.server_filter_fallback = ["fallback-client-filters"]
         instance.builder.server_side_filters = ["server-filters"]
@@ -81,10 +53,20 @@ def run_with_test_case_fixture(instance):
             cloud_account="test-account", from_subset=data_subset, **mock_kwargs
         )
 
-        # test that data is marshalled correctly to executer
-        # - this differs based on if from_subset is given
-        client_filters = instance.builder.client_side_filters
-        server_filters = instance.builder.server_side_filters
+        if data_subset:
+            client_filters = (
+                instance.builder.client_side_filters
+                + instance.builder.server_filter_fallback
+            )
+            server_filters = None
+        else:
+            client_filters = instance.builder.client_side_filters
+            server_filters = instance.builder.server_side_filters
+
+        # test if forwarded vals provided
+        if mock_forwarded_info[1]:
+            instance.executer.apply_forwarded_results.assert_called_once()
+            mock_deepcopy.assert_called_once_with(mock_forwarded_info[1])
 
         assert instance.executer.client_side_filters == client_filters
         assert instance.executer.server_side_filters == server_filters
@@ -177,13 +159,13 @@ def test_where_with_kwargs(instance):
     assert res == instance
 
 
-def test_run_with_optional_params(run_with_test_case_with_subset):
+def test_run_with_optional_params(run_with_test_case):
     """
     Tests that run method works expectedly - with subset meta_params kwargs
     method should get client_side and server_side filters and forward them to query runner object
 
     """
-    run_with_test_case_with_subset(mock_kwargs=None)
+    run_with_test_case(data_subset=NonCallableMock(), mock_kwargs=None)
 
 
 def test_run_with_kwargs(run_with_test_case):
@@ -201,17 +183,29 @@ def test_run_with_nothing(run_with_test_case):
     method should get client_side and server_side filters and forward them to query runner object
 
     """
-    run_with_test_case(None, None)
+    run_with_test_case(data_subset=None, mock_kwargs=None)
 
 
-def test_run_with_kwargs_and_subset(run_with_test_case_with_subset):
+def test_run_with_kwargs_and_subset(run_with_test_case):
     """
     Tests that run method works expectedly - with subset kwargs
     method should get client_side and server_side filters and forward them to query runner object
 
     """
-    run_with_test_case_with_subset(
+    run_with_test_case(
+        data_subset=NonCallableMock(),
         mock_kwargs={"arg1": "val1", "arg2": "val2"},
+    )
+
+
+def test_run_with_forwarded_vals(run_with_test_case):
+    """
+    Tests that run method works - with forwarded vals
+    method run query as normal, then run executer.apply_forwarded_results
+    """
+    run_with_test_case(
+        data_subset=NonCallableMock(),
+        mock_forwarded_info=(NonCallableMock(), NonCallableMock()),
     )
 
 
@@ -220,8 +214,33 @@ def test_to_props(instance):
     Tests that to_props method functions expectedly - with no extra params
     method should just return _query_results attribute when groups is None and flatten is false
     """
-    instance.executer.parse_results.return_value = "", "parsed-list"
-    assert instance.to_props() == "parsed-list"
+    mock_groups = NonCallableMock()
+    mock_flatten = NonCallableMock()
+
+    res = instance.to_props(mock_flatten, mock_groups)
+    instance.results_container.parse_results.assert_called_once_with(
+        instance.parser.run_parser
+    )
+    instance.output.to_props.assert_called_once_with(
+        instance.results_container, mock_flatten, mock_groups
+    )
+    assert res == instance.output.to_props.return_value
+
+
+def test_to_csv(instance):
+    """
+    Tests to_csv method, method should call results_container.parse_results and forward that result
+    onto output.to_csv with given dir_path param
+    """
+    mock_dir_path = NonCallableMock()
+    res = instance.to_csv(mock_dir_path)
+    instance.results_container.parse_results.assert_called_once_with(
+        instance.parser.run_parser
+    )
+    instance.output.to_csv.assert_called_once_with(
+        instance.results_container, mock_dir_path
+    )
+    assert res == instance.output.to_csv.return_value
 
 
 def test_to_objects(instance):
@@ -229,113 +248,39 @@ def test_to_objects(instance):
     Tests that to_objects method functions expectedly - with no extra params
     method should just return _query_results_as_objects attribute when groups is None
     """
-    # pylint: disable=protected-access
-    instance.output.forwarded_outputs = {}
-    instance.executer.parse_results.return_value = "object-list", ""
-    assert instance.to_objects() == "object-list"
+    mock_flatten = NonCallableMock()
+
+    instance.executer.has_forwarded_results = False
+
+    res = instance.to_objects(mock_flatten)
+    instance.results_container.parse_results.assert_called_once_with(
+        instance.parser.run_parser
+    )
+    instance.output.to_objects.assert_called_once_with(
+        instance.results_container,
+        mock_flatten,
+    )
+    assert res == instance.output.to_objects.return_value
 
 
-def test_to_objects_forwarded_outputs_warning(instance):
+def test_to_objects_with_forwarded_results(instance):
     """
-    Tests that to_objects method functions expectedly
-    prints warning when forwarded_outputs is not empty
+    Tests that to_objects method - but where forwarded_results are given
+    method should output a warning but continue as normal
     """
-    # pylint: disable=protected-access
-    instance.output.forwarded_outputs = {"out1": "val1"}
+    mock_flatten = NonCallableMock()
 
-    # should just continue running as normal after printing warning
-    instance.executer.parse_results.return_value = "object-list", ""
-    assert instance.to_objects() == "object-list"
+    instance.executer.has_forwarded_results = True
 
-
-def test_to_props_flatten_true(instance):
-    """
-    Tests that to_props method functions expectedly
-    method should call output.flatten() with query_results
-    """
-    instance.executer.parse_results.return_value = "", "parsed-list"
-    res = instance.to_props(flatten=True)
-    instance.output.flatten.assert_called_once_with("parsed-list")
-    assert res == instance.output.flatten.return_value
-
-
-def test_to_props_with_groups_not_dict(instance):
-    """
-    Tests that to_props method functions expectedly
-    method should raise error when given group and results are not dict
-    """
-    instance.executer.parse_results.return_value = "", ["obj1", "obj2"]
-    with pytest.raises(ParseQueryError):
-        instance.to_props(groups=["group1", "group2"])
-
-
-def test_to_objects_with_groups_not_dict(instance):
-    """
-    Tests that to_objects method functions expectedly
-    method should raise error when given group and results are not dict
-    """
-    instance.output.forwarded_outputs = {}
-    instance.executer.parse_results.return_value = "", ["obj1", "obj2"]
-    with pytest.raises(ParseQueryError):
-        instance.to_objects(groups=["group1", "group2"])
-
-
-def test_to_props_groups_dict(instance):
-    """
-    Tests that to_props method functions expectedly
-    method should return subset of results which match keys (groups) given
-    """
-    mock_query_results = {
-        "group1": ["result1", "result2"],
-        "group2": ["result3", "result4"],
-    }
-    instance.executer.parse_results.return_value = "", mock_query_results
-    res = instance.to_props(groups=["group1"])
-    assert res == {"group1": mock_query_results["group1"]}
-
-
-def test_to_objects_groups_dict(instance):
-    """
-    Tests that to_objects method functions expectedly
-    method should return subset of results which match keys (groups) given
-    """
-    instance.output.forwarded_outputs = {}
-    mock_query_results = {
-        "group1": ["obj1", "obj2"],
-        "group2": ["obj3", "obj4"],
-    }
-    instance.executer.parse_results.return_value = mock_query_results, ""
-    res = instance.to_objects(groups=["group1"])
-    assert res == {"group1": mock_query_results["group1"]}
-
-
-def test_to_props_group_not_valid(instance):
-    """
-    Tests that to_props method functions expectedly
-    method should raise error if group specified is not a key in results
-    """
-    mock_query_results = {
-        "group1": ["result1", "result2"],
-        "group2": ["result3", "result4"],
-    }
-    instance.executer.parse_results.return_value = "", mock_query_results
-    with pytest.raises(ParseQueryError):
-        instance.to_props(groups=["group3"])
-
-
-def test_to_objects_group_not_valid(instance):
-    """
-    Tests that to_objects method functions expectedly
-    method should raise error if group specified is not a key in results
-    """
-    instance.output.forwarded_outputs = {}
-    mock_query_results = {
-        "group1": ["result1", "result2"],
-        "group2": ["result3", "result4"],
-    }
-    instance.executer.parse_results.return_value = mock_query_results, ""
-    with pytest.raises(ParseQueryError):
-        instance.to_objects(groups=["group3"])
+    res = instance.to_objects(mock_flatten)
+    instance.results_container.parse_results.assert_called_once_with(
+        instance.parser.run_parser
+    )
+    instance.output.to_objects.assert_called_once_with(
+        instance.results_container,
+        mock_flatten,
+    )
+    assert res == instance.output.to_objects.return_value
 
 
 def test_to_string(instance):
@@ -343,9 +288,21 @@ def test_to_string(instance):
     Tests that to_string method functions expectedly
     method should call QueryOutput object to_string() and return results
     """
-    instance.executer.parse_results.return_value = "", "parsed-list"
-    assert instance.to_string() == instance.output.to_string.return_value
-    instance.output.to_string.assert_called_once_with("parsed-list", None, None)
+    mock_groups = NonCallableMock()
+    mock_title = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+
+    # pylint: disable=protected-access
+    instance.results_container = MagicMock()
+
+    res = instance.to_string(mock_title, mock_groups, **mock_kwargs)
+    instance.results_container.parse_results.assert_called_once_with(
+        instance.parser.run_parser
+    )
+    instance.output.to_string.assert_called_once_with(
+        instance.results_container, mock_title, mock_groups, **mock_kwargs
+    )
+    assert res == instance.output.to_string.return_value
 
 
 def test_to_html(instance):
@@ -353,9 +310,18 @@ def test_to_html(instance):
     Tests that to_html method functions expectedly
     method should call QueryOutput object to_html() and return results
     """
-    instance.executer.parse_results.return_value = "", "parsed-list"
-    assert instance.to_html() == instance.output.to_html.return_value
-    instance.output.to_html.assert_called_once_with("parsed-list", None, None)
+    mock_groups = NonCallableMock()
+    mock_title = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+
+    res = instance.to_html(mock_title, mock_groups, **mock_kwargs)
+    instance.results_container.parse_results.assert_called_once_with(
+        instance.parser.run_parser
+    )
+    instance.output.to_html.assert_called_once_with(
+        instance.results_container, mock_title, mock_groups, **mock_kwargs
+    )
+    assert res == instance.output.to_html.return_value
 
 
 def test_sort_by(instance):
@@ -401,34 +367,32 @@ def test_then(instance):
     assert res == instance.chainer.parse_then.return_value
 
 
-@patch("openstack_query.api.query_api.QueryAPI.then")
-@patch("openstack_query.api.query_api.QueryTypes")
-def test_append_from(mock_query_types_cls, mock_then, instance):
+def test_append_from(instance):
     """
-    Tests that append_from method creates new query
+    Tests that append_from method - should call run_append_from_query
+    and martial results into results_container.apply_forwarded_results
     """
-    mock_new_query = MagicMock()
+    mock_query_type = NonCallableMock()
     mock_cloud_account = NonCallableMock()
-    mock_query_type = "query-type"
+    mock_prop1 = NonCallableMock()
+    mock_prop2 = NonCallableMock()
 
-    mock_props = ["prop1", "prop2", "prop3"]
-    instance.chainer.get_link_props.return_value = ("current-prop", "link-prop")
-    mock_then.return_value = mock_new_query
+    mock_link_prop = NonCallableMock()
+    mock_new_query_results = NonCallableMock()
 
-    res = instance.append_from(mock_query_type, mock_cloud_account, *mock_props)
-    mock_query_types_cls.from_string.assert_called_once_with(mock_query_type)
-    mock_then.assert_called_once_with(
-        mock_query_types_cls.from_string.return_value, keep_previous_results=False
+    instance.chainer.run_append_from_query.return_value = (
+        mock_link_prop,
+        mock_new_query_results,
     )
 
-    mock_new_query.select.assert_called_once_with(*mock_props)
-    mock_new_query.run.assert_called_once_with(mock_cloud_account)
-    instance.chainer.get_link_props.assert_called_once_with(
-        mock_query_types_cls.from_string.return_value
+    res = instance.append_from(
+        mock_query_type, mock_cloud_account, mock_prop1, mock_prop2
     )
-    mock_new_query.group_by.assert_called_once_with("link-prop")
-    mock_new_query.to_props.assert_called_once()
-    instance.output.update_forwarded_outputs.assert_called_once_with(
-        "current-prop", mock_new_query.to_props.return_value
+    instance.chainer.run_append_from_query.assert_called_once_with(
+        instance, mock_query_type, mock_cloud_account, mock_prop1, mock_prop2
     )
+    instance.results_container.apply_forwarded_results(
+        mock_link_prop, mock_new_query_results
+    )
+
     assert res == instance

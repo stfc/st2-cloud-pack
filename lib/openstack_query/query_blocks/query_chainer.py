@@ -1,5 +1,7 @@
-from typing import Tuple, List, Optional, Union
+from typing import Tuple, List, Optional, Union, Dict
 
+from custom_types.openstack_query.aliases import PropValue
+from enums.cloud_domains import CloudDomains
 from enums.query.props.prop_enum import PropEnum
 from enums.query.query_presets import QueryPresetsGeneric
 from enums.query.query_types import QueryTypes
@@ -13,6 +15,29 @@ class QueryChainer:
 
     def __init__(self, chain_mappings):
         self._chain_mappings = chain_mappings
+
+        self._forwarded_values: Optional[Dict[PropValue, List[Dict]]] = None
+        self._link_prop: Optional[PropEnum] = None
+
+    @property
+    def forwarded_info(self) -> Optional[Tuple[PropEnum, Dict]]:
+        """
+        return forwarded info, a tuple of link prop and grouped results to forward
+        """
+        return self._link_prop, self._forwarded_values
+
+    def set_forwarded_vals(
+        self, prop: PropEnum, forwarded_values: Dict[PropValue, List[Dict]]
+    ):
+        """
+        a setter which sets forwarded_values and shared prop for chaining
+        :param prop: shared common property which is used to get prop val from this query openstack objects that will
+        be used to apply given forwarded properties to results
+        :param forwarded_values: a set of outputs generated from a previous query to forward on to this query.
+        Output is grouped by a shared common property
+        """
+        self._forwarded_values = forwarded_values
+        self._link_prop = prop
 
     def get_chaining_props(self) -> List[QueryTypes]:
         """
@@ -91,20 +116,41 @@ class QueryChainer:
         current_query.parser.group_by = prev_grouping
         current_query.output.selected_props = prev_selected_props
 
-        to_forward = None
+        new_query = QueryAPI(QueryFactory.build_query_deps(query_type.value))
+
         if keep_previous_results:
-            # we group the current results by the link property as this is the way we forward results
-            to_forward = (
+            # store forwarded results and link prop in new query
+            new_query.chainer.set_forwarded_vals(
                 link_props[1],
                 current_query.group_by(link_props[0]).to_props(),
             )
-
-        new_query = QueryAPI(
-            QueryFactory.build_query_deps(query_type.value, to_forward)
-        )
 
         return new_query.where(
             QueryPresetsGeneric.ANY_IN,
             link_props[1],
             values=search_values,
         )
+
+    @staticmethod
+    def run_append_from_query(
+        current_query,
+        query_type: Union[str, QueryTypes],
+        cloud_account: Union[str, CloudDomains],
+        *props: PropEnum,
+    ):
+        """
+        Public static method to run query from an append_from call - and return result
+        :param current_query: current QueryAPI object
+        :param query_type: an enum representing the new query we want to append properties from
+        :param cloud_account: A String or a CloudDomains Enum for the clouds configuration to use
+        :param props: one or more properties to collect described as enum
+        """
+        if isinstance(query_type, str):
+            query_type = QueryTypes.from_string(query_type)
+
+        new_query = current_query.then(query_type, keep_previous_results=False)
+        new_query.select(*props)
+        new_query.run(cloud_account)
+
+        link_props = current_query.chainer.get_link_props(query_type)
+        return link_props[0], new_query.group_by(link_props[1]).to_props()

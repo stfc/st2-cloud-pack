@@ -35,4 +35,8 @@ parameters:
     default: false
     description: Project is immutable or not
     type: boolean
+  parent_id:
+    default: ""
+    description: Set the ID of the parent Domain/project. Leave as blank and it will use the "Default Domain"
+    type: string
 runner_type: python-script

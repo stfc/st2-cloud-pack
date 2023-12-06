@@ -1,14 +1,11 @@
-from copy import deepcopy
+import csv
 from typing import List, Dict, Union, Type, Set, Optional
+from pathlib import Path
 from tabulate import tabulate
 from enums.query.props.prop_enum import PropEnum
-from custom_types.openstack_query.aliases import (
-    OpenstackResourceObj,
-    PropValue,
-    GroupedReturn,
-)
-from exceptions.query_chaining_error import QueryChainingError
+from custom_types.openstack_query.aliases import PropValue
 from exceptions.parse_query_error import ParseQueryError
+from openstack_query.query_blocks.results_container import ResultsContainer
 
 
 class QueryOutput:
@@ -25,22 +22,6 @@ class QueryOutput:
     def __init__(self, prop_enum_cls: Type[PropEnum]):
         self._prop_enum_cls = prop_enum_cls
         self._props = set()
-        self._forwarded_outputs: Dict[PropEnum, GroupedReturn] = {}
-
-    def update_forwarded_outputs(self, link_prop: PropEnum, values: Dict[str, List]):
-        """
-        method to set outputs to forward from other queries
-        :param link_prop: the property that the results are grouped by
-        :param values: grouped properties to forward
-        """
-        self._forwarded_outputs[link_prop] = values
-
-    @property
-    def forwarded_outputs(self) -> Dict[PropEnum, GroupedReturn]:
-        """
-        A getter for forwarded properties
-        """
-        return self._forwarded_outputs
 
     @property
     def selected_props(self) -> List[PropEnum]:
@@ -59,43 +40,90 @@ class QueryOutput:
         """
         self._props = props
 
+    @staticmethod
+    def _validate_groups(
+        results: Union[List, Dict], groups: Optional[List[str]] = None
+    ):
+        """
+        helper method which takes a set of grouped results and a list of groups and
+        outputs a subset of results where each key in subset matches a value in given set of groups.
+        method will return all results if groups not given.
+        Outputs error if:
+            - groups contains a value not in results
+            - given results aren't grouped
+        :param results: results to get subset for if grouped and groups given
+        :param groups: an optional list of keys to get a subset of results
+        """
+        if not groups:
+            return results
+
+        if not isinstance(results, dict):
+            raise ParseQueryError(
+                f"Result is not grouped - cannot filter by given group(s) {groups}"
+            )
+        if not all(group in results.keys() for group in groups):
+            raise ParseQueryError(
+                f"Group(s) given are invalid - valid groups {list(results.keys())}"
+            )
+        return {group_key: results[group_key] for group_key in groups}
+
+    def to_objects(
+        self, results_container: ResultsContainer, groups: Optional[List[str]] = None
+    ) -> Union[Dict[str, List], List]:
+        """
+        return results as openstack objects
+        :param results_container: container object which stores results
+        :param groups: a list of group keys to limit output by
+
+        """
+        results = results_container.to_objects()
+        return self._validate_groups(results, groups)
+
+    def to_props(
+        self,
+        results_container: ResultsContainer,
+        flatten: bool = False,
+        groups: Optional[List[str]] = None,
+    ) -> Union[Dict[str, List], List]:
+        """
+        return results as selected props
+        :param results_container: container object which stores results
+        :param flatten: boolean which will flatten results if true
+        :param groups: a list of group keys to limit output by
+        """
+        results = results_container.to_props(*self.selected_props)
+        results = self._validate_groups(results, groups)
+        if flatten:
+            results = self.flatten(results)
+        return results
+
     def to_string(
         self,
-        results: Union[List, Dict],
+        results_container: ResultsContainer,
         title: str = None,
         groups: Optional[List[str]] = None,
         **kwargs,
     ):
         """
-        method to return results as a table
-        :param results: a list of parsed query results - either a list or a dict of grouped results
-        :param title: a title for the table(s) when it gets outputted
-        :param groups: a list group to limit output by
+        return results as a table of selected properties
+        :param results_container: container object which stores results
+        :param title: an optional title for the table when it gets outputted
+        :param groups: a list of groups to limit output by
         :param kwargs: kwargs to pass to _generate_table method
         """
-        output = ""
-        if title:
-            output += f"{title}:\n"
+        results = results_container.to_props(*self.selected_props)
+        results = self._validate_groups(results, groups)
+
+        output = "" if not title else f"{title}:\n"
 
         if isinstance(results, dict):
-            if groups and any(group not in results.keys() for group in groups):
-                raise ParseQueryError(
-                    f"given group(s) {groups} not found - available groups {list(results.keys())}"
-                )
-
-            if not groups:
-                groups = list(results.keys())
-
-            for group_title in groups:
-                group_list = results[group_title]
+            for group_title in list(results.keys()):
                 output += self._generate_table(
-                    group_list, return_html=False, title=f"{group_title}:\n", **kwargs
+                    results[group_title],
+                    return_html=False,
+                    title=f"{group_title}:\n",
+                    **kwargs,
                 )
-        elif groups:
-            raise ParseQueryError(
-                f"Result is not grouped - cannot filter by given group(s) {groups}"
-            )
-
         else:
             output += self._generate_table(
                 results, return_html=False, title=None, **kwargs
@@ -104,44 +132,30 @@ class QueryOutput:
 
     def to_html(
         self,
-        results: Union[List, Dict],
+        results_container: ResultsContainer,
         title: str = None,
         groups: Optional[List[str]] = None,
         **kwargs,
     ) -> str:
         """
         method to return results as html table
-        :param results: a list of parsed query results - either a list or a dict of grouped results
+        :param results_container: container object which stores results
         :param title: a title for the table(s) when it gets outputted
-        :param groups: a list group to limit output by
+        :param groups: a list of groups to limit output by
         :param kwargs: kwargs to pass to generate table
         """
-        output = ""
-        if title:
-            output += f"<b> {title} </b><br/> "
+        results = results_container.to_props(*self.selected_props)
+        results = self._validate_groups(results, groups)
+        output = "" if not title else f"<b> {title}: </b><br/> "
 
         if isinstance(results, dict):
-            if groups and any(group not in results.keys() for group in groups):
-                raise ParseQueryError(
-                    f"given group(s) {groups} not found - available groups {list(results.keys())}"
-                )
-
-            if not groups:
-                groups = list(results.keys())
-
-            for group_title in groups:
-                group_list = results[group_title]
+            for group_title in list(results.keys()):
                 output += self._generate_table(
-                    group_list,
+                    results[group_title],
                     return_html=True,
                     title=f"<b> {group_title}: </b><br/> ",
                     **kwargs,
                 )
-        elif groups:
-            raise ParseQueryError(
-                f"Result is not grouped - cannot filter by given group(s) {groups}"
-            )
-
         else:
             output += self._generate_table(
                 results, return_html=True, title=None, **kwargs
@@ -169,102 +183,18 @@ class QueryOutput:
 
         self.selected_props = set(all_props)
 
-    def generate_output(
-        self, openstack_resources: List[OpenstackResourceObj]
-    ) -> List[Dict[str, PropValue]]:
-        """
-        Generates a dictionary of queried properties from a list of openstack objects e.g. servers
-        e.g. {['server_name': 'server1', 'server_id': 'server1_id'],
-              ['server_name': 'server2', 'server_id': 'server2_id']} etc.
-        (if we selected 'server_name' and 'server_id' as properties
-        :param openstack_resources: List of openstack objects to obtain properties from - e.g. [Server1, Server2]
-        :return: List containing dictionaries of the requested properties obtained from the items
-        """
-        output = []
-        forwarded_outputs = deepcopy(self.forwarded_outputs)
-        for item in openstack_resources:
-            prop_list = self._parse_properties(item)
-            prop_list.update(self._parse_forwarded_outputs(item, forwarded_outputs))
-            output.append(prop_list)
-        return output
-
-    def _parse_forwarded_outputs(
-        self, openstack_resource: OpenstackResourceObj, forwarded_outputs: Dict
-    ) -> Dict[str, str]:
-        """
-        Generates a dictionary of forwarded outputs for the item given
-        :param openstack_resource: openstack resource item to parse forwarded outputs for
-        """
-        forwarded_output_dict = {}
-        for grouped_property, outputs in forwarded_outputs.items():
-            prop_val = self._parse_property(grouped_property, openstack_resource)
-
-            # this "should not" error because forwarded outputs should always be a super-set
-            # but sometimes resolving the property fails for whatever reason - fail noisily
-            try:
-                output_list = outputs[prop_val]
-                # we update with first result in grouped list and delete it
-
-                # forwarded properties might contain more than one value
-                # then() will keep duplicates so each one in the list will be shunted into an output
-                forwarded_output_dict.update(output_list[0])
-
-                # a hacky way to prevent one-to-many chaining erroring - keep at least one value
-                # one-to-many/one-to-one will only ever contain one value per grouped_value
-                # many-to-one will contain multiple values per grouped values
-                if len(output_list) > 1:
-                    del output_list[0]
-            except KeyError as exp:
-                raise QueryChainingError(
-                    "Error: Chaining failed. Could not attach forwarded outputs.\n"
-                    f"Property {grouped_property} extracted from has value {prop_val} which"
-                    "does not match any values from forwarded outputs. "
-                    "This is due to a mismatch in property mappings - likely an Openstack issue"
-                ) from exp
-        return forwarded_output_dict
-
-    def _parse_properties(
-        self, openstack_resource: OpenstackResourceObj
-    ) -> Dict[str, PropValue]:
-        """
-        Generates a dictionary of queried properties from a single openstack object
-        :param openstack_resource: openstack resource item to obtain properties from
-        """
-        obj_dict = {}
-        for prop in self.selected_props:
-            val = self._parse_property(prop, openstack_resource)
-            obj_dict[prop.name.lower()] = val
-        return obj_dict
-
-    def _parse_property(
-        self, prop: PropEnum, openstack_resource: OpenstackResourceObj
-    ) -> PropValue:
-        """
-        Parse single property from an openstack_object and return result
-        :param prop: property to parse
-        :param openstack_resource: openstack resource item to obtain property from
-        """
-        prop_func = self._prop_enum_cls.get_prop_mapping(prop)
-        try:
-            val = str(prop_func(openstack_resource))
-        except AttributeError:
-            val = self.DEFAULT_OUT
-        return val
-
     @staticmethod
     def _generate_table(
         results: List[Dict[str, PropValue]], return_html: bool, title=None, **kwargs
     ) -> str:
         """
-        Returns a table from the result of 'self._parse_properties'
+        Returns a table from the result of 'self.parse_properties'
         :param results: dict of query results
         :param return_html: True if output required in html table format else output plain text table
         :param kwargs: kwargs to pass to tabulate
         :return: String (html or plaintext table of results)
         """
-        output = ""
-        if title:
-            output += f"{title}\n"
+        output = "" if not title else f"{title}"
 
         if results:
             headers = list(results[0].keys())
@@ -314,3 +244,57 @@ class QueryOutput:
         for key in keys:
             res[key] = [d[key] for d in data]
         return res
+
+    def to_csv_list(self, data: Union[List, Dict], output_filepath):
+        """
+        Takes a list of dictionaries and outputs them into a designated csv file 'self._parse_properties'
+        :param data: this is the list of dictionaries passed in to this function
+        :param output_filepath: this is the output path that is passed in to the function for it to use
+        :return: Does not return anything.
+        """
+
+        if data and len(data) > 0:
+            fields = data[0].keys()
+        else:
+            raise RuntimeError("data is empty")
+
+        with open(output_filepath, "w", encoding="utf-8") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fields)
+            writer.writeheader()
+            writer.writerows(data)
+
+        print("List Written to csv")
+
+    def to_csv_dictionary(self, data: Union[List, Dict], dir_path):
+        """
+        Takes a dictionary of dictionaries and outputs them into separate designated csv file 'self._parse_properties'
+        :param data: this is the dictionary of dictionaries passed in to this function
+        :param dir_path: this is the output path the csv files will be created in
+        :return: Does not return anything.
+        """
+
+        for group_name_id, group_item_info in data.items():
+            file_path = Path(dir_path).joinpath(f"{group_name_id}.csv")
+            self.to_csv_list(group_item_info, file_path)
+
+        print("Dictionary written to csv")
+
+    def to_csv(self, results_container: ResultsContainer, dir_path):
+        """
+        Takes a dictionary of dictionaries or list of dictionaries and a filepath or directory path.
+        It then decides if the to_csv_list or to_csv_Dictionaries function is needed then call the required one.
+        :param results_container: this is the dictionary of dictionaries or list of dictionaries that is passed in to
+        other functions.
+        :param dir_path: this is a directory path where csv files will be created in.
+        :return: Does not return anything.
+        """
+        dir_path = Path(dir_path)
+        data = self.to_props(results_container)
+
+        if isinstance(data, list):
+            filepath = dir_path.joinpath("query_out.csv")
+            self.to_csv_list(data, filepath)
+        elif isinstance(data, dict):
+            self.to_csv_dictionary(data, dir_path)
+        else:
+            raise RuntimeError("Error: The enter data is not a list or dictionary")

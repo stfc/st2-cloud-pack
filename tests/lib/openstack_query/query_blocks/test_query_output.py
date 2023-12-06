@@ -1,11 +1,63 @@
-from unittest.mock import MagicMock, patch, call, NonCallableMock
+from pathlib import Path
+from unittest.mock import MagicMock, patch, call, NonCallableMock, mock_open
 import pytest
 
-from exceptions.query_chaining_error import QueryChainingError
 from exceptions.parse_query_error import ParseQueryError
 from openstack_query.query_blocks.query_output import QueryOutput
 from enums.query.props.server_properties import ServerProperties
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
+
+
+@pytest.fixture(name="instance_grouped_data")
+def instance_grouped_data_fixture():
+    return {
+        "user_name is user1": [
+            {
+                "server_id": "server_id1",
+                "server_name": "server1",
+                "user_id": "user_id1",
+                "user_name": "user1",
+            },
+            {
+                "server_id": "server_id2",
+                "server_name": "server2",
+                "user_id": "user_id2",
+                "user_name": "user2",
+            },
+        ],
+        "user_name is user2": [
+            {
+                "server_id": "server_id3",
+                "server_name": "server3",
+                "user_id": "user_id3",
+                "user_name": "user3",
+            },
+            {
+                "server_id": "server_id4",
+                "server_name": "server4",
+                "user_id": "user_id4",
+                "user_name": "user4",
+            },
+        ],
+    }
+
+
+@pytest.fixture(name="instance_data")
+def instance_data_fixture():
+    return [
+        {
+            "server_id": "server_id1",
+            "server_name": "server1",
+            "user_id": "user_id1",
+            "user_name": "user1",
+        },
+        {
+            "server_id": "server_id2",
+            "server_name": "server2",
+            "user_id": "user_id2",
+            "user_name": "user2",
+        },
+    ]
 
 
 @pytest.fixture(name="instance")
@@ -32,146 +84,308 @@ def test_selected_props(instance):
     assert instance.selected_props == list(val)
 
 
-@patch("openstack_query.query_blocks.query_output.QueryOutput._generate_table")
-def test_to_html_with_list_results(mock_generate_table, instance):
+def test_selected_props_empty(instance):
     """
-    Tests that to_html function works expectedly - when given list as results and no title
-    method should call generate_table with return_html once
+    Tests selected property method returns empty list when no props selected
     """
+    assert instance.selected_props == []
 
-    mocked_results = ["obj1", "obj2"]
-    mock_generate_table.return_value = "mock out"
-    res = instance.to_html(results=mocked_results, title="mock title")
-    mock_generate_table.assert_called_once_with(
-        mocked_results, return_html=True, title=None
+
+def test_validate_groups_empty(instance):
+    """
+    Tests validate groups returns result if groups empty
+    """
+    mock_results = {"group1": "val1", "group2": "val2", "group3": "val3"}
+    mock_groups = None
+    # pylint:disable=protected-access
+    assert instance._validate_groups(mock_results, mock_groups) == mock_results
+
+
+def test_validate_groups_valid(instance):
+    """
+    Tests validate groups returns subset of results that match given set of groups
+    """
+    mock_results = {"group1": "val1", "group2": "val2", "group3": "val3"}
+    mock_groups = ["group1", "group2"]
+
+    # pylint:disable=protected-access
+    assert instance._validate_groups(mock_results, mock_groups) == {
+        "group1": "val1",
+        "group2": "val2",
+    }
+
+
+def test_validate_groups_invalid_keys(instance):
+    """
+    Tests validate groups returns error if value given in groups does not exist
+    as a key in results
+    """
+    mock_results = {"group1": "val1", "group2": "val2", "group3": "val3"}
+    mock_groups = ["invalid_group"]
+    with pytest.raises(ParseQueryError):
+        # pylint:disable=protected-access
+        instance._validate_groups(mock_results, mock_groups)
+
+
+def test_validate_groups_results_not_dict(instance):
+    """
+    Tests validate groups returns error if results given is not a dictionary
+    """
+    mock_results = ["val1", "val2"]
+    with pytest.raises(ParseQueryError):
+        # pylint:disable=protected-access
+        instance._validate_groups(mock_results, NonCallableMock())
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput._validate_groups")
+def test_to_objects(mock_validate_groups, instance):
+    """
+    Tests that to_objects method calls results_container.to_objects and martials
+    results into _validate_groups() then outputs the result
+    """
+    mock_results_container = MagicMock()
+    mock_groups = NonCallableMock()
+
+    res = instance.to_objects(mock_results_container, mock_groups)
+    mock_results_container.to_objects.assert_called_once_with()
+    mock_validate_groups.assert_called_once_with(
+        mock_results_container.to_objects.return_value, mock_groups
     )
-    assert res == "<b> mock title </b><br/> mock out"
+    assert res == mock_validate_groups.return_value
 
 
+@patch("openstack_query.query_blocks.query_output.QueryOutput._validate_groups")
+@patch("openstack_query.query_blocks.query_output.QueryOutput.flatten")
+def test_to_props_no_flatten(mock_flatten, mock_validate_groups, instance):
+    """
+    Tests that to_props method calls results_container.to_props and martials
+    results into _validate_groups() then outputs the result. Does not call flatten
+    """
+    mock_results_container = MagicMock()
+    mock_groups = NonCallableMock()
+    instance.selected_props = ["prop1", "prop2", "prop3"]
+
+    res = instance.to_props(mock_results_container, False, mock_groups)
+    mock_results_container.to_props.assert_called_once_with("prop1", "prop2", "prop3")
+    mock_validate_groups.assert_called_once_with(
+        mock_results_container.to_props.return_value, mock_groups
+    )
+    mock_flatten.assert_not_called()
+    assert res == mock_validate_groups.return_value
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput._validate_groups")
+@patch("openstack_query.query_blocks.query_output.QueryOutput.flatten")
+def test_to_props_with_flatten(mock_flatten, mock_validate_groups, instance):
+    """
+    Tests that to_props method calls results_container.to_props, martials
+    results into _validate_groups(), then flatten() and returns results
+    """
+    mock_results_container = MagicMock()
+    mock_groups = NonCallableMock()
+    instance.selected_props = ["prop1", "prop2", "prop3"]
+
+    res = instance.to_props(mock_results_container, True, mock_groups)
+    mock_results_container.to_props.assert_called_once_with("prop1", "prop2", "prop3")
+    mock_validate_groups.assert_called_once_with(
+        mock_results_container.to_props.return_value, mock_groups
+    )
+    mock_flatten.assert_called_once_with(mock_validate_groups.return_value)
+    assert res == mock_flatten.return_value
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput._validate_groups")
 @patch("openstack_query.query_blocks.query_output.QueryOutput._generate_table")
-def test_to_html_with_no_title(mock_generate_table, instance):
+def test_to_html_with_list_results(mock_generate_table, mock_validate_groups, instance):
+    """
+    Tests that to_html function - when results are outputted as a list
+    method should call generate_table with return_html = True once
+    """
+    mock_results_container = MagicMock()
+    mock_title = "mock title"
+    mock_groups = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+    instance.selected_props = ["prop1", "prop2", "prop3"]
+    mock_generate_table.return_value = "mock out"
+
+    res = instance.to_html(
+        mock_results_container, mock_title, mock_groups, **mock_kwargs
+    )
+    mock_results_container.to_props.assert_called_once_with("prop1", "prop2", "prop3")
+    mock_validate_groups.assert_called_once_with(
+        mock_results_container.to_props.return_value, mock_groups
+    )
+
+    mock_generate_table.assert_called_once_with(
+        mock_validate_groups.return_value, return_html=True, title=None, **mock_kwargs
+    )
+    assert res == "<b> mock title: </b><br/> mock out"
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput._validate_groups")
+@patch("openstack_query.query_blocks.query_output.QueryOutput._generate_table")
+def test_to_html_with_no_title(mock_generate_table, mock_validate_groups, instance):
     """
     Tests that to_html function works expectedly - when given list as results and no title
     method should call generate_table with return_html once
     """
-
-    mocked_results = ["obj1", "obj2"]
+    mock_results_container = MagicMock()
+    mock_groups = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+    instance.selected_props = ["prop1", "prop2", "prop3"]
     mock_generate_table.return_value = "mock out"
-    res = instance.to_html(results=mocked_results, title=None)
+
+    res = instance.to_html(mock_results_container, groups=mock_groups, **mock_kwargs)
+    mock_results_container.to_props.assert_called_once_with("prop1", "prop2", "prop3")
+    mock_validate_groups.assert_called_once_with(
+        mock_results_container.to_props.return_value, mock_groups
+    )
+
     mock_generate_table.assert_called_once_with(
-        mocked_results, return_html=True, title=None
+        mock_validate_groups.return_value, return_html=True, title=None, **mock_kwargs
     )
     assert res == "mock out"
 
 
+@patch("openstack_query.query_blocks.query_output.QueryOutput._validate_groups")
 @patch("openstack_query.query_blocks.query_output.QueryOutput._generate_table")
-def test_to_html_with_grouped_results(mock_generate_table, instance):
+def test_to_html_with_grouped_results(
+    mock_generate_table, mock_validate_groups, instance
+):
     """
-    Tests that to_html function works expectedly - when given grouped results
+    Tests that to_html function works expectedly - when results are grouped - outputted as a dict
     method should call generate_table with return_html for each group
     """
-    mocked_results = {"group1": ["obj1", "obj2"], "group2": ["obj3", "obj4"]}
 
+    mock_results_container = MagicMock()
+    mock_title = "mock title"
+    mock_groups = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+    instance.selected_props = ["prop1", "prop2", "prop3"]
+
+    mocked_results = {"group1": ["obj1", "obj2"], "group2": ["obj3", "obj4"]}
+    mock_validate_groups.return_value = mocked_results
     mock_generate_table.side_effect = ["1 out, ", "2 out"]
-    res = instance.to_html(results=mocked_results, title="mock title")
+
+    res = instance.to_html(
+        mock_results_container, mock_title, mock_groups, **mock_kwargs
+    )
+    mock_results_container.to_props.assert_called_once_with("prop1", "prop2", "prop3")
+    mock_validate_groups.assert_called_once_with(
+        mock_results_container.to_props.return_value, mock_groups
+    )
 
     mock_generate_table.assert_has_calls(
         [
-            call(["obj1", "obj2"], return_html=True, title="<b> group1: </b><br/> "),
-            call(["obj3", "obj4"], return_html=True, title="<b> group2: </b><br/> "),
+            call(
+                ["obj1", "obj2"],
+                return_html=True,
+                title="<b> group1: </b><br/> ",
+                **mock_kwargs
+            ),
+            call(
+                ["obj3", "obj4"],
+                return_html=True,
+                title="<b> group2: </b><br/> ",
+                **mock_kwargs
+            ),
         ]
     )
-    assert res == "<b> mock title </b><br/> 1 out, 2 out"
+    assert res == "<b> mock title: </b><br/> 1 out, 2 out"
 
 
-def test_to_html_incorrect_groups(instance):
-    """
-    Tests that to_html function raises error when given a group that doesn't appear in results
-    """
-    mocked_results = {"group1": ["obj1", "obj2"], "group2": ["obj3", "obj4"]}
-    with pytest.raises(ParseQueryError):
-        instance.to_html(results=mocked_results, groups=["group3"])
-
-
-def test_to_html_errors_when_not_grouped(instance):
-    """
-    Tests that to_html function raises error when given a group and results are not grouped
-    """
-    mocked_results = ["obj1", "obj2"]
-    with pytest.raises(ParseQueryError):
-        instance.to_html(results=mocked_results, groups=["group3"])
-
-
+@patch("openstack_query.query_blocks.query_output.QueryOutput._validate_groups")
 @patch("openstack_query.query_blocks.query_output.QueryOutput._generate_table")
-def test_to_string_with_list_results(mock_generate_table, instance):
+def test_to_string_with_list_results(
+    mock_generate_table, mock_validate_groups, instance
+):
     """
-    Tests that to_string function works expectedly - when given list as results
-    method should call generate_table with return_html set to false once
+    Tests that to_string function - when results are outputted as a list
+    method should call generate_table with return_html = False once
     """
+    mock_results_container = MagicMock()
+    mock_title = "mock title"
+    mock_groups = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
-    mocked_results = ["obj1", "obj2"]
+    instance.selected_props = ["prop1", "prop2", "prop3"]
     mock_generate_table.return_value = "mock out"
 
-    res = instance.to_string(results=mocked_results, title="mock title")
-    mock_generate_table.assert_called_once_with(
-        mocked_results, return_html=False, title=None
+    res = instance.to_string(
+        mock_results_container, mock_title, mock_groups, **mock_kwargs
     )
+    mock_results_container.to_props.assert_called_once_with("prop1", "prop2", "prop3")
+    mock_validate_groups.assert_called_once_with(
+        mock_results_container.to_props.return_value, mock_groups
+    )
+
+    mock_generate_table.assert_called_once_with(
+        mock_validate_groups.return_value, return_html=False, title=None, **mock_kwargs
+    )
+
     assert "mock title:\nmock out" == res
 
 
+@patch("openstack_query.query_blocks.query_output.QueryOutput._validate_groups")
 @patch("openstack_query.query_blocks.query_output.QueryOutput._generate_table")
-def test_to_string_with_no_title(mock_generate_table, instance):
+def test_to_string_with_no_title(mock_generate_table, mock_validate_groups, instance):
     """
-    Tests that to_string function works expectedly - when given list as results and no title
-    method should call generate_table with return_html set to false once
+    Tests that to_string - when given list as results and no title
+    method should call generate_table with return_html once
     """
-
-    mocked_results = ["obj1", "obj2"]
+    mock_results_container = MagicMock()
+    mock_groups = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+    instance.selected_props = ["prop1", "prop2", "prop3"]
     mock_generate_table.return_value = "mock out"
 
-    res = instance.to_string(results=mocked_results, title=None)
-    mock_generate_table.assert_called_once_with(
-        mocked_results, return_html=False, title=None
+    res = instance.to_string(mock_results_container, groups=mock_groups, **mock_kwargs)
+    mock_results_container.to_props.assert_called_once_with("prop1", "prop2", "prop3")
+    mock_validate_groups.assert_called_once_with(
+        mock_results_container.to_props.return_value, mock_groups
     )
-    assert "mock out" == res
+
+    mock_generate_table.assert_called_once_with(
+        mock_validate_groups.return_value, return_html=False, title=None, **mock_kwargs
+    )
+    assert res == "mock out"
 
 
+@patch("openstack_query.query_blocks.query_output.QueryOutput._validate_groups")
 @patch("openstack_query.query_blocks.query_output.QueryOutput._generate_table")
-def test_to_string_with_grouped_results(mock_generate_table, instance):
+def test_to_string_with_grouped_results(
+    mock_generate_table, mock_validate_groups, instance
+):
     """
-    Tests that to_string function works expectedly - when given grouped results
-    method should call generate_table with return_html set to false for each group
+    Tests that to_html function works expectedly - when results are grouped - outputted as a dict
+    method should call generate_table with return_html for each group
     """
+
+    mock_results_container = MagicMock()
+    mock_title = "mock title"
+    mock_groups = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+    instance.selected_props = ["prop1", "prop2", "prop3"]
+
     mocked_results = {"group1": ["obj1", "obj2"], "group2": ["obj3", "obj4"]}
+    mock_validate_groups.return_value = mocked_results
     mock_generate_table.side_effect = ["1 out, ", "2 out"]
 
-    res = instance.to_string(results=mocked_results, title="mock title")
+    res = instance.to_string(
+        mock_results_container, mock_title, mock_groups, **mock_kwargs
+    )
+    mock_results_container.to_props.assert_called_once_with("prop1", "prop2", "prop3")
+    mock_validate_groups.assert_called_once_with(
+        mock_results_container.to_props.return_value, mock_groups
+    )
 
     mock_generate_table.assert_has_calls(
         [
-            call(["obj1", "obj2"], return_html=False, title="group1:\n"),
-            call(["obj3", "obj4"], return_html=False, title="group2:\n"),
+            call(["obj1", "obj2"], return_html=False, title="group1:\n", **mock_kwargs),
+            call(["obj3", "obj4"], return_html=False, title="group2:\n", **mock_kwargs),
         ]
     )
     assert "mock title:\n1 out, 2 out" == res
-
-
-def test_to_string_incorrect_groups(instance):
-    """
-    Tests that to_html function raises error when given a group that doesn't appear in results
-    """
-    mocked_results = {"group1": ["obj1", "obj2"], "group2": ["obj3", "obj4"]}
-    with pytest.raises(ParseQueryError):
-        instance.to_string(results=mocked_results, groups=["group3"])
-
-
-def test_to_string_errors_when_not_grouped(instance):
-    """
-    Tests that to_string function raises error when given a group and results are not grouped
-    """
-    mocked_results = ["obj1", "obj2"]
-    with pytest.raises(ParseQueryError):
-        instance.to_string(results=mocked_results, groups=["group3"])
 
 
 def test_generate_table_no_vals(instance):
@@ -185,7 +399,7 @@ def test_generate_table_no_vals(instance):
     res = instance._generate_table(
         results_dict_0, title="mock title", return_html=False
     )
-    assert "mock title\nNo results found" == res
+    assert "mock titleNo results found" == res
 
 
 @pytest.mark.parametrize(
@@ -323,168 +537,6 @@ def test_parse_select_overwrites_old(instance):
     assert instance.selected_props == [MockProperties.PROP_2]
 
 
-def test_generate_output_no_items(instance):
-    """
-    Tests that generate_output method works expectedly - no openstack items
-    method should return an empty list
-    """
-    assert instance.generate_output([]) == []
-
-
-@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_properties")
-@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_forwarded_outputs")
-@patch("openstack_query.query_blocks.query_output.deepcopy")
-def test_generate_output_one_item(
-    mock_deepcopy, mock_parse_forwarded_outputs, mock_parse_properties, instance
-):
-    """
-    Tests generate output method - with a list containing one item
-    """
-    instance.update_forwarded_outputs(NonCallableMock(), NonCallableMock())
-    mock_parse_properties.return_value = {"prop1": "val1", "prop2": "val2"}
-    mock_parse_forwarded_outputs.return_value = {
-        "output_prop3": "val3",
-        "output_prop4": "val4",
-    }
-
-    res = instance.generate_output(["obj1"])
-    mock_deepcopy.assert_called_once_with(instance.forwarded_outputs)
-    mock_parse_properties.assert_called_once_with("obj1")
-    mock_parse_forwarded_outputs.assert_called_once_with(
-        "obj1", mock_deepcopy.return_value
-    )
-    assert res == [
-        {
-            "prop1": "val1",
-            "prop2": "val2",
-            "output_prop3": "val3",
-            "output_prop4": "val4",
-        }
-    ]
-
-
-@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_properties")
-@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_forwarded_outputs")
-@patch("openstack_query.query_blocks.query_output.deepcopy")
-def test_generate_output_many_items(
-    mock_deepcopy, mock_parse_forwarded_outputs, mock_parse_properties, instance
-):
-    """
-    Tests generate output method - with a list containing one item
-    """
-    instance.update_forwarded_outputs(NonCallableMock(), NonCallableMock())
-
-    mock_parse_properties.side_effect = [
-        {"prop1": "val1", "prop2": "val2"},
-        {"prop1": "val3", "prop2": "val4"},
-    ]
-    mock_parse_forwarded_outputs.side_effect = [
-        {"output_prop1": "val1", "output_prop2": "val2"},
-        {"output_prop1": "val3", "output_prop2": "val4"},
-    ]
-
-    res = instance.generate_output(["obj1", "obj2"])
-    mock_deepcopy.assert_called_once_with(instance.forwarded_outputs)
-
-    mock_parse_properties.assert_has_calls([call("obj1"), call("obj2")])
-    mock_parse_forwarded_outputs.asssert_has_calls(
-        [
-            call("obj1", mock_deepcopy.return_value),
-            call("obj2", mock_deepcopy.return_value),
-        ]
-    )
-
-    expected_vals = [
-        {
-            "prop1": "val1",
-            "prop2": "val2",
-            "output_prop1": "val1",
-            "output_prop2": "val2",
-        },
-        {
-            "prop1": "val3",
-            "prop2": "val4",
-            "output_prop1": "val3",
-            "output_prop2": "val4",
-        },
-    ]
-    assert res == expected_vals
-
-
-@pytest.fixture(name="mock_get_prop_func")
-def get_prop_func_fixture():
-    """
-    Stubs out get_prop_func method to return a
-    stub callable based on prop enum
-    """
-    mock_prop_1_func = MagicMock()
-    mock_prop_1_func.return_value = "prop 1 out"
-
-    mock_prop_2_func = MagicMock()
-    mock_prop_2_func.side_effect = AttributeError
-
-    def _mock_get_prop_func(prop):
-        return {
-            MockProperties.PROP_1: mock_prop_1_func,
-            MockProperties.PROP_2: mock_prop_2_func,
-        }.get(prop, None)
-
-    return _mock_get_prop_func
-
-
-def test_parse_properties_no_props(instance):
-    """
-    Tests that parse_properties function works expectedly with 0 prop_funcs to apply
-    method should return an empty dict
-    """
-
-    # mock get_prop_mapping to return a func string appropriate for that prop
-    instance.selected_props = set()
-    # pylint:disable=protected-access
-    assert instance._parse_properties("openstack-item") == {}
-
-
-@patch.object(MockProperties, "get_prop_mapping")
-def test_parse_properties_one_prop(mock_get_prop_func, instance):
-    """
-    Tests that parse_properties function works expectedly with 0 prop_funcs to apply
-    method should return a dict with one key value pair (prop-name, prop-value)
-    """
-    mock_prop_func = MagicMock()
-    mock_prop_func.return_value = "prop 1 out"
-
-    mock_get_prop_func.return_value = mock_prop_func
-
-    instance.selected_props = {MockProperties.PROP_1}
-    # pylint:disable=protected-access
-    res = instance._parse_properties("openstack-item")
-
-    mock_get_prop_func.assert_called_once_with(MockProperties.PROP_1)
-    mock_prop_func.assert_called_once_with("openstack-item")
-
-    assert res == {"prop_1": "prop 1 out"}
-
-
-def test_parse_properties_many_props(mock_get_prop_func, instance):
-    """
-    Tests that parse_properties function works expectedly with 0 prop_funcs to apply
-    method should return a dict with many key value pairs (prop-name, prop-value)
-    """
-
-    instance.selected_props = {MockProperties.PROP_1, MockProperties.PROP_2}
-
-    with patch.object(
-        MockProperties, "get_prop_mapping", wraps=mock_get_prop_func
-    ) as mock_get_prop_mapping:
-        # pylint:disable=protected-access
-        res = instance._parse_properties("openstack-item")
-
-    assert res == {"prop_1": "prop 1 out", "prop_2": "Not Found"}
-    mock_get_prop_mapping.assert_has_calls(
-        [call(prop) for prop in instance.selected_props]
-    )
-
-
 def test_flatten_empty(instance):
     """
     Tests that flatten() function works expectedly - with empty list/dict
@@ -583,129 +635,128 @@ def test_flatten_with_duplicates(instance):
     ) == {"prop1": ["val1", "val1"], "prop2": ["val2", "val2"]}
 
 
-def test_update_forwarded_outputs(instance):
+@patch("builtins.open", new_callable=mock_open)
+@patch("csv.DictWriter")
+def test_to_csv_list_with_valid_parameters(
+    mock_dict_writer, mock_file, instance_data, instance
+):
     """
-    Tests update_forwarded_outputs() method
-    ensure various test cases when running update_forwarded_outputs succeeds
+    Tests to_csv_list With Valid Parameter inputs.
+    """
+    instance.to_csv_list(instance_data, "csv_files")
+
+    mock_file.assert_called_once_with("csv_files", "w", encoding="utf-8")
+    mock_dict_writer.assert_called_once_with(
+        mock_file.return_value, fieldnames=instance_data[0].keys()
+    )
+    mock_dict_writer.return_value.writeheader.assert_called_once()
+    mock_dict_writer.return_value.writerows.assert_called_once_with(instance_data)
+
+
+def test_to_csv_list_fails(instance):
+    """
+    Tests to_csv_list raises an error when input data is empty
+    """
+    with pytest.raises(RuntimeError):
+        instance.to_csv_list([], "invalid path")
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_list")
+def test_to_csv_grouped_loop_empty_input(mock_to_csv_list, instance):
+    """
+    Tests to_csv_dictionary does not loop if an empty input is made
+    """
+    instance.to_csv_dictionary({}, "path")
+    mock_to_csv_list.assert_not_called()
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_list")
+@patch("openstack_query.query_blocks.query_output.Path")
+def test_to_csv_grouped_loop_one_input(mock_path, mock_to_csv_list, instance):
+    """
+    Tests to_csv_dictionary does loop once if a single input is made
     """
 
-    # test update with one output set when forwarded_outputs empty
-    instance.update_forwarded_outputs("prop1", "output")
-    assert instance.forwarded_outputs == {"prop1": "output"}
-
-    # test add another another output set - different group key
-    instance.update_forwarded_outputs("prop2", "output2")
-    assert instance.forwarded_outputs == {"prop1": "output", "prop2": "output2"}
-
-    # test update works - same group key
-    instance.update_forwarded_outputs("prop1", "output-new")
-    assert instance.forwarded_outputs == {"prop1": "output-new", "prop2": "output2"}
-
-
-def test_parse_forwarded_outputs_no_set(instance):
-    """
-    Tests parse_forwarded_outputs() method - with no forwarded_outputs set
-    should return empty dict
-    """
-    # pylint:disable=protected-access
-    assert instance._parse_forwarded_outputs("obj1", {}) == {}
-
-
-@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
-def test_parse_forwarded_outputs_one_to_many(mock_parse_property, instance):
-    """
-    Tests parse_forwarded_outputs() method - one set of forwarded_outputs
-    """
-    expected_out = {"forwarded-prop1": "val1", "forwarded-prop2": "val2"}
-    mock_forwarded_outputs = {"prop1": {"prop_val1": [expected_out]}}
-
-    mock_parse_property.side_effect = ["prop_val1", "prop_val1"]
-
-    # pylint:disable=protected-access
-
-    # first match
-    res = instance._parse_forwarded_outputs("obj1", mock_forwarded_outputs)
-    mock_parse_property.assert_has_calls([call("prop1", "obj1")])
-    assert res == expected_out
-
-    # second match
-    res = instance._parse_forwarded_outputs("obj2", mock_forwarded_outputs)
-    mock_parse_property.assert_has_calls([call("prop1", "obj2")])
-    assert res == expected_out
-
-
-@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
-def test_parse_forwarded_outputs_multiple_sets(mock_parse_property, instance):
-    """
-    Tests parse_forwarded_outputs() method - a set of many forwarded_outputs
-    first one-to-many (singleton list), second many-to-one (list containing many items)
-    """
-    one_to_many_out = {"forwarded-prop1": "val1", "forwarded-prop2": "val2"}
-
-    many_to_one_out1 = {"forwarded-prop3": "val3", "forwarded-prop4": "val4"}
-    many_to_one_out2 = {"forwarded-prop3": "new-val", "forwarded-prop4": "new-val2"}
-
-    mock_forwarded_outputs = {
-        "prop1": {"prop_val1": [one_to_many_out]},
-        "prop2": {"prop_val2": [many_to_one_out1, many_to_one_out2]},
+    looping_data = {
+        "user_name is user1": [
+            {
+                "server_id": "server_id1",
+                "server_name": "server1",
+                "user_id": "user_id1",
+                "user_name": "user1",
+            },
+            {
+                "server_id": "server_id2",
+                "server_name": "server2",
+                "user_id": "user_id2",
+                "user_name": "user2",
+            },
+        ],
     }
 
-    mock_parse_property.side_effect = [
-        # first item calls
-        "prop_val1",
-        "prop_val2",
-        # second item calls
-        "prop_val1",
-        "prop_val2",
-    ]
-    # pylint:disable=protected-access
+    instance.to_csv_dictionary(looping_data, "csv_files")
 
-    # first item
-    res = instance._parse_forwarded_outputs("obj1", mock_forwarded_outputs)
-    mock_parse_property.assert_has_calls([call("prop1", "obj1"), call("prop2", "obj1")])
-    assert res == {**one_to_many_out, **many_to_one_out1}
-
-    # second item
-    res = instance._parse_forwarded_outputs("obj1", mock_forwarded_outputs)
-    mock_parse_property.assert_has_calls([call("prop1", "obj1"), call("prop2", "obj1")])
-    assert res == {**one_to_many_out, **many_to_one_out2}
+    mock_to_csv_list.assert_called_once_with(
+        looping_data["user_name is user1"],
+        mock_path.return_value.joinpath.return_value,
+    )
 
 
-@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
-def test_parse_forwarded_prop_value_not_found(mock_parse_property, instance):
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_list")
+def test_to_csv_grouped_loop_more_than_one_input(
+    mock_to_csv, instance_grouped_data, instance
+):
     """
-    Tests parse_forwarded_outputs() method
-    where a prop_value is not found - raise error
+    Tests to_csv_dictionary loops more than once if more than one input is made
     """
-    mock_forwarded_outputs = {"prop1": {"prop-val1": ["outputs"]}}
 
-    mock_parse_property.return_value = "invalid-prop"
-    with pytest.raises(QueryChainingError):
-        # pylint:disable=protected-access
-        instance._parse_forwarded_outputs("obj1", mock_forwarded_outputs)
+    instance.to_csv_dictionary(instance_grouped_data, "csv_files")
+
+    mock_to_csv.assert_called_with(
+        instance_grouped_data["user_name is user2"],
+        Path("csv_files/user_name is user2.csv"),
+    )
 
 
-@patch("openstack_query.query_blocks.query_output.QueryOutput._parse_property")
-def test_parse_forwarded_outputs_many_to_one(mock_parse_property, instance):
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_props")
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_dictionary")
+@patch("openstack_query.query_blocks.query_output.Path")
+def test_to_csv_grouped_input(mock_path, mock_to_dictionary, mock_to_props, instance):
     """
-    Tests parse_forwarded_outputs() method - where forwarded outputs expects duplicates
-    cases where grouped results have a many-to-one relationship.
-    i.e. finding Users mapped to Servers - many servers can be mapped to one user - so duplicates of same user ids
-    are expected
+    Tests to_csv correctly identifies an input as a dictionary
     """
-    expected_out1 = {"forwarded-prop1": "val1", "forwarded-prop2": "val2"}
-    expected_out2 = {"forwarded-prop3": "val3", "forwarded-prop4": "val4"}
 
-    mock_forwarded_outputs = {"prop1": {"prop_val1": [expected_out1, expected_out2]}}
-    mock_parse_property.side_effect = ["prop_val1", "prop_val1"]
-    # pylint:disable=protected-access
+    mock_results_container = NonCallableMock()
+    mock_dir_path = NonCallableMock()
 
-    # first duplicate - takes first item in list
-    res = instance._parse_forwarded_outputs("obj1", mock_forwarded_outputs)
-    assert res == expected_out1
+    mock_to_props.return_value = {"prop1": "val1", "prop2": "val2"}
 
-    # second duplicate - takes second item in list
-    res = instance._parse_forwarded_outputs("obj2", mock_forwarded_outputs)
-    assert res == expected_out2
+    instance.to_csv(mock_results_container, mock_dir_path)
 
-    mock_parse_property.assert_has_calls([call("prop1", "obj1"), call("prop1", "obj2")])
+    mock_path.assert_called_once_with(mock_dir_path)
+    mock_to_props.assert_called_once_with(mock_results_container)
+    mock_to_dictionary.assert_called_once_with(
+        mock_to_props.return_value, mock_path.return_value
+    )
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_props")
+@patch("openstack_query.query_blocks.query_output.QueryOutput.to_csv_list")
+@patch("openstack_query.query_blocks.query_output.Path")
+def test_to_csv_ungrouped_input(mock_path, mock_to_list, mock_to_props, instance):
+    """
+    Tests to_csv correctly identifies an input as a list
+    """
+
+    mock_results_container = NonCallableMock()
+    mock_dir_path = NonCallableMock()
+
+    mock_to_props.return_value = ["val1", "val2"]
+
+    instance.to_csv(mock_results_container, mock_dir_path)
+
+    mock_path.assert_called_once_with(mock_dir_path)
+    mock_to_props.assert_called_once_with(mock_results_container)
+    mock_to_list.assert_called_once_with(
+        mock_to_props.return_value, mock_path.return_value.joinpath.return_value
+    )
