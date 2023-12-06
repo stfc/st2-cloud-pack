@@ -14,7 +14,8 @@ We recommend writing the script in `lib/workflows/email`
 
 - this is much easier to test than if this was handled in the actions layer.
 
-The script's `main` function - the one that the Action will call must be named the same as the file itself
+The script must contain a function with the same name as the file which the action will use as the entry-point.
+In other words - this is the function that the Action will call and pass any user-defined inputs to.
 See example scripts in `lib/workflows/` to get an idea of how they work
 
 
@@ -25,7 +26,7 @@ Action YAML configuration should be written to `actions` folder.
 
 
 You need to set the entry_point for your Action to point to `src/workflow_actions.py`
-And add two immutable parameters pointing to the submodule and file where your script is located
+And add an immutable parameter pointing to the file where your script is located
 see example:
 
 
@@ -35,16 +36,8 @@ see example:
   ...
   parameters:
       ...
-
-      submodule_name: # points to the submodule your script is located in `lib/workflows`
-        default: email # here we're using the email submodule
-        immutable: true
-        type: string
-
       action_name: # point to the file that contains code to handle the action
         default: send_decom_flavor_email
         immutable: true
         type: string
 ```
-
-**NOTE: use of submodules may be deprecated soon: https://github.com/stfc/st2-cloud-pack/pull/186**. In this case - you won't need to include `submodule_name`
