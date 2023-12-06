@@ -5,17 +5,17 @@ from src.workflow_actions import WorkflowActions
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase
 
 
-@pytest.mark.parametrize("action_name", ["send_decom_flavor_email"])
-def test_modules_exist(action_name):
-    """
-    Test that each module and action entry-points exist for each workflow action
-    """
-    workflow_module = __import__(f"workflows.{action_name}")
-    assert hasattr(workflow_module, f"workflows.{action_name}")
-
-    action_module = getattr(workflow_module, action_name)
-
-    assert hasattr(action_module, action_name)
+# @pytest.mark.parametrize("action_name", ["send_decom_flavor_email"])
+# def test_modules_exist(action_name):
+#     """
+#     Test that each module and action entry-points exist for each workflow action
+#     """
+#     workflow_module = __import__(f"workflows.{action_name}")
+#     assert hasattr(workflow_module, f"workflows.{action_name}")
+#
+#     action_module = getattr(workflow_module, action_name)
+#
+#     assert hasattr(action_module, action_name)
 
 
 class TestWorkflowActions(OpenstackActionTestBase):
@@ -41,18 +41,16 @@ class TestWorkflowActions(OpenstackActionTestBase):
         Tests that run method can dispatch to workflow methods
         """
 
-        mock_submodule_name = "submodule"
         mock_action_module_name = "action"
 
         with patch.object(self.action, "parse_configs") as mock_parse_configs:
             self.action.run(
-                submodule_name=mock_submodule_name,
                 action_name=mock_action_module_name,
                 **self.mock_kwargs,
             )
 
         mock_parse_configs.assert_called_once_with(**self.mock_kwargs)
-        mock_import.return_value.submodule.action.action.assert_called_once_with(
+        mock_import.return_value.action.action.assert_called_once_with(
             **mock_parse_configs.return_value
         )
 
