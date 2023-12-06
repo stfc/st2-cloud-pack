@@ -77,7 +77,7 @@ def test_validate_success():
 # pylint:disable=too-many-locals
 
 
-@patch("workflows.email.send_decom_flavor_email.UserQuery")
+@patch("workflows.send_decom_flavor_email.UserQuery")
 def test_find_user_info_valid(mock_user_query):
     """
     Tests find_user_info where query is given a valid user id
@@ -106,7 +106,7 @@ def test_find_user_info_valid(mock_user_query):
     assert res[1] == "foo@example.com"
 
 
-@patch("workflows.email.send_decom_flavor_email.UserQuery")
+@patch("workflows.send_decom_flavor_email.UserQuery")
 def test_find_user_info_invalid(mock_user_query):
     """
     Tests find_user_info where query is given a invalid user id
@@ -132,7 +132,7 @@ def test_find_user_info_invalid(mock_user_query):
     assert res[1] == mock_override_email
 
 
-@patch("workflows.email.send_decom_flavor_email.UserQuery")
+@patch("workflows.send_decom_flavor_email.UserQuery")
 def test_find_user_info_no_email_address(mock_user_query):
     """
     Tests find_user_info where query result contains no email address
@@ -161,7 +161,7 @@ def test_find_user_info_no_email_address(mock_user_query):
     assert res[1] == mock_override_email
 
 
-@patch("workflows.email.send_decom_flavor_email.FlavorQuery")
+@patch("workflows.send_decom_flavor_email.FlavorQuery")
 def test_find_users_with_decom_flavor_valid(mock_flavor_query):
     """
     Tests find_servers_with_decom_flavors() function
@@ -215,7 +215,7 @@ def test_find_users_with_decom_flavor_valid(mock_flavor_query):
     assert res == mock_server_query_obj
 
 
-@patch("workflows.email.send_decom_flavor_email.FlavorQuery")
+@patch("workflows.send_decom_flavor_email.FlavorQuery")
 def test_find_users_with_decom_flavor_invalid_flavor(mock_flavor_query):
     """
     Tests that find_user_with_decom_flavors fails when provided invalid flavor name
@@ -244,7 +244,7 @@ def test_find_users_with_decom_flavor_invalid_flavor(mock_flavor_query):
     mock_flavor_query_obj.to_props.assert_called_once()
 
 
-@patch("workflows.email.send_decom_flavor_email.FlavorQuery")
+@patch("workflows.send_decom_flavor_email.FlavorQuery")
 def test_find_users_with_decom_flavor_no_servers_found(mock_flavor_query):
     """
     Tests that find_user_with_decom_flavors fails when no servers found with given flavors
@@ -311,8 +311,8 @@ def test_print_email_params():
     )
 
 
-@patch("workflows.email.send_decom_flavor_email.EmailTemplateDetails")
-@patch("workflows.email.send_decom_flavor_email.EmailParams")
+@patch("workflows.send_decom_flavor_email.EmailTemplateDetails")
+@patch("workflows.send_decom_flavor_email.EmailParams")
 def test_build_params(mock_email_params, mock_email_template_details):
     """
     Test build_params() function creates email params appropriately and returns them
@@ -350,11 +350,11 @@ def test_build_params(mock_email_params, mock_email_template_details):
     assert res == mock_email_params.return_value
 
 
-@patch("workflows.email.send_decom_flavor_email.validate")
-@patch("workflows.email.send_decom_flavor_email.find_servers_with_decom_flavors")
-@patch("workflows.email.send_decom_flavor_email.build_email_params")
-@patch("workflows.email.send_decom_flavor_email.find_user_info")
-@patch("workflows.email.send_decom_flavor_email.Emailer")
+@patch("workflows.send_decom_flavor_email.validate")
+@patch("workflows.send_decom_flavor_email.find_servers_with_decom_flavors")
+@patch("workflows.send_decom_flavor_email.build_email_params")
+@patch("workflows.send_decom_flavor_email.find_user_info")
+@patch("workflows.send_decom_flavor_email.Emailer")
 def test_send_decom_flavor_email_send_plaintext(
     mock_emailer,
     mock_find_user_info,
@@ -448,12 +448,12 @@ def test_send_decom_flavor_email_send_plaintext(
 
 
 # pylint:disable=too-many-arguments
-@patch("workflows.email.send_decom_flavor_email.validate")
-@patch("workflows.email.send_decom_flavor_email.find_servers_with_decom_flavors")
-@patch("workflows.email.send_decom_flavor_email.build_email_params")
-@patch("workflows.email.send_decom_flavor_email.get_flavor_list_html")
-@patch("workflows.email.send_decom_flavor_email.find_user_info")
-@patch("workflows.email.send_decom_flavor_email.Emailer")
+@patch("workflows.send_decom_flavor_email.validate")
+@patch("workflows.send_decom_flavor_email.find_servers_with_decom_flavors")
+@patch("workflows.send_decom_flavor_email.build_email_params")
+@patch("workflows.send_decom_flavor_email.get_flavor_list_html")
+@patch("workflows.send_decom_flavor_email.find_user_info")
+@patch("workflows.send_decom_flavor_email.Emailer")
 def test_send_decom_flavor_email_send_html(
     mock_emailer,
     mock_find_user_info,
@@ -550,10 +550,10 @@ def test_send_decom_flavor_email_send_html(
     )
 
 
-@patch("workflows.email.send_decom_flavor_email.validate")
-@patch("workflows.email.send_decom_flavor_email.find_servers_with_decom_flavors")
-@patch("workflows.email.send_decom_flavor_email.find_user_info")
-@patch("workflows.email.send_decom_flavor_email.print_email_params")
+@patch("workflows.send_decom_flavor_email.validate")
+@patch("workflows.send_decom_flavor_email.find_servers_with_decom_flavors")
+@patch("workflows.send_decom_flavor_email.find_user_info")
+@patch("workflows.send_decom_flavor_email.print_email_params")
 def test_send_decom_flavor_email_print(
     mock_print_email_params, mock_find_user_info, mock_find_servers, mock_validate
 ):
@@ -628,11 +628,11 @@ def test_send_decom_flavor_email_print(
     )
 
 
-@patch("workflows.email.send_decom_flavor_email.validate")
-@patch("workflows.email.send_decom_flavor_email.find_servers_with_decom_flavors")
-@patch("workflows.email.send_decom_flavor_email.build_email_params")
-@patch("workflows.email.send_decom_flavor_email.find_user_info")
-@patch("workflows.email.send_decom_flavor_email.Emailer")
+@patch("workflows.send_decom_flavor_email.validate")
+@patch("workflows.send_decom_flavor_email.find_servers_with_decom_flavors")
+@patch("workflows.send_decom_flavor_email.build_email_params")
+@patch("workflows.send_decom_flavor_email.find_user_info")
+@patch("workflows.send_decom_flavor_email.Emailer")
 def test_send_decom_flavor_email_use_override(
     mock_emailer,
     mock_find_user_info,
