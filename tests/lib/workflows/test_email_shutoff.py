@@ -253,7 +253,9 @@ def test_send_shutoff_emails(
     an email
     """
 
+
     # pylint: disable=too-many-locals
+
     mock_smtp_account = NonCallableMock()
     mock_cloud_account = NonCallableMock()
     mock_email_from = NonCallableMock()
