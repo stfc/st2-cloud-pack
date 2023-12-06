@@ -1,6 +1,7 @@
 from unittest.mock import patch, NonCallableMock
-import pytest
 from importlib import import_module
+import pytest
+
 from src.workflow_actions import WorkflowActions
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase
 
