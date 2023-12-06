@@ -2,7 +2,7 @@ from unittest.mock import patch, NonCallableMock
 import pytest
 
 from structs.email.email_template_details import EmailTemplateDetails
-from workflows.email.send_test_email import send_test_email
+from workflows.send_test_email import send_test_email
 
 
 @pytest.fixture(name="send_test_email_test_case")
@@ -11,8 +11,8 @@ def send_test_email_test_case_fixture():
     Fixture to run send_test_email test cases
     """
 
-    @patch("workflows.email.send_test_email.Emailer")
-    @patch("workflows.email.send_test_email.EmailParams")
+    @patch("workflows.send_test_email.Emailer")
+    @patch("workflows.send_test_email.EmailParams")
     def _send_test_email_test_case(
         mock_kwargs, expected_kwargs, cc_cloud_support, mock_email_params, mock_emailer
     ):

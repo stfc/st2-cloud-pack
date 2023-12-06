@@ -6,10 +6,6 @@ name: email.test
 parameters:
   timeout:
     default: 5400
-  submodule_name:
-    default: email
-    immutable: true
-    type: string
   action_name:
     default: send_test_email
     immutable: true
