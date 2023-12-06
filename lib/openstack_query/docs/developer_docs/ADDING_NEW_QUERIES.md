@@ -91,6 +91,24 @@ class ResourceRunner(RunnerWrapper):
         return self._run_paginated_query(conn.compute.resource, **{filter_kwargs, meta_params})
 ```
 
+For example in `ServerRunner` we have meta_params: `all_projects`, `as_admin` and `from_projects`
+The following needs to be done in `parse_meta_param`:
+   - `all_projects` - if passed as `True`, it should set the query to run on all servers (on all projects)
+     - mutually exclusive to `from_projects`, can only work if `as_admin` is also set
+     - should pass `all_tenants=True` to `conn.compute.servers` - this is called (in `run_query()`)
+
+   - `as_admin` - should set the query to run as an admin
+     - doesn't set any parameters, but needs to be passed if `from_projects` or `all_projects` is also given
+     - if not passed it will raise an error, this is used for a workaround as openstack will ignore `all_tenants=True` or
+     `projects` if the credentials aren't admin creds and wrong info will be outputted.
+
+   - `from_projects` - sets the projects to search in
+     - user passes a list of server names or ids here to limit search by
+     - if set, it should convert names to project ids and passes `projects=[<project-ids>]` to `conn.compute.servers`
+
+see `runners/server_runner.py` to see the implementation details.
+
+
 ## 3. Create a Mapping Class
 
 A new subclass of the `MappingInterface` class is required to store query mappings.
