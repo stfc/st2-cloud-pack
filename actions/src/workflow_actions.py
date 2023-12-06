@@ -1,5 +1,5 @@
 from st2common.runners.base_action import Action
-
+from importlib import import_module
 from structs.email.smtp_account import SMTPAccount
 
 
@@ -10,7 +10,7 @@ class WorkflowActions(Action):
         :param action_name: name of file/function which corresponds to function that will handle the action
         :param kwargs: all user-defined kwargs to pass to the function
         """
-        workflow = __import__(f"workflows.{action_name}")
+        workflow = import_module(f"workflows.{action_name}")
         action_module = getattr(workflow, action_name)
         action_func = getattr(action_module, action_name)
 
