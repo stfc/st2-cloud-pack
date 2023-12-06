@@ -9,10 +9,10 @@ def test_module_exists():
     Test that each action's entry-point module exists
     """
     action_name = "send_decom_flavor_email"
-    workflow_module = import_module(f"workflows.{action_name}")
+    workflow_module = import_module("workflows")
+
     assert hasattr(workflow_module, action_name)
     action_module = getattr(workflow_module, action_name)
-
     assert hasattr(action_module, action_name)
 
 
@@ -33,7 +33,7 @@ class TestWorkflowActions(OpenstackActionTestBase):
             "kwarg2": NonCallableMock(),
         }
 
-    @patch("builtins.__import__")
+    @patch("src.workflow_actions.import_module")
     def test_run(self, mock_import):
         """
         Tests that run method can dispatch to workflow methods
