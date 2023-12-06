@@ -1,21 +1,7 @@
 from unittest.mock import patch, NonCallableMock
-import pytest
 
 from src.workflow_actions import WorkflowActions
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase
-
-
-# @pytest.mark.parametrize("action_name", ["send_decom_flavor_email"])
-# def test_modules_exist(action_name):
-#     """
-#     Test that each module and action entry-points exist for each workflow action
-#     """
-#     workflow_module = __import__(f"workflows.{action_name}")
-#     assert hasattr(workflow_module, f"workflows.{action_name}")
-#
-#     action_module = getattr(workflow_module, action_name)
-#
-#     assert hasattr(action_module, action_name)
 
 
 class TestWorkflowActions(OpenstackActionTestBase):
