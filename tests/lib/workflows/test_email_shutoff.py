@@ -259,6 +259,7 @@ def test_send_shutoff_emails(
     mock_override_email_address = NonCallableMock()
     mock_limit_by_project = NonCallableMock()
     mock_days_threshold = NonCallableMock()
+    mock_email_template = NonCallableMock()
 
     # mock username and email for each user
     mocked_user_a = UserDetails(id="user_id_a", name="a", email="a@example.com")
@@ -290,6 +291,7 @@ def test_send_shutoff_emails(
         mock_override_email_address,
         mock_limit_by_project,
         mock_days_threshold,
+        mock_email_template,
     )
 
     mock_query_shutoff.assert_called_once_with(
@@ -322,18 +324,14 @@ def test_send_shutoff_emails(
                 mock_email_from,
                 mocked_user_a.email,
                 mocked_user_a_servers,
+                mock_email_template,
             ),
             call(
                 mock_smtp_account,
                 mock_email_from,
                 mocked_user_b.email,
                 mocked_user_b_servers,
+                mock_email_template,
             ),
         ]
     )
-
-
-def test_main():
-    """
-    Tests the main method
-    """

@@ -139,6 +139,7 @@ def send_shutoff_emails(
     override_email_address: str = "cloud-support@stfc.ac.uk",
     limit_by_project: Optional[List[str]] = None,
     days_threshold: int = 30,
+    email_template="test",
 ):
     """
     The main method for running the workflow
@@ -159,4 +160,10 @@ def send_shutoff_emails(
         # extract list of VM names
         server_name_list = extract_server_list(user)
         # send email
-        send_user_email(smtp_account, email_from, user_details.email, server_name_list)
+        send_user_email(
+            smtp_account,
+            email_from,
+            user_details.email,
+            server_name_list,
+            email_template,
+        )
