@@ -4,7 +4,7 @@ from structs.email.smtp_account import SMTPAccount
 
 
 class WorkflowActions(Action):
-    def run(self, submodule_name: str, action_name: str, **kwargs):
+    def run(self, action_name: str, **kwargs):
         """
         Dynamically dispatches to the function wanted
         :param submodule_name: submodule name which corresponds to module in workflow
@@ -12,8 +12,8 @@ class WorkflowActions(Action):
         :param kwargs: all user-defined kwargs to pass to the function
         """
         workflow = __import__(f"workflows.{action_name}")
-        action_module = getattr(action_name)
-        action_func = getattr(action_name)
+        action_module = getattr(workflow, action_name)
+        action_func = getattr(action_module, action_name)
 
         self.logger.info(
             "Workflow Action Received - %s/%s", action_name
