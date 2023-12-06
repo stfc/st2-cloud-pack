@@ -15,9 +15,7 @@ class WorkflowActions(Action):
         action_module = getattr(workflow, action_name)
         action_func = getattr(action_module, action_name)
 
-        self.logger.info(
-            "Workflow Action Received - %s/%s", action_name
-        )
+        self.logger.info("Workflow Action Received - %s/%s", action_name)
         self.logger.debug(
             "with Parameters: %s",
             "\n".join([f"{key}: {val}" for key, val in kwargs.items()]),
