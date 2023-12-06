@@ -131,7 +131,9 @@ def send_user_email(
 
     Emailer(smtp_account).send_emails([email_params])
 
+
 # pylint: disable=too-many-arguments
+
 
 def send_shutoff_emails(
     smtp_account: SMTPAccount,
