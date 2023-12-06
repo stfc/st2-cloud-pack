@@ -12,7 +12,7 @@ To Query for Flavors using the Query Library, you can import `FlavorQuery()` lik
 from openstack_query import FlavorQuery
 ```
 
-`FlavorQuery()` can then be used to setup and run queries - see [API.md](API.md) for details on API calls
+`FlavorQuery()` can then be used to setup and run queries - see [API.md](../API.md) for details on API calls
 
 ## Properties
 
@@ -42,7 +42,7 @@ Alternatively, you can pass property aliases (passed as string) instead (current
 
 ## Chaining
 This section details valid mappings you can use to chain onto other queries or from other queries to chain into a `FlavorQuery` object.
-This applies to API calls `then` and `append_from` - see [API.md](API.md) for details
+This applies to API calls `then` and `append_from` - see [API.md](../API.md) for details
 
 
 ## Chaining from

@@ -9,10 +9,10 @@ User-related Docs:
   - [Presets Reference](docs/developer_docs/PRESETS.md)
 
 Feature References
-  - [Servers](docs/user_docs/SERVERS.md)
-  - [Users](docs/user_docs/SERVERS.md)
-  - [Flavors](docs/user_docs/FLAVORS.md)
-  - [Projects](docs/user_docs/PROJECTS.md)
+  - [Servers](docs/user_docs/query_docs/SERVERS.md)
+  - [Users](docs/user_docs/query_docs/SERVERS.md)
+  - [Flavors](docs/user_docs/query_docs/FLAVORS.md)
+  - [Projects](docs/user_docs/query_docs/PROJECTS.md)
 
  Developer-related Docs:
 - [Developer README](docs/developer_docs/OVERVIEW.md)

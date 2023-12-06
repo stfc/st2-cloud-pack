@@ -15,7 +15,7 @@ To Query for Servers using the Query Library, you can import `ServerQuery()` lik
 from openstack_query import ServerQuery
 ```
 
-`ServerQuery()` can then be used to setup and run queries - see [API.md](API.md) for details on API calls
+`ServerQuery()` can then be used to setup and run queries - see [API.md](../API.md) for details on API calls
 
 ## Properties
 
@@ -49,7 +49,7 @@ Alternatively, you can pass property aliases (passed as string) instead (current
 
 ## Chaining
 This section details valid mappings you can use to chain onto other queries or from other queries to chain into a `ProjectQuery` object.
-This applies to API calls `then` and `append_from` - see [API.md](API.md) for details
+This applies to API calls `then` and `append_from` - see [API.md](../API.md) for details
 
 
 ## Chaining from

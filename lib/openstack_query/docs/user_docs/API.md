@@ -13,10 +13,10 @@ The query library currently supports queries on the following Openstack resource
 
 | Openstack Resource                                                                                       | Description                            | Reference for Query Object | How to Import                              |
 |----------------------------------------------------------------------------------------------------------|----------------------------------------|----------------------------|--------------------------------------------|
-| [Servers](https://docs.openstack.org/api-ref/compute/#servers-servers)                                   | Run a Query on Openstack Servers (VMs) | [SERVERS.md](SERVERS.md)   | `from openstack_query import ServerQuery`  |
-| [Users](https://docs.openstack.org/api-ref/identity/v3/index.html?expanded=list-users-detail#users)      | Run a Query on Openstack Users         | [USERS.md](USERS.md)       | `from openstack_query import UserQuery`    |
-| [Project](https://docs.openstack.org/api-ref/identity/v3/index.html?expanded=list-users-detail#projects) | Run a Query on Openstack Projects      | [PROJECTS.md](PROJECTS.md) | `from openstack_query import ProjectQuery` |
-| [Flavor](https://docs.openstack.org/api-ref/compute/#flavors)                                            | Run a Query on Openstack Flavors       | [FLAVORS.md](FLAVORS.md)   | `from openstack_query import FlavorQuery`  |
+| [Servers](https://docs.openstack.org/api-ref/compute/#servers-servers)                                   | Run a Query on Openstack Servers (VMs) | [SERVERS.md](query_docs/SERVERS.md)   | `from openstack_query import ServerQuery`  |
+| [Users](https://docs.openstack.org/api-ref/identity/v3/index.html?expanded=list-users-detail#users)      | Run a Query on Openstack Users         | [USERS.md](query_docs/USERS.md)       | `from openstack_query import UserQuery`    |
+| [Project](https://docs.openstack.org/api-ref/identity/v3/index.html?expanded=list-users-detail#projects) | Run a Query on Openstack Projects      | [PROJECTS.md](query_docs/PROJECTS.md) | `from openstack_query import ProjectQuery` |
+| [Flavor](https://docs.openstack.org/api-ref/compute/#flavors)                                            | Run a Query on Openstack Flavors       | [FLAVORS.md](query_docs/FLAVORS.md)   | `from openstack_query import FlavorQuery`  |
 
 #
 ### select
@@ -32,7 +32,7 @@ def select(*props: PropEnum)
 
 - `props`: one or more properties to collect described as enum.
   - e.g. If you're querying servers with `ServerQuery` - appropriate enum is `ServerProperties`,
-  - see the specific query page e.g. [SERVERS.md](SERVERS.md) on supported properties for that query
+  - see the specific query page e.g. [SERVERS.md](query_docs/SERVERS.md) on supported properties for that query
 
 Running `select()` again will override all currently selected properties from previous `select()` call
 
@@ -96,11 +96,6 @@ To query for servers which are in "error" state - the values would be:
 - preset - `QueryPresetsGeneric.EQUAL_TO`
 - prop - `ServerProperties.SERVER_STATUS`
 - value(s) - `value="ERROR"`
-
-This is equivalent to:
-```python
-return [server for server in openstack.connect("prod").list_servers if server["server_status"] == "error"]
-```
 
 the `where` call would be like so:
 ```python
@@ -545,6 +540,28 @@ print(query.to_html())
 <tr><td>2                             </td><td>bar                                       </td></tr>
 
 ```
+
+#
+### to_csv (Under development)
+`to_csv` is an output method that will write the output into csv file(s). If the results are grouped, each group will be written to a file under `<unique-group-key>.csv`
+
+Like all output methods - it will parse the results set in `sort_by()`, `group_by()` and requires `run()` to have been called first
+- This method will parse results to get properties that we 'selected' for - from a `select()` or a `select_all()` call
+- If this query is chained from previous query(ies) by `then()` - the previous results will also be included
+- If any `append_from` calls have been run - the properties appended will also be included
+
+```python
+def to_csv(dirpath: str)
+```
+
+**Arguments**:
+
+**NOTE:** More args for to_csv method under development
+
+- `dirpath`: path to directory where file(s) will be written, can be a filepath, but will error if results are grouped
+
+#
+### to_json (Under development)
 
 #
 ### then

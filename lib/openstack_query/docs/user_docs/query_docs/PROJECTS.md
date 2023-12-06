@@ -12,7 +12,7 @@ To Query for Projects using the Query Library, you can import `ProjectQuery()` l
 from openstack_query import ProjectQuery
 ```
 
-`ProjectQuery()` can then be used to setup and run queries - see [API.md](API.md) for details on API calls
+`ProjectQuery()` can then be used to setup and run queries - see [API.md](../API.md) for details on API calls
 
 ## Properties
 
@@ -40,7 +40,7 @@ Alternatively, you can pass property aliases (passed as string) instead (current
 
 ## Chaining
 This section details valid mappings you can use to chain onto other queries or from other queries to chain into a `ProjectQuery` object.
-This applies to API calls `then` and `append_from` - see [API.md](API.md) for details
+This applies to API calls `then` and `append_from` - see [API.md](../API.md) for details
 
 
 ## Chaining from
