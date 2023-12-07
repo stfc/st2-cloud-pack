@@ -6,7 +6,7 @@
 User-related Docs:
   - [Usage](docs/user_docs/USAGE.md)
   - [API Reference](docs/user_docs/API.md)
-  - [Presets Reference](docs/developer_docs/PRESETS.md)
+  - [Presets Reference](docs/user_docs/PRESETS.md)
 
 Feature References
   - [Servers](docs/user_docs/query_docs/SERVERS.md)
