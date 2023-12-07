@@ -135,7 +135,7 @@ def send_user_email(
 # pylint: disable=too-many-arguments
 
 
-def send_shutoff_emails(
+def send_shutoff_server_email(
     smtp_account: SMTPAccount,
     cloud_account: str = "openstack",
     email_from: str = "cloud-support@stfc.ac.uk",

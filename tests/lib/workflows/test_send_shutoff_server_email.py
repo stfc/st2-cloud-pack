@@ -3,13 +3,13 @@ from enums.query.props.server_properties import ServerProperties
 from enums.query.props.user_properties import UserProperties
 from enums.query.query_presets import QueryPresetsGeneric, QueryPresetsDateTime
 from structs.email.email_params import EmailParams
-from workflows.email_shutoff import (
+from workflows.send_shutoff_server_email import (
     send_user_email,
     query_shutoff_vms,
     find_user_info,
     extract_server_list,
     UserDetails,
-    send_shutoff_emails,
+    send_shutoff_server_email,
 )
 
 
@@ -23,7 +23,7 @@ def test_query_shutoff_vms_no_project_id():
     mock_project_id = None
     mock_days_threshold = NonCallableMock()
 
-    with patch("workflows.email_shutoff.ServerQuery") as mock_server_query:
+    with patch("workflows.send_shutoff_server_email.ServerQuery") as mock_server_query:
         query_shutoff_vms(mock_cloud_account, mock_project_id, mock_days_threshold)
 
     server_object = mock_server_query.return_value
@@ -56,7 +56,7 @@ def test_query_shutoff_vms_project_id():
     mock_cloud_account = NonCallableMock()
     mock_project_id = NonCallableMock()
 
-    with patch("workflows.email_shutoff.ServerQuery") as mock_server_query:
+    with patch("workflows.send_shutoff_server_email.ServerQuery") as mock_server_query:
         query_shutoff_vms(mock_cloud_account, mock_project_id)
 
     server_object = mock_server_query.return_value
@@ -78,7 +78,7 @@ def test_query_server_get_user_details():
     mock_cloud_account = NonCallableMock()
     mock_project_id = None
 
-    with patch("workflows.email_shutoff.ServerQuery") as mock_server_query:
+    with patch("workflows.send_shutoff_server_email.ServerQuery") as mock_server_query:
         res = query_shutoff_vms(mock_cloud_account, mock_project_id)
 
     server_object = mock_server_query.return_value
@@ -97,7 +97,7 @@ def test_query_server_get_user_details():
     assert res == user_query.to_props.return_value
 
 
-@patch("workflows.email_shutoff.UserQuery")
+@patch("workflows.send_shutoff_server_email.UserQuery")
 def test_find_user_info_with_email(mock_user_query):
     """
     Test that we can run a user query to get the user name and
@@ -135,7 +135,7 @@ def test_find_user_info_with_email(mock_user_query):
     assert res.email == "test_user@example.com"
 
 
-@patch("workflows.email_shutoff.UserQuery")
+@patch("workflows.send_shutoff_server_email.UserQuery")
 def test_find_user_info_not_valid(mock_user_query):
     """
     Test that we can run a user query and return expected values for when
@@ -186,7 +186,7 @@ def test_send_user_email():
     mock_server_list = NonCallableMock()
     mock_email_template = NonCallableMock()
 
-    with patch("workflows.email_shutoff.Emailer") as mock_emailer:
+    with patch("workflows.send_shutoff_server_email.Emailer") as mock_emailer:
         send_user_email(
             mock_smtp_account,
             mock_email_from,
@@ -218,7 +218,7 @@ def test_send_user_email_no_email_given():
     mock_user_email = None
     mock_server_list = NonCallableMock()
     mock_email_template = NonCallableMock()
-    with patch("workflows.email_shutoff.Emailer") as mock_emailer:
+    with patch("workflows.send_shutoff_server_email.Emailer") as mock_emailer:
         send_user_email(
             mock_smtp_account,
             mock_email_from,
@@ -238,11 +238,11 @@ def test_send_user_email_no_email_given():
     email_object.send_emails.assert_called_once_with([expected_email_params])
 
 
-@patch("workflows.email_shutoff.query_shutoff_vms")
-@patch("workflows.email_shutoff.find_user_info")
-@patch("workflows.email_shutoff.extract_server_list")
-@patch("workflows.email_shutoff.send_user_email")
-def test_send_shutoff_emails(
+@patch("workflows.send_shutoff_server_email.query_shutoff_vms")
+@patch("workflows.send_shutoff_server_email.find_user_info")
+@patch("workflows.send_shutoff_server_email.extract_server_list")
+@patch("workflows.send_shutoff_server_email.send_user_email")
+def test_send_shutoff_server_email(
     mock_send_user_email,
     mock_extract_server_list,
     mock_find_user_info,
@@ -286,7 +286,7 @@ def test_send_shutoff_emails(
     }
     mock_query_shutoff.return_value = mock_data
 
-    send_shutoff_emails(
+    send_shutoff_server_email(
         mock_smtp_account,
         mock_cloud_account,
         mock_email_from,
