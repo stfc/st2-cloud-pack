@@ -106,13 +106,8 @@ def test_server_side_handler_mappings_older_than_or_equal_to(
         mappings,
     )
 
-    # filter_func is evaluated twice
-    # - once when actually returning filters - at _get_filters
-    # - once to check params via a "dry-run" in _check_filter_mapping
-    assert mock_time_utils.convert_to_timestamp.call_args_list == [
-        call(value="test"),
-        call(value="test"),
-    ]
+    # filter_func is evaluated twice, but convert_to_timestamp is only called once
+    mock_time_utils.convert_to_timestamp.assert_called_once_with(value="test")
 
 
 @patch("openstack_query.mappings.server_mapping.TimeUtils")
@@ -134,13 +129,8 @@ def test_server_side_handler_mappings_younger_than_or_equal_to(
         mappings,
     )
 
-    # filter_func is evaluated twice
-    # - once when actually returning filters - at _get_filters
-    # - once to check params via a "dry-run" in _check_filter_mapping
-    assert mock_time_utils.convert_to_timestamp.call_args_list == [
-        call(value="test"),
-        call(value="test"),
-    ]
+    # filter_func is evaluated twice, but convert_to_timestamp is only called once
+    mock_time_utils.convert_to_timestamp.assert_called_once_with(value="test")
 
 
 def test_client_side_handlers_generic(client_side_test_mappings):
