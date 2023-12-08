@@ -226,7 +226,8 @@ class QueryBuilder:
                 "with the resource you're querying.\n "
                 "i.e. using LESS_THAN for querying Users "
                 "(as users holds no query-able properties which are of an integer type).\n "
-                "However, if you believe it should please raise an issue with the repo maintainer"
+                "However, if you believe it should, please raise an issue with the repo maintainer.",
+                preset.name,
             )
 
             raise QueryPresetMappingError(
@@ -239,13 +240,24 @@ class QueryBuilder:
                 return i
 
         logger.error(
-            "Error: if you are here as a developer"
-            "you have likely forgotten to add client-side mappings for the preset '%s' "
-            "under queries/<resource>_query",
+            "Error: if you are here as a developer "
+            "you have likely forgotten to add client-side mappings for the preset '%s' and property '%s' "
+            "under mappings/<resource>_mapping",
+            preset.name,
+            prop.name,
+        )
+
+        logger.error(
+            "Error: If you are here as a user - double check whether the property '%s' can be used "
+            "with the preset '%s' \n"
+            "i.e. using LESS_THAN with a string property like SERVER_NAME won't work "
+            "(server_name holds strings, and preset LESS_THAN only works on integers.)\n "
+            "However, if you believe the preset and property should be used together please raise an "
+            "issue with the repo maintainer",
+            prop.name,
             preset.name,
         )
 
         raise QueryPresetMappingError(
-            f"No client-side handler found for preset '{preset.name}'"
-            "- this query is likely misconfigured/preset is not supported on resource"
+            f"No client-side handler found which supports preset '{preset.name}' and property '{prop.name}"
         )
