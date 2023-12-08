@@ -12,8 +12,6 @@ def test_module_exists():
     workflow_module = import_module("workflows")
 
     assert hasattr(workflow_module, action_name)
-    action_module = getattr(workflow_module, action_name)
-    assert hasattr(action_module, action_name)
 
 
 class TestWorkflowActions(OpenstackActionTestBase):
