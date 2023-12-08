@@ -9,11 +9,9 @@ def test_module_exists():
     Test that each action's entry-point module exists
     """
     action_name = "send_decom_flavor_email"
-    workflow_module = import_module("workflows")
+    workflow_module = import_module(f"workflows.{action_name}")
 
     assert hasattr(workflow_module, action_name)
-    action_module = getattr(workflow_module, action_name)
-    assert hasattr(action_module, action_name)
 
 
 class TestWorkflowActions(OpenstackActionTestBase):
@@ -48,7 +46,7 @@ class TestWorkflowActions(OpenstackActionTestBase):
             )
 
         mock_parse_configs.assert_called_once_with(**self.mock_kwargs)
-        mock_import.return_value.action.action.assert_called_once_with(
+        mock_import.return_value.action.assert_called_once_with(
             **mock_parse_configs.return_value
         )
 

@@ -11,8 +11,7 @@ class WorkflowActions(Action):
         :param kwargs: all user-defined kwargs to pass to the function
         """
         workflow = import_module(f"workflows.{action_name}")
-        action_module = getattr(workflow, action_name)
-        action_func = getattr(action_module, action_name)
+        action_func = getattr(workflow, action_name)
 
         self.logger.info("Workflow Action Received - %s", action_name)
         self.logger.debug(
