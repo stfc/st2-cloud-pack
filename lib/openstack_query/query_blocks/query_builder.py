@@ -226,7 +226,7 @@ class QueryBuilder:
                 "with the resource you're querying.\n "
                 "i.e. using LESS_THAN for querying Users "
                 "(as users holds no query-able properties which are of an integer type).\n "
-                "However, if you believe it should please raise an issue with the repo maintainer",
+                "However, if you believe it should, please raise an issue with the repo maintainer.",
                 preset.name,
             )
 
@@ -252,7 +252,7 @@ class QueryBuilder:
             "with the preset '%s' \n"
             "i.e. using LESS_THAN with a string property like SERVER_NAME won't work "
             "(server_name holds strings, and preset LESS_THAN only works on integers.)\n "
-            "However, if you believe it preset and property should be used together please raise an "
+            "However, if you believe the preset and property should be used together please raise an "
             "issue with the repo maintainer",
             prop.name,
             preset.name,
