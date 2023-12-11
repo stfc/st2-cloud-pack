@@ -1,11 +1,12 @@
 from abc import abstractmethod
-from enum import Enum
 from typing import Callable, Any, Optional
+
+from enums.query.enum_with_aliases import EnumWithAliases
 
 PropFunc = Callable[[Any], Any]
 
 
-class PropEnum(Enum):
+class PropEnum(EnumWithAliases):
     """
     An enum base class for all openstack resource properties - for type annotation purposes
     """
@@ -23,11 +24,4 @@ class PropEnum(Enum):
     def get_marker_prop_func():
         """
         A getter method to return marker property function for pagination
-        """
-
-    @staticmethod
-    @abstractmethod
-    def from_string(val: str):
-        """
-        A method that converts string alias to enum
         """

@@ -1,6 +1,5 @@
 from enum import auto
 from enums.query.props.prop_enum import PropEnum
-from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 
 
@@ -21,17 +20,26 @@ class FlavorProperties(PropEnum):
     FLAVOR_VCPU = auto()
 
     @staticmethod
-    def from_string(val: str):
+    def _get_aliases():
         """
-        Converts a given string in a case-insensitive way to the enum values
+        A method that returns all valid string alias mappings
         """
-        try:
-            return FlavorProperties[val.upper()]
-        except KeyError as err:
-            raise ParseQueryError(
-                f"Could not find Flavor Property {val}. "
-                f"Available properties are {','.join([prop.name for prop in FlavorProperties])}"
-            ) from err
+        return {
+            FlavorProperties.FLAVOR_DESCRIPTION: ["description", "desc"],
+            FlavorProperties.FLAVOR_DISK: ["disk", "disk_size"],
+            FlavorProperties.FLAVOR_EPHEMERAL: [
+                "ephemeral",
+                "ephemeral_disk",
+                "ephemeral_disk_size",
+            ],
+            FlavorProperties.FLAVOR_ID: ["id", "uuid"],
+            FlavorProperties.FLAVOR_IS_DISABLED: ["is_disabled"],
+            FlavorProperties.FLAVOR_IS_PUBLIC: ["is_public"],
+            FlavorProperties.FLAVOR_NAME: ["name"],
+            FlavorProperties.FLAVOR_RAM: ["ram", "ram_size"],
+            FlavorProperties.FLAVOR_SWAP: ["swap", "swap_size"],
+            FlavorProperties.FLAVOR_VCPU: ["vcpu", "vcpus", "vcpu_num"],
+        }
 
     @staticmethod
     def get_prop_mapping(prop):

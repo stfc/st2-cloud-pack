@@ -1,6 +1,5 @@
 from enum import auto
 from enums.query.props.prop_enum import PropEnum
-from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 
 
@@ -18,17 +17,19 @@ class ProjectProperties(PropEnum):
     PROJECT_PARENT_ID = auto()
 
     @staticmethod
-    def from_string(val: str):
+    def _get_aliases():
         """
-        Converts a given string in a case-insensitive way to the enum values
+        A method that returns all valid string alias mappings
         """
-        try:
-            return ProjectProperties[val.upper()]
-        except KeyError as err:
-            raise ParseQueryError(
-                f"Could not find Server Property {val}. "
-                f"Available properties are {','.join([prop.name for prop in ProjectProperties])}"
-            ) from err
+        return {
+            ProjectProperties.PROJECT_DESCRIPTION: ["description", "desc"],
+            ProjectProperties.PROJECT_DOMAIN_ID: ["domain_id"],
+            ProjectProperties.PROJECT_ID: ["id", "uuid"],
+            ProjectProperties.PROJECT_IS_DOMAIN: ["is_domain"],
+            ProjectProperties.PROJECT_IS_ENABLED: ["is_enabled"],
+            ProjectProperties.PROJECT_NAME: ["name"],
+            ProjectProperties.PROJECT_PARENT_ID: ["parent_id"],
+        }
 
     @staticmethod
     def get_prop_mapping(prop):

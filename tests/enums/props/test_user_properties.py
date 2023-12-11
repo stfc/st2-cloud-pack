@@ -33,7 +33,9 @@ def test_get_marker_prop_func(mock_get_prop_mapping):
     assert val == mock_get_prop_mapping.return_value
 
 
-@pytest.mark.parametrize("val", ["user_domain_id", "User_Domain_ID", "UsEr_DoMaIn_iD"])
+@pytest.mark.parametrize(
+    "val", ["user_domain_id", "User_Domain_ID", "UsEr_DoMaIn_iD", "domain_id"]
+)
 def test_user_domain_id_serialization(val):
     """
     Tests that variants of USER_DOMAIN_ID can be serialized
@@ -41,7 +43,18 @@ def test_user_domain_id_serialization(val):
     assert UserProperties.from_string(val) is UserProperties.USER_DOMAIN_ID
 
 
-@pytest.mark.parametrize("val", ["USER_EMAIL", "User_Email", "UsEr_EmAiL"])
+@pytest.mark.parametrize(
+    "val",
+    [
+        "USER_EMAIL",
+        "User_Email",
+        "UsEr_EmAiL",
+        "email",
+        "email_addr",
+        "email_address",
+        "user_email_address",
+    ],
+)
 def test_user_email_serialization(val):
     """
     Tests that variants of USER_EMAIL can be serialized
@@ -50,7 +63,8 @@ def test_user_email_serialization(val):
 
 
 @pytest.mark.parametrize(
-    "val", ["USER_DESCRIPTION", "User_Description", "UsEr_DeScRiPtIoN"]
+    "val",
+    ["USER_DESCRIPTION", "User_Description", "UsEr_DeScRiPtIoN" "description", "desc"],
 )
 def test_user_description_serialization(val):
     """
@@ -59,7 +73,17 @@ def test_user_description_serialization(val):
     assert UserProperties.from_string(val) is UserProperties.USER_DESCRIPTION
 
 
-@pytest.mark.parametrize("val", ["USER_NAME", "User_Name", "UsEr_NaMe"])
+@pytest.mark.parametrize("val", ["USER_ID", "User_Id", "UsEr_Id", "id", "uuid"])
+def test_user_id_serialization(val):
+    """
+    Tests that variants of USER_ID can be serialized
+    """
+    assert UserProperties.from_string(val) is UserProperties.USER_ID
+
+
+@pytest.mark.parametrize(
+    "val", ["USER_NAME", "User_Name", "UsEr_NaMe", "name", "username"]
+)
 def test_user_name_serialization(val):
     """
     Tests that variants of USER_NAME can be serialized

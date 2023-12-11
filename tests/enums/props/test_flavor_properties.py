@@ -34,7 +34,14 @@ def test_get_marker_prop_func(mock_get_prop_mapping):
 
 
 @pytest.mark.parametrize(
-    "val", ["flavor_description", "Flavor_Description", "FlAvOr_DeScRiPtIoN"]
+    "val",
+    [
+        "flavor_description",
+        "Flavor_Description",
+        "FlAvOr_DeScRiPtIoN",
+        "description",
+        "desc",
+    ],
 )
 def test_flavor_description_serialization(val):
     """
@@ -43,7 +50,9 @@ def test_flavor_description_serialization(val):
     assert FlavorProperties.from_string(val) is FlavorProperties.FLAVOR_DESCRIPTION
 
 
-@pytest.mark.parametrize("val", ["flavor_disk", "Flavor_Disk", "FlAvOr_DiSk"])
+@pytest.mark.parametrize(
+    "val", ["flavor_disk", "Flavor_Disk", "FlAvOr_DiSk", "disk", "disk_size"]
+)
 def test_flavor_disk_serialization(val):
     """
     Tests that variants of FLAVOR_DISK can be serialized
@@ -52,7 +61,15 @@ def test_flavor_disk_serialization(val):
 
 
 @pytest.mark.parametrize(
-    "val", ["flavor_ephemeral", "Flavor_Ephemeral", "FlAvOr_EpHeMeRaL"]
+    "val",
+    [
+        "flavor_ephemeral",
+        "Flavor_Ephemeral",
+        "FlAvOr_EpHeMeRaL",
+        "ephemeral",
+        "ephemeral_disk",
+        "ephemeral_disk_size",
+    ],
 )
 def test_flavor_ephemeral_serialization(val):
     """
@@ -61,7 +78,7 @@ def test_flavor_ephemeral_serialization(val):
     assert FlavorProperties.from_string(val) is FlavorProperties.FLAVOR_EPHEMERAL
 
 
-@pytest.mark.parametrize("val", ["flavor_id", "Flavor_ID", "FlAvOr_Id"])
+@pytest.mark.parametrize("val", ["flavor_id", "Flavor_ID", "FlAvOr_Id", "id", "uuid"])
 def test_flavor_id_serialization(val):
     """
     Tests that variants of FLAVOR_ID can be serialized
@@ -70,7 +87,8 @@ def test_flavor_id_serialization(val):
 
 
 @pytest.mark.parametrize(
-    "val", ["flavor_is_disabled", "Flavor_Is_Disabled", "Flavor_Is_DiSaBlEd"]
+    "val",
+    ["flavor_is_disabled", "Flavor_Is_Disabled", "Flavor_Is_DiSaBlEd", "is_disabled"],
 )
 def test_flavor_is_disabled_serialization(val):
     """
@@ -80,7 +98,7 @@ def test_flavor_is_disabled_serialization(val):
 
 
 @pytest.mark.parametrize(
-    "val", ["flavor_is_public", "Flavor_Is_Public", "FlAvOr_Is_PuBlIc"]
+    "val", ["flavor_is_public", "Flavor_Is_Public", "FlAvOr_Is_PuBlIc", "is_public"]
 )
 def test_flavor_is_public_serialization(val):
     """
@@ -89,7 +107,7 @@ def test_flavor_is_public_serialization(val):
     assert FlavorProperties.from_string(val) is FlavorProperties.FLAVOR_IS_PUBLIC
 
 
-@pytest.mark.parametrize("val", ["flavor_name", "Flavor_Name", "FlAvOr_NaMe"])
+@pytest.mark.parametrize("val", ["flavor_name", "Flavor_Name", "FlAvOr_NaMe", "name"])
 def test_flavor_name_serialization(val):
     """
     Tests that variants of FLAVOR_NAME can be serialized
@@ -97,7 +115,9 @@ def test_flavor_name_serialization(val):
     assert FlavorProperties.from_string(val) is FlavorProperties.FLAVOR_NAME
 
 
-@pytest.mark.parametrize("val", ["flavor_ram", "Flavor_RAM", "FlAvOr_RaM"])
+@pytest.mark.parametrize(
+    "val", ["flavor_ram", "Flavor_RAM", "FlAvOr_RaM", "ram", "ram_size"]
+)
 def test_flavor_ram_serialization(val):
     """
     Tests that variants of FLAVOR_RAM can be serialized
@@ -113,7 +133,9 @@ def test_flavor_swap_serialization(val):
     assert FlavorProperties.from_string(val) is FlavorProperties.FLAVOR_SWAP
 
 
-@pytest.mark.parametrize("val", ["flavor_vcpu", "Flavor_VCPU", "FlAvOr_VcPu"])
+@pytest.mark.parametrize(
+    "val", ["flavor_vcpu", "Flavor_VCPU", "FlAvOr_VcPu", "vcpu", "vcpus", "vcup_num"]
+)
 def test_flavor_vcpu_serialization(val):
     """
     Tests that variants of FLAVOR_VCPU can be serialized
