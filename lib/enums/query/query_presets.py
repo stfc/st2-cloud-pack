@@ -2,6 +2,8 @@ from enum import auto
 from enums.query.enum_with_aliases import EnumWithAliases
 from exceptions.parse_query_error import ParseQueryError
 
+# pylint: disable=too-few-public-methods
+
 
 class QueryPresets(EnumWithAliases):
     @staticmethod

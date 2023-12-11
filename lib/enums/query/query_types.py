@@ -7,6 +7,8 @@ from openstack_query.mappings.project_mapping import ProjectMapping
 from openstack_query.mappings.server_mapping import ServerMapping
 from openstack_query.mappings.user_mapping import UserMapping
 
+# pylint: disable=too-few-public-methods
+
 
 class QueryTypes(EnumWithAliases):
     """

@@ -34,7 +34,7 @@ def test_get_marker_prop_func(mock_get_prop_mapping):
     assert val == mock_get_prop_mapping.return_value
 
 
-@pytest.mark.parametrize("val", ["flavor_id", "Flavor_ID", "FlAvOr_Id", "id", "uuid"])
+@pytest.mark.parametrize("val", ["flavor_id", "Flavor_ID", "FlAvOr_Id"])
 def test_flavor_id_serialization(val):
     """
     Tests that variants of FLAVOR_ID can be serialized

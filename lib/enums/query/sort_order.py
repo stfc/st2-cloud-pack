@@ -1,6 +1,8 @@
 from typing import Dict
 from enums.query.enum_with_aliases import EnumWithAliases
 
+# pylint: disable=too-few-public-methods
+
 
 class SortOrder(EnumWithAliases):
     """

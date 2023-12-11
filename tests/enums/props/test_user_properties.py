@@ -64,7 +64,7 @@ def test_user_email_serialization(val):
 
 @pytest.mark.parametrize(
     "val",
-    ["USER_DESCRIPTION", "User_Description", "UsEr_DeScRiPtIoN" "description", "desc"],
+    ["USER_DESCRIPTION", "User_Description", "UsEr_DeScRiPtIoN", "description", "desc"],
 )
 def test_user_description_serialization(val):
     """

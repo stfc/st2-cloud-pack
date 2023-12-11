@@ -134,7 +134,7 @@ def test_flavor_swap_serialization(val):
 
 
 @pytest.mark.parametrize(
-    "val", ["flavor_vcpu", "Flavor_VCPU", "FlAvOr_VcPu", "vcpu", "vcpus", "vcup_num"]
+    "val", ["flavor_vcpu", "Flavor_VCPU", "FlAvOr_VcPu", "vcpu", "vcpus", "vcpu_num"]
 )
 def test_flavor_vcpu_serialization(val):
     """

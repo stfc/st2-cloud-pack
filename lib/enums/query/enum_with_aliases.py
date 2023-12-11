@@ -29,8 +29,7 @@ class EnumWithAliases(Enum):
             # if val matches prop_enum.name, then directly return without looking at mappings
             if val.upper() == prop_enum.name or val.lower() in valid_aliases:
                 return prop_enum
-        else:
-            raise ParseQueryError(
-                f"Could not parse string alias {val}. "
-                f"The string alias not valid for any of the following Enums {','.join([prop.name for prop in cls])}"
-            )
+        raise ParseQueryError(
+            f"Could not parse string alias {val}. "
+            f"The string alias not valid for any of the following Enums {','.join([prop.name for prop in cls])}"
+        )

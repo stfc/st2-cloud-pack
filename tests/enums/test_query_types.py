@@ -28,7 +28,8 @@ def test_flavor_query_serialization(query_type):
     [
         "Server_Query",
         "SeRvEr_QuErY",
-        "server_query" "server",
+        "server_query",
+        "server",
         "servers",
         "query_servers",
         "to_server_query",
@@ -65,7 +66,8 @@ def test_project_query_serialization(query_type):
     [
         "User_Query",
         "UsEr_QuEry",
-        "user_query" "user",
+        "user_query",
+        "user",
         "users",
         "query_users",
         "to_user_query",
