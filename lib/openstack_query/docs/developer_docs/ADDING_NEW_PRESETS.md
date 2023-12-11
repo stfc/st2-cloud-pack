@@ -14,6 +14,8 @@ class QueryPresetsGeneric(QueryPresets):
     NEW_PRESET = auto() # <- we add this line to repesent a new preset enum belonging to the 'Generic' group
 ```
 
+(Optional) Add alias mappings for the preset - see [Adding Aliases](ADDING_ALIASES.md)
+
 ## **2. Edit the corresponding handler class in `/lib/openstack_query/handlers/client_side_handler_<preset-group>.py`.**
 
 Here you must:

@@ -25,15 +25,15 @@ from enums.query.props.project_properties import ProjectProperties
 `ProjectProperties` exposes the following properties:
 
 
-| Property Enum       | Type     | Aliases | Description                                                                                                                                                        |
-|---------------------|----------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| PROJECT_DESCRIPTION | `string` | `None`  | The description of the project.                                                                                                                                    |
-| PROJECT_DOMAIN_ID   | `string` | `None`  | The ID of the domain which owns the project.                                                                                                                       |
-| PROJECT_ID          | `string` | `None`  | Unique ID Openstack has assigned the project.                                                                                                                      |
-| PROJECT_IS_DOMAIN   | `bool`   | `None`  | Indicates whether the project also acts as a domain. <br/>If set to True, the project acts as both a project and a domain.                                         |
-| PROJECT_IS_ENABLED  | `bool`   | `None`  | Indicates whether users can authorize against this project. <br/>if set to False, users cannot access project, additionally all authorized tokens are invalidated. |
-| PROJECT_NAME        | `string` | `None`  | Name of the project.                                                                                                                                               |
-| PROJECT_PARENT_ID   | `string` | `None`  | The ID of the parent of the project.                                                                                                                               |
+| Property Enum       | Type     | Aliases               | Description                                                                                                                                                        |
+|---------------------|----------|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| PROJECT_DESCRIPTION | `string` | "description", "desc" | The description of the project.                                                                                                                                    |
+| PROJECT_DOMAIN_ID   | `string` | "domain_id"           | The ID of the domain which owns the project.                                                                                                                       |
+| PROJECT_ID          | `string` | "project_id"          | Unique ID Openstack has assigned the project.                                                                                                                      |
+| PROJECT_IS_DOMAIN   | `bool`   | "is_domain"           | Indicates whether the project also acts as a domain. <br/>If set to True, the project acts as both a project and a domain.                                         |
+| PROJECT_IS_ENABLED  | `bool`   | "is_enabled"          | Indicates whether users can authorize against this project. <br/>if set to False, users cannot access project, additionally all authorized tokens are invalidated. |
+| PROJECT_NAME        | `string` | "name"                | Name of the project.                                                                                                                                               |
+| PROJECT_PARENT_ID   | `string` | "parent_id"           | The ID of the parent of the project.                                                                                                                               |
 
 Any of these properties can be used for any of the API methods that takes a property - like `select`, `where`, `sort_by` etc
 Alternatively, you can pass property aliases (passed as string) instead (currently WIP)
@@ -41,6 +41,14 @@ Alternatively, you can pass property aliases (passed as string) instead (current
 ## Chaining
 This section details valid mappings you can use to chain onto other queries or from other queries to chain into a `ProjectQuery` object.
 This applies to API calls `then` and `append_from` - see [API.md](../API.md) for details
+
+## Query Alias
+The aliases that can be used for the query when chaining are listed below:
+
+| Query Enum               | Aliases (case-insensitive                                   |
+|--------------------------|-------------------------------------------------------------|
+| QueryTypes.PROJECT_QUERY | "project", "projects", "query_projects", "to_project_query" |
+
 
 
 ## Chaining from
