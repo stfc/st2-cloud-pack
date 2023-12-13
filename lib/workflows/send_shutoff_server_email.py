@@ -145,6 +145,7 @@ def send_shutoff_server_email(
     days_threshold: int = 30,
     email_template="test",
     cc_cloud_support: bool = False,
+    send_email: bool = False,
 ):
     """
     The main method for running the workflow
@@ -165,11 +166,14 @@ def send_shutoff_server_email(
         # extract list of VM names
         server_name_list = extract_server_list(user)
         # send email
-        send_user_email(
-            smtp_account,
-            email_from,
-            user_details.email,
-            cc_cloud_support,
-            server_name_list,
-            email_template,
-        )
+        if send_email:
+            send_user_email(
+                smtp_account,
+                email_from,
+                user_details.email,
+                cc_cloud_support,
+                server_name_list,
+                email_template,
+            )
+        else:
+            print("query complete")

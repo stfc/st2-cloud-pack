@@ -269,6 +269,7 @@ def test_send_shutoff_server_email(
     mock_days_threshold = NonCallableMock()
     mock_email_template = NonCallableMock()
     mock_email_cc = True
+    mock_send_email = True
 
     # mock username and email for each user
     mocked_user_a = UserDetails(id="user_id_a", name="a", email="a@example.com")
@@ -302,6 +303,7 @@ def test_send_shutoff_server_email(
         mock_days_threshold,
         mock_email_template,
         mock_email_cc,
+        mock_send_email,
     )
 
     mock_query_shutoff.assert_called_once_with(
