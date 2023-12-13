@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, NonCallableMock
 import pytest
 
 from openstack_query.query_blocks.query_builder import QueryBuilder
@@ -10,72 +10,107 @@ from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPreset
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
 
-@pytest.fixture(name="mock_client_side_handlers")
-def client_side_handlers_fixture():
+@pytest.fixture(name="mock_invalid_client_handler")
+def mock_invalid_client_handler_fixture():
     """
-    Returns a dictionary of mocked client_side_handler objects
+    Return a client handler - mocks one handler which does not contain preset
     """
-    return {"mock_client_handler_1": MagicMock(), "mock_client_handler_2": MagicMock()}
+    mock_invalid_client_handler = MagicMock()
+    mock_invalid_client_handler.preset_known.return_value = False
+    mock_invalid_client_handler.check_supported.return_value = False
+    return mock_invalid_client_handler
+
+
+@pytest.fixture(name="mock_valid_client_handler")
+def mock_valid_client_handler_fixture():
+    """
+    Return a client handler - mocks one handler which does contain preset
+    """
+
+    def _mock_preset_known(preset):
+        """A dummy function to mock the preset_known method on the client handler"""
+        return preset in [MockQueryPresets.ITEM_1, MockQueryPresets.ITEM_3]
+
+    def _mock_check_supported(preset, prop):
+        """A dummy function to mock the check_supported method on the client handler"""
+        return preset == MockQueryPresets.ITEM_1 and prop == MockProperties.PROP_1
+
+    mock_invalid_client_handler = MagicMock()
+    mock_invalid_client_handler.preset_known = MagicMock(wraps=_mock_preset_known)
+    mock_invalid_client_handler.check_supported = MagicMock(wraps=_mock_check_supported)
+    return mock_invalid_client_handler
 
 
 @pytest.fixture(name="mock_server_side_handler")
-def server_side_handler_fixture():
+def mock_valid_server_handler_fixture():
     """
-    Returns a mocked server_side_handler_object
+    Return a server-side handler
     """
     return MagicMock()
 
 
 @pytest.fixture(name="instance")
-def instance_fixture(mock_client_side_handlers, mock_server_side_handler):
+def instance_fixture(
+    mock_server_side_handler, mock_invalid_client_handler, mock_valid_client_handler
+):
     """
     Returns an instance with mocked client_side_handlers and
     server_side_handler injects
     """
-    mock_prop_enum_cls = MockProperties
-    instance = QueryBuilder(
-        prop_enum_cls=mock_prop_enum_cls,
-        client_side_handlers=list(mock_client_side_handlers.values()),
+
+    client_handlers = [mock_invalid_client_handler, mock_valid_client_handler]
+
+    return QueryBuilder(
+        prop_enum_cls=MockProperties,
+        client_side_handlers=client_handlers,
         server_side_handler=mock_server_side_handler,
     )
-    return instance
 
 
-@pytest.fixture(name="run_parse_where_test_case")
-def run_parse_where_test_case_fixture(instance, mock_server_side_handler):
+@pytest.fixture(name="parse_where_runner")
+def parse_where_runner_fixture(
+    instance, mock_server_side_handler, mock_valid_client_handler
+):
     """
-    Fixture to run parse where test cases
+    This is a helper function that runs test cases of parse_where, where we expect it to complete successfully,
+    In each test case we change what server_side_handler.get_filters and client_side_handler.get_filter_func returns
+    This will change what is set in the client_side_filters and server_side_filters properties at the end
     """
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
-    mock_client_side_handler = MagicMock()
-    mock_client_filter_func = MagicMock()
-    mock_client_side_handler.get_filter_func.return_value = mock_client_filter_func
-
-    def _run_parse_where_test_case(mock_server_side_filters, mock_kwargs):
+    # pylint:disable=too-many-arguments
+    def _parse_where_runner(
+        mock_get_filter_return,
+        mock_get_filter_func_return,
+        expected_server_side_filters,
+        expected_client_side_filters,
+        expected_fallback_filters,
+        test_instance=instance,
+    ):
         """
-        run parse where test case where get_filter_func returns different server-side-filters
+        runs a test case of parse_where
+        :param mock_get_filter_return: setting what server_side_handler.get_filters returns
+        :param mock_get_filter_return: setting what client_side_handler.get_filter_func returns
+        :param expected_server_side_filters: expected value of server_side_filters property
+        :param expected_client_side_filters: expected value of client_side_filters property
+        :param expected_fallback_filters: expected value of server_filter_fallback property
+        :param test_instance (optional): a modified version of QueryBuilder to run test on
+            - if left blank it creates a new instance
         """
-
-        mock_server_side_handler.get_filters.return_value = mock_server_side_filters
-        with patch(
-            "openstack_query.query_blocks.query_builder.QueryBuilder._get_preset_handler"
-        ) as mock_get_preset_handler:
-            with patch(
-                "openstack_query.query_blocks.query_builder.QueryBuilder._add_filter"
-            ) as mock_add_filter:
-                mock_get_preset_handler.return_value = mock_client_side_handler
-                with patch.object(MockProperties, "get_prop_mapping") as mock_prop_func:
-                    instance.parse_where(
-                        MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_kwargs
-                    )
-
-        mock_get_preset_handler.assert_called_once_with(
-            MockQueryPresets.ITEM_1, MockProperties.PROP_1
+        mock_server_side_handler.get_filters.return_value = mock_get_filter_return
+        mock_valid_client_handler.get_filter_func.return_value = (
+            mock_get_filter_func_return
         )
-        mock_client_side_handler.get_filter_func.assert_called_once_with(
+
+        with patch.object(MockProperties, "get_prop_mapping") as mock_get_prop_mapping:
+            test_instance.parse_where(
+                MockQueryPresets.ITEM_1, MockProperties.PROP_1, mock_kwargs
+            )
+
+        mock_valid_client_handler.get_filter_func.assert_called_once_with(
             preset=MockQueryPresets.ITEM_1,
             prop=MockProperties.PROP_1,
-            prop_func=mock_prop_func.return_value,
+            prop_func=mock_get_prop_mapping.return_value,
             filter_func_kwargs=mock_kwargs,
         )
         mock_server_side_handler.get_filters.assert_called_once_with(
@@ -84,56 +119,246 @@ def run_parse_where_test_case_fixture(instance, mock_server_side_handler):
             params=mock_kwargs,
         )
 
-        mock_add_filter.assert_called_once_with(
-            client_side_filter=mock_client_filter_func,
-            server_side_filters=mock_server_side_filters,
-        )
+        assert test_instance.client_side_filters == expected_client_side_filters
+        assert test_instance.server_side_filters == expected_server_side_filters
+        assert test_instance.server_filter_fallback == expected_fallback_filters
 
-    return _run_parse_where_test_case
+    return _parse_where_runner
 
 
-def test_parse_where_gets_single_filter(run_parse_where_test_case):
+def test_parse_where_with_single_filter(parse_where_runner):
     """
-    Tests that parse_where functions expectedly
-    - where server-side-handler get_filter_func returns a single filter set
+    Tests parse_where where server-side-handler get_filters returns a single filter set
+    """
+    mock_client_filter = NonCallableMock()
+    parse_where_runner(
+        mock_get_filter_return=[{"filter1": "val1", "filter2": "val2"}],
+        mock_get_filter_func_return=mock_client_filter,
+        expected_server_side_filters=[{"filter1": "val1", "filter2": "val2"}],
+        expected_client_side_filters=[],
+        expected_fallback_filters=[mock_client_filter],
+    )
+
+
+def test_parse_where_with_filter_list(parse_where_runner):
+    """
+    Tests parse_where where server-side-handler get_filters returns a list of filters
+    """
+    mock_client_filter = NonCallableMock()
+    mock_server_filter = [{"filter1": "val1"}, {"filter2": "val2"}]
+    parse_where_runner(
+        mock_get_filter_return=mock_server_filter,
+        mock_get_filter_func_return=mock_client_filter,
+        expected_server_side_filters=mock_server_filter,
+        expected_client_side_filters=[],
+        expected_fallback_filters=[mock_client_filter],
+    )
+
+
+def test_parse_where_with_no_filters(parse_where_runner):
+    """
+    Tests parse_where where server-side-handler get_filters returns no filters
+    """
+    mock_client_filter = NonCallableMock()
+    mock_server_filter = None
+    parse_where_runner(
+        mock_get_filter_return=mock_server_filter,
+        mock_get_filter_func_return=mock_client_filter,
+        expected_server_side_filters=[],
+        expected_client_side_filters=[mock_client_filter],
+        expected_fallback_filters=[],
+    )
+
+
+@pytest.fixture(name="parse_where_runner_with_server_side_filter_set")
+def parse_where_runner_with_server_side_filter_set_fixture(
+    instance, parse_where_runner
+):
+    """
+    A fixture to setup and test different test-cases for parse_where when server side filter is already set
     """
 
-    # setup mocks
-    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
-    run_parse_where_test_case({"filter1": "val1", "filter2": "val2"}, mock_kwargs)
+    def _server_side_filter_set_runner(
+        expected_server_side_filters,
+        current_server_side_filters,
+        new_server_side_filters,
+        expect_conflict=False,
+    ):
+        """
+        function to setup and test different test-cases for parse_where when server side filter is already set.
+
+        :param expected_server_side_filters: a list of server-side-filters we expect the parse_where method to set
+        after calling it
+        :param current_server_side_filters: a list of filters that have already been set
+        :param new_server_side_filters: a list of filters to add
+        :param expect_conflict: whether we expect server-side filter conflict to be detected
+            - (If we expect a conflict, we expect that client-side filter will be set
+            and the new server-side filters to be ignored)
+
+        """
+        instance.server_side_filters = current_server_side_filters
+
+        filter1_fallback_func = NonCallableMock()
+        instance.server_filter_fallback = [filter1_fallback_func]
+
+        mock_client_filter = NonCallableMock()
+        if expect_conflict:
+            parse_where_runner(
+                mock_get_filter_return=new_server_side_filters,
+                mock_get_filter_func_return=mock_client_filter,
+                expected_server_side_filters=expected_server_side_filters,
+                expected_client_side_filters=[mock_client_filter],
+                expected_fallback_filters=[filter1_fallback_func],
+            )
+        else:
+            # conflict occurred - don't add server-side filter, instead add client_side filter
+            parse_where_runner(
+                mock_get_filter_return=new_server_side_filters,
+                mock_get_filter_func_return=mock_client_filter,
+                expected_server_side_filters=expected_server_side_filters,
+                expected_client_side_filters=[],
+                expected_fallback_filters=[filter1_fallback_func, mock_client_filter],
+            )
+
+    return _server_side_filter_set_runner
 
 
-def test_parse_where_gets_multiple_filters(run_parse_where_test_case):
+def test_parse_where_single_filter_set_non_conflicting(
+    parse_where_runner_with_server_side_filter_set,
+):
     """
-    Tests that parse_where functions expectedly
-    - where server-side-handler get_filter_func returns a list of filters
+    Tests parse_where where server-side-handler get_filters returns a single server-side filter, when another
+    (non-conflicting) filter is already set - should concatenate the two filter sets into one set
+    """
+    parse_where_runner_with_server_side_filter_set(
+        expected_server_side_filters=[{"filter1": "val1", "filter2": "val2"}],
+        current_server_side_filters=[{"filter1": "val1"}],
+        new_server_side_filters=[{"filter2": "val2"}],
+    )
+
+
+def test_parse_where_multi_filter_set_non_conflicting_add_single(
+    parse_where_runner_with_server_side_filter_set,
+):
+    """
+    Tests parse_where where server-side-handler get_filters returns a single server-side filter, when
+    multiple (non-conflicting) filters already set - should concatenate new filter set onto each currently existing set
     """
 
-    # setup mocks
-    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
-    run_parse_where_test_case([{"filter1": "val1"}, {"filter2": "val2"}], mock_kwargs)
+    parse_where_runner_with_server_side_filter_set(
+        expected_server_side_filters=[
+            {"filter1": "val1", "filter3": "val3"},
+            {"filter2": "val2", "filter3": "val3"},
+        ],
+        current_server_side_filters=[{"filter1": "val1"}, {"filter2": "val2"}],
+        new_server_side_filters=[{"filter3": "val3"}],
+    )
 
 
-def test_parse_where_gets_no_filters(run_parse_where_test_case):
+def test_parse_where_multi_filter_set_non_conflicting_add_multi(
+    parse_where_runner_with_server_side_filter_set,
+):
     """
-    Tests that parse_where functions expectedly
-    - where server-side-handler get_filter_func returns no filter
+    Tests parse_where where server-side-handler get_filters returns multiple server-side filters, when
+    multiple (non-conflicting) filters already set - should create a list with all unique combinations of filters
+    between the two lists
+    """
+    parse_where_runner_with_server_side_filter_set(
+        expected_server_side_filters=[
+            {"filter1": "val1", "filter3": "val3"},
+            {"filter1": "val1", "filter4": "val4"},
+            {"filter2": "val2", "filter3": "val3"},
+            {"filter2": "val2", "filter4": "val4"},
+        ],
+        current_server_side_filters=[{"filter1": "val1"}, {"filter2": "val2"}],
+        new_server_side_filters=[{"filter3": "val3"}, {"filter4": "val4"}],
+    )
+
+
+def test_parse_where_single_filter_set_conflicting(
+    parse_where_runner_with_server_side_filter_set,
+):
+    """
+    Tests parse_where where server-side-handler get_filters returns a single server-side filter, when another
+    (conflicting) filter is already set - should add the new filter as a client-side filter
+    """
+    current_filters = [{"filter1": "val1"}]
+    parse_where_runner_with_server_side_filter_set(
+        expected_server_side_filters=current_filters,
+        current_server_side_filters=current_filters,
+        new_server_side_filters=[{"filter1": "val2"}],
+        expect_conflict=True,
+    )
+
+
+def test_parse_where_multi_filter_set_conflicting_add_single(
+    parse_where_runner_with_server_side_filter_set,
+):
+    """
+    Tests parse_where where server-side-handler get_filters returns a single server-side filter, when
+    multiple filters already set which are conflicting - should add a the new filter as a client-side filter
+    """
+    current_filters = [{"filter1": "val1"}, {"filter2": "val2"}]
+    parse_where_runner_with_server_side_filter_set(
+        expected_server_side_filters=current_filters,
+        current_server_side_filters=current_filters,
+        new_server_side_filters=[{"filter2": "val3"}],
+        expect_conflict=True,
+    )
+
+
+def test_parse_where_multi_filter_set_conflicting_add_multi(
+    parse_where_runner_with_server_side_filter_set,
+):
+    """
+    Tests parse_where where server-side-handler get_filters returns multiple server-side filters, when
+    multiple filters already set which conflict - should add the new filter as a client-side filter
+    """
+    current_filters = [
+        {"filter1": "val1", "filter3": "val3"},
+        {"filter1": "val1", "filter4": "val4"},
+        {"filter2": "val2", "filter3": "val3"},
+        {"filter2": "val2", "filter4": "val4"},
+    ]
+    parse_where_runner_with_server_side_filter_set(
+        expected_server_side_filters=current_filters,
+        current_server_side_filters=current_filters,
+        new_server_side_filters=[{"filter3": "val4"}],
+        expect_conflict=True,
+    )
+
+
+def test_parse_where_preset_unknown(instance):
+    """
+    Tests that parse_where errors if no handler found which supports given preset
     """
 
-    # setup mocks
-    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
-    run_parse_where_test_case(None, mock_kwargs)
+    # when preset_known returns false
+    with patch.object(MockProperties, "get_prop_mapping") as mock_prop_func:
+        with pytest.raises(QueryPresetMappingError):
+            instance.parse_where(MockQueryPresets.ITEM_2, MockProperties.PROP_1)
+    mock_prop_func.assert_called_once_with(MockProperties.PROP_1)
+
+
+def test_parse_where_preset_misconfigured(instance):
+    """
+    Tests that parse_where errors if preset should be handled by handler, but
+    no client-side mapping found for property
+    """
+
+    # when preset_known returns True, but client_side filter missing
+    with patch.object(MockProperties, "get_prop_mapping") as mock_prop_func:
+        with pytest.raises(QueryPresetMappingError):
+            instance.parse_where(MockQueryPresets.ITEM_3, MockProperties.PROP_1)
+    mock_prop_func.assert_called_once_with(MockProperties.PROP_1)
 
 
 def test_parse_where_prop_invalid(instance):
     """
-    Tests that parse_where functions expectedly - where inputs invalid
-    method raises QueryPropertyMappingError when prop_handler.get_prop_mapping returns None
+    Tests that parse_where errors if a handler is found for a given preset,
+    but it does not support the given property
+
     """
-
-    # test if prop_mapping doesn't exist
-    instance.client_side_filter = None
-
     with patch.object(MockProperties, "get_prop_mapping") as mock_prop_func:
         mock_prop_func.return_value = None
         with pytest.raises(QueryPropertyMappingError):
@@ -141,45 +366,7 @@ def test_parse_where_prop_invalid(instance):
     mock_prop_func.assert_called_once_with(MockProperties.PROP_1)
 
 
-def test_get_preset_handler_valid(instance, mock_client_side_handlers):
-    """
-    Tests that get_preset_handler functions expectedly - where inputs invalid
-    method should return a client_handler that supports a given preset-property pair
-    """
-    mock_client_side_handlers[
-        "mock_client_handler_1"
-    ].check_supported.return_value = False
-    mock_client_side_handlers[
-        "mock_client_handler_2"
-    ].check_supported.return_value = True
-
-    # pylint:disable=protected-access
-    # check when preset found
-    res = instance._get_preset_handler(MockQueryPresets.ITEM_1, MockProperties.PROP_1)
-    assert res == mock_client_side_handlers["mock_client_handler_2"]
-
-
-def test_get_preset_handler_invalid_prop(instance, mock_client_side_handlers):
-    """
-    Tests that get_preset_handler functions expectedly - where preset valid but prop invalid
-    method raises QueryPresetMappingError when no client-side handler available has mapping for preset-property pair
-    """
-    mock_client_side_handlers["mock_client_handler_1"].preset_known.return_value = False
-    mock_client_side_handlers["mock_client_handler_2"].preset_known.return_value = True
-
-    mock_client_side_handlers[
-        "mock_client_handler_1"
-    ].check_supported.return_value = False
-    mock_client_side_handlers[
-        "mock_client_handler_2"
-    ].check_supported.return_value = False
-
-    with pytest.raises(QueryPresetMappingError):
-        # pylint:disable=protected-access
-        instance._get_preset_handler(MockQueryPresets.ITEM_1, MockProperties.PROP_1)
-
-
-def test_client_side_filter_none_before(instance):
+def test_client_side_filters(instance):
     """
     Tests client_side_filter property methods
     """
@@ -192,104 +379,15 @@ def test_server_side_filters(instance):
     """
     Tests server_side_filters property methods
     """
-    instance.server_side_filters = "some-server-side-filter"
+    instance.server_side_filters = ["some-server-side-filter"]
     res = instance.server_side_filters
-    assert res == "some-server-side-filter"
+    assert res == ["some-server-side-filter"]
 
 
 def test_server_filter_fallback(instance):
     """
     Tests server_filter_fallback property methods
     """
-    instance.server_filter_fallback = "some-client-side-filter"
+    instance.server_filter_fallback = ["some-client-side-filter"]
     res = instance.server_filter_fallback
-    assert res == "some-client-side-filter"
-
-
-def test_add_filter_no_server_side_filter(instance):
-    """
-    Tests add_filter method works properly - with no server filters
-    Should only set client_side_filter
-    """
-    mock_client_side_filter = MagicMock()
-
-    # pylint:disable=protected-access
-    instance._add_filter(
-        client_side_filter=mock_client_side_filter, server_side_filters=None
-    )
-    instance.client_side_filters = [mock_client_side_filter]
-
-
-@pytest.mark.parametrize(
-    "set_server_side_filters, server_side_filters, expected_values",
-    [
-        # no previous filters set
-        # one server-side filter to add
-        ([], [{"filter1": "val1"}], [{"filter1": "val1"}]),
-        # one (non-overlapping) server-side filter set
-        # one server-side filter set to add
-        (
-            [{"filter1": "val1"}],
-            [{"filter2": "val2"}],
-            [{"filter1": "val1", "filter2": "val2"}],
-        ),
-        # multiple (non-overlapping) server-side filters set, one
-        # one server-side filter set to add
-        (
-            [{"filter1": "val1"}, {"filter2": "val2"}],
-            [{"filter3": "val3"}],
-            [
-                {"filter1": "val1", "filter3": "val3"},
-                {"filter2": "val2", "filter3": "val3"},
-            ],
-        ),
-        # multiple (non-overlapping) server-side filters set
-        # multiple server-side filter sets to add
-        (
-            [{"filter1": "val1"}, {"filter2": "val2"}],
-            [{"filter3": "val3"}, {"filter4": "val4"}],
-            [
-                {"filter1": "val1", "filter3": "val3"},
-                {"filter1": "val1", "filter4": "val4"},
-                {"filter2": "val2", "filter3": "val3"},
-                {"filter2": "val2", "filter4": "val4"},
-            ],
-        ),
-    ],
-)
-def test_add_filter_with_server_side_filter(
-    set_server_side_filters, server_side_filters, expected_values, instance
-):
-    """
-    Tests add_filter method works properly - with one set of server side filters
-    Should only set client_side_filter
-    """
-    mock_client_side_filter = MagicMock()
-    instance.server_side_filters = set_server_side_filters
-
-    # pylint:disable=protected-access
-    instance._add_filter(
-        client_side_filter=mock_client_side_filter,
-        server_side_filters=server_side_filters,
-    )
-
-    assert instance.server_side_filters == expected_values
-    assert instance.server_filter_fallback == [mock_client_side_filter]
-
-
-def test_add_filter_conflicting_presets(instance):
-    """
-    Tests add_filter method works properly - when a conflict occurs between
-    server-side filter params - add new server-side filter as client-side filter
-    """
-    instance.client_side_filters = []
-    instance.server_side_filters = [{"filter1": "val1"}]
-
-    # pylint:disable=protected-access
-    instance._add_filter(
-        client_side_filter="client-side-filter",
-        server_side_filters=[{"filter1": "val2"}],
-    )
-
-    assert instance.server_side_filters == [{"filter1": "val1"}]
-    assert instance.client_side_filters == ["client-side-filter"]
+    assert res == ["some-client-side-filter"]

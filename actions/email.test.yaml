@@ -1,12 +1,12 @@
 ---
 description: Sends a test email
 enabled: true
-entry_point: src/email_actions.py
+entry_point: src/workflow_actions.py
 name: email.test
 parameters:
   timeout:
     default: 5400
-  submodule:
+  action_name:
     default: send_test_email
     immutable: true
     type: string
