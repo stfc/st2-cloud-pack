@@ -184,6 +184,7 @@ def test_send_user_email():
     mock_email_from = NonCallableMock()
     mock_user_email = NonCallableMock()
     mock_server_list = NonCallableMock()
+    mock_cc_email = True
     mock_email_template = NonCallableMock()
 
     with patch("workflows.send_shutoff_server_email.Emailer") as mock_emailer:
@@ -191,6 +192,7 @@ def test_send_user_email():
             mock_smtp_account,
             mock_email_from,
             mock_user_email,
+            mock_cc_email,
             mock_server_list,
             mock_email_template,
         )
@@ -202,6 +204,7 @@ def test_send_user_email():
         subject=f"VM Shutoff {mock_server_list}",
         email_from=mock_email_from,
         email_to=[mock_user_email],
+        email_cc=("cloud-support@stfc.ac.uk",),
         email_templates=[mock_email_template],
     )
 
@@ -218,11 +221,13 @@ def test_send_user_email_no_email_given():
     mock_user_email = None
     mock_server_list = NonCallableMock()
     mock_email_template = NonCallableMock()
+    mock_email_cc = True
     with patch("workflows.send_shutoff_server_email.Emailer") as mock_emailer:
         send_user_email(
             mock_smtp_account,
             mock_email_from,
             mock_user_email,
+            mock_email_cc,
             mock_server_list,
             mock_email_template,
         )
@@ -231,6 +236,7 @@ def test_send_user_email_no_email_given():
         subject=f"VM Shutoff {mock_server_list}",
         email_from=mock_email_from,
         email_to=["cloud-support@stfc.ac.uk"],
+        email_cc=("cloud-support@stfc.ac.uk",),
         email_templates=[mock_email_template],
     )
     mock_emailer.assert_called_once()
@@ -262,6 +268,7 @@ def test_send_shutoff_server_email(
     mock_limit_by_project = NonCallableMock()
     mock_days_threshold = NonCallableMock()
     mock_email_template = NonCallableMock()
+    mock_email_cc = True
 
     # mock username and email for each user
     mocked_user_a = UserDetails(id="user_id_a", name="a", email="a@example.com")
@@ -294,6 +301,7 @@ def test_send_shutoff_server_email(
         mock_limit_by_project,
         mock_days_threshold,
         mock_email_template,
+        mock_email_cc,
     )
 
     mock_query_shutoff.assert_called_once_with(
@@ -325,6 +333,7 @@ def test_send_shutoff_server_email(
                 mock_smtp_account,
                 mock_email_from,
                 mocked_user_a.email,
+                mock_email_cc,
                 mocked_user_a_servers,
                 mock_email_template,
             ),
@@ -332,6 +341,7 @@ def test_send_shutoff_server_email(
                 mock_smtp_account,
                 mock_email_from,
                 mocked_user_b.email,
+                mock_email_cc,
                 mocked_user_b_servers,
                 mock_email_template,
             ),

@@ -105,6 +105,7 @@ def send_user_email(
     smtp_account: SMTPAccount,
     email_from: str,
     user_email: str,
+    cc_cloud_support: bool,
     server_list: List[str],
     email_templates,
 ):
@@ -126,6 +127,7 @@ def send_user_email(
         subject=subject,
         email_from=email_from,
         email_to=[user_email],
+        email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
         email_templates=[email_templates],
     )
 
@@ -143,6 +145,7 @@ def send_shutoff_server_email(
     limit_by_project: Optional[List[str]] = None,
     days_threshold: int = 30,
     email_template="test",
+    email_cc: bool = False,
 ):
     """
     The main method for running the workflow
@@ -167,6 +170,7 @@ def send_shutoff_server_email(
             smtp_account,
             email_from,
             user_details.email,
+            email_cc,
             server_name_list,
             email_template,
         )

@@ -13,7 +13,6 @@ class WorkflowActions(Action):
         workflow = import_module(f"workflows.{action_name}")
         action_func = getattr(workflow, action_name)
 
-
         self.logger.info("Workflow Action Received - %s", action_name)
         self.logger.debug(
             "with Parameters: %s",
