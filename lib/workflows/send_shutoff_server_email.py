@@ -23,8 +23,9 @@ class UserDetails:
 
 def query_shutoff_vms(
     cloud_account: str,
+    days_threshold: int,
+    all_projects: bool,
     project_id: Optional[List[str]] = None,
-    days_threshold: int = None,
 ):
     """
     Sends an email to a user about a shutoff (stopped) VM
@@ -46,11 +47,13 @@ def query_shutoff_vms(
     )
 
     # if project ID provided as parameter
-    if project_id:
-        query_obj.run(cloud_account, as_admin=True, from_projects=project_id)
-
-    else:
+    if all_projects:
         query_obj.run(cloud_account, as_admin=True, all_projects=True)
+    elif project_id:
+        query_obj.run(cloud_account, as_admin=True, from_projects=project_id)
+    else:
+        raise ValueError("No project ID was given, and all projects was not selected.")
+
 
     user_query = query_obj.then("USER_QUERY", keep_previous_results=True)
 
@@ -141,13 +144,15 @@ def send_shutoff_server_email(
     cloud_account: str = "openstack",
     email_from: str = "cloud-support@stfc.ac.uk",
     subject: str = "STFC Cloud Shutoff VM Notice",
-    use_override: bool = True,
+    all_projects: bool = False,
+    use_override: bool = False,
     override_email_address: Optional[str] = "cloud-support@stfc.ac.uk",
     limit_by_projects: Optional[List[str]] = None,
     days_threshold: int = 30,
-    email_template="test",
     cc_cloud_support: bool = False,
     send_email: bool = False,
+    as_html: bool = False,
+
 ):
     """
     The main method for running the workflow
@@ -158,9 +163,14 @@ def send_shutoff_server_email(
     :param limit_by_project: (Optional) A list of project IDs to query from
     :param days_threshold: Check for VMs updated in last 30 days in SHUTOFF state
     """
+    if as_html:
+        raise NotImplementedError("Sending emails as HTML is not implemented yet.")
 
     # get VMs shutoff, grouped by user, include user email in results
-    shutoff_vm = query_shutoff_vms(cloud_account, limit_by_projects, days_threshold)
+    shutoff_vm = query_shutoff_vms(cloud_account, days_threshold, all_projects, limit_by_projects )
+
+    # TODO: Hardcoded pending future PR to add this template
+    email_template="test"
 
     for user in shutoff_vm.values():
         # extract username and user email
