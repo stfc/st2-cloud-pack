@@ -143,7 +143,7 @@ def send_shutoff_server_email(
     subject: str = "STFC Cloud Shutoff VM Notice",
     use_override: bool = True,
     override_email_address: Optional[str] = "cloud-support@stfc.ac.uk",
-    limit_by_project: Optional[List[str]] = None,
+    limit_by_projects: Optional[List[str]] = None,
     days_threshold: int = 30,
     email_template="test",
     cc_cloud_support: bool = False,
@@ -160,7 +160,7 @@ def send_shutoff_server_email(
     """
 
     # get VMs shutoff, grouped by user, include user email in results
-    shutoff_vm = query_shutoff_vms(cloud_account, limit_by_project, days_threshold)
+    shutoff_vm = query_shutoff_vms(cloud_account, limit_by_projects, days_threshold)
 
     for user in shutoff_vm.values():
         # extract username and user email
