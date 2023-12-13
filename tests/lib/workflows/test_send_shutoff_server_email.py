@@ -186,6 +186,7 @@ def test_send_user_email():
     Test that an email is sent with the send_email method
     """
     mock_smtp_account = NonCallableMock()
+    mock_subject = NonCallableMock()
     mock_email_from = NonCallableMock()
     mock_user_email = NonCallableMock()
     mock_server_list = NonCallableMock()
@@ -195,6 +196,7 @@ def test_send_user_email():
     with patch("workflows.send_shutoff_server_email.Emailer") as mock_emailer:
         send_user_email(
             mock_smtp_account,
+            mock_subject,
             mock_email_from,
             mock_user_email,
             mock_cc_email,
@@ -206,7 +208,7 @@ def test_send_user_email():
     email_object = mock_emailer.return_value
 
     expected_email_params = EmailParams(
-        subject=f"VM Shutoff {mock_server_list}",
+        subject=mock_subject,
         email_from=mock_email_from,
         email_to=[mock_user_email],
         email_cc=("cloud-support@stfc.ac.uk",),
@@ -222,6 +224,7 @@ def test_send_user_email_no_email_given():
     the Cloud Support email address is used by default.
     """
     mock_smtp_account = NonCallableMock()
+    mock_subject = NonCallableMock()
     mock_email_from = NonCallableMock()
     mock_user_email = None
     mock_server_list = NonCallableMock()
@@ -231,6 +234,7 @@ def test_send_user_email_no_email_given():
     with patch("workflows.send_shutoff_server_email.Emailer") as mock_emailer:
         send_user_email(
             mock_smtp_account,
+            mock_subject,
             mock_email_from,
             mock_user_email,
             mock_email_cc,
@@ -239,7 +243,7 @@ def test_send_user_email_no_email_given():
         )
 
     expected_email_params = EmailParams(
-        subject=f"VM Shutoff {mock_server_list}",
+        subject=mock_subject,
         email_from=mock_email_from,
         email_to=["cloud-support@stfc.ac.uk"],
         email_cc=("cloud-support@stfc.ac.uk",),
@@ -268,6 +272,7 @@ def test_send_shutoff_server_email(
     # pylint: disable=too-many-locals
 
     mock_smtp_account = NonCallableMock()
+    mock_subject = NonCallableMock()
     mock_cloud_account = NonCallableMock()
     mock_email_from = NonCallableMock()
     mock_override_email = True
@@ -305,6 +310,7 @@ def test_send_shutoff_server_email(
         mock_smtp_account,
         mock_cloud_account,
         mock_email_from,
+        mock_subject,
         mock_override_email,
         mock_override_email_addr,
         mock_limit_by_project,
@@ -347,6 +353,7 @@ def test_send_shutoff_server_email(
         [
             call(
                 mock_smtp_account,
+                mock_subject,
                 mock_email_from,
                 mocked_user_a.email,
                 mock_email_cc,
@@ -355,6 +362,7 @@ def test_send_shutoff_server_email(
             ),
             call(
                 mock_smtp_account,
+                mock_subject,
                 mock_email_from,
                 mocked_user_b.email,
                 mock_email_cc,

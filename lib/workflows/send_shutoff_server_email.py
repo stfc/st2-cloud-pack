@@ -104,6 +104,7 @@ def extract_server_list(server_query_result: List[Dict]) -> List[str]:
 # pylint: disable=too-many-arguments
 def send_user_email(
     smtp_account: SMTPAccount,
+    subject: str,
     email_from: str,
     user_email: str,
     cc_cloud_support: bool,
@@ -123,7 +124,6 @@ def send_user_email(
     if not user_email:
         user_email = "cloud-support@stfc.ac.uk"
 
-    subject = f"VM Shutoff {server_list}"
     email_params = EmailParams(
         subject=subject,
         email_from=email_from,
@@ -140,6 +140,7 @@ def send_shutoff_server_email(
     smtp_account: SMTPAccount,
     cloud_account: str = "openstack",
     email_from: str = "cloud-support@stfc.ac.uk",
+    subject: str = "STFC Cloud Shutoff VM Notice",
     use_override: bool = True,
     override_email_address: Optional[str] = "cloud-support@stfc.ac.uk",
     limit_by_project: Optional[List[str]] = None,
@@ -172,6 +173,7 @@ def send_shutoff_server_email(
         if send_email:
             send_user_email(
                 smtp_account,
+                subject,
                 email_from,
                 user_details.email,
                 cc_cloud_support,
