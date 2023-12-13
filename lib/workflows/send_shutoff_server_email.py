@@ -144,7 +144,7 @@ def send_shutoff_server_email(
     limit_by_project: Optional[List[str]] = None,
     days_threshold: int = 30,
     email_template="test",
-    email_cc: bool = False,
+    cc_cloud_support: bool = False,
 ):
     """
     The main method for running the workflow
@@ -169,7 +169,7 @@ def send_shutoff_server_email(
             smtp_account,
             email_from,
             user_details.email,
-            email_cc,
+            cc_cloud_support,
             server_name_list,
             email_template,
         )
