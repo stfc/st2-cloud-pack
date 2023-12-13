@@ -107,7 +107,7 @@ def test_find_user_info_with_email(mock_user_query):
 
     mock_cloud_account = NonCallableMock()
     mock_user_id = "test01"
-    mock_override_email = NonCallableMock()
+    mock_override_email = True
 
     mock_user_query.return_value.to_props.return_value = {
         "user_name": ["test_user"],
@@ -144,14 +144,14 @@ def test_find_user_info_not_valid(mock_user_query):
 
     mock_cloud_acount = NonCallableMock()
     mock_user_id = NonCallableMock()
-    mock_override_email = NonCallableMock()
+    mock_override_email = True
 
     mock_user_query.return_value.to_props.return_value = None
 
     res = find_user_info(mock_user_id, mock_cloud_acount, mock_override_email)
 
     assert res.name == ""
-    assert res.email == mock_override_email
+    assert res.email == "cloud-support@stfc.ac.uk"
 
 
 def test_extract_server_list():
@@ -222,6 +222,7 @@ def test_send_user_email_no_email_given():
     mock_server_list = NonCallableMock()
     mock_email_template = NonCallableMock()
     mock_email_cc = True
+
     with patch("workflows.send_shutoff_server_email.Emailer") as mock_emailer:
         send_user_email(
             mock_smtp_account,
@@ -264,7 +265,7 @@ def test_send_shutoff_server_email(
     mock_smtp_account = NonCallableMock()
     mock_cloud_account = NonCallableMock()
     mock_email_from = NonCallableMock()
-    mock_override_email_address = NonCallableMock()
+    mock_override_email = True
     mock_limit_by_project = NonCallableMock()
     mock_days_threshold = NonCallableMock()
     mock_email_template = NonCallableMock()
@@ -298,7 +299,7 @@ def test_send_shutoff_server_email(
         mock_smtp_account,
         mock_cloud_account,
         mock_email_from,
-        mock_override_email_address,
+        mock_override_email,
         mock_limit_by_project,
         mock_days_threshold,
         mock_email_template,
@@ -313,12 +314,8 @@ def test_send_shutoff_server_email(
     assert mock_find_user_info.call_count == 2
     mock_find_user_info.assert_has_calls(
         [
-            call(
-                mock_data["user_id_a"], mock_cloud_account, mock_override_email_address
-            ),
-            call(
-                mock_data["user_id_b"], mock_cloud_account, mock_override_email_address
-            ),
+            call(mock_data["user_id_a"], mock_cloud_account, mock_override_email),
+            call(mock_data["user_id_b"], mock_cloud_account, mock_override_email),
         ],
     )
 

@@ -63,9 +63,7 @@ def query_shutoff_vms(
     return res
 
 
-def find_user_info(
-    user_id: str, cloud_account: str, override_email_address: str
-) -> UserDetails:
+def find_user_info(user_id: str, cloud_account: str, use_override: bool) -> UserDetails:
     """
     Run UserQuery to find user name and user email associated with a VM
     :param user_id: openstack user id
@@ -84,7 +82,9 @@ def find_user_info(
     res = user_query.to_props(flatten=True)
 
     if not res:
-        return UserDetails(user_id, "", override_email_address)
+        return UserDetails(
+            user_id, "", "cloud-support@stfc.ac.uk" if use_override else None
+        )
 
     return UserDetails(user_id, res["user_name"][0], res["user_email"][0])
 
@@ -140,7 +140,7 @@ def send_shutoff_server_email(
     smtp_account: SMTPAccount,
     cloud_account: str = "openstack",
     email_from: str = "cloud-support@stfc.ac.uk",
-    override_email_address: str = "cloud-support@stfc.ac.uk",
+    use_override: bool = True,
     limit_by_project: Optional[List[str]] = None,
     days_threshold: int = 30,
     email_template="test",
@@ -162,7 +162,7 @@ def send_shutoff_server_email(
 
     for user in shutoff_vm.values():
         # extract username and user email
-        user_details = find_user_info(user, cloud_account, override_email_address)
+        user_details = find_user_info(user, cloud_account, use_override)
         # extract list of VM names
         server_name_list = extract_server_list(user)
         # send email
