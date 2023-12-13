@@ -101,6 +101,7 @@ def extract_server_list(server_query_result: List[Dict]) -> List[str]:
     return server_names
 
 
+# pylint: disable=too-many-arguments
 def send_user_email(
     smtp_account: SMTPAccount,
     email_from: str,
@@ -135,8 +136,6 @@ def send_user_email(
 
 
 # pylint: disable=too-many-arguments
-
-
 def send_shutoff_server_email(
     smtp_account: SMTPAccount,
     cloud_account: str = "openstack",
