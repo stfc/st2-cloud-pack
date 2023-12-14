@@ -132,7 +132,7 @@ class QueryAPI:
         """
         if not cloud_account and not from_subset:
             raise ParseQueryError(
-                "please provide either:"
+                "please provide as a parameter, one of:"
                 "\n\tcloud_account - a cloud domain to run query using openstacksdk"
                 "\n\tfrom_subset - a set of openstack objects"
             )
