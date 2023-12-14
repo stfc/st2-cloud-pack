@@ -19,9 +19,6 @@ from custom_types.openstack_query.aliases import (
 logger = logging.getLogger(__name__)
 
 
-# pylint:disable=too-many-instance-attributes
-
-
 class QueryExecuter:
     """
     Helper class to handle executing the query - primarily performing 'run()' method
@@ -117,7 +114,7 @@ class QueryExecuter:
         subset = self.runner.parse_subset(subset)
 
         resource_objects = RunnerUtils.apply_client_side_filters(
-            items=subset, filters=client_side_filters
+            subset, client_side_filters
         )
 
         logger.info(
