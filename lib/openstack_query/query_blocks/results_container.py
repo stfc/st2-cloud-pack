@@ -81,9 +81,7 @@ class ResultsContainer:
 
             # NOTE: This mutates forwarded_results
             forwarded_result = self._get_forwarded_result(prop_val, forwarded_results)
-
-            if forwarded_result:
-                item.update_forwarded_properties(forwarded_result)
+            item.update_forwarded_properties(forwarded_result)
 
     def _get_forwarded_result(
         self, prop_val: str, forwarded_results: Dict[str, List]
