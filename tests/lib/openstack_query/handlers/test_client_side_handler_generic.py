@@ -61,7 +61,7 @@ def test_check_supported_all_presets(instance):
     """
     Tests that client_side_handler_generic supports all generic QueryPresets
     """
-    assert (
+    assert all(
         instance.check_supported(preset, MockProperties.PROP_1)
         for preset in QueryPresetsGeneric
     )
