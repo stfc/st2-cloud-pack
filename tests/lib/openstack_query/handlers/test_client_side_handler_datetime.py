@@ -73,7 +73,7 @@ def test_check_supported_all_presets(instance):
     """
     Tests that client_side_handler_datetime supports all DateTime QueryPresets
     """
-    assert (
+    assert all(
         instance.check_supported(preset, MockProperties.PROP_1)
         for preset in QueryPresetsDateTime
     )
