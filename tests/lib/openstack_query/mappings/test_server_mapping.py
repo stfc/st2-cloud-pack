@@ -1,4 +1,4 @@
-from unittest.mock import patch, call
+from unittest.mock import patch
 
 from enums.query.props.flavor_properties import FlavorProperties
 from enums.query.props.project_properties import ProjectProperties

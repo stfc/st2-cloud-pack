@@ -47,7 +47,7 @@ def test_parse_meta_params_with_invalid_from_domain(instance):
     Tests parse_meta_params with invalid from_domain argument, should raise error
     """
     with pytest.raises(EnumMappingError):
-        res = instance.parse_meta_params(NonCallableMock(), from_domain=MagicMock())
+        instance.parse_meta_params(NonCallableMock(), from_domain=MagicMock())
 
 
 def test_parse_meta_params_no_from_domain(instance):

@@ -536,7 +536,9 @@ def test_parse_select_overwrites_old(instance):
 @patch("builtins.open", new_callable=mock_open)
 @patch("openstack_query.query_blocks.query_output.csv.DictWriter")
 @patch("openstack_query.query_blocks.query_output.Path")
-def test_to_csv_ungrouped_results(mock_path, mock_dict_writer, mock_open, instance):
+def test_to_csv_ungrouped_results(
+    mock_path, mock_dict_writer, mock_open_call, instance
+):
     """
     Tests to_csv with ungrouped results - should call open to write a single file
     """
@@ -557,11 +559,13 @@ def test_to_csv_ungrouped_results(mock_path, mock_dict_writer, mock_open, instan
             call().joinpath("query_out.csv"),
         ]
     )
-    assert mock_open.call_args_list == [call(mock_file_path, "w", encoding="utf-8")]
+    assert mock_open_call.call_args_list == [
+        call(mock_file_path, "w", encoding="utf-8")
+    ]
     mock_dict_writer.assert_has_calls(
         [
             call(
-                mock_open.return_value,
+                mock_open_call.return_value,
                 fieldnames=mock_results[0].keys(),
             ),
             call().writeheader(),
@@ -573,7 +577,7 @@ def test_to_csv_ungrouped_results(mock_path, mock_dict_writer, mock_open, instan
 @patch("builtins.open", new_callable=mock_open)
 @patch("openstack_query.query_blocks.query_output.csv.DictWriter")
 @patch("openstack_query.query_blocks.query_output.Path")
-def test_to_csv_grouped_results(mock_path, mock_dict_writer, mock_open, instance):
+def test_to_csv_grouped_results(mock_path, mock_dict_writer, mock_open_call, instance):
     """
     Tests to_csv with grouped results - should call open to write multiple files
     one for each group in results
@@ -604,7 +608,7 @@ def test_to_csv_grouped_results(mock_path, mock_dict_writer, mock_open, instance
         ]
     )
 
-    assert mock_open.call_args_list == [
+    assert mock_open_call.call_args_list == [
         call(mock_file_path, "w", encoding="utf-8"),
         call(mock_file_path, "w", encoding="utf-8"),
     ]
@@ -612,13 +616,13 @@ def test_to_csv_grouped_results(mock_path, mock_dict_writer, mock_open, instance
     mock_dict_writer.assert_has_calls(
         [
             call(
-                mock_open.return_value,
+                mock_open_call.return_value,
                 fieldnames=mock_results["group1"][0].keys(),
             ),
             call().writeheader(),
             call().writerows(mock_results["group1"]),
             call(
-                mock_open.return_value,
+                mock_open_call.return_value,
                 fieldnames=mock_results["group2"][0].keys(),
             ),
             call().writeheader(),
