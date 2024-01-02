@@ -7,6 +7,7 @@ from .api.query_objects import (
     ProjectQuery,
     HypervisorQuery,
     AggregateQuery,
+    ImageQuery,
 )
 
 # Create logger
