@@ -43,7 +43,7 @@ class HypervisorRunner(RunnerWrapper):
         """
         if not filter_kwargs:
             # return server info
-            filter_kwargs = {"with_servers": True}
+            filter_kwargs = {"details": True}
         logger.debug(
             "running openstacksdk command conn.compute.hypervisors(%s)",
             ",".join(f"{key}={value}" for key, value in filter_kwargs.items()),

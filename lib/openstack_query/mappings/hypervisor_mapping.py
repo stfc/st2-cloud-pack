@@ -1,6 +1,7 @@
 from typing import Type
 
 from enums.query.props.hypervisor_properties import HypervisorProperties
+from enums.query.props.server_properties import ServerProperties
 from enums.query.query_presets import (
     QueryPresetsGeneric,
     QueryPresetsString,
@@ -33,8 +34,7 @@ class HypervisorMapping(MappingInterface):
         Should return a dictionary containing property pairs mapped to query mappings.
         This is used to define how to chain results from this query to other possible queries
         """
-        # TODO: find a way to chain servers
-        return None
+        return {HypervisorProperties.HYPERVISOR_ID: ServerProperties.HYPERVISOR_ID}
 
     @staticmethod
     def get_runner_mapping() -> Type[RunnerWrapper]:
@@ -72,11 +72,9 @@ class HypervisorMapping(MappingInterface):
         listing all hypervisors.
         """
         integer_props = [
-            HypervisorProperties.HYPERVISOR_UPTIME,
-            HypervisorProperties.HYPERVISOR_DISK_AVAILABLE,
-            HypervisorProperties.HYPERVISOR_LOCAL_DISK_USED,
-            HypervisorProperties.HYPERVISOR_LOCAL_DISK_FREE,
-            HypervisorProperties.HYPERVISOR_LOCAL_DISK_SIZE,
+            HypervisorProperties.HYPERVISOR_DISK_USED,
+            HypervisorProperties.HYPERVISOR_DISK_FREE,
+            HypervisorProperties.HYPERVISOR_DISK_SIZE,
             HypervisorProperties.HYPERVISOR_MEMORY_SIZE,
             HypervisorProperties.HYPERVISOR_MEMORY_USED,
             HypervisorProperties.HYPERVISOR_MEMORY_FREE,
@@ -102,6 +100,7 @@ class HypervisorMapping(MappingInterface):
                     QueryPresetsString.MATCHES_REGEX: [
                         HypervisorProperties.HYPERVISOR_IP,
                         HypervisorProperties.HYPERVISOR_NAME,
+                        HypervisorProperties.HYPERVISOR_DISABLED_REASON,
                     ]
                 }
             ),
