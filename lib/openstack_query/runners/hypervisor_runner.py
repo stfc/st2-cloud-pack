@@ -23,7 +23,7 @@ class HypervisorRunner(RunnerWrapper):
         This method is a helper function that will parse a set of meta params specific to the resource and
         return a set of parsed meta-params to pass to _run_query
         """
-        logger.debug("ProjectQuery has no meta-params available")
+        logger.debug("HypervisorQuery has no meta-params available")
         return super().parse_meta_params(conn, **kwargs)
 
     def run_query(
@@ -35,9 +35,9 @@ class HypervisorRunner(RunnerWrapper):
         """
         This method runs the query by running openstacksdk commands
 
-        For HypervisorQuery, this command finds all projects that match a given set of filter_kwargs
+        For HypervisorQuery, this command finds all hypervisors that match a given set of filter_kwargs
         :param conn: An OpenstackConnection object - used to connect to openstacksdk
-        :param filter_kwargs: An Optional list of filter kwargs to pass to conn.identity.projects()
+        :param filter_kwargs: An Optional list of filter kwargs to pass to conn.compute.hypervisors()
             to limit the hypervisors being returned.
             - see https://docs.openstack.org/api-ref/compute/?expanded=list-hypervisors-detail
         """

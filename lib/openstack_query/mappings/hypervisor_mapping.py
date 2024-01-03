@@ -39,7 +39,7 @@ class HypervisorMapping(MappingInterface):
     @staticmethod
     def get_runner_mapping() -> Type[RunnerWrapper]:
         """
-        Returns a mapping to associated Runner class for the Query (ServerRunner)
+        Returns a mapping to associated Runner class for the Query (HypervisorRunner)
         """
         return HypervisorRunner
 
