@@ -1,5 +1,6 @@
 from typing import Type
 
+from enums.query.props.hypervisor_properties import HypervisorProperties
 from structs.query.query_client_side_handlers import QueryClientSideHandlers
 
 from enums.query.props.server_properties import ServerProperties
@@ -46,6 +47,7 @@ class ServerMapping(MappingInterface):
             ServerProperties.PROJECT_ID: ProjectProperties.PROJECT_ID,
             ServerProperties.FLAVOR_ID: FlavorProperties.FLAVOR_ID,
             ServerProperties.IMAGE_ID: ImageProperties.IMAGE_ID,
+            ServerProperties.HYPERVISOR_ID: HypervisorProperties.HYPERVISOR_ID,
         }
 
     @staticmethod
