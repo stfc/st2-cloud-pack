@@ -35,7 +35,7 @@ from enums.query.props.flavor_properties import FlavorProperties
 | FLAVOR_NAME        | `string` | "name"                                               | Name of the flavor                                                                              |
 | FLAVOR_RAM         | `int`    | "ram", "ram_size                                     | The amount of RAM (in MB) this flavor offers. Type: int                                         |
 | FLAVOR_SWAP        | `int`    | "swap", "swap_size"                                  | Size of the swap partitions.                                                                    |
-| FLAVOR_VCPU        | `int`    | "vcpu", "vcpus", "vcpu_num"                          | The number of virtual CPUs this flavor offers. Type: int                                        |
+| FLAVOR_VCPU        | `int`    | "vcpu", "vcpus"                                      | The number of virtual CPUs this flavor offers. Type: int                                        |
 
 Any of these properties can be used for any of the API methods that takes a property - like `select`, `where`, `sort_by` etc
 Alternatively, you can pass property aliases (passed as string) instead (currently WIP)

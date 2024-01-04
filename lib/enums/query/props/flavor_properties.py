@@ -38,7 +38,7 @@ class FlavorProperties(PropEnum):
             FlavorProperties.FLAVOR_NAME: ["name"],
             FlavorProperties.FLAVOR_RAM: ["ram", "ram_size"],
             FlavorProperties.FLAVOR_SWAP: ["swap", "swap_size"],
-            FlavorProperties.FLAVOR_VCPU: ["vcpu", "vcpus", "vcpu_num"],
+            FlavorProperties.FLAVOR_VCPU: ["vcpu", "vcpus"],
         }
 
     @staticmethod
