@@ -49,6 +49,7 @@ class AggregateProperties(PropEnum):
             AggregateProperties.AGGREGATE_HOSTTYPE: lambda a: a["metadata"].get(
                 "hosttype", None
             ),
+            AggregateProperties.AGGREGATE_ID: lambda a: a["id"],
         }
         try:
             return mapping[prop]

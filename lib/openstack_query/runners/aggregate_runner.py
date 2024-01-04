@@ -48,6 +48,7 @@ class AggregateRunner(RunnerWrapper):
             "running openstacksdk command conn.compute.aggregates(%s)",
             ",".join(f"{key}={value}" for key, value in filter_kwargs.items()),
         )
-        return RunnerUtils.run_paginated_query(
-            conn.compute.aggregates, self._page_marker_prop_func, filter_kwargs
-        )
+#        return RunnerUtils.run_paginated_query(
+#            conn.compute.aggregates, self._page_marker_prop_func, filter_kwargs
+#        )
+        return conn.compute.aggregates(**filter_kwargs)

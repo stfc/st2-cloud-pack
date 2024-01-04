@@ -110,7 +110,7 @@ class FlavorMapping(MappingInterface):
             ),
             # set string query preset mappings
             string_handler=ClientSideHandlerString(
-                {QueryPresetsString.MATCHES_REGEX: [FlavorProperties.FLAVOR_NAME]}
+                {QueryPresetsString.MATCHES_REGEX: [FlavorProperties.FLAVOR_NAME, FlavorProperties.FLAVOR_HOSTTYPE]}
             ),
             # set datetime query preset mappings
             datetime_handler=None,
