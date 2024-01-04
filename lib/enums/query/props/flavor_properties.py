@@ -18,6 +18,7 @@ class FlavorProperties(PropEnum):
     FLAVOR_RAM = auto()
     FLAVOR_SWAP = auto()
     FLAVOR_VCPU = auto()
+    FLAVOR_HOSTTYPE = auto()
 
     @staticmethod
     def _get_aliases():
@@ -39,6 +40,7 @@ class FlavorProperties(PropEnum):
             FlavorProperties.FLAVOR_RAM: ["ram", "ram_size"],
             FlavorProperties.FLAVOR_SWAP: ["swap", "swap_size"],
             FlavorProperties.FLAVOR_VCPU: ["vcpu", "vcpus", "vcpu_num"],
+            FlavorProperties.FLAVOR_HOSTTYPE: ["hosttype"],
         }
 
     @staticmethod
@@ -60,6 +62,7 @@ class FlavorProperties(PropEnum):
             FlavorProperties.FLAVOR_RAM: lambda a: a["ram"],
             FlavorProperties.FLAVOR_SWAP: lambda a: a["swap"],
             FlavorProperties.FLAVOR_VCPU: lambda a: a["vcpus"],
+            FlavorProperties.FLAVOR_HOSTTYPE: lambda a: a["extra_specs"]["aggregate_instance_extra_specs:hosttype"],
         }
         try:
             return mapping[prop]
