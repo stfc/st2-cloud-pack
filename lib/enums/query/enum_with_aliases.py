@@ -27,7 +27,9 @@ class EnumWithAliases(Enum):
             valid_aliases = cls._get_aliases().get(prop_enum, [])
 
             # if val matches prop_enum.name, then directly return without looking at mappings
-            if val.upper() == prop_enum.name or val.lower() in valid_aliases:
+            if val.casefold() == prop_enum.name.casefold() or any(
+                val.casefold() == i.casefold() for i in valid_aliases
+            ):
                 return prop_enum
         raise ParseQueryError(
             f"Could not parse string alias {val}. "
