@@ -1,3 +1,4 @@
+from typing import Union
 from enum import auto
 from enums.query.enum_with_aliases import EnumWithAliases
 from exceptions.parse_query_error import ParseQueryError
@@ -5,13 +6,7 @@ from exceptions.parse_query_error import ParseQueryError
 # pylint: disable=too-few-public-methods
 
 
-class QueryPresets(EnumWithAliases):
-    @staticmethod
-    def _get_aliases():
-        pass
-
-
-class QueryPresetsGeneric(QueryPresets):
+class QueryPresetsGeneric(EnumWithAliases):
     """
     Enum class which holds generic query comparison operators
     """
@@ -34,7 +29,7 @@ class QueryPresetsGeneric(QueryPresets):
         }
 
 
-class QueryPresetsInteger(QueryPresets):
+class QueryPresetsInteger(EnumWithAliases):
     """
     Enum class which holds integer/float comparison operators
     """
@@ -52,7 +47,7 @@ class QueryPresetsInteger(QueryPresets):
         return {}
 
 
-class QueryPresetsDateTime(QueryPresets):
+class QueryPresetsDateTime(EnumWithAliases):
     """
     Enum class which holds datetime comparison operators
     """
@@ -70,7 +65,7 @@ class QueryPresetsDateTime(QueryPresets):
         return {}
 
 
-class QueryPresetsString(QueryPresets):
+class QueryPresetsString(EnumWithAliases):
     """
     Enum class which holds string comparison operators
     """
@@ -101,3 +96,8 @@ def get_preset_from_string(val: str):
         except ParseQueryError:
             continue
     raise ParseQueryError(f"Could not find preset that matches alias {val}.")
+
+
+QueryPresets = Union[
+    QueryPresetsGeneric, QueryPresetsDateTime, QueryPresetsString, QueryPresetsInteger
+]

@@ -144,3 +144,6 @@ group - you can add one like so:
 
 
 4. Follow steps mentioned above to add new presets to the new preset group class you've created
+
+5. Edit `QueryPresets` type declaration at the bottom of the file `/lib/enums/query/query_presets.py` and add your new
+preset ffclass to it
