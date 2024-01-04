@@ -45,9 +45,9 @@ This applies to API calls `then` and `append_from` - see [API.md](../API.md) for
 ## Query Alias
 The aliases that can be used for the query when chaining are listed below:
 
-| Query Enum               | Aliases (case-insensitive                                   |
-|--------------------------|-------------------------------------------------------------|
-| QueryTypes.PROJECT_QUERY | "project", "projects", "query_projects", "to_project_query" |
+| Query Enum               | Aliases (case-insensitive |
+|--------------------------|---------------------------|
+| QueryTypes.PROJECT_QUERY | "project", "projects"     |
 
 
 

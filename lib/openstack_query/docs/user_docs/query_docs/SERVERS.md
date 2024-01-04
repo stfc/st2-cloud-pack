@@ -54,9 +54,9 @@ This applies to API calls `then` and `append_from` - see [API.md](../API.md) for
 ## Query Alias
 The aliases that can be used for the query when chaining are listed below:
 
-| Query Enum              | Aliases (case-insensitive                               |
-|-------------------------|---------------------------------------------------------|
-| QueryTypes.SERVER_QUERY | "server", "servers", "query_servers", "to_server_query" |
+| Query Enum              | Aliases (case-insensitive |
+|-------------------------|---------------------------|
+| QueryTypes.SERVER_QUERY | "server", "servers"       |
 
 
 ## Chaining from

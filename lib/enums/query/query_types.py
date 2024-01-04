@@ -27,20 +27,14 @@ class QueryTypes(EnumWithAliases):
             QueryTypes.FLAVOR_QUERY: [
                 "flavor",
                 "flavors",
-                "query_flavors",
-                "to_flavor_query",
             ],
             QueryTypes.PROJECT_QUERY: [
                 "project",
                 "projects",
-                "query_projects",
-                "to_project_query",
             ],
             QueryTypes.SERVER_QUERY: [
                 "server",
                 "servers",
-                "query_servers",
-                "to_server_query",
             ],
-            QueryTypes.USER_QUERY: ["user", "users", "query_users", "to_user_query"],
+            QueryTypes.USER_QUERY: ["user", "users"],
         }
