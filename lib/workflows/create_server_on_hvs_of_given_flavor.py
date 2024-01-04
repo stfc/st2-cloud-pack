@@ -1,5 +1,10 @@
 import openstack
-from openstack_query.api.query_objects import FlavorQuery,AggregateQuery, HypervisorQuery, ImageQuery
+from openstack_query.api.query_objects import (
+    FlavorQuery,
+    AggregateQuery,
+    HypervisorQuery,
+    ImageQuery,
+)
 
 
 # def get_hv_objects_from_names(cloud_account, host_name_list):
@@ -8,19 +13,31 @@ from openstack_query.api.query_objects import FlavorQuery,AggregateQuery, Hyperv
 #     hv_query.run(cloud_account)
 #     return hv_query.to_objects()
 
+
 def create_vms(cloud_account, hv_object_list, flavor_id, image_id):
     conn = openstack.connect(cloud_account)
-    network = conn.network.find_network("fa2f5ebe-d0e0-4465-9637-e9461de443f1", ignore_missing=False)
+    network = conn.network.find_network(
+        "fa2f5ebe-d0e0-4465-9637-e9461de443f1", ignore_missing=False
+    )
     for hv in hv_object_list:
         try:
-            conn.compute.create_server(**{
-                "name":f"build_test_{hv}", "imageRef":image_id, "flavorRef":flavor_id, "networks":[network], "hypervisor_hostname":hv, "api_version":"2.79"
-            })
+            conn.compute.create_server(
+                **{
+                    "name": f"build_test_{hv}",
+                    "imageRef": image_id,
+                    "flavorRef": flavor_id,
+                    "networks": [network],
+                    "hypervisor": hv,
+                    "openstack_api_version": "2.79",
+                }
+            )
             return True, "Server creation successful"
         except openstack.exceptions.ResourceNotFound as err:
             return False, f"Openstack error: {repr(err)}"
+
+
 def main(cloud_account, flavor_name):
-    security_group_id = "a64e8c5d-b99b-4f2b-96ea-2cd3da82c29b" # default security group in prod-cloud admin project
+    security_group_id = "a64e8c5d-b99b-4f2b-96ea-2cd3da82c29b"  # default security group in prod-cloud admin project
     network_id = (
         "5be315b7-7ebd-4254-97fe-18c1df501538"  # Internal network id from prod-cloud
     )
@@ -39,7 +56,7 @@ def main(cloud_account, flavor_name):
 
     q3 = ImageQuery()
     q3.select("id")
-    imagename="ubuntu-focal-20.04-nogui"
+    imagename = "ubuntu-focal-20.04-nogui"
     q3.where("equal_to", "name", value=imagename)
     q3.where("equal_to", "status", value="active")
     q3.run(cloud_account, as_admin=True, all_projects=True)
@@ -48,7 +65,6 @@ def main(cloud_account, flavor_name):
     for host_group in all_host_groups:
         create_vms(cloud_account, host_group, flavor_id, image_id)
 
+
 if __name__ == "__main__":
     main("dev", "l3.nano")
-
-
