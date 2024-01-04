@@ -6,10 +6,6 @@ name: server.search.by.property
 parameters:
   timeout:
     default: 5400
-  submodule_name:
-    default: query
-    immutable: true
-    type: string
   action_name:
     default: search_by_property
     immutable: true

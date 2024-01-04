@@ -1,18 +1,20 @@
 from unittest.mock import patch, NonCallableMock, MagicMock
 import pytest
 
-from enums.query.query_presets import QueryPresetsString
 from enums.query.sort_order import SortOrder
-from workflows.query.search_by_regex import search_by_regex
+from workflows.search_by_datetime import search_by_datetime
 
 
-@patch("workflows.query.search_by_regex.openstack_query")
+@patch("workflows.query.search_by_datetime.openstack_query")
+@patch("workflows.query.search_by_datetime.QueryPresetsDateTime")
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
-def test_search_by_regex_minimal(mock_openstack_query, output_type):
+def test_search_by_datetime_minimal(
+    mock_preset_enum, mock_openstack_query, output_type
+):
     """
-    Runs search_by_regex only providing required values
+    Runs search_by_datetime only providing required values
     """
 
     mock_query = MagicMock()
@@ -22,17 +24,23 @@ def test_search_by_regex_minimal(mock_openstack_query, output_type):
     params = {
         "cloud_account": mock_cloud_account,
         "query_type": "MockQuery",
+        "search_mode": NonCallableMock(),
         "property_to_search_by": NonCallableMock(),
         "output_type": output_type,
-        "pattern": NonCallableMock(),
+        "days": 1,
     }
-    res = search_by_regex(**params)
+    res = search_by_datetime(**params)
 
     mock_query.select_all.assert_called_once()
     mock_query.where.assert_called_once_with(
-        preset=QueryPresetsString.MATCHES_REGEX,
+        preset=mock_preset_enum.from_string.return_value,
         prop=params["property_to_search_by"],
-        args={"value": params["pattern"]},
+        args={
+            "days": 1,
+            "hours": 0,
+            "minutes": 0,
+            "seconds": 0,
+        },
     )
     mock_query.run.assert_called_once_with(mock_cloud_account)
 
@@ -47,13 +55,28 @@ def test_search_by_regex_minimal(mock_openstack_query, output_type):
     )
 
 
-@patch("workflows.query.search_by_regex.openstack_query")
+def test_search_by_datetime_errors_when_args_all_zero():
+    """
+    test that search_by_datetime errors when days, hours, minutes and seconds are all set to zero
+    """
+    with pytest.raises(RuntimeError):
+        search_by_datetime(
+            cloud_account=NonCallableMock(),
+            query_type=NonCallableMock(),
+            search_mode=NonCallableMock(),
+            property_to_search_by=NonCallableMock(),
+            output_type=NonCallableMock(),
+        )
+
+
+@patch("workflows.query.search_by_datetime.openstack_query")
+@patch("workflows.query.search_by_datetime.QueryPresetsDateTime")
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
-def test_search_by_regex_all(mock_openstack_query, output_type):
+def test_search_by_datetime_all(mock_preset_enum, mock_openstack_query, output_type):
     """
-    Runs search_by_regex providing all values
+    Runs search_by_datetime providing all available params
     """
 
     mock_query = MagicMock()
@@ -63,22 +86,28 @@ def test_search_by_regex_all(mock_openstack_query, output_type):
     params = {
         "cloud_account": mock_cloud_account,
         "query_type": "MockQuery",
+        "search_mode": NonCallableMock(),
         "property_to_search_by": NonCallableMock(),
         "output_type": output_type,
         "properties_to_select": ["prop1", "prop2"],
-        "pattern": NonCallableMock(),
+        "days": 1,
         "group_by": NonCallableMock(),
         "sort_by": ["prop1", "prop2"],
         "arg1": "val1",
         "arg2": "val2",
     }
-    res = search_by_regex(**params)
+    res = search_by_datetime(**params)
 
     mock_query.select.assert_called_once_with(*params["properties_to_select"])
     mock_query.where.assert_called_once_with(
-        preset=QueryPresetsString.MATCHES_REGEX,
+        preset=mock_preset_enum.from_string.return_value,
         prop=params["property_to_search_by"],
-        args={"value": params["pattern"]},
+        args={
+            "days": 1,
+            "hours": 0,
+            "minutes": 0,
+            "seconds": 0,
+        },
     )
     mock_query.sort_by.assert_called_once_with(
         *[(p, SortOrder.DESC) for p in params["sort_by"]]

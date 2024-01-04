@@ -6,10 +6,6 @@ name: user.search.by.regex
 parameters:
   timeout:
     default: 5400
-  submodule_name:
-    default: query
-    immutable: true
-    type: string
   action_name:
     default: search_by_regex
     immutable: true

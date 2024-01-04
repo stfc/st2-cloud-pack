@@ -2,7 +2,7 @@ from unittest.mock import patch, NonCallableMock, MagicMock
 import pytest
 
 from enums.query.sort_order import SortOrder
-from workflows.query.list_all_openstack import list_all_openstack
+from workflows.list_all_openstack import list_all_openstack
 
 
 @patch("workflows.query.list_all_openstack.openstack_query")
