@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Tuple, List
+from typing import Optional, List
 from enums.query.query_presets import QueryPresets
 from enums.query.props.prop_enum import PropEnum
 
@@ -23,8 +23,8 @@ class ServerSideHandler(HandlerBase):
     when calling openstacksdk commands when listing openstack resources
     """
 
-    def __init__(self, kwarg_mappings: ServerSideFilterMappings):
-        self._server_side_filter_mappings = kwarg_mappings
+    def __init__(self, server_side_mappings: ServerSideFilterMappings):
+        self._server_side_filter_mappings = server_side_mappings
 
     def get_supported_props(self, preset: QueryPresets) -> List[PropEnum]:
         """
@@ -77,48 +77,21 @@ class ServerSideHandler(HandlerBase):
         filter_func = self._get_mapping(preset, prop)
         if not filter_func:
             return None
+
         logger.debug(
             "found server-side filter function for preset %s: prop %s pair",
             preset.name,
             prop.name,
         )
-        res, reason = self._check_filter_mapping(filter_func, params)
-        if not res:
+
+        try:
+            filters = filter_func(**params)
+        except (KeyError, TypeError) as err:
             raise QueryPresetMappingError(
                 "Preset Argument Error: failed to build server-side openstacksdk filters for preset:prop: "
                 f"'{preset.name}':'{prop.name}' "
-                f"reason: {reason}"
-            )
-        filters = filter_func(**params)
+            ) from err
 
         if not isinstance(filters, list):
             return [filters]
         return filters
-
-    @staticmethod
-    def _check_filter_mapping(
-        filter_func: ServerSideFilterFunc, filter_params: FilterParams
-    ) -> Tuple[bool, str]:
-        """
-        Method that checks if optional parameters are valid for the kwarg mapping function
-        :param filter_func: lambda filter func to check
-        :param filter_params: a dictionary of params to check if valid for filter func
-        """
-        logger.debug(
-            "checking server-side filter function against provided parameters\n\t%s",
-            "\n\t".join([f"{key}: '{value}'" for key, value in filter_params.items()]),
-        )
-        try:
-            filter_func(**filter_params)
-        except KeyError as err:
-            return (
-                False,
-                f"server-side filter function expected a keyword argument: '{err.args[0]}'",
-            )
-        except TypeError as err:
-            # hacky way to get the arguments that are missing from TypeError error message
-            return (
-                False,
-                f"server-side filter function missing/unexpected positional argument: '{err.args[0]}'",
-            )
-        return True, ""

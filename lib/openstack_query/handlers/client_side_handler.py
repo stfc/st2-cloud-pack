@@ -1,6 +1,4 @@
 import logging
-import inspect
-import typing
 from typing import Optional, Tuple, List, Union
 
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
@@ -15,6 +13,7 @@ from custom_types.openstack_query.aliases import (
     PropFunc,
     FilterParams,
     OpenstackResourceObj,
+    PresetToClientSideFilterFunc,
 )
 
 from enums.query.query_presets import QueryPresets
@@ -30,8 +29,13 @@ class ClientSideHandler(HandlerBase):
     listing openstack resources
     """
 
-    def __init__(self, filter_func_mappings: PresetPropMappings):
-        self._filter_function_mappings = filter_func_mappings
+    def __init__(
+        self,
+        filter_mappings: PresetToClientSideFilterFunc,
+        preset_prop_mappings: PresetPropMappings,
+    ):
+        self._filter_function_mappings = preset_prop_mappings
+        self._filter_functions = filter_mappings
 
     def get_supported_props(self, preset: QueryPresets) -> Union[List, List[PropEnum]]:
         """
@@ -113,8 +117,7 @@ class ClientSideHandler(HandlerBase):
             )
 
         logger.debug(
-            "found client-side filter function '%s' for preset %s: prop %s pair",
-            filter_func.__name__,
+            "found client-side filter function for preset %s: prop %s pair",
             preset.name,
             prop.name,
         )
@@ -153,9 +156,9 @@ class ClientSideHandler(HandlerBase):
             item_prop = selected_prop_func(item)
         except AttributeError:
             return False
-        if filter_func_kwargs:
-            return selected_filter_func(item_prop, **filter_func_kwargs)
-        return selected_filter_func(item_prop)
+        if not filter_func_kwargs:
+            filter_func_kwargs = {}
+        return selected_filter_func(item_prop, **filter_func_kwargs)
 
     @staticmethod
     def _check_filter_func(
@@ -167,23 +170,14 @@ class ClientSideHandler(HandlerBase):
         :param func: function to test
         :param func_kwargs: kwargs to test
         """
-        signature = inspect.signature(func)
-        prop_param = list(signature.parameters.values())[0]
 
-        # a hack to get EAFP working - set a default value for prop just to see if filter function works
-        if prop_param.annotation == typing.Any:
-            prop_val = ""
-        elif prop_param.annotation == typing.Union[int, float]:
-            prop_val = 0
-        else:
-            prop_val = prop_param.annotation()
-
+        # Try to run the filter function with "prop" = None.
+        # The filter function should still work with prop as None
         if not func_kwargs:
             func_kwargs = {}
         try:
-            func(prop=prop_val, **func_kwargs)
+            func(None, **func_kwargs)
             return True, ""
-
         except (
             TypeError,
             NameError,

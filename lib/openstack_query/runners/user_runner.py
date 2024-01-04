@@ -4,17 +4,14 @@ from typing import Optional, Dict, List
 from openstack.identity.v3.user import User
 
 from openstack_api.openstack_connection import OpenstackConnection
+from openstack_query.runners.runner_utils import RunnerUtils
 from openstack_query.runners.runner_wrapper import RunnerWrapper
 
 from exceptions.parse_query_error import ParseQueryError
 from exceptions.enum_mapping_error import EnumMappingError
-
-from enums.query.props.user_properties import UserProperties
 from enums.user_domains import UserDomains
 
 logger = logging.getLogger(__name__)
-
-# pylint:disable=too-few-public-methods
 
 
 class UserRunner(RunnerWrapper):
@@ -26,15 +23,7 @@ class UserRunner(RunnerWrapper):
     DEFAULT_DOMAIN = UserDomains.STFC
     RESOURCE_TYPE = User
 
-    @staticmethod
-    def _get_marker(obj: User) -> str:
-        """
-        This method returns the marker value for a User object, required for pagination
-        :param obj: An Server object to get the marker property for
-        """
-        return UserProperties.get_prop_mapping("id")(obj)
-
-    def _parse_meta_params(
+    def parse_meta_params(
         self, conn: OpenstackConnection, from_domain: Optional[UserDomains] = None
     ) -> Dict:
         """
@@ -46,9 +35,8 @@ class UserRunner(RunnerWrapper):
             return {"domain_id": self._get_user_domain_id(conn, from_domain)}
         return {}
 
-    def _get_user_domain_id(
-        self, conn: OpenstackConnection, user_domain: UserDomains
-    ) -> str:
+    @staticmethod
+    def _get_user_domain_id(conn: OpenstackConnection, user_domain: UserDomains) -> str:
         """
         Helper function to get user domain id from a given UserDomains enum
         :param conn: An OpenstackConnection object - used to connect to openstacksdk
@@ -75,7 +63,7 @@ class UserRunner(RunnerWrapper):
         )
         return conn.identity.find_domain(domain_name_arg)["id"]
 
-    def _run_query(
+    def run_query(
         self,
         conn: OpenstackConnection,
         filter_kwargs: Optional[Dict[str, str]] = None,
@@ -124,4 +112,6 @@ class UserRunner(RunnerWrapper):
             "running paginated openstacksdk command conn.identity.users (%s)",
             ",".join(f"{key}={value}" for key, value in filter_kwargs.items()),
         )
-        return self._run_paginated_query(conn.identity.users, filter_kwargs)
+        return RunnerUtils.run_paginated_query(
+            conn.identity.users, self._page_marker_prop_func, filter_kwargs
+        )

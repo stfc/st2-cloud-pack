@@ -1,42 +1,35 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, NonCallableMock, patch
 import pytest
 
 from openstack_query.runners.flavor_runner import FlavorRunner
-from openstack.compute.v2.flavor import Flavor
-from exceptions.parse_query_error import ParseQueryError
-
-# pylint:disable=protected-access
 
 
 @pytest.fixture(name="instance")
-def instance_fixture(mock_connection):
+def instance_fixture(mock_marker_prop_func):
     """
     Returns an instance to run tests with
     """
-    mock_marker_prop_func = MagicMock()
-    return FlavorRunner(
-        marker_prop_func=mock_marker_prop_func, connection_cls=mock_connection
-    )
+    return FlavorRunner(marker_prop_func=mock_marker_prop_func)
 
 
-def test_parse_query_params(instance, mock_openstack_connection):
+def test_parse_query_params(instance):
     """
     tests that parse_query_params returns empty dict - FlavorQuery accepts no meta-params currently
     """
     assert (
-        instance._parse_meta_params(
-            mock_openstack_connection, **{"arg1": "val1", "arg2": "val2"}
+        instance.parse_meta_params(
+            NonCallableMock(), **{"arg1": "val1", "arg2": "val2"}
         )
         == {}
     )
 
 
-@patch("openstack_query.runners.flavor_runner.FlavorRunner._run_paginated_query")
+@patch("openstack_query.runners.runner_utils.RunnerUtils.run_paginated_query")
 def test_run_query_no_server_filters(
-    mock_run_paginated_query, instance, mock_openstack_connection
+    mock_run_paginated_query, instance, mock_marker_prop_func
 ):
     """
-    Tests that _run_query method works expectedly with no server-side filters
+    Tests that run_query method works expectedly with no server-side filters
     """
     mock_user_list = mock_run_paginated_query.return_value = [
         "flavor1",
@@ -44,41 +37,16 @@ def test_run_query_no_server_filters(
         "flavor3",
     ]
     mock_filter_kwargs = None
-    res = instance._run_query(
-        mock_openstack_connection,
+    mock_connection = MagicMock()
+
+    res = instance.run_query(
+        mock_connection,
         filter_kwargs=mock_filter_kwargs,
     )
 
     mock_run_paginated_query.assert_called_once_with(
-        mock_openstack_connection.compute.flavors, {"details": True}
+        mock_connection.compute.flavors,
+        mock_marker_prop_func,
+        {"details": True},
     )
     assert res == mock_user_list
-
-
-def test_parse_subset(instance):
-    """
-    Tests _parse_subset works expectedly
-    method simply checks each value in 'subset' param is of the Flavor type and returns it
-    """
-
-    # with one item
-    mock_flavor_1 = MagicMock()
-    mock_flavor_1.__class__ = Flavor
-    res = instance._parse_subset([mock_flavor_1])
-    assert res == [mock_flavor_1]
-
-    # with two items
-    mock_flavor_2 = MagicMock()
-    mock_flavor_2.__class__ = Flavor
-    res = instance._parse_subset([mock_flavor_1, mock_flavor_2])
-    assert res == [mock_flavor_1, mock_flavor_2]
-
-
-def test_parse_subset_invalid(instance):
-    """
-    Tests _parse_subset works expectedly
-    method raises error when provided value which is not of Flavor type
-    """
-    invalid_flavor = "invalid-flavor-obj"
-    with pytest.raises(ParseQueryError):
-        instance._parse_subset([invalid_flavor])

@@ -4,13 +4,12 @@ import logging
 from openstack.identity.v3.project import Project
 
 from openstack_api.openstack_connection import OpenstackConnection
+from openstack_query.runners.runner_utils import RunnerUtils
 from openstack_query.runners.runner_wrapper import RunnerWrapper
 
 from custom_types.openstack_query.aliases import ServerSideFilters
 
 logger = logging.getLogger(__name__)
-
-# pylint:disable=too-few-public-methods
 
 
 class ProjectRunner(RunnerWrapper):
@@ -21,11 +20,15 @@ class ProjectRunner(RunnerWrapper):
 
     RESOURCE_TYPE = Project
 
-    def _parse_meta_params(self, _: OpenstackConnection, **__):
+    def parse_meta_params(self, conn: OpenstackConnection, **kwargs):
+        """
+        This method is a helper function that will parse a set of meta params specific to the resource and
+        return a set of parsed meta-params to pass to _run_query
+        """
         logger.debug("ProjectQuery has no meta-params available")
-        return {}
+        return super().parse_meta_params(conn, **kwargs)
 
-    def _run_query(
+    def run_query(
         self,
         conn: OpenstackConnection,
         filter_kwargs: Optional[ServerSideFilters] = None,
@@ -52,4 +55,6 @@ class ProjectRunner(RunnerWrapper):
             "running openstacksdk command conn.identity.projects(%s)",
             ",".join(f"{key}={value}" for key, value in filter_kwargs.items()),
         )
-        return self._run_paginated_query(conn.identity.projects, filter_kwargs)
+        return RunnerUtils.run_paginated_query(
+            conn.identity.projects, self._page_marker_prop_func, filter_kwargs
+        )

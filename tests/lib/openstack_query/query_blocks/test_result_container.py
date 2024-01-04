@@ -1,3 +1,4 @@
+import copy
 from unittest.mock import MagicMock, patch, call, NonCallableMock
 import pytest
 
@@ -9,16 +10,23 @@ from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 @pytest.fixture(name="setup_instance_with_results")
 def setup_instance_with_results_fixture():
     """
-    Returns an instance of ResultContainer with mocked results
+    Fixture to get setup an instance of ResultsContainer with a set of mock results
     """
 
-    def _setup_instance_with_results(mock_results):
-        val = ResultsContainer(prop_enum_cls=MockProperties)
-        # pylint:disable=protected-access
-        val._results = mock_results
-        return val
+    @patch("openstack_query.query_blocks.results_container.Result")
+    def _setup_instance(results, mock_result_obj):
+        """
+        sets up a ResultsContainer storing set of results given
+        """
+        instance = ResultsContainer(prop_enum_cls=MockProperties)
+        mock_result_obj.side_effect = results
+        instance.store_query_results(query_results=results)
+        mock_result_obj.assert_has_calls(
+            [call(MockProperties, i, instance.DEFAULT_OUT) for i in results]
+        )
+        return instance
 
-    return _setup_instance_with_results
+    return _setup_instance
 
 
 def test_to_props_results_empty(setup_instance_with_results):
@@ -182,129 +190,121 @@ def test_to_object_parsed_and_grouped(setup_instance_with_results):
     }
 
 
-@patch("openstack_query.query_blocks.results_container.Result")
-def test_store_query_results(mock_results):
+def test_apply_forwarded_result_no_results_stored():
     """
-    Test store_query_results method creates a Result mock object for each item given
-    """
-    mock_prop_enum_cls = NonCallableMock()
-    instance = ResultsContainer(mock_prop_enum_cls)
-    instance.store_query_results(["item1", "item2"])
-    mock_results.side_effect = ["item1_obj", "item2_obj"]
-
-    mock_results.assert_has_calls(
-        [
-            call(mock_prop_enum_cls, "item1", "Not Found"),
-            call(mock_prop_enum_cls, "item2", "Not Found"),
-        ]
-    )
-
-
-def test_apply_forwarded_result_empty():
-    """
-    Test apply_forwarded_results when no results set - raise error
+    Test apply_forwarded_results when no results currently stored - raise error
     """
     instance = ResultsContainer(NonCallableMock())
     with pytest.raises(QueryChainingError):
         instance.apply_forwarded_results(NonCallableMock(), NonCallableMock())
 
 
-@patch(
-    "openstack_query.query_blocks.results_container.ResultsContainer._get_forwarded_result"
-)
-def test_apply_forwarded_result(mock_get_forwarded_result, setup_instance_with_results):
+def mock_result(get_prop_return):
     """
-    Test apply_forwarded_results once results set
+    Helper function to mock a Result object with a mocked value to return when get_prop() is caled
     """
-    res1 = MagicMock()
-    res2 = MagicMock()
-    mock_link_prop = NonCallableMock()
-    mock_forwarded_results = NonCallableMock()
+    mock_prop = MagicMock()
+    mock_prop.get_prop.return_value = get_prop_return
+    return mock_prop
 
-    instance = setup_instance_with_results([res1, res2])
+
+@pytest.fixture(name="apply_forwarded_result_runner")
+def apply_forwarded_result_runner_fixture(setup_instance_with_results):
+    """
+    Fixture to setup and run a test case for testing apply_forwarded_result method
+    """
+
+    def _apply_forwarded_result_runner(
+        mock_set_results, mock_forwarded_results, expected_updated_call_args
+    ):
+        """runs apply forwarded result runner test case"""
+
+        result_mocks = [mock_result(res) for res in mock_set_results]
+
+        instance = setup_instance_with_results(result_mocks)
+        mock_link_prop = NonCallableMock()
+        instance.apply_forwarded_results(mock_link_prop, mock_forwarded_results)
+        for result in result_mocks:
+            result.get_prop.assert_called_once_with(mock_link_prop)
+
+        for mock, exp in zip(result_mocks, expected_updated_call_args):
+            mock.update_forwarded_properties.assert_called_once_with(exp)
+
+        return result_mocks
+
+    return _apply_forwarded_result_runner
+
+
+def test_apply_forwarded_result_many_to_one(apply_forwarded_result_runner):
+    """
+    test apply_forwarded_results with results already set,
+    where multiple forwarded outputs map to one openstack object.
+    should take the first item from matching list and assign it,
+    deleting it from the forwarded dict
+    """
+
+    mock_forwarded_results = {
+        "val1": ["forward-props1", "forward-props2"],
+        "val2": ["forward-props3", "forward-props4"],
+    }
+    expected_updated_call_args = [
+        "forward-props1",
+        "forward-props3",
+        "forward-props2",
+        "forward-props4",
+    ]
+    apply_forwarded_result_runner(
+        ["val1", "val2", "val1", "val2"],
+        mock_forwarded_results,
+        expected_updated_call_args,
+    )
+
+    # test that forward_results dict is mutated removing values already assigned
+    # keeping at least one value at the end
+    assert mock_forwarded_results == {
+        "val1": ["forward-props2"],
+        "val2": ["forward-props4"],
+    }
+
+
+def test_apply_forwarded_result_one_to_many(apply_forwarded_result_runner):
+    """
+    test apply_forwarded_results with results already set,
+    where one forwarded output map to many openstack objects.
+    should take the first item from matching list and assign it and should not delete it
+    """
+
+    mock_forwarded_results = {"val1": ["forward-props1"], "val2": ["forward-props2"]}
+    copy_forward_results = copy.deepcopy(mock_forwarded_results)
+
+    expected_updated_call_args = [
+        "forward-props1",
+        "forward-props1",
+        "forward-props2",
+        "forward-props2",
+    ]
+    apply_forwarded_result_runner(
+        ["val1", "val1", "val2", "val2"],
+        mock_forwarded_results,
+        expected_updated_call_args,
+    )
+
+    # mock_forwarded_results should not mutate
+    assert mock_forwarded_results == copy_forward_results
+
+
+def test_apply_forwarded_result_not_found(setup_instance_with_results):
+    """
+    Test apply_forwarded_results when no forwarded results are found for stored result
+    should get updated with default values for forwarded values
+    """
+    mock_forwarded_results = {"val1": [{"prop1": "val1"}]}
+    result_obj = mock_result("invalid-val")
+    instance = setup_instance_with_results([result_obj])
+    instance.DEFAULT_OUT = "Not Found"
+
+    mock_link_prop = NonCallableMock()
     instance.apply_forwarded_results(mock_link_prop, mock_forwarded_results)
 
-    res1.get_prop.assert_called_once_with(mock_link_prop)
-    res2.get_prop.assert_called_once_with(mock_link_prop)
-
-    mock_get_forwarded_result.assert_has_calls(
-        [
-            call(res1.get_prop.return_value, mock_forwarded_results),
-            call(res2.get_prop.return_value, mock_forwarded_results),
-        ]
-    )
-
-    res1.update_forwarded_properties(mock_get_forwarded_result.return_value)
-    res2.update_forwarded_properties(mock_get_forwarded_result.return_value)
-
-
-def test_get_forwarded_results_many_to_one():
-    """
-    Tests get_forwarded_results static method, where forwarded results contains
-    multiple instances in each group.
-    should remove value from forwarded result from the group one at a time as
-    it is encountered, except the last one
-    """
-    forwarded_values = {
-        "grouped_value": ["value1", "value2", "value3"],
-    }
-    # pylint:disable=protected-access
-
-    assert (
-        ResultsContainer._get_forwarded_result("grouped_value", forwarded_values)
-        == "value1"
-    )
-    assert (
-        ResultsContainer._get_forwarded_result("grouped_value", forwarded_values)
-        == "value2"
-    )
-    assert (
-        ResultsContainer._get_forwarded_result("grouped_value", forwarded_values)
-        == "value3"
-    )
-    assert len(forwarded_values["grouped_value"]) == 1
-
-
-def test_get_forwarded_result_one_to_many():
-    """
-    Tests get_forwarded_results static method, where forwarded results contains
-    one instance in each group.
-
-    Should not remove forwarded result as there is only one item in each group.
-    Duplicate calls with the same value should return the same result
-    """
-    forwarded_values = {
-        "grouped_value1": ["value1"],
-        "grouped_value2": ["value2"],
-        "grouped_value3": ["value3"],
-    }
-    # pylint:disable=protected-access
-
-    assert (
-        ResultsContainer._get_forwarded_result("grouped_value1", forwarded_values)
-        == "value1"
-    )
-    assert (
-        ResultsContainer._get_forwarded_result("grouped_value1", forwarded_values)
-        == "value1"
-    )
-
-    assert (
-        ResultsContainer._get_forwarded_result("grouped_value2", forwarded_values)
-        == "value2"
-    )
-    assert (
-        ResultsContainer._get_forwarded_result("grouped_value2", forwarded_values)
-        == "value2"
-    )
-
-    assert all(len(val) == 1 for val in forwarded_values.values())
-
-
-def test_get_forwarded_result_empty():
-    """
-    Tests get_forwarded_results static method, where forwarded results are empty
-    should return an empty dict
-    """
-    # pylint:disable=protected-access
-    assert ResultsContainer._get_forwarded_result("grouped_value1", {}) == {}
+    result_obj.get_prop.assert_called_once_with(mock_link_prop)
+    result_obj.update_forwarded_properties({"prop1": "Not Found"})
