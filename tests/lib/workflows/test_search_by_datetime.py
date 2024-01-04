@@ -5,8 +5,8 @@ from enums.query.sort_order import SortOrder
 from workflows.search_by_datetime import search_by_datetime
 
 
-@patch("workflows.query.search_by_datetime.openstack_query")
-@patch("workflows.query.search_by_datetime.QueryPresetsDateTime")
+@patch("workflows.search_by_datetime.openstack_query")
+@patch("workflows.search_by_datetime.QueryPresetsDateTime")
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
@@ -69,8 +69,8 @@ def test_search_by_datetime_errors_when_args_all_zero():
         )
 
 
-@patch("workflows.query.search_by_datetime.openstack_query")
-@patch("workflows.query.search_by_datetime.QueryPresetsDateTime")
+@patch("workflows.search_by_datetime.openstack_query")
+@patch("workflows.search_by_datetime.QueryPresetsDateTime")
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )

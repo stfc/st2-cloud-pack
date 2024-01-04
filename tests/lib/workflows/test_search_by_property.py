@@ -5,8 +5,8 @@ from enums.query.sort_order import SortOrder
 from workflows.search_by_property import search_by_property
 
 
-@patch("workflows.query.search_by_property.openstack_query")
-@patch("workflows.query.search_by_property.QueryPresetsGeneric")
+@patch("workflows.search_by_property.openstack_query")
+@patch("workflows.search_by_property.QueryPresetsGeneric")
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
@@ -65,8 +65,8 @@ def test_search_by_property_errors_when_no_values_given():
         )
 
 
-@patch("workflows.query.search_by_property.openstack_query")
-@patch("workflows.query.search_by_property.QueryPresetsGeneric")
+@patch("workflows.search_by_property.openstack_query")
+@patch("workflows.search_by_property.QueryPresetsGeneric")
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )

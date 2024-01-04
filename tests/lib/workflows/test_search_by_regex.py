@@ -6,7 +6,7 @@ from enums.query.sort_order import SortOrder
 from workflows.search_by_regex import search_by_regex
 
 
-@patch("workflows.query.search_by_regex.openstack_query")
+@patch("workflows.search_by_regex.openstack_query")
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
@@ -47,7 +47,7 @@ def test_search_by_regex_minimal(mock_openstack_query, output_type):
     )
 
 
-@patch("workflows.query.search_by_regex.openstack_query")
+@patch("workflows.search_by_regex.openstack_query")
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
