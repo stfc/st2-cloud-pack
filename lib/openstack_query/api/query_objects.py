@@ -6,6 +6,7 @@ from openstack_query.mappings.flavor_mapping import FlavorMapping
 from openstack_query.mappings.project_mapping import ProjectMapping
 from openstack_query.mappings.image_mapping import ImageMapping
 from openstack_query.mappings.hypervisor_mapping import HypervisorMapping
+from openstack_query.mappings.aggregate_mapping import AggregateMapping
 
 
 def get_common(query_mapping: Type[MappingInterface]) -> "QueryAPI":
@@ -65,3 +66,10 @@ def HypervisorQuery() -> QueryAPI:
     Simple helper function to setup a query using a factory
     """
     return get_common(HypervisorMapping)
+
+
+def AggregateQuery() -> QueryAPI:
+    """
+    Simple helper function to setup a query using a factory
+    """
+    return get_common(AggregateMapping)
