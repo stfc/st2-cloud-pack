@@ -1,6 +1,5 @@
 from enum import auto
 from enums.query.props.prop_enum import PropEnum
-from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 
 
@@ -16,17 +15,22 @@ class UserProperties(PropEnum):
     USER_NAME = auto()
 
     @staticmethod
-    def from_string(val: str):
+    def _get_aliases():
         """
-        Converts a given string in a case-insensitive way to the enum values
+        A method that returns all valid string alias mappings
         """
-        try:
-            return UserProperties[val.upper()]
-        except KeyError as err:
-            raise ParseQueryError(
-                f"Could not find User Property {val}. "
-                f"Available properties are {','.join([prop.name for prop in UserProperties])}"
-            ) from err
+        return {
+            UserProperties.USER_DOMAIN_ID: ["domain_id"],
+            UserProperties.USER_DESCRIPTION: ["description", "desc"],
+            UserProperties.USER_EMAIL: [
+                "email",
+                "email_addr",
+                "email_address",
+                "user_email_address",
+            ],
+            UserProperties.USER_ID: ["id", "uuid"],
+            UserProperties.USER_NAME: ["name", "username"],
+        }
 
     @staticmethod
     def get_prop_mapping(prop):

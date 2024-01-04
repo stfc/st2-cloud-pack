@@ -42,7 +42,9 @@ def test_flavor_id_serialization(val):
     assert ServerProperties.from_string(val) is ServerProperties.FLAVOR_ID
 
 
-@pytest.mark.parametrize("val", ["hypervisor_id", "Hypervisor_ID", "HyPerVisor_ID"])
+@pytest.mark.parametrize(
+    "val", ["hypervisor_id", "Hypervisor_ID", "HyPerVisor_ID", "host_id", "hv_id"]
+)
 def test_hypervisor_id_serialization(val):
     """
     Tests that variants of HYPERVISOR_ID can be serialized
@@ -67,7 +69,13 @@ def test_project_id_serialization(val):
 
 
 @pytest.mark.parametrize(
-    "val", ["server_creation_date", "Server_Creation_Date", "SeRvEr_CrEaTiOn_DAte"]
+    "val",
+    [
+        "server_creation_date",
+        "Server_Creation_Date",
+        "SeRvEr_CrEaTiOn_DAte",
+        "created_at",
+    ],
 )
 def test_server_creation_date_serialization(val):
     """
@@ -77,7 +85,8 @@ def test_server_creation_date_serialization(val):
 
 
 @pytest.mark.parametrize(
-    "val", ["server_description", "Server_Description", "SeRvEr_DeScrIpTion"]
+    "val",
+    ["server_description", "Server_Description", "SeRvEr_DeScrIpTion", "description"],
 )
 def test_server_description_serialization(val):
     """
@@ -86,7 +95,9 @@ def test_server_description_serialization(val):
     assert ServerProperties.from_string(val) is ServerProperties.SERVER_DESCRIPTION
 
 
-@pytest.mark.parametrize("val", ["server_id", "Server_Id", "SeRvEr_iD"])
+@pytest.mark.parametrize(
+    "val", ["server_id", "Server_Id", "SeRvEr_iD", "vm_id", "id", "uuid"]
+)
 def test_server_id_serialization(val):
     """
     Tests that variants of SERVER_ID can be serialized
@@ -100,6 +111,7 @@ def test_server_id_serialization(val):
         "server_last_updated_date",
         "Server_Last_Updated_Date",
         "SerVer_LasT_UpDatED_DaTe",
+        "updated_at",
     ],
 )
 def test_server_last_updated_date_serialization(val):
@@ -111,7 +123,9 @@ def test_server_last_updated_date_serialization(val):
     )
 
 
-@pytest.mark.parametrize("val", ["server_name", "Server_NaMe", "Server_Name"])
+@pytest.mark.parametrize(
+    "val", ["server_name", "Server_NaMe", "Server_Name", "vm_name", "name"]
+)
 def test_server_name_serialization(val):
     """
     Tests that variants of SERVER_NAME can be serialized
@@ -119,7 +133,9 @@ def test_server_name_serialization(val):
     assert ServerProperties.from_string(val) is ServerProperties.SERVER_NAME
 
 
-@pytest.mark.parametrize("val", ["server_status", "Server_Status", "SerVer_StAtUs"])
+@pytest.mark.parametrize(
+    "val", ["server_status", "Server_Status", "SerVer_StAtUs", "status", "vm_status"]
+)
 def test_server_status_serialization(val):
     """
     Tests that variants of SERVER_STATUS can be serialized
@@ -133,6 +149,16 @@ def test_user_id_serialization(val):
     Tests that variants of USER_ID can be serialized
     """
     assert ServerProperties.from_string(val) is ServerProperties.USER_ID
+
+
+@pytest.mark.parametrize(
+    "val", ["addresses", "Addresses", "AdDreSSeS", "ips", "vm_ips", "server_ips"]
+)
+def test_addresses_serialization(val):
+    """
+    Tests that variants of ADDRESSES can be serialized
+    """
+    assert ServerProperties.from_string(val) is ServerProperties.ADDRESSES
 
 
 def test_invalid_serialization():

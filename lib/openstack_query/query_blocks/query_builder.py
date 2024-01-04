@@ -1,10 +1,11 @@
-from typing import Optional, Dict, Any, List, Type
+from typing import Optional, Dict, Any, List, Type, Union
 import logging
 
 from openstack_query.handlers.client_side_handler import ClientSideHandler
 from openstack_query.handlers.server_side_handler import ServerSideHandler
 
 from enums.query.query_presets import QueryPresets
+from enums.query.query_presets import get_preset_from_string
 from enums.query.props.prop_enum import PropEnum
 
 from exceptions.query_preset_mapping_error import QueryPresetMappingError
@@ -15,6 +16,7 @@ from custom_types.openstack_query.aliases import (
     ClientSideFilters,
     ServerSideFilters,
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -87,10 +89,23 @@ class QueryBuilder:
         """
         self._server_filter_fallback = fallback_filters
 
+    def _parse_where_inputs(self, preset, prop):
+        """
+        method converts where() 'preset' and 'prop' user inputs into Enums, any string aliases will
+        be converted into Enums
+        :param preset: Name of query preset to use
+        :param prop: Name of property that the query preset will act on
+        """
+        if isinstance(preset, str):
+            preset = get_preset_from_string(preset)
+        if isinstance(prop, str):
+            prop = self._prop_enum_cls.from_string(prop)
+        return preset, prop
+
     def parse_where(
         self,
-        preset: QueryPresets,
-        prop: PropEnum,
+        preset: Union[str, QueryPresets],
+        prop: Union[str, PropEnum],
         preset_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
@@ -100,7 +115,7 @@ class QueryBuilder:
         :param prop: Name of property that the query preset will act on
         :param preset_kwargs: A set of arguments to pass to configure filter function and filter kwargs
         """
-
+        preset, prop = self._parse_where_inputs(preset, prop)
         prop_func = self._prop_enum_cls.get_prop_mapping(prop)
 
         if not prop_func:

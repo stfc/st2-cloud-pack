@@ -180,3 +180,32 @@ group_keys = {
 #   - all other VMs will be ignored
 query.group_by(ServerProperties.PROJECT_ID, group_keys=group_keys)
 ```
+
+### Note About Aliases
+
+All these examples use Enums as inputs to various API methods.
+
+Any API methods that take Enums as input can also accept strings that are known as string aliases.
+These aliases will be converted to a specific Enum implicitly.
+
+The point of aliases is to be intuitive, and won't require you to learn the specific syntax of the query library.
+To see which aliases are available:
+
+1. For Preset aliases for use with `where()` see [Presets.md](PRESETS.md)
+2. For Property aliases for use with `select()`, `where()` and others, see the specific page in [query_docs](query_docs)
+3. For Query aliases for use with `then()`, append_from()`, see the specific page in [query_docs](query_docs)
+4. For other aliases, see API method reference in [API.md](API.md)
+
+**NOTE**: passing a string alias that exactly matches the enum will always be accepted. E.g:
+
+```python
+query.select(ServerProperties.SERVER_ID)
+
+# is equivalent to
+query.select("server_id")
+
+# both are equivalent to using aliases like:
+query.select("id")
+# or
+query.select("uuid")
+```

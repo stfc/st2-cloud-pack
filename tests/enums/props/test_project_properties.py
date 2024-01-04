@@ -34,7 +34,14 @@ def test_get_marker_prop_func(mock_get_prop_mapping):
 
 
 @pytest.mark.parametrize(
-    "val", ["project_description", "Project_Description", "PrOjEcT_DeScRiPtIoN"]
+    "val",
+    [
+        "project_description",
+        "Project_Description",
+        "PrOjEcT_DeScRiPtIoN",
+        "description",
+        "desc",
+    ],
 )
 def test_project_description_serialization(val):
     """
@@ -44,7 +51,7 @@ def test_project_description_serialization(val):
 
 
 @pytest.mark.parametrize(
-    "val", ["project_domain_id", "Project_Domain_Id", "PrOjEcT_DoMaIn_Id"]
+    "val", ["project_domain_id", "Project_Domain_Id", "PrOjEcT_DoMaIn_Id", "domain_id"]
 )
 def test_project_domain_id_serialization(val):
     """
@@ -53,7 +60,9 @@ def test_project_domain_id_serialization(val):
     assert ProjectProperties.from_string(val) is ProjectProperties.PROJECT_DOMAIN_ID
 
 
-@pytest.mark.parametrize("val", ["project_id", "Project_Id", "PrOjEcT_Id"])
+@pytest.mark.parametrize(
+    "val", ["project_id", "Project_Id", "PrOjEcT_Id", "id", "uuid"]
+)
 def test_project_id_serialization(val):
     """
     Tests that variants of PROJECT_ID can be serialized
@@ -62,7 +71,7 @@ def test_project_id_serialization(val):
 
 
 @pytest.mark.parametrize(
-    "val", ["project_is_domain", "Project_Is_Domain", "PrOjEcT_Is_DoMaIn"]
+    "val", ["project_is_domain", "Project_Is_Domain", "PrOjEcT_Is_DoMaIn", "is_domain"]
 )
 def test_project_is_domain_serialization(val):
     """
@@ -72,7 +81,8 @@ def test_project_is_domain_serialization(val):
 
 
 @pytest.mark.parametrize(
-    "val", ["project_is_enabled", "Project_Is_Enabled", "PrOjEcT_Is_EnAbLeD"]
+    "val",
+    ["project_is_enabled", "Project_Is_Enabled", "PrOjEcT_Is_EnAbLeD", "is_enabled"],
 )
 def test_project_is_enabled_serialization(val):
     """
@@ -81,7 +91,9 @@ def test_project_is_enabled_serialization(val):
     assert ProjectProperties.from_string(val) is ProjectProperties.PROJECT_IS_ENABLED
 
 
-@pytest.mark.parametrize("val", ["project_name", "Project_Name", "PrOjEcT_NaMe"])
+@pytest.mark.parametrize(
+    "val", ["project_name", "Project_Name", "PrOjEcT_NaMe", "name"]
+)
 def test_project_name_serialization(val):
     """
     Tests that variants of PROJECT_NAME can be serialized
@@ -90,7 +102,7 @@ def test_project_name_serialization(val):
 
 
 @pytest.mark.parametrize(
-    "val", ["project_parent_id", "Project_Parent_Id", "PrOjEcT_PaReNt_Id"]
+    "val", ["project_parent_id", "Project_Parent_Id", "PrOjEcT_PaReNt_Id", "parent_id"]
 )
 def test_project_parent_id_serialization(val):
     """

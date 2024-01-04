@@ -3,6 +3,7 @@
 ## Workflow Links
 - #### [Adding a new Query Feature](ADDING_NEW_QUERIES.md)
 - #### [Adding a new Preset](ADDING_NEW_PRESETS.md)
+- #### [Adding an Alias](ADDING_ALIASES.md)
 - #### [Other smaller workflows](OTHER_WORKFLOWS.md)
 
 ## Other Links

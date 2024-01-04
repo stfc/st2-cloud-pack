@@ -1,6 +1,5 @@
 from enum import auto
 from enums.query.props.prop_enum import PropEnum
-from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 
 
@@ -23,17 +22,24 @@ class ServerProperties(PropEnum):
     ADDRESSES = auto()
 
     @staticmethod
-    def from_string(val: str):
+    def _get_aliases():
         """
-        Converts a given string in a case-insensitive way to the enum values
+        A method that returns all valid string alias mappings
         """
-        try:
-            return ServerProperties[val.upper()]
-        except KeyError as err:
-            raise ParseQueryError(
-                f"Could not find Server Property {val}. "
-                f"Available properties are {','.join([prop.name for prop in ServerProperties])}"
-            ) from err
+        return {
+            ServerProperties.HYPERVISOR_ID: ["host_id", "hv_id"],
+            ServerProperties.SERVER_CREATION_DATE: ["created_at"],
+            ServerProperties.SERVER_DESCRIPTION: [
+                "description",
+                "desc",
+                "vm_description",
+            ],
+            ServerProperties.SERVER_ID: ["vm_id", "id", "uuid"],
+            ServerProperties.SERVER_LAST_UPDATED_DATE: ["updated_at"],
+            ServerProperties.SERVER_NAME: ["vm_name", "name"],
+            ServerProperties.SERVER_STATUS: ["status", "vm_status"],
+            ServerProperties.ADDRESSES: ["ips", "vm_ips", "server_ips"],
+        }
 
     @staticmethod
     def get_prop_mapping(prop):

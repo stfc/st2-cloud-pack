@@ -27,20 +27,20 @@ from enums.query.props.server_properties import ServerProperties
 
 `ServerProperties` exposes the following properties:
 
-| Property Enum            | Type         | Aliases | Description                                                                                                                                                                                                                                          |
-|--------------------------|--------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| FLAVOR_ID                | `string`     | `None`  | The ID of the Flavor the Server is using                                                                                                                                                                                                             |
-| HYPERVISOR_ID            | `string`     | `None`  | The ID of the Hypervisor the Server is being hosted on                                                                                                                                                                                               |
-| IMAGE_ID                 | `string`     | `None`  | The ID of the Image the Server is using                                                                                                                                                                                                              |
-| PROJECT_ID               | `string`     | `None`  | The ID of the Project the Server is associated with                                                                                                                                                                                                  |
-| SERVER_CREATION_DATE     | `string` (x) | `None`  | Timestamp of when the server was created.                                                                                                                                                                                                            |
-| SERVER_DESCRIPTION       | `string`     | `None`  | User provided description of the server.                                                                                                                                                                                                             |
-| SERVER_ID                | `string`     | `None`  | Unique ID Openstack has assigned the server.                                                                                                                                                                                                         |
-| SERVER_LAST_UPDATED_DATE | `string` (x) | `None`  | Timestamp of when this server was last updated.                                                                                                                                                                                                      |
-| SERVER_NAME              | `string`     | `None`  | User provided name for server                                                                                                                                                                                                                        |
-| SERVER_STATUS            | `string`     | `None`  | The state this server is in. Valid values include <br/>ACTIVE, BUILDING, DELETED, ERROR, HARD_REBOOT, PASSWORD, PAUSED, <br/>REBOOT, REBUILD, RESCUED, RESIZED, REVERT_RESIZE, SHUTOFF, SOFT_DELETED, STOPPED, SUSPENDED, UNKNOWN, or VERIFY_RESIZE. |
-| USER_ID                  | `string`     | `None`  | The ID of the User that owns the server                                                                                                                                                                                                              |
-| ADDRESSES                | `string`     | `None`  | Comma-separated list of IP addresses this server can be accessed through                                                                                                                                                                             |
+| Property Enum            | Type         | Aliases                       | Description                                                                                                                                                                                                                                          |
+|--------------------------|--------------|-------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| FLAVOR_ID                | `string`     | `None`                        | The ID of the Flavor the Server is using                                                                                                                                                                                                             |
+| HYPERVISOR_ID            | `string`     | `None`                        | The ID of the Hypervisor the Server is being hosted on                                                                                                                                                                                               |
+| IMAGE_ID                 | `string`     | `None`                        | The ID of the Image the Server is using                                                                                                                                                                                                              |
+| PROJECT_ID               | `string`     | `None`                        | The ID of the Project the Server is associated with                                                                                                                                                                                                  |
+| SERVER_CREATION_DATE     | `string` (x) | "created_at"                  | Timestamp of when the server was created.                                                                                                                                                                                                            |
+| SERVER_DESCRIPTION       | `string`     | "description", "desc"         | User provided description of the server.                                                                                                                                                                                                             |
+| SERVER_ID                | `string`     | "id", "uuid"                  | Unique ID Openstack has assigned the server.                                                                                                                                                                                                         |
+| SERVER_LAST_UPDATED_DATE | `string` (x) | "updated_at"                  | Timestamp of when this server was last updated.                                                                                                                                                                                                      |
+| SERVER_NAME              | `string`     | "vm_name", name"              | User provided name for server                                                                                                                                                                                                                        |
+| SERVER_STATUS            | `string`     | "vm_status", "status"         | The state this server is in. Valid values include <br/>ACTIVE, BUILDING, DELETED, ERROR, HARD_REBOOT, PASSWORD, PAUSED, <br/>REBOOT, REBUILD, RESCUED, RESIZED, REVERT_RESIZE, SHUTOFF, SOFT_DELETED, STOPPED, SUSPENDED, UNKNOWN, or VERIFY_RESIZE. |
+| USER_ID                  | `string`     | `None`                        | The ID of the User that owns the server                                                                                                                                                                                                              |
+| ADDRESSES                | `string`     | "ips", "vm_ips", "server_ips" | Comma-separated list of IP addresses this server can be accessed through                                                                                                                                                                             |
 
 (x) - These are UTC timestamps in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format
 
@@ -50,6 +50,13 @@ Alternatively, you can pass property aliases (passed as string) instead (current
 ## Chaining
 This section details valid mappings you can use to chain onto other queries or from other queries to chain into a `ProjectQuery` object.
 This applies to API calls `then` and `append_from` - see [API.md](../API.md) for details
+
+## Query Alias
+The aliases that can be used for the query when chaining are listed below:
+
+| Query Enum              | Aliases (case-insensitive |
+|-------------------------|---------------------------|
+| QueryTypes.SERVER_QUERY | "server", "servers"       |
 
 
 ## Chaining from

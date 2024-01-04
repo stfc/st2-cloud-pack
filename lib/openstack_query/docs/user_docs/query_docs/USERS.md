@@ -25,13 +25,13 @@ from enums.query.props.user_properties import UserProperties
 
 `UserProperties` exposes the following properties:
 
-| Property Enum    | Type     | Aliases | Description                               |
-|------------------|----------|---------|-------------------------------------------|
-| USER_DOMAIN_ID   | `string` | `None`  | The ID for the domain which owns the user |
-| USER_DESCRIPTION | `string` | `None`  | The description of this user.             |
-| USER_EMAIL       | `string` | `None`  | The email address of this user.           |
-| USER_ID          | `string` | `None`  | Unique ID Openstack has assigned the user |
-| USER_NAME        | `string` | `None`  | Unique user name (within the domain)      |
+| Property Enum    | Type     | Aliases                                                      | Description                               |
+|------------------|----------|--------------------------------------------------------------|-------------------------------------------|
+| USER_DOMAIN_ID   | `string` | "domain_id"                                                  | The ID for the domain which owns the user |
+| USER_DESCRIPTION | `string` | "description", "desc"                                        | The description of this user.             |
+| USER_EMAIL       | `string` | "email", "email_addr", "email_address", "user_email_address" | The email address of this user.           |
+| USER_ID          | `string` | "id", "uuid"                                                 | Unique ID Openstack has assigned the user |
+| USER_NAME        | `string` | "name", "username                                            | Unique user name (within the domain)      |
 
 
 Any of these properties can be used for any of the API methods that takes a property - like `select`, `where`, `sort_by` etc
@@ -40,6 +40,15 @@ Alternatively, you can pass property aliases (passed as string) instead (current
 ## Chaining
 This section details valid mappings you can use to chain onto other queries or from other queries to chain into a `ProjectQuery` object.
 This applies to API calls `then` and `append_from` - see [API.md](../API.md) for details
+
+
+## Query Alias
+The aliases that can be used for the query when chaining are listed below:
+
+| Query Enum            | Aliases (case-insensitive |
+|-----------------------|---------------------------|
+| QueryTypes.USER_QUERY | "user", "users"           |
+
 
 
 ## Chaining from

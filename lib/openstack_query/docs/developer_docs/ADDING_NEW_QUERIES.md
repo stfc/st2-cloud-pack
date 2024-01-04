@@ -42,6 +42,8 @@ class ResourceProperties(PropEnum):
         return ResourceProperties.get_prop_mapping(ResourceProperties.PROP_1)
 ```
 
+(Optional) Add alias mappings for each property - see [Adding Aliases](ADDING_ALIASES.md)
+
 ## 2. Create a Runner Class
 A new subclass of the `RunnerWrapper` class is required to store how to actually run the query using openstacksdk. It
 will also be the place where we can define extra parameters that can be used to fine-tune the query.
@@ -117,6 +119,8 @@ To add a Mapping Class:
 1. Create a new file under `/openstack_query/mappings/` called `<resource>_mapping.py` replace `<resource>` with openstack resource name you want to query
 2.  Create the `<resource>Mapping` class definition
    - class must inherit from `MappingInterface` abstract base class and implement abstract methods.
+3. Update the enum holding query types `/enums/query/query_types.py` and add a Enum mapping to this Mapping class.
+4. (Optional) Add alias mappings for the query type - see [Adding Aliases](ADDING_ALIASES.md)
 
 ### 3a. Set the Prop Enum class
 

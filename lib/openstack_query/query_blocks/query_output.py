@@ -162,17 +162,30 @@ class QueryOutput:
             )
         return output
 
-    def parse_select(self, *props: PropEnum, select_all=False) -> None:
+    def _parse_select_inputs(self, props):
+        """
+        Converts list of select() 'prop' user inputs into Enums, any string aliases will be converted into Enums
+        :param props: one or more Enums/string aliases representing properties to show
+        """
+        parsed_props = []
+        for prop in props:
+            if isinstance(prop, str):
+                prop = self._prop_enum_cls.from_string(prop)
+            parsed_props.append(prop)
+        return parsed_props
+
+    def parse_select(self, *props: Union[str, PropEnum], select_all=False) -> None:
         """
         Method which is used to set which properties to output once results are gathered
         This method checks that each Enum provided is valid and populates internal attribute which holds selected props
         :param select_all: boolean flag to select all valid properties
-        :param props: any number of Enums representing properties to show
+        :param props: one or more Enums/string aliases representing properties to show
         """
         if select_all:
             self.selected_props = set(self._prop_enum_cls)
             return
 
+        props = self._parse_select_inputs(props)
         all_props = set()
         for prop in props:
             if prop not in self._prop_enum_cls:

@@ -1,12 +1,12 @@
-from enum import Enum, auto
+from typing import Union
+from enum import auto
+from enums.query.enum_with_aliases import EnumWithAliases
 from exceptions.parse_query_error import ParseQueryError
 
-
-class QueryPresets(Enum):
-    pass
+# pylint: disable=too-few-public-methods
 
 
-class QueryPresetsGeneric(QueryPresets):
+class QueryPresetsGeneric(EnumWithAliases):
     """
     Enum class which holds generic query comparison operators
     """
@@ -17,20 +17,19 @@ class QueryPresetsGeneric(QueryPresets):
     NOT_ANY_IN = auto()
 
     @staticmethod
-    def from_string(val: str):
+    def _get_aliases():
         """
-        Converts a given string in a case-insensitive way to the enum values
+        A method that returns all valid string alias mappings
         """
-        try:
-            return QueryPresetsGeneric[val.upper()]
-        except KeyError as err:
-            raise ParseQueryError(
-                f"Could not find preset type {val}. "
-                f"Available preset types are {','.join([prop.name for prop in QueryPresetsGeneric])}"
-            ) from err
+        return {
+            QueryPresetsGeneric.EQUAL_TO: ["equal", "=="],
+            QueryPresetsGeneric.NOT_EQUAL_TO: ["not_equal", "!="],
+            QueryPresetsGeneric.ANY_IN: ["in"],
+            QueryPresetsGeneric.NOT_ANY_IN: ["not_in"],
+        }
 
 
-class QueryPresetsInteger(QueryPresets):
+class QueryPresetsInteger(EnumWithAliases):
     """
     Enum class which holds integer/float comparison operators
     """
@@ -41,20 +40,14 @@ class QueryPresetsInteger(QueryPresets):
     LESS_THAN_OR_EQUAL_TO = auto()
 
     @staticmethod
-    def from_string(val: str):
+    def _get_aliases():
         """
-        Converts a given string in a case-insensitive way to the enum values
+        A method that returns all valid string alias mappings
         """
-        try:
-            return QueryPresetsInteger[val.upper()]
-        except KeyError as err:
-            raise ParseQueryError(
-                f"Could not find preset type {val}. "
-                f"Available preset types are {','.join([prop.name for prop in QueryPresetsInteger])}"
-            ) from err
+        return {}
 
 
-class QueryPresetsDateTime(QueryPresets):
+class QueryPresetsDateTime(EnumWithAliases):
     """
     Enum class which holds datetime comparison operators
     """
@@ -65,20 +58,14 @@ class QueryPresetsDateTime(QueryPresets):
     YOUNGER_THAN_OR_EQUAL_TO = auto()
 
     @staticmethod
-    def from_string(val: str):
+    def _get_aliases():
         """
-        Converts a given string in a case-insensitive way to the enum values
+        A method that returns all valid string alias mappings
         """
-        try:
-            return QueryPresetsDateTime[val.upper()]
-        except KeyError as err:
-            raise ParseQueryError(
-                f"Could not find preset type {val}. "
-                f"Available preset types are {','.join([prop.name for prop in QueryPresetsDateTime])}"
-            ) from err
+        return {}
 
 
-class QueryPresetsString(QueryPresets):
+class QueryPresetsString(EnumWithAliases):
     """
     Enum class which holds string comparison operators
     """
@@ -86,14 +73,31 @@ class QueryPresetsString(QueryPresets):
     MATCHES_REGEX = auto()
 
     @staticmethod
-    def from_string(val: str):
+    def _get_aliases():
         """
-        Converts a given string in a case-insensitive way to the enum values
+        A method that returns all valid string alias mappings
         """
+        return {QueryPresetsString.MATCHES_REGEX: ["regex", "match_regex"]}
+
+
+def get_preset_from_string(val: str):
+    """
+    function that takes a string and returns a preset Enum if that string is an alias for that preset
+    :param val: a string alias to convert
+    """
+    for preset_cls in [
+        QueryPresetsGeneric,
+        QueryPresetsString,
+        QueryPresetsDateTime,
+        QueryPresetsInteger,
+    ]:
         try:
-            return QueryPresetsString[val.upper()]
-        except KeyError as err:
-            raise ParseQueryError(
-                f"Could not find preset type {val}. "
-                f"Available preset types are {','.join([prop.name for prop in QueryPresetsString])}"
-            ) from err
+            return preset_cls.from_string(val)
+        except ParseQueryError:
+            continue
+    raise ParseQueryError(f"Could not find preset that matches alias {val}.")
+
+
+QueryPresets = Union[
+    QueryPresetsGeneric, QueryPresetsDateTime, QueryPresetsString, QueryPresetsInteger
+]

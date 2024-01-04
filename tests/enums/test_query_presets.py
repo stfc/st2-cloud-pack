@@ -5,11 +5,14 @@ from enums.query.query_presets import (
     QueryPresetsInteger,
     QueryPresetsString,
     QueryPresetsDateTime,
+    get_preset_from_string,
 )
 from exceptions.parse_query_error import ParseQueryError
 
 
-@pytest.mark.parametrize("preset_string", ["equal_to", "Equal_To", "EqUaL_tO"])
+@pytest.mark.parametrize(
+    "preset_string", ["equal_to", "Equal_To", "EqUaL_tO", "equal", "=="]
+)
 def test_equal_to_serialization(preset_string):
     """
     Tests that variants of EQUAL_TO can be serialized
@@ -20,7 +23,7 @@ def test_equal_to_serialization(preset_string):
 
 
 @pytest.mark.parametrize(
-    "preset_string", ["not_equal_to", "Not_Equal_To", "NoT_EqUaL_tO"]
+    "preset_string", ["not_equal_to", "Not_Equal_To", "NoT_EqUaL_tO", "not_equal", "!="]
 )
 def test_not_equal_to_serialization(preset_string):
     """
@@ -143,7 +146,7 @@ def test_younger_than_or_equal_to_serialization(preset_string):
     )
 
 
-@pytest.mark.parametrize("preset_string", ["any_in", "Any_In", "AnY_In"])
+@pytest.mark.parametrize("preset_string", ["any_in", "Any_In", "AnY_In", "in"])
 def test_any_in_serialization(preset_string):
     """
     Tests that variants of ANY_IN can be serialized
@@ -151,7 +154,9 @@ def test_any_in_serialization(preset_string):
     assert QueryPresetsGeneric.from_string(preset_string) is QueryPresetsGeneric.ANY_IN
 
 
-@pytest.mark.parametrize("preset_string", ["not_any_in", "Not_Any_In", "NoT_AnY_In"])
+@pytest.mark.parametrize(
+    "preset_string", ["not_any_in", "Not_Any_In", "NoT_AnY_In", "not_in"]
+)
 def test_not_any_in_serialization(preset_string):
     """
     Tests that variants of NOT_ANY_IN can be serialized
@@ -162,7 +167,8 @@ def test_not_any_in_serialization(preset_string):
 
 
 @pytest.mark.parametrize(
-    "preset_string", ["matches_regex", "Matches_Regex", "MaTcHeS_ReGeX"]
+    "preset_string",
+    ["matches_regex", "Matches_Regex", "MaTcHeS_ReGeX", "regex", "match_regex"],
 )
 def test_matches_regex_serialization(preset_string):
     """
@@ -186,3 +192,27 @@ def test_invalid_serialization():
     ]:
         with pytest.raises(ParseQueryError):
             enum_cls.from_string("some-invalid-string")
+
+
+@pytest.mark.parametrize(
+    "alias, expected_preset",
+    [
+        ("equal_to", QueryPresetsGeneric.EQUAL_TO),
+        ("matches_regex", QueryPresetsString.MATCHES_REGEX),
+        ("older_than", QueryPresetsDateTime.OLDER_THAN),
+        ("greater_than", QueryPresetsInteger.GREATER_THAN),
+    ],
+)
+def test_get_preset_from_string_valid(alias, expected_preset):
+    """
+    Tests that get_preset_from_string works for a valid preset alias from each preset type
+    """
+    assert get_preset_from_string(alias) == expected_preset
+
+
+def test_get_preset_from_string_invalid():
+    """
+    Tests that get_preset_from_string returns error if given an invalid alias
+    """
+    with pytest.raises(ParseQueryError):
+        get_preset_from_string("invalid-alias")

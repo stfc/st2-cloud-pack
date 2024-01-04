@@ -11,8 +11,8 @@ The query library currently supports queries on the following Openstack resource
 
 **NOTE**: In development - more query options will be added
 
-| Openstack Resource                                                                                       | Description                            | Reference for Query Object | How to Import                              |
-|----------------------------------------------------------------------------------------------------------|----------------------------------------|----------------------------|--------------------------------------------|
+| Openstack Resource                                                                                       | Description                            | Reference for Query Object            | How to Import                              |
+|----------------------------------------------------------------------------------------------------------|----------------------------------------|---------------------------------------|--------------------------------------------|
 | [Servers](https://docs.openstack.org/api-ref/compute/#servers-servers)                                   | Run a Query on Openstack Servers (VMs) | [SERVERS.md](query_docs/SERVERS.md)   | `from openstack_query import ServerQuery`  |
 | [Users](https://docs.openstack.org/api-ref/identity/v3/index.html?expanded=list-users-detail#users)      | Run a Query on Openstack Users         | [USERS.md](query_docs/USERS.md)       | `from openstack_query import UserQuery`    |
 | [Project](https://docs.openstack.org/api-ref/identity/v3/index.html?expanded=list-users-detail#projects) | Run a Query on Openstack Projects      | [PROJECTS.md](query_docs/PROJECTS.md) | `from openstack_query import ProjectQuery` |
@@ -26,13 +26,13 @@ This is mutually exclusive to returning objects using `select_all()` which will 
 
 
 ```python
-def select(*props: PropEnum)
+def select(*props: Union[str, PropEnum])
 ```
 **Arguments**:
 
-- `props`: one or more properties to collect described as enum.
+- `props`: one or more properties to collect described as enum or an equivalent string alias.
   - e.g. If you're querying servers with `ServerQuery` - appropriate enum is `ServerProperties`,
-  - see the specific query page e.g. [SERVERS.md](query_docs/SERVERS.md) on supported properties for that query
+  - see the specific query page e.g. [SERVERS.md](query_docs/SERVERS.md) on supported properties and string aliases for that query
 
 Running `select()` again will override all currently selected properties from previous `select()` call
 
@@ -48,6 +48,9 @@ from enums.query.props.server_properties import ServerProperties
 # create a ServerQuery and find server names and ids
 query = ServerQuery()
 query.select(ServerProperties.SERVER_NAME, ServerProperties.SERVER_ID)
+
+# or using the equivalent string aliases
+query.select("server_name", "server_id")
 ```
 
 #
@@ -78,15 +81,16 @@ Running `select_all()` will override currently selected properties from previous
 This can be called multiple times to define multiple conditions for the query - acts as Logical AND.
 
 ```python
-def where(preset: QueryPresets, prop: PropEnum, **kwargs)
+def where(preset: Union[str, QueryPresets], prop: Union[str, PropEnum], **kwargs)
 ```
 
 **Arguments**:
 
-- `preset`: QueryPreset Enum to use - this is a special enum that specifies the logic to refine the query by. See [PRESETS.md](../PRESETS.md).
-- `prop`: Property Enum that the query preset will be used on -
+- `preset`: QueryPreset Enum (or equivalent string alias) to use
+  - this specifies the logic to refine the query by. See [PRESETS.md](../PRESETS.md).
+- `prop`: Property Enum (or equivalent string alias) that the query preset will be used on -
   - e.g. If you're querying servers with `ServerQuery` - appropriate enum is `ServerProperties`
-  - some presets only accept certain props - see [FILTER_MAPPINGS.md](../FILTER_MAPPINGS.md)
+  - some presets can only accept certain props - see [FILTER_MAPPINGS.md](../FILTER_MAPPINGS.md)
 - `kwargs`: a set of optional arguments to pass along with the query preset
   - these kwargs are dependent on the preset - see [PRESETS.md](../PRESETS.md)
 
@@ -113,6 +117,9 @@ query.where(
     prop=ServerProperties.SERVER_STATUS,
     value="ERROR"
 )
+
+# or using the equivalent string aliases
+query.where("EQUAL_TO", "server_status", value="ERROR")
 ```
 
 #
@@ -123,16 +130,21 @@ query.where(
 It allows sorting by multiple keys if you provide multiple `sort_by` tuples.
 
 ```python
-def sort_by(*sort_by: Tuple[PropEnum, SortOrder])
+def sort_by(*sort_by: Tuple[Union[str, PropEnum], Union[str, SortOrder]])
 ```
 
 **Arguments**:
 
 - `sort_by`: Takes any number of tuples - the tuples must consist of two values:
-  - a property enum to sort by
+  - a property enum (or equivalent alias) to sort by
     -  e.g. If you're querying servers with `ServerQuery` - appropriate enum is `ServerProperties`
-  - an enum representing the sort order
+  - an enum (or equivalent alias) representing the sort order
     - `SortOrder.ASC` (for ascending) or `SortOrder.DESC` (for descending)
+
+| SortOrder Enum | Description              | Alias(es) (case-insensitive) |
+|----------------|--------------------------|------------------------------|
+| SortOrder.ASC  | sort in ascending order  | "ascending", "asc"           |
+| SortOrder.DESC | sort in descending order | "descending", "desc"         |
 
 **Note**: You can sort by properties you haven't 'selected' for using `select()`
 
@@ -153,6 +165,12 @@ query.run("openstack-domain", as_admin=True, all_projects=True)
 query.sort_by(
   (ServerProperties.SERVER_ID, SortOrder.DESC),
   (ServerProperties.SERVER_NAME, SortOrder.ASC)
+)
+
+# or using equivalent string aliases
+query.sort_by(
+  ("server_id", "descending"),
+  ("server_name", "ascending")
 )
 
 print(query.to_string())
@@ -182,7 +200,7 @@ we sort by server_id in ascending order etc.
 - a set of pre-defined groups which define how to group results based on their value of the property specified in `group_by`
 
 ```python
-def group_by(group_by: PropEnum,
+def group_by(group_by: Union[str, PropEnum],
              group_ranges: Optional[Dict[str, List[PropValue]]] = None,
              include_ungrouped_results: bool = False)
 ```
@@ -191,9 +209,8 @@ Public method used to configure how to group results.
 
 **Arguments**:
 
-- `group_by`: a property enum representing the property you want to group by
+- `group_by`: a property enum (or equivalent string alias) representing the property you want to group by
     - e.g. If you're querying servers with `ServerQuery` - appropriate enum is `ServerProperties`
-
 - `group_ranges`: (optional) a dictionary of group mappings
   - the keys are unique group names
   - the values are a list of values that `group_by` property could have to be included in that group
@@ -218,12 +235,12 @@ query.select(ServerProperties.SERVER_ID, ServerProperties.SERVER_NAME)
 
 # setup filter server_status = ERROR
 query.where(
-    preset=QueryPresetsGeneric.ANY_IN,
-    prop=ServerProperties.SERVER_STATUS,
+    preset="ANY_IN"
+    prop="server_status",
     values=["ERROR", "SHUTOFF"]
 )
 query.run("openstack-domain", as_admin=True, all_projects=True)
-query.group_by(ServerProperties.SERVER_STATUS)
+query.group_by("server_status")
 
 # holds a dictionary - where keys are unique values of "server_status" in results
 # in this case - ERROR and SHUTOFF since we queried for them
@@ -293,12 +310,12 @@ from enum.query.query_presets import QueryPresetsGeneric
 
 # create a ServerQuery
 query = ServerQuery()
-query.select(ServerProperties.SERVER_ID, ServerProperties.SERVER_NAME)
+query.select("server_id", "server_name")
 
 # setup filter server_status = ERROR
 query.where(
-    preset=QueryPresetsGeneric.EQUAL_TO,
-    prop=ServerProperties.SERVER_STATUS,
+    preset="EQUAL_TO",
+    prop="server_status",
     value="ERROR"
 )
 query.run("openstack-domain", as_admin=True, all_projects=True)
@@ -586,7 +603,7 @@ def then(query_type: Union[str, QueryTypes],
 
 **Arguments**:
 
-- `query_type`: an enum representing the new query to chain into
+- `query_type`: an enum (or equivalent string alias) representing the new query to chain into
   - see specific documentation for resource for valid ways `query_types`
 
 - `keep_previous_results`: flag that:
@@ -611,17 +628,17 @@ This method will run a secondary query on top of this one to get required proper
 
 ```python
 def append_from(query_type: Union[str, QueryTypes],
-                cloud_account: Union[str, CloudDomains], *props: PropEnum)
+                cloud_account: Union[str, CloudDomains], *props: Union[str, PropEnum])
 ```
 
 **Arguments**:
 
-- `query_type`: an enum representing the new query to chain into
+- `query_type`: an enum (or equivalent string alias) representing the new query to chain into
   - see specific documentation for resource for valid ways `query_types`
 
-- `cloud_account`: A String or a CloudDomains Enum for the clouds configuration to use
+- `cloud_account`: A CloudDomains Enum (or equivalent string alias) for the clouds configuration to use
   - this should be the domain set in the `clouds.yaml` file located in `.config/openstack/clouds.yaml`
-- `props`: one or more properties to collect described as enum from new query.
+- `props`: one or more properties to collect described as enum (or equivalent string alias) from new query.
   - e.g. If you're appending server properties (i.e. `append_from("ServerQuery" ...)`) the appropriate enum is `ServerProperties`
   - see specific documentation for resource you want to append props from to see valid props
 

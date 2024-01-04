@@ -27,16 +27,15 @@ class QueryAPI:
         self.chainer = query_components.chainer
         self.results_container = None
 
-    def select(self, *props: PropEnum):
+    def select(self, *props: Union[str, PropEnum]):
         """
         Public method used to 'select' properties that the query will return the value of.
         Mutually exclusive to returning objects using select_all()
-        :param props: one or more properties to collect described as enum
+        :param props: one or more properties to collect described as enum or a string that can convert to enum
         """
 
         # is an idempotent function
-        # an be called multiple times with should aggregate properties to select
-        logger.debug("select() called, with props: %s", [prop.name for prop in props])
+        # can be called multiple times with should aggregate properties to select
         if not props:
             raise ParseQueryError("provide at least one property to select")
 
@@ -55,7 +54,6 @@ class QueryAPI:
         Overrides all currently selected properties
         returns list of properties currently selected
         """
-        logger.debug("select_all() called - getting all properties")
         self.output.parse_select(select_all=True)
         logger.debug(
             "selected props are now: %s",
@@ -63,30 +61,16 @@ class QueryAPI:
         )
         return self
 
-    def where(self, preset: QueryPresets, prop: PropEnum, **kwargs):
+    def where(
+        self, preset: Union[str, QueryPresets], prop: Union[str, PropEnum], **kwargs
+    ):
         """
         Public method used to set the conditions for the query.
-        :param preset: QueryPreset Enum to use
-        :param prop: Property Enum that the query preset will be used on
+        :param preset: QueryPreset Enum or string alias to use
+        :param prop: Property Enum or string alias that the query preset will be used on
         :param kwargs: a set of optional arguments to pass along with the preset - property pair
             - these kwargs are dependent on the preset given
         """
-        kwargs_log_str = "<none>"
-        if kwargs:
-            kwargs_log_str = "\n\t\t".join(
-                [f"{key}: '{arg}'" for key, arg in kwargs.items()]
-            )
-
-        logger.debug(
-            "where() called, with args:"
-            "\n\t preset: %s"
-            "\n\t prop: %s"
-            "\n\t preset-args:\n\t\t%s",
-            preset.name,
-            prop.name,
-            kwargs_log_str,
-        )
-
         self.builder.parse_where(preset, prop, kwargs)
         return self
 
@@ -101,13 +85,13 @@ class QueryAPI:
 
     def group_by(
         self,
-        group_by: PropEnum,
+        group_by: Union[PropEnum, str],
         group_ranges: Optional[Dict[str, List[PropValue]]] = None,
         include_ungrouped_results: bool = False,
     ):
         """
         Public method used to configure how to group results.
-        :param group_by: name of the property to group by
+        :param group_by: Enum or string alias of the property to group by
         :param group_ranges: a set of optional group mappings - group name to list of values of
         selected group by property to be included in each group
         :param include_ungrouped_results: an optional flag to include a "ungrouped" group to the

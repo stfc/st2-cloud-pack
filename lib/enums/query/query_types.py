@@ -1,13 +1,16 @@
-from enum import Enum
-from exceptions.parse_query_error import ParseQueryError
+from typing import Dict
+
+from enums.query.enum_with_aliases import EnumWithAliases
 
 from openstack_query.mappings.flavor_mapping import FlavorMapping
 from openstack_query.mappings.project_mapping import ProjectMapping
 from openstack_query.mappings.server_mapping import ServerMapping
 from openstack_query.mappings.user_mapping import UserMapping
 
+# pylint: disable=too-few-public-methods
 
-class QueryTypes(Enum):
+
+class QueryTypes(EnumWithAliases):
     """
     Enum class which holds enums for different query objects. Used when
     specifying queries to chain to
@@ -19,14 +22,19 @@ class QueryTypes(Enum):
     USER_QUERY = UserMapping
 
     @staticmethod
-    def from_string(val: str):
-        """
-        Converts a given string in a case-insensitive way to the enum values
-        """
-        try:
-            return QueryTypes[val.upper()]
-        except KeyError as err:
-            raise ParseQueryError(
-                f"Could not find query type {val}. "
-                f"Available query types are {','.join([prop.name for prop in QueryTypes])}"
-            ) from err
+    def _get_aliases() -> Dict:
+        return {
+            QueryTypes.FLAVOR_QUERY: [
+                "flavor",
+                "flavors",
+            ],
+            QueryTypes.PROJECT_QUERY: [
+                "project",
+                "projects",
+            ],
+            QueryTypes.SERVER_QUERY: [
+                "server",
+                "servers",
+            ],
+            QueryTypes.USER_QUERY: ["user", "users"],
+        }

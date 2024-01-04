@@ -38,42 +38,42 @@ Alternatively, you can also pass string aliases instead of a preset Enum (see re
 ## QueryPresetsGeneric
 QueryPresetsGeneric has the following presets:
 
-| Preset       | Aliases        | Description                                                                          | Extra Parameters                                              |
-|--------------|----------------|--------------------------------------------------------------------------------------|---------------------------------------------------------------|
-| ANY_IN       | "ANY_IN"       | Finds objects which have a property matching any of a given set of values            | `values: List` - a list of property values to compare against |
-| NOT_ANY_IN   | "NOT_ANY_IN"   | Finds objects which have a property that does not match any of a given set of values | `values: List` - a list of property values to compare against |
-| EQUAL_TO     | "EQUAL_TO"     | Finds objects which have a property matching a given value                           | `value` - a single value to compare against                   |
-| NOT_EQUAL_TO | "NOT_EQUAL_TO" | Finds objects which have a property that does not match a given value                | `value` - a single value to compare against                   |
+| Preset       | Aliases           | Description                                                                          | Extra Parameters                                              |
+|--------------|-------------------|--------------------------------------------------------------------------------------|---------------------------------------------------------------|
+| ANY_IN       | "in"              | Finds objects which have a property matching any of a given set of values            | `values: List` - a list of property values to compare against |
+| NOT_ANY_IN   | "not in"          | Finds objects which have a property that does not match any of a given set of values | `values: List` - a list of property values to compare against |
+| EQUAL_TO     | "equal", "=="     | Finds objects which have a property matching a given value                           | `value` - a single value to compare against                   |
+| NOT_EQUAL_TO | "not equal", "!=" | Finds objects which have a property that does not match a given value                | `value` - a single value to compare against                   |
 
 
 ## QueryPresetsString
 QueryPresetsString has the following presets:
 
-| Preset        | Aliases         | Description                                                      | Extra Parameters                                                    |
-|---------------|-----------------|------------------------------------------------------------------|---------------------------------------------------------------------|
-| MATCHES_REGEX | "MATCHES_REGEX" | Finds objects which have a property that matches a regex pattern | `value: str` - a string which can be converted into a regex pattern |
+| Preset        | Aliases                | Description                                                      | Extra Parameters                                                    |
+|---------------|------------------------|------------------------------------------------------------------|---------------------------------------------------------------------|
+| MATCHES_REGEX | "regex", "match_regex" | Finds objects which have a property that matches a regex pattern | `value: str` - a string which can be converted into a regex pattern |
 
 
 ## QueryPresetsInteger
 QueryPresetsInteger has the following presets:
 
-| Preset                   | Aliases                    | Description                                                                             | Extra Parameters                                                              |
-|--------------------------|----------------------------|-----------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
-| GREATER_THAN             | "GREATER_THAN"             | Finds objects which have an integer/float property greater than a threshold             | `value: Union[int, float]` - an integer or float threshold to compare against |
-| LESS_THAN                | "LESS_THAN"                | Finds objects which have an integer/float property less than a threshold                | `value: Union[int, float]` - an integer or float threshold to compare against |
-| GREATER_THAN_OR_EQUAL_TO | "GREATER_THAN_OR_EQUAL_TO" | Finds objects which have an integer/float property greater than or equal to a threshold | `value: Union[int, float]` - an integer or float threshold to compare against |
-| LESS_THAN_OR_EQUAL_TO    | "LESS_THAN_OR_EQUAL_TO"    | Finds objects which have an integer/float property less than or equal to a threshold    | `value: Union[int, float]` - an integer or float threshold to compare against |
+| Preset                   | Aliases | Description                                                                             | Extra Parameters                                                              |
+|--------------------------|---------|-----------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| GREATER_THAN             | `None`  | Finds objects which have an integer/float property greater than a threshold             | `value: Union[int, float]` - an integer or float threshold to compare against |
+| LESS_THAN                | `None`  | Finds objects which have an integer/float property less than a threshold                | `value: Union[int, float]` - an integer or float threshold to compare against |
+| GREATER_THAN_OR_EQUAL_TO | `None`  | Finds objects which have an integer/float property greater than or equal to a threshold | `value: Union[int, float]` - an integer or float threshold to compare against |
+| LESS_THAN_OR_EQUAL_TO    | `None`   | Finds objects which have an integer/float property less than or equal to a threshold    | `value: Union[int, float]` - an integer or float threshold to compare against |
 
 
 ## QueryPresetsDateTime
 QueryPresetsDateTime has the following presets:
 
-| Preset                   | Aliases                    | Description                                                                                            | Extra Parameters |
-|--------------------------|----------------------------|--------------------------------------------------------------------------------------------------------|------------------|
-| OLDER_THAN               | "OLDER_THAN"               | Finds objects which have an datetime property older than a given relative time threshold               | see below        |
-| YOUNGER_THAN             | "YOUNGER_THAN"             | Finds objects which have an datetime property younger than a given relative time threshold             | see below        |
-| OLDER_THAN_OR_EQUAL_TO   | "OLDER_THAN_OR_EQUAL_TO"   | Finds objects which have an datetime property older than or equal to a given relative time threshold   | see below        |
-| YOUNGER_THAN_OR_EQUAL_TO | "YOUNGER_THAN_OR_EQUAL_TO" | Finds objects which have an datetime property younger than or equal to a given relative time threshold | see below        |
+| Preset                   | Aliases | Description                                                                                            | Extra Parameters |
+|--------------------------|---------|--------------------------------------------------------------------------------------------------------|------------------|
+| OLDER_THAN               | `None`  | Finds objects which have an datetime property older than a given relative time threshold               | see below        |
+| YOUNGER_THAN             | `None`  | Finds objects which have an datetime property younger than a given relative time threshold             | see below        |
+| OLDER_THAN_OR_EQUAL_TO   | `None`  | Finds objects which have an datetime property older than or equal to a given relative time threshold   | see below        |
+| YOUNGER_THAN_OR_EQUAL_TO | `None`  | Finds objects which have an datetime property younger than or equal to a given relative time threshold | see below        |
 
 ### Extra Parameters
 - `days: int` - (Optional) relative number of days since current time to compare against
