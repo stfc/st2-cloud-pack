@@ -179,12 +179,24 @@ def test_client_side_handlers_datetime(client_side_test_mappings):
     Tests client side handler mappings are correct, and line up to the expected
     client side params for string presets
     """
-    handler = ServerMapping.get_client_side_handlers().string_handler
+    handler = ServerMapping.get_client_side_handlers().datetime_handler
     mappings = {
-        QueryPresetsString.MATCHES_REGEX: [
-            ServerProperties.SERVER_NAME,
-            ServerProperties.ADDRESSES,
-        ]
+        QueryPresetsDateTime.OLDER_THAN_OR_EQUAL_TO: [
+            ServerProperties.SERVER_LAST_UPDATED_DATE,
+            ServerProperties.SERVER_CREATION_DATE,
+        ],
+        QueryPresetsDateTime.YOUNGER_THAN_OR_EQUAL_TO: [
+            ServerProperties.SERVER_LAST_UPDATED_DATE,
+            ServerProperties.SERVER_CREATION_DATE,
+        ],
+        QueryPresetsDateTime.YOUNGER_THAN: [
+            ServerProperties.SERVER_LAST_UPDATED_DATE,
+            ServerProperties.SERVER_CREATION_DATE,
+        ],
+        QueryPresetsDateTime.OLDER_THAN: [
+            ServerProperties.SERVER_LAST_UPDATED_DATE,
+            ServerProperties.SERVER_CREATION_DATE,
+        ],
     }
     client_side_test_mappings(handler, mappings)
 
