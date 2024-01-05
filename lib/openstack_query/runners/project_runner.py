@@ -7,7 +7,7 @@ from openstack_api.openstack_connection import OpenstackConnection
 from openstack_query.runners.runner_utils import RunnerUtils
 from openstack_query.runners.runner_wrapper import RunnerWrapper
 
-from custom_types.openstack_query.aliases import ServerSideFilters
+from custom_types.openstack_query.aliases import ServerSideFilter
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class ProjectRunner(RunnerWrapper):
     def run_query(
         self,
         conn: OpenstackConnection,
-        filter_kwargs: Optional[ServerSideFilters] = None,
+        filter_kwargs: Optional[ServerSideFilter] = None,
         **_,
     ) -> List[Project]:
         """
@@ -39,7 +39,7 @@ class ProjectRunner(RunnerWrapper):
 
         For ProjectQuery, this command finds all projects that match a given set of filter_kwargs
         :param conn: An OpenstackConnection object - used to connect to openstacksdk
-        :param filter_kwargs: An Optional list of filter kwargs to pass to conn.identity.projects()
+        :param filter_kwargs: An Optional set of filter kwargs to pass to conn.identity.projects()
             to limit the flavors being returned.
             - see https://docs.openstack.org/api-ref/compute/#list-flavors-with-details
         """

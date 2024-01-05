@@ -6,7 +6,7 @@ from openstack_api.openstack_connection import OpenstackConnection
 from openstack_query.runners.runner_wrapper import RunnerWrapper
 from openstack_query.runners.runner_utils import RunnerUtils
 
-from custom_types.openstack_query.aliases import ServerSideFilters
+from custom_types.openstack_query.aliases import ServerSideFilter
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class FlavorRunner(RunnerWrapper):
     def run_query(
         self,
         conn: OpenstackConnection,
-        filter_kwargs: Optional[ServerSideFilters] = None,
+        filter_kwargs: Optional[ServerSideFilter] = None,
         **_,
     ) -> List[Flavor]:
         """
@@ -38,7 +38,7 @@ class FlavorRunner(RunnerWrapper):
 
         For FlavorQuery, this command finds all flavors that match a given set of filter_kwargs
         :param conn: An OpenstackConnection object - used to connect to openstacksdk
-        :param filter_kwargs: An Optional list of filter kwargs to pass to conn.compute.flavors()
+        :param filter_kwargs: An Optional set of filter kwargs to pass to conn.compute.flavors()
             to limit the flavors being returned.
             - see https://docs.openstack.org/api-ref/compute/#list-flavors-with-details
         """
