@@ -2,7 +2,7 @@ from typing import Callable, Optional, List
 import logging
 
 import openstack.exceptions
-from openstack.exceptions import ResourceNotFound
+from openstack.exceptions import ResourceNotFound, ForbiddenException
 from exceptions.parse_query_error import ParseQueryError
 from openstack_api.openstack_connection import OpenstackConnection
 from custom_types.openstack_query.aliases import (
@@ -114,52 +114,31 @@ class RunnerUtils:
         return [item for item in items if client_filter(item) is True]
 
     @staticmethod
-    def parse_project_meta_param(
-        conn: OpenstackConnection,
-        from_projects: Optional[List[ProjectIdentifier]],
-        as_admin: bool,
-    ):
+    def parse_projects(
+        conn: OpenstackConnection, from_projects: Optional[List[ProjectIdentifier]]
+    ) -> List[str]:
         """
-        A helper method for parsing 'from_project' and 'as_admin' meta params
+        A helper method for parsing and validating 'from_project' meta param
         :param conn: An OpenstackConnection object - used to connect to openstack and parse meta params
-        :param from_projects: A list of projects to search in
-        :param as_admin: A boolean which, if true - will run query as an admin
+        :param from_projects: A list of projects to validate
         """
-
-        if as_admin and from_projects:
-            RunnerUtils._parse_from_projects(conn, from_projects)
-
-        elif as_admin:
-            logger.warning(
-                "NOT RUNNING AS ADMIN - query will only work on the scoped project id: %s",
-                conn.current_project_id,
-            )
-            return [conn.current_project_id]
-
-        elif from_projects is not None:
-            raise ParseQueryError(
-                "Failed to execute query: run_params given won't work if "
-                "you're not running as admin"
-            )
-
-    @staticmethod
-    def _parse_from_projects(conn: OpenstackConnection, project_list) -> Optional[List]:
-        """A helper method for parsing meta_param from_projects"""
         res_list = []
-        for proj in project_list:
+        for proj in from_projects:
             try:
                 logger.debug(
                     "running conn.identity.find_project(%s, ignore_missing=False)", proj
                 )
-                project = conn.identity.find_project(proj, ignore_missing=False)["id"]
+                project_id = conn.identity.find_project(proj, ignore_missing=False)[
+                    "id"
+                ]
             except ResourceNotFound as exp:
                 raise ParseQueryError(
                     "Failed to execute query: Failed to parse meta params"
                 ) from exp
-            except openstack.exceptions.ForbiddenException as exp:
+            except ForbiddenException as exp:
                 raise ParseQueryError(
                     "Failed to execute query: Not authorized to access project(s) given "
                     "- please run with admin credentials"
                 ) from exp
-            res_list.append(project)
+            res_list.append(project_id)
         return res_list

@@ -10,7 +10,7 @@ from openstack_query.runners.runner_wrapper import RunnerWrapper
 from exceptions.parse_query_error import ParseQueryError
 from custom_types.openstack_query.aliases import (
     ProjectIdentifier,
-    ServerSideFilters,
+    ServerSideFilter,
 )
 
 logger = logging.getLogger(__name__)
@@ -46,17 +46,24 @@ class ServerRunner(RunnerWrapper):
                 "from_projects or all_projects and not both"
             )
 
-        if not as_admin and all_projects:
+        if not as_admin and (all_projects or from_projects):
             raise ParseQueryError(
-                "Failed to execute query: run_params given won't work if "
+                "Failed to execute query: all_projects and/or from_project run_params won't work if"
                 "you're not running as admin"
             )
-
-        projects = RunnerUtils.parse_project_meta_param(conn, from_projects, as_admin)
 
         # don't provide any projects to scope the query so it runs on all projects
         if all_projects:
             return {"all_tenants": True}
+
+        if not from_projects:
+            logger.warning(
+                "Query will only work on the scoped project id: %s",
+                conn.current_project_id,
+            )
+            from_projects = [conn.current_project_id]
+
+        projects = RunnerUtils.parse_projects(conn, from_projects)
 
         # all_tenants only works if admin
         if not as_admin:
@@ -66,7 +73,7 @@ class ServerRunner(RunnerWrapper):
     def run_query(
         self,
         conn: OpenstackConnection,
-        filter_kwargs: Optional[ServerSideFilters] = None,
+        filter_kwargs: Optional[ServerSideFilter] = None,
         **meta_params,
     ) -> List[Server]:
         """
@@ -75,7 +82,7 @@ class ServerRunner(RunnerWrapper):
         For ServerQuery, this command gets all projects available and iteratively finds servers that belong to that
         project
         :param conn: An OpenstackConnection object - used to connect to openstacksdk
-        :param filter_kwargs: An Optional list of filter kwargs to pass to conn.compute.servers()
+        :param filter_kwargs: An Optional set of filter kwargs to pass to conn.compute.servers()
             to limit the servers being returned. - see https://docs.openstack.org/api-ref/compute/#list-servers
         :param meta_params: a set of meta parameters that dictates how the query is run
         """

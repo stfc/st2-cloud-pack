@@ -8,7 +8,7 @@ from openstack_query.runners.runner_utils import RunnerUtils
 from openstack_query.runners.runner_wrapper import RunnerWrapper
 
 from exceptions.parse_query_error import ParseQueryError
-from custom_types.openstack_query.aliases import ServerSideFilters, ProjectIdentifier
+from custom_types.openstack_query.aliases import ServerSideFilter, ProjectIdentifier
 
 logger = logging.getLogger(__name__)
 
@@ -49,17 +49,24 @@ class ImageRunner(RunnerWrapper):
                 "you're not running as admin"
             )
 
-        projects = RunnerUtils.parse_project_meta_param(conn, from_projects, as_admin)
-
-        # don't provide any projects to scope the query so it runs on all projects
         if all_projects:
             return {}
-        return {"owners": projects}
+
+        if not from_projects:
+            logger.warning(
+                "Query will only work on the scoped project id: %s",
+                conn.current_project_id,
+            )
+            from_projects = [conn.current_project_id]
+
+        projects = RunnerUtils.parse_projects(conn, from_projects)
+
+        return {"projects": projects}
 
     def run_query(
         self,
         conn: OpenstackConnection,
-        filter_kwargs: Optional[ServerSideFilters] = None,
+        filter_kwargs: Optional[ServerSideFilter] = None,
         **meta_params,
     ) -> List[Image]:
         """
@@ -68,7 +75,7 @@ class ImageRunner(RunnerWrapper):
         For ImageQuery, this command finds all images that match a given set of filter_kwargs.
         If meta-param from_projects passed, it will limit search to images that belong to those projects only
         :param conn: An OpenstackConnection object - used to connect to openstacksdk
-        :param filter_kwargs: An Optional list of filter kwargs to pass to conn.compute.images()
+        :param filter_kwargs: An Optional set of filter kwargs to pass to conn.compute.images()
             to limit the images being returned.
             see https://docs.openstack.org/api-ref/image/v2/index.html#list-images
         :param meta_params: a set of meta parameters that dictates how the query is run
@@ -76,14 +83,14 @@ class ImageRunner(RunnerWrapper):
         if not filter_kwargs:
             filter_kwargs = {}
 
-        if not meta_params:
+        if "projects" not in meta_params.keys():
             return RunnerUtils.run_paginated_query(
                 conn.compute.images, self._page_marker_prop_func, dict(filter_kwargs)
             )
         query_res = []
-        project_num = len(meta_params["owners"])
+        project_num = len(meta_params["projects"])
         logger.debug("running query on %s projects", project_num)
-        for i, project_id in enumerate(meta_params["owners"], 1):
+        for i, project_id in enumerate(meta_params["projects"], 1):
             filter_kwargs.update({"owner": project_id})
             logger.debug(
                 "running query on project %s / %s (id: %s)", i, project_num, project_id
