@@ -72,6 +72,23 @@ def test_user_query_serialization(query_type):
     assert QueryTypes.from_string(query_type) is QueryTypes.USER_QUERY
 
 
+@pytest.mark.parametrize(
+    "query_type",
+    [
+        "Hypervisor_Query",
+        "HyPeRvIsOr_QuErY",
+        "hypervisor_query",
+        "hypervisor",
+        "hypervisors",
+    ],
+)
+def test_hypervisor_query_serialization(query_type):
+    """
+    Tests that variants of HYPERVISOR_QUERY can be serialized
+    """
+    assert QueryTypes.from_string(query_type) is QueryTypes.HYPERVISOR_QUERY
+
+
 def test_invalid_serialization():
     """
     Tests that error is raised when passes invalid string
