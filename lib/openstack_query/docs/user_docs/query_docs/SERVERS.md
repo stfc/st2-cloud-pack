@@ -63,21 +63,24 @@ The aliases that can be used for the query when chaining are listed below:
 A `ServerQuery` can be chained to other queries.
 The following shared-common properties are listed below (as well as the Query object they map to):
 
-| Prop 1                      | Prop 2                       | Type        | Maps                            | Documentation              |
-|-----------------------------|------------------------------|-------------|---------------------------------|----------------------------|
-| ServerProperties.USER_ID    | UserProperties.USER_ID       | Many-to-One | `ServerQuery` to `UserQuery`    | [USERS.md](USERS.md)       |
-| ServerProperties.PROJECT_ID | ProjectProperties.PROJECT_ID | Many-to-One | `ServerQuery` to `ProjectQuery` | [PROJECTS.md](PROJECTS.md) |
-| ServerProperties.FLAVOR_ID  | FlavorProperties.FLAVOR_ID   | Many-to-One | `ServerQuery` to `FlavorQuery`  | [FLAVORS.md](FLAVORS.md)   |
+| Prop 1                         | Prop 2                             | Type        | Maps                               | Documentation                    |
+|--------------------------------|------------------------------------|-------------|------------------------------------|----------------------------------|
+| ServerProperties.USER_ID       | UserProperties.USER_ID             | Many-to-One | `ServerQuery` to `UserQuery`       | [USERS.md](USERS.md)             |
+| ServerProperties.PROJECT_ID    | ProjectProperties.PROJECT_ID       | Many-to-One | `ServerQuery` to `ProjectQuery`    | [PROJECTS.md](PROJECTS.md)       |
+| ServerProperties.FLAVOR_ID     | FlavorProperties.FLAVOR_ID         | Many-to-One | `ServerQuery` to `FlavorQuery`     | [FLAVORS.md](FLAVORS.md)         |
+| ServerProperties.HYPERVISOR_ID | HypervisorProperties.HYPERVISOR_ID | Many-to-One | `ServerQuery` to `HypervisorQuery` | [HYPERVISORS.md](HYPERVISORS.md) |
+
 
 
 ## Chaining to
-Chaining from other `ServerQuery` requires passing `USER_QUERY` as the `query_type`
+Chaining from other `ServerQuery` requires passing `SERVER_QUERY` or any aliases mentioned above as the `query_type`
 
-| From           | Prop 1                       | Prop 2                       | Type        | Documentation        |
-|----------------|------------------------------|------------------------------|-------------|----------------------|
-| `UserQuery`    | UserProperties.USER_ID       | ServerProperties.USER_ID     | One-to-Many | [USERS.md](USERS.md) |
-| `ProjectQuery` | ProjectProperties.PROJECT_ID | ProjectProperties.PROJECT_ID | One-to-Many | [USERS.md](USERS.md) |
-| `FlavorQuery`  | FlavorProperties.FLAVOR_ID   | FlavorProperties.FLAVOR_ID   | One-to-Many | [USERS.md](USERS.md) |
+| From              | Prop 1                             | Prop 2                      | Type        | Documentation                    |
+|-------------------|------------------------------------|-----------------------------|-------------|----------------------------------|
+| `UserQuery`       | UserProperties.USER_ID             | ServerProperties.USER_ID    | One-to-Many | [USERS.md](USERS.md)             |
+| `ProjectQuery`    | ProjectProperties.PROJECT_ID       | ServerProperties.PROJECT_ID | One-to-Many | [PROJECTS.md](PROJECTS.md)       |
+| `FlavorQuery`     | FlavorProperties.FLAVOR_ID         | ServerProperties.FLAVOR_ID  | One-to-Many | [FLAVORS.md](FLAVORS.md)         |
+| `HypervisorQuery` | HypervisorProperties.HYPERVISOR_ID | ServerProperties.FLAVOR_ID  | One-to-Many | [HYPERVISORS.md](HYPERVISORS.md) |
 
 
 

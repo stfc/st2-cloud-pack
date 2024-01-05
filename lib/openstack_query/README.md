@@ -13,6 +13,7 @@ Feature References
   - [Users](docs/user_docs/query_docs/SERVERS.md)
   - [Flavors](docs/user_docs/query_docs/FLAVORS.md)
   - [Projects](docs/user_docs/query_docs/PROJECTS.md)
+  - [Hypervisors](docs/user_docs/query_docs/HYPERVISORS.md)
 
  Developer-related Docs:
 - [Developer README](docs/developer_docs/OVERVIEW.md)

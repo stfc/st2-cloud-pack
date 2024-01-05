@@ -61,7 +61,7 @@ The following shared-common properties are listed below (as well as the Query ob
 
 
 ## Chaining to
-Chaining from other `UserQuery` requires passing `USER_QUERY` as the `query_type`
+Chaining from other `UserQuery` requires passing `USER_QUERY` or any aliases mentioned above as the `query_type`
 
 | From          | Prop 1                   | Prop 2                 | Type        | Documentation            |
 |---------------|--------------------------|------------------------|-------------|--------------------------|
