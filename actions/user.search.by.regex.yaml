@@ -1,13 +1,17 @@
 ---
 description: Search for users property using regex pattern, or not matching given value(s)
 enabled: true
-entry_point: src/user_query_actions.py
+entry_point: src/workflow_actions.py
 name: user.search.by.regex
 parameters:
   timeout:
     default: 5400
-  submodule:
-    default: "search_by_regex"
+  action_name:
+    default: search_by_regex
+    immutable: true
+    type: string
+  query_type:
+    default: UserQuery
     immutable: true
     type: string
   cloud_account:
@@ -38,9 +42,9 @@ parameters:
     type: string
     enum:
       - "to_html"
-      - "to_object_list"
-      - "to_list"
-      - "to_str"
+      - "to_objects"
+      - "to_props"
+      - "to_string"
     description: "
     A string representing how to return the results of the query
       - 'to_html' - a tabulate table (in html)
