@@ -20,6 +20,7 @@ class QueryTypes(EnumWithAliases):
     PROJECT_QUERY = ProjectMapping
     SERVER_QUERY = ServerMapping
     USER_QUERY = UserMapping
+    IMAGE_QUERY = UserMapping
 
     @staticmethod
     def _get_aliases() -> Dict:
@@ -37,4 +38,5 @@ class QueryTypes(EnumWithAliases):
                 "servers",
             ],
             QueryTypes.USER_QUERY: ["user", "users"],
+            QueryTypes.IMAGE_QUERY: ["image", "images"],
         }

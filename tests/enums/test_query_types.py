@@ -72,6 +72,23 @@ def test_user_query_serialization(query_type):
     assert QueryTypes.from_string(query_type) is QueryTypes.USER_QUERY
 
 
+@pytest.mark.parametrize(
+    "query_type",
+    [
+        "Image_Query",
+        "ImAgE_QuEry",
+        "image_query",
+        "image",
+        "images",
+    ],
+)
+def test_image_query_serialization(query_type):
+    """
+    Tests that variants of IMAGE_QUERY can be serialized
+    """
+    assert QueryTypes.from_string(query_type) is QueryTypes.IMAGE_QUERY
+
+
 def test_invalid_serialization():
     """
     Tests that error is raised when passes invalid string
