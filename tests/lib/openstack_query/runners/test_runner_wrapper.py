@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch, NonCallableMock
+from unittest.mock import MagicMock
 import pytest
 
 from exceptions.parse_query_error import ParseQueryError

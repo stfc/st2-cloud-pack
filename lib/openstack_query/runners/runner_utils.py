@@ -1,10 +1,11 @@
 from typing import Callable, Optional, List
+import logging
+
 from custom_types.openstack_query.aliases import (
     ServerSideFilter,
     ClientSideFilters,
     ClientSideFilterFunc,
 )
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,8 @@ class RunnerUtils:
         :param server_side_filter_set: A set of filters to pass to openstacksdk call
         :param page_size: (Default 1000) how many items are returned by single call
         :param call_limit: (Default 1000) max number of paging iterations.
-            - this is required to mitigate some bugs where successive paging loops back on itself leading to endless calls
+            - this is required to mitigate some bugs where successive paging loops back on itself leading
+            to endless calls
         """
 
         paginated_filters = {"limit": page_size, "marker": None}
