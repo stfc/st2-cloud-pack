@@ -51,11 +51,11 @@ class HypervisorProperties(PropEnum):
             HypervisorProperties.HYPERVISOR_MEMORY_FREE: ["memory_free", "free_ram_mb"],
             HypervisorProperties.HYPERVISOR_MEMORY_SIZE: ["memory_size", "memory_mb"],
             HypervisorProperties.HYPERVISOR_MEMORY_USED: [
-                "memory_free",
+                "memory_used",
                 "memory_mb_used",
             ],
             HypervisorProperties.HYPERVISOR_NAME: ["name", "host_name"],
-            HypervisorProperties.HYPERVISOR_SERVER_COUNT: ["runnning_vms"],
+            HypervisorProperties.HYPERVISOR_SERVER_COUNT: ["running_vms"],
             HypervisorProperties.HYPERVISOR_STATE: ["state"],
             HypervisorProperties.HYPERVISOR_STATUS: ["status"],
             HypervisorProperties.HYPERVISOR_VCPUS: ["vcpus"],
