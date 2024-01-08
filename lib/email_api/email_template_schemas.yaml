@@ -33,10 +33,10 @@ shutoff_error:
   html_filepath: "html/shutoff_error.html.j2"
   plaintext_filepath: "plaintext/shutoff_error.txt.j2"
 
-decom_email:
+decom_flavor:
   schema:
     username: null
-    affected_flavors: "No Flavors"
+    affected_flavors_table: "No Flavors"
     decom_table: "No VMs affected"
-  html_filepath: "html/decom_email.html.j2"
-  plaintext_filepath: "plaintext/decom_email.txt.j2"
+  html_filepath: "html/decom_flavor.html.j2"
+  plaintext_filepath: "plaintext/decom_flavor.txt.j2"

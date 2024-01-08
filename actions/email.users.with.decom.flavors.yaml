@@ -1,5 +1,5 @@
 ---
-description: Sends a test email
+description: Sends an email to inform users that they have VMs running on flavors that are to be decommissioned
 enabled: true
 entry_point: src/workflow_actions.py
 name: email.users.with.decom.flavors

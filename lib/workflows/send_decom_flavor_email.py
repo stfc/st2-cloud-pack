@@ -143,10 +143,10 @@ def build_email_params(
     :param email_kwargs: a set of email kwargs to pass to EmailParams
     """
     body = EmailTemplateDetails(
-        template_name="decom_email",
+        template_name="decom_flavor",
         template_params={
             "username": user_name,
-            "affected_flavors": flavor_table,
+            "affected_flavors_table": flavor_table,
             "decom_table": decom_table,
         },
     )
