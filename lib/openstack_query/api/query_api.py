@@ -74,7 +74,7 @@ class QueryAPI:
         self.builder.parse_where(preset, prop, kwargs)
         return self
 
-    def sort_by(self, *sort_by: Tuple[PropEnum, SortOrder]):
+    def sort_by(self, *sort_by: Tuple[Union[PropEnum, str], Union[SortOrder, str]]):
         """
         Public method used to configure sorting results
         :param sort_by: Tuple of property enum to sort by and enum representing sorting order
