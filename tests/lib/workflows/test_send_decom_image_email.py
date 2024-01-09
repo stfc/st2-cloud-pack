@@ -565,7 +565,10 @@ def test_send_decom_image_email_send_html(
     )
 
     mock_query.to_html.assert_has_calls(
-        [call(groups=["user_id1"]), call(groups=["user_id2"])]
+        [
+            call(groups=["user_id1"], include_group_titles=False),
+            call(groups=["user_id2"], include_group_titles=False),
+        ]
     )
 
     mock_emailer.assert_has_calls(
@@ -673,7 +676,10 @@ def test_send_decom_image_email_print(
     )
 
     mock_query.to_string.assert_has_calls(
-        [call(groups=["user_id1"]), call(groups=["user_id2"])]
+        [
+            call(groups=["user_id1"], include_group_titles=False),
+            call(groups=["user_id2"], include_group_titles=False),
+        ]
     )
 
 

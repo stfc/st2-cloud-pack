@@ -262,7 +262,7 @@ def send_decom_image_email(
                 user_name,
                 as_html,
                 get_affected_images_plaintext(decom_image_info),
-                server_query.to_string(groups=[user_id]),
+                server_query.to_string(groups=[user_id], include_group_titles=False),
             )
 
         else:
@@ -273,7 +273,7 @@ def send_decom_image_email(
                 else get_affected_images_html(decom_image_info),
                 server_query.to_string(groups=[user_id])
                 if not as_html
-                else server_query.to_html(groups=[user_id]),
+                else server_query.to_html(groups=[user_id], include_group_titles=False),
                 email_to=send_to,
                 as_html=as_html,
                 email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
