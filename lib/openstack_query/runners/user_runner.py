@@ -11,6 +11,8 @@ from exceptions.parse_query_error import ParseQueryError
 from exceptions.enum_mapping_error import EnumMappingError
 from enums.user_domains import UserDomains
 
+from custom_types.openstack_query.aliases import ServerSideFilter
+
 logger = logging.getLogger(__name__)
 
 
@@ -66,7 +68,7 @@ class UserRunner(RunnerWrapper):
     def run_query(
         self,
         conn: OpenstackConnection,
-        filter_kwargs: Optional[Dict[str, str]] = None,
+        filter_kwargs: Optional[ServerSideFilter] = None,
         **meta_params,
     ) -> List[Optional[User]]:
         """
@@ -74,7 +76,7 @@ class UserRunner(RunnerWrapper):
 
         For UserQuery, this command gets all users by domain ID
         :param conn: An OpenstackConnection object - used to connect to openstacksdk
-        :param filter_kwargs: An Optional list of filter kwargs to pass to conn.identity.users()
+        :param filter_kwargs: An Optional set of filter kwargs to pass to conn.identity.users()
         """
 
         if not filter_kwargs:
