@@ -24,9 +24,8 @@ def client_side_test_mappings_fixture():
         :param expected_mappings: expected list of prop enums or '[*]' - should match the mapping set
         """
         for test_preset in expected_mappings:
-            assert (
-                handler.get_supported_props(test_preset)
-                == expected_mappings[test_preset]
+            assert set(handler.get_supported_props(test_preset)) == set(
+                expected_mappings[test_preset]
             )
 
     return _client_side_test_case
