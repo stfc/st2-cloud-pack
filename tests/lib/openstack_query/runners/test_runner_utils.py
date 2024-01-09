@@ -1,5 +1,10 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, NonCallableMock, call
+
+import pytest
+
+from exceptions.parse_query_error import ParseQueryError
 from openstack_query.runners.runner_utils import RunnerUtils
+from openstack.exceptions import ResourceNotFound, ForbiddenException
 
 
 def run_paginated_query_test(number_iterations):
@@ -112,3 +117,70 @@ def test_apply_client_side_filters_many_items_many_filters():
         [mock_item_1, mock_item_2, mock_item_3, mock_item_4],
         [mock_filter_1, mock_filter_2],
     ) == [mock_item_1]
+
+
+def test_parse_projects_resource_not_found():
+    """
+    Test parse_projects method raises error when project not found
+    """
+    mock_connection = MagicMock()
+    mock_project = NonCallableMock()
+
+    mock_connection.identity.find_project.side_effect = ResourceNotFound
+    with pytest.raises(ParseQueryError):
+        RunnerUtils.parse_projects(mock_connection, [mock_project])
+    mock_connection.identity.find_project.assert_called_once_with(
+        mock_project, ignore_missing=False
+    )
+
+
+def test_parse_projects_forbidden():
+    """
+    Test parse_projects method raises error when project access forbidden
+    """
+    mock_connection = MagicMock()
+    mock_project = NonCallableMock()
+
+    mock_connection.identity.find_project.side_effect = ForbiddenException
+    with pytest.raises(ParseQueryError):
+        RunnerUtils.parse_projects(mock_connection, [mock_project])
+    mock_connection.identity.find_project.assert_called_once_with(
+        mock_project, ignore_missing=False
+    )
+
+
+def test_parse_projects_one_project():
+    """
+    Test parse_projects method with one project (singleton list)
+    """
+    mock_connection = MagicMock()
+    mock_project = NonCallableMock()
+    mock_proj_id = NonCallableMock()
+
+    mock_connection.identity.find_project.return_value = {"id": mock_proj_id}
+    res = RunnerUtils.parse_projects(mock_connection, [mock_project])
+    mock_connection.identity.find_project.assert_called_once_with(
+        mock_project, ignore_missing=False
+    )
+    assert res == [mock_proj_id]
+
+
+def test_parse_projects_many_projects():
+    """
+    Test parse_projects method with many projects
+    """
+    mock_connection = MagicMock()
+    mock_projects = ["project1", "project2", "project3"]
+
+    def _find_project_stub(project, **_):
+        """stub method just returns what was passed in"""
+        return {"id": f"{project}_id"}
+
+    mock_find_project = MagicMock(wraps=_find_project_stub)
+    mock_connection.identity.find_project = mock_find_project
+
+    res = RunnerUtils.parse_projects(mock_connection, mock_projects)
+    mock_connection.identity.find_project.assert_has_calls(
+        [call(proj, ignore_missing=False) for proj in mock_projects]
+    )
+    assert res == [f"{proj}_id" for proj in mock_projects]

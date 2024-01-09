@@ -1,9 +1,12 @@
 import sys
 import logging
-from .api.query_objects import ServerQuery
-from .api.query_objects import UserQuery
-from .api.query_objects import FlavorQuery
-from .api.query_objects import ProjectQuery
+from .api.query_objects import (
+    ServerQuery,
+    UserQuery,
+    FlavorQuery,
+    ProjectQuery,
+    ImageQuery,
+)
 
 # Create logger
 openstack_query_loggers = logging.getLogger(__name__)

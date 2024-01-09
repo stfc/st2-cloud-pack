@@ -68,17 +68,19 @@ The following shared-common properties are listed below (as well as the Query ob
 | ServerProperties.USER_ID    | UserProperties.USER_ID       | Many-to-One | `ServerQuery` to `UserQuery`    | [USERS.md](USERS.md)       |
 | ServerProperties.PROJECT_ID | ProjectProperties.PROJECT_ID | Many-to-One | `ServerQuery` to `ProjectQuery` | [PROJECTS.md](PROJECTS.md) |
 | ServerProperties.FLAVOR_ID  | FlavorProperties.FLAVOR_ID   | Many-to-One | `ServerQuery` to `FlavorQuery`  | [FLAVORS.md](FLAVORS.md)   |
+| ServerProperties.IMAGE_ID   | ImageProperties.IMAGE_ID     | Many-to-One | `ServerQuery` to `ImageQuery`   | [IMAGES.md](IMAGES.md)     |
+
 
 
 ## Chaining to
-Chaining from other `ServerQuery` requires passing `USER_QUERY` as the `query_type`
+Chaining from other `ServerQuery` requires passing `SERVER_QUERY` or any alias mentioned above as the `query_type`
 
-| From           | Prop 1                       | Prop 2                       | Type        | Documentation        |
-|----------------|------------------------------|------------------------------|-------------|----------------------|
-| `UserQuery`    | UserProperties.USER_ID       | ServerProperties.USER_ID     | One-to-Many | [USERS.md](USERS.md) |
-| `ProjectQuery` | ProjectProperties.PROJECT_ID | ProjectProperties.PROJECT_ID | One-to-Many | [USERS.md](USERS.md) |
-| `FlavorQuery`  | FlavorProperties.FLAVOR_ID   | FlavorProperties.FLAVOR_ID   | One-to-Many | [USERS.md](USERS.md) |
-
+| From           | Prop 1                       | Prop 2                       | Type        | Documentation              |
+|----------------|------------------------------|------------------------------|-------------|----------------------------|
+| `UserQuery`    | UserProperties.USER_ID       | ServerProperties.USER_ID     | Many-to-One | [USERS.md](USERS.md)       |
+| `ProjectQuery` | ProjectProperties.PROJECT_ID | ServerProperties.PROJECT_ID  | Many-to-One | [PROJECTS.md](PROJECTS.md) |
+| `FlavorQuery`  | FlavorProperties.FLAVOR_ID   | ServerProperties.FLAVOR_ID   | Many-to-One | [FLAVORS.md](FLAVORS.md)   |
+| `ImageQuery`   | ImageProperties.IMAGE_ID     | ServerProperties.IMAGE_ID    | Many-to-One | [IMAGES.md](IMAGES.md)     |
 
 
 ## run() meta-parameters
@@ -99,5 +101,5 @@ To query on all projects remember to call `run()` like so:
 
 To query on specific projects (you may not have access to) call `run()` like so (with admin creds):
 ```python
-    ServerQuery.run(as_admin=True, projects=["name-or-id1", "name-or-id2"])
+    ServerQuery.run(as_admin=True, from_projects=["name-or-id1", "name-or-id2"])
 ```

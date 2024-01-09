@@ -1,6 +1,7 @@
 from unittest.mock import patch, call
 
 from enums.query.props.flavor_properties import FlavorProperties
+from enums.query.props.image_properties import ImageProperties
 from enums.query.props.project_properties import ProjectProperties
 from enums.query.props.server_properties import ServerProperties
 from enums.query.props.user_properties import UserProperties
@@ -205,6 +206,7 @@ def test_get_chain_mappings():
         ServerProperties.USER_ID: UserProperties.USER_ID,
         ServerProperties.PROJECT_ID: ProjectProperties.PROJECT_ID,
         ServerProperties.FLAVOR_ID: FlavorProperties.FLAVOR_ID,
+        ServerProperties.IMAGE_ID: ImageProperties.IMAGE_ID,
     }
 
     assert ServerMapping.get_chain_mappings() == expected_mappings

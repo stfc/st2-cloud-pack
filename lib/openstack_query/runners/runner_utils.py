@@ -1,10 +1,14 @@
 from typing import Callable, Optional, List
 import logging
 
+from openstack.exceptions import ResourceNotFound, ForbiddenException
+from exceptions.parse_query_error import ParseQueryError
+from openstack_api.openstack_connection import OpenstackConnection
 from custom_types.openstack_query.aliases import (
     ServerSideFilter,
     ClientSideFilters,
     ClientSideFilterFunc,
+    ProjectIdentifier,
 )
 
 logger = logging.getLogger(__name__)
@@ -107,3 +111,33 @@ class RunnerUtils:
         :param client_filter: A client filter to apply
         """
         return [item for item in items if client_filter(item) is True]
+
+    @staticmethod
+    def parse_projects(
+        conn: OpenstackConnection, from_projects: Optional[List[ProjectIdentifier]]
+    ) -> List[str]:
+        """
+        A helper method for parsing and validating 'from_project' meta param
+        :param conn: An OpenstackConnection object - used to connect to openstack and parse meta params
+        :param from_projects: A list of projects to validate
+        """
+        res_list = []
+        for proj in from_projects:
+            try:
+                logger.debug(
+                    "running conn.identity.find_project(%s, ignore_missing=False)", proj
+                )
+                project_id = conn.identity.find_project(proj, ignore_missing=False)[
+                    "id"
+                ]
+            except ResourceNotFound as exp:
+                raise ParseQueryError(
+                    "Failed to execute query: Failed to parse meta params"
+                ) from exp
+            except ForbiddenException as exp:
+                raise ParseQueryError(
+                    "Failed to execute query: Not authorized to access project(s) given "
+                    "- please run with admin credentials"
+                ) from exp
+            res_list.append(project_id)
+        return res_list
