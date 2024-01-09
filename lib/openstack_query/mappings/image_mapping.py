@@ -38,7 +38,7 @@ class ImageMapping(MappingInterface):
         Return a dictionary containing property pairs mapped to query mappings.
         This is used to define how to chain results from this query to other possible queries
         """
-        return {ImageProperties.IMAGE_ID: ServerProperties.SERVER_ID}
+        return {ImageProperties.IMAGE_ID: ServerProperties.IMAGE_ID}
 
     @staticmethod
     def get_runner_mapping() -> Type[ImageRunner]:

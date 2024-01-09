@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+from enums.query.props import ServerProperties
 from enums.query.props.image_properties import ImageProperties
 from enums.query.query_presets import (
     QueryPresetsGeneric,
@@ -298,3 +299,14 @@ def test_client_side_handlers_integer(client_side_test_mappings):
         QueryPresetsInteger.LESS_THAN_OR_EQUAL_TO: integer_prop_list,
     }
     client_side_test_mappings(handler, mappings)
+
+
+def test_get_chain_mappings():
+    """
+    Tests get_chain_mapping outputs correctly
+    """
+    expected_mappings = {
+        ImageProperties.IMAGE_ID: ServerProperties.IMAGE_ID,
+    }
+
+    assert ImageMapping.get_chain_mappings() == expected_mappings
