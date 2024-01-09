@@ -1,7 +1,6 @@
-from unittest.mock import patch, call
+from unittest.mock import patch
 
 from enums.query.props.image_properties import ImageProperties
-from enums.query.props.server_properties import ServerProperties
 from enums.query.query_presets import (
     QueryPresetsGeneric,
     QueryPresetsString,

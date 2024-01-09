@@ -1,7 +1,6 @@
 from typing import Callable, Optional, List
 import logging
 
-import openstack.exceptions
 from openstack.exceptions import ResourceNotFound, ForbiddenException
 from exceptions.parse_query_error import ParseQueryError
 from openstack_api.openstack_connection import OpenstackConnection

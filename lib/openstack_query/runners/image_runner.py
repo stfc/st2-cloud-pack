@@ -83,7 +83,7 @@ class ImageRunner(RunnerWrapper):
         if not filter_kwargs:
             filter_kwargs = {}
 
-        if "projects" not in meta_params.keys():
+        if "projects" not in meta_params:
             return RunnerUtils.run_paginated_query(
                 conn.compute.images, self._page_marker_prop_func, dict(filter_kwargs)
             )

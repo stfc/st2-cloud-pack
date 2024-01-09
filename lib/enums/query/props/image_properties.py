@@ -1,6 +1,5 @@
 from enum import auto
 from enums.query.props.prop_enum import PropEnum
-from exceptions.parse_query_error import ParseQueryError
 from exceptions.query_property_mapping_error import QueryPropertyMappingError
 
 

@@ -1,7 +1,6 @@
 from typing import Type
 
 from enums.query.props.image_properties import ImageProperties
-from enums.query.props.prop_enum import PropEnum
 from enums.query.props.server_properties import ServerProperties
 from enums.query.query_presets import (
     QueryPresetsGeneric,
