@@ -297,17 +297,24 @@ def test_to_string(instance):
     """
     mock_groups = NonCallableMock()
     mock_title = NonCallableMock()
+    mock_include_group_titles = NonCallableMock()
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     # pylint: disable=protected-access
     instance.results_container = MagicMock()
 
-    res = instance.to_string(mock_title, mock_groups, **mock_kwargs)
+    res = instance.to_string(
+        mock_title, mock_groups, mock_include_group_titles, **mock_kwargs
+    )
     instance.results_container.parse_results.assert_called_once_with(
         instance.parser.run_parser
     )
     instance.output.to_string.assert_called_once_with(
-        instance.results_container, mock_title, mock_groups, **mock_kwargs
+        instance.results_container,
+        mock_title,
+        mock_groups,
+        mock_include_group_titles,
+        **mock_kwargs
     )
     assert res == instance.output.to_string.return_value
 
@@ -319,14 +326,21 @@ def test_to_html(instance):
     """
     mock_groups = NonCallableMock()
     mock_title = NonCallableMock()
+    mock_include_group_titles = NonCallableMock()
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
-    res = instance.to_html(mock_title, mock_groups, **mock_kwargs)
+    res = instance.to_html(
+        mock_title, mock_groups, mock_include_group_titles, **mock_kwargs
+    )
     instance.results_container.parse_results.assert_called_once_with(
         instance.parser.run_parser
     )
     instance.output.to_html.assert_called_once_with(
-        instance.results_container, mock_title, mock_groups, **mock_kwargs
+        instance.results_container,
+        mock_title,
+        mock_groups,
+        mock_include_group_titles,
+        **mock_kwargs
     )
     assert res == instance.output.to_html.return_value
 

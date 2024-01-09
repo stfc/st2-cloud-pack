@@ -296,6 +296,48 @@ def test_to_html_with_grouped_results(
 
 @patch("openstack_query.query_blocks.query_output.QueryOutput._validate_groups")
 @patch("openstack_query.query_blocks.query_output.QueryOutput._generate_table")
+def test_to_html_grouped_no_subtitles(
+    mock_generate_table, mock_validate_groups, instance
+):
+    """
+    Tests that to_html function works expectedly - when results are grouped - outputted as a dict
+    method should call generate_table with return_html for each group
+    with include_group_titles = False
+    """
+
+    mock_results_container = MagicMock()
+    mock_title = "mock title"
+    mock_groups = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+    instance.selected_props = ["prop1", "prop2", "prop3"]
+
+    mocked_results = {"group1": ["obj1", "obj2"], "group2": ["obj3", "obj4"]}
+    mock_validate_groups.return_value = mocked_results
+    mock_generate_table.side_effect = ["1 out, ", "2 out"]
+
+    res = instance.to_html(
+        mock_results_container,
+        mock_title,
+        mock_groups,
+        include_group_titles=False,
+        **mock_kwargs
+    )
+    mock_results_container.to_props.assert_called_once_with("prop1", "prop2", "prop3")
+    mock_validate_groups.assert_called_once_with(
+        mock_results_container.to_props.return_value, mock_groups
+    )
+
+    mock_generate_table.assert_has_calls(
+        [
+            call(["obj1", "obj2"], return_html=True, title=None, **mock_kwargs),
+            call(["obj3", "obj4"], return_html=True, title=None, **mock_kwargs),
+        ]
+    )
+    assert res == "<b> mock title: </b><br/> 1 out, 2 out"
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput._validate_groups")
+@patch("openstack_query.query_blocks.query_output.QueryOutput._generate_table")
 def test_to_string_with_list_results(
     mock_generate_table, mock_validate_groups, instance
 ):
@@ -357,8 +399,9 @@ def test_to_string_with_grouped_results(
     mock_generate_table, mock_validate_groups, instance
 ):
     """
-    Tests that to_html function works expectedly - when results are grouped - outputted as a dict
+    Tests that to_string function works expectedly - when results are grouped - outputted as a dict
     method should call generate_table with return_html for each group
+    with include_group_titles = True
     """
 
     mock_results_container = MagicMock()
@@ -383,6 +426,48 @@ def test_to_string_with_grouped_results(
         [
             call(["obj1", "obj2"], return_html=False, title="group1:\n", **mock_kwargs),
             call(["obj3", "obj4"], return_html=False, title="group2:\n", **mock_kwargs),
+        ]
+    )
+    assert "mock title:\n1 out, 2 out" == res
+
+
+@patch("openstack_query.query_blocks.query_output.QueryOutput._validate_groups")
+@patch("openstack_query.query_blocks.query_output.QueryOutput._generate_table")
+def test_to_string_grouped_no_subtitles(
+    mock_generate_table, mock_validate_groups, instance
+):
+    """
+    Tests that to_html function works expectedly - when results are grouped - outputted as a dict
+    method should call generate_table with return_html for each group
+    with include_group_titles = False
+    """
+
+    mock_results_container = MagicMock()
+    mock_title = "mock title"
+    mock_groups = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+    instance.selected_props = ["prop1", "prop2", "prop3"]
+
+    mocked_results = {"group1": ["obj1", "obj2"], "group2": ["obj3", "obj4"]}
+    mock_validate_groups.return_value = mocked_results
+    mock_generate_table.side_effect = ["1 out, ", "2 out"]
+
+    res = instance.to_string(
+        mock_results_container,
+        mock_title,
+        mock_groups,
+        include_group_titles=False,
+        **mock_kwargs
+    )
+    mock_results_container.to_props.assert_called_once_with("prop1", "prop2", "prop3")
+    mock_validate_groups.assert_called_once_with(
+        mock_results_container.to_props.return_value, mock_groups
+    )
+
+    mock_generate_table.assert_has_calls(
+        [
+            call(["obj1", "obj2"], return_html=False, title=None, **mock_kwargs),
+            call(["obj3", "obj4"], return_html=False, title=None, **mock_kwargs),
         ]
     )
     assert "mock title:\n1 out, 2 out" == res

@@ -176,28 +176,42 @@ class QueryAPI:
         return self.output.to_props(self.results_container, flatten, groups)
 
     def to_string(
-        self, title: Optional[str] = None, groups: Optional[List[str]] = None, **kwargs
+        self,
+        title: Optional[str] = None,
+        groups: Optional[List[str]] = None,
+        include_group_titles: bool = True,
+        **kwargs,
     ) -> str:
         """
         Public method to return results as table(s)
         :param title: an optional title for the table(s)
         :param groups: a list group to limit output by
+        :param include_group_titles: include group name as subtitle when printing groups
         :param kwargs: kwargs to pass to generate table
         """
         self.results_container.parse_results(self.parser.run_parser)
-        return self.output.to_string(self.results_container, title, groups, **kwargs)
+        return self.output.to_string(
+            self.results_container, title, groups, include_group_titles, **kwargs
+        )
 
     def to_html(
-        self, title: Optional[str] = None, groups: Optional[List[str]] = None, **kwargs
+        self,
+        title: Optional[str] = None,
+        groups: Optional[List[str]] = None,
+        include_group_titles: bool = True,
+        **kwargs,
     ) -> str:
         """
         Public method to return results as html table
         :param title: an optional title for the table(s) - will be converted to html automatically
         :param groups: a list group to limit output by
+        :param include_group_titles: include group name as subtitle when printing groups
         :param kwargs: kwargs to pass to generate table
         """
         self.results_container.parse_results(self.parser.run_parser)
-        return self.output.to_html(self.results_container, title, groups, **kwargs)
+        return self.output.to_html(
+            self.results_container, title, groups, include_group_titles, **kwargs
+        )
 
     def to_csv(self, dir_path: str) -> str:
         """
