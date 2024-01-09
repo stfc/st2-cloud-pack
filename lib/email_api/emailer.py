@@ -16,6 +16,8 @@ from structs.email.email_params import EmailParams
 from structs.email.smtp_account import SMTPAccount
 from structs.email.email_template_details import EmailTemplateDetails
 
+import css_inline
+
 # pylint:disable=too-few-public-methods
 logger = logging.getLogger(__name__)
 
@@ -103,6 +105,7 @@ class Emailer:
         """
         Helper function to setup email body from templates
         :param templates: A list of dataclasses holding template information to build emails from
+        :param as_html: whether the templates are to be rendered as HTML (True) or plaintext (False)
         """
         msg_body = ""
         for template_details in templates:
@@ -114,9 +117,17 @@ class Emailer:
                 msg_body += self._template_handler.render_plaintext_template(
                     template_details
                 )
-
         if as_html:
-            return MIMEText(msg_body, "html")
+            # wrap the email in our own styling
+            wrapper_template = EmailTemplateDetails(
+                template_name="wrapper", template_params={"body": msg_body}
+            )
+            html_body = self._template_handler.render_html_template(wrapper_template)
+
+            # convert style tags to inline styles for emails
+            inliner = css_inline.CSSInliner(keep_style_tags=True)
+            html_body = inliner.inline(html_body)
+            return MIMEText(html_body, "html")
         return MIMEText(msg_body, "plain", "utf-8")
 
     def attach_files(self, msg: MIMEMultipart, filepaths: List[str]) -> MIMEMultipart:

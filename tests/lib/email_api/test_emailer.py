@@ -186,49 +186,74 @@ def test_build_email_with_attachments(
     )
 
 
-@pytest.mark.parametrize("as_html", [True, False])
 @patch("email_api.emailer.MIMEText")
-def test_build_email_body(mock_mime_text, as_html, instance, template_handler):
+def test_build_email_body_plaintext(mock_mime_text, instance, template_handler):
     """
-    Tests that build email body renders the
-    expected templates and places them into the
-    expected MIMEText object
+    Tests that build email body renders the expected templates and places them into expected MIMEText object
+    uses plaintext templates when as_html=False
     """
-    template_details_1 = MagicMock()
-    template_details_2 = MagicMock()
-    template_list = [template_details_1, template_details_2]
-
-    template_handler.render_html_template.side_effect = [
-        "template-render-html-1\n",
-        "template-render-html-2\n",
-    ]
-
+    template_1 = NonCallableMock()
+    template_2 = NonCallableMock()
+    template_list = [template_1, template_2]
     template_handler.render_plaintext_template.side_effect = [
         "template-render-plaintext-1\n",
         "template-render-plaintext-2\n",
     ]
 
-    res = instance.build_email_body(template_list, as_html=as_html)
-    if as_html:
-        assert template_handler.render_html_template.call_count == 2
-        assert template_handler.render_plaintext_template.call_count == 0
-        assert template_handler.render_html_template.call_args_list == [
-            call(template_details_1),
-            call(template_details_2),
-        ]
-        mock_mime_text.assert_called_once_with(
-            "template-render-html-1\ntemplate-render-html-2\n", "html"
-        )
-    else:
-        assert template_handler.render_html_template.call_count == 0
-        assert template_handler.render_plaintext_template.call_count == 2
-        assert template_handler.render_plaintext_template.call_args_list == [
-            call(template_details_1),
-            call(template_details_2),
-        ]
-        mock_mime_text.assert_called_once_with(
-            "template-render-plaintext-1\ntemplate-render-plaintext-2\n",
-            "plain",
-            "utf-8",
-        )
+    res = instance.build_email_body(template_list, as_html=False)
+    assert template_handler.render_html_template.call_count == 0
+    assert template_handler.render_plaintext_template.call_count == 2
+    assert template_handler.render_plaintext_template.call_args_list == [
+        call(template_1),
+        call(template_2),
+    ]
+    mock_mime_text.assert_called_once_with(
+        "template-render-plaintext-1\ntemplate-render-plaintext-2\n",
+        "plain",
+        "utf-8",
+    )
+    assert res == mock_mime_text.return_value
+
+
+@patch("email_api.emailer.MIMEText")
+@patch("email_api.emailer.css_inline")
+@patch("email_api.emailer.EmailTemplateDetails")
+def test_build_email_body_html(
+    mock_email_template_details,
+    mock_css_inline,
+    mock_mime_text,
+    instance,
+    template_handler,
+):
+    """
+    Tests that build email body renders the expected templates and places them into expected MIMEText object
+    uses html templates when as_html=False. Also should render the wrapper template
+    """
+    template_1 = NonCallableMock()
+    template_2 = NonCallableMock()
+    template_list = [template_1, template_2]
+    template_handler.render_html_template.side_effect = [
+        "template-render-html-1\n",
+        "template-render-html-2\n",
+        "template-render-wrapper",
+    ]
+    res = instance.build_email_body(template_list, as_html=True)
+
+    mock_email_template_details.assert_called_once_with(
+        template_name="wrapper",
+        template_params={"body": "template-render-html-1\ntemplate-render-html-2\n"},
+    )
+    assert template_handler.render_html_template.call_count == 3
+    assert template_handler.render_plaintext_template.call_count == 0
+    assert template_handler.render_html_template.call_args_list == [
+        call(template_1),
+        call(template_2),
+        call(mock_email_template_details.return_value),
+    ]
+    mock_css_inline.CSSInliner.assert_called_once_with(keep_style_tags=True)
+    mock_css_inline_obj = mock_css_inline.CSSInliner.return_value
+    mock_css_inline_obj.inline.assert_called_once_with("template-render-wrapper")
+    mock_mime_text.assert_called_once_with(
+        mock_css_inline_obj.inline.return_value, "html"
+    )
     assert res == mock_mime_text.return_value
