@@ -35,7 +35,7 @@ def test_get_marker_prop_func(mock_get_prop_mapping):
 
 @pytest.mark.parametrize(
     "val",
-    ["image_creation_date", "Image_Creation", "ImAgE_CrEaTiOn_DaTe", "created_at"],
+    ["image_creation_date", "Image_Creation_Date", "ImAgE_CrEaTiOn_DaTe", "created_at"],
 )
 def test_image_creation_date_serialization(val):
     """
@@ -61,7 +61,7 @@ def test_image_creation_progress_serialization(val):
 
 
 @pytest.mark.parametrize("val", ["image_id", "Image_Id", "ImAgE_Id", "id", "uuid"])
-def test_image_creation_progress_serialization(val):
+def test_image_id_serialization(val):
     """
     Tests that variants of IMAGE_ID can be serialized
     """

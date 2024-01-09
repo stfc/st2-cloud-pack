@@ -3,6 +3,7 @@ from typing import Dict
 from enums.query.enum_with_aliases import EnumWithAliases
 
 from openstack_query.mappings.flavor_mapping import FlavorMapping
+from openstack_query.mappings.image_mapping import ImageMapping
 from openstack_query.mappings.project_mapping import ProjectMapping
 from openstack_query.mappings.server_mapping import ServerMapping
 from openstack_query.mappings.user_mapping import UserMapping
@@ -20,7 +21,7 @@ class QueryTypes(EnumWithAliases):
     PROJECT_QUERY = ProjectMapping
     SERVER_QUERY = ServerMapping
     USER_QUERY = UserMapping
-    IMAGE_QUERY = UserMapping
+    IMAGE_QUERY = ImageMapping
 
     @staticmethod
     def _get_aliases() -> Dict:
