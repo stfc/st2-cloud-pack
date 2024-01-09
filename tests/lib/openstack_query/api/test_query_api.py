@@ -21,60 +21,6 @@ def instance_fixture():
     return res
 
 
-@pytest.fixture(name="run_with_test_case")
-def run_with_test_case_fixture(instance):
-    """
-    Fixture for running run() with various test arguments
-    """
-
-    @patch("openstack_query.api.query_api.deepcopy")
-    def _run_with_test_case(
-        mock_deepcopy,
-        mock_forwarded_info=(None, None),
-        data_subset=None,
-        mock_kwargs=None,
-    ):
-        """
-        Runs a test case for the run() method
-        """
-        mock_query_results = ("object-list", "property-list")
-        instance.executer.run_query.return_value = mock_query_results
-        instance.chainer.forwarded_info = mock_forwarded_info
-
-        instance.builder.client_side_filters = ["client-filters"]
-        instance.builder.server_filter_fallback = ["fallback-client-filters"]
-        instance.builder.server_side_filters = ["server-filters"]
-
-        if not mock_kwargs:
-            mock_kwargs = {}
-
-        res = instance.run("test-account", data_subset, **mock_kwargs)
-        instance.executer.run_query.assert_called_once_with(
-            cloud_account="test-account", from_subset=data_subset, **mock_kwargs
-        )
-
-        if data_subset:
-            client_filters = (
-                instance.builder.client_side_filters
-                + instance.builder.server_filter_fallback
-            )
-            server_filters = None
-        else:
-            client_filters = instance.builder.client_side_filters
-            server_filters = instance.builder.server_side_filters
-
-        # test if forwarded vals provided
-        if mock_forwarded_info[1]:
-            instance.executer.apply_forwarded_results.assert_called_once()
-            mock_deepcopy.assert_called_once_with(mock_forwarded_info[1])
-
-        assert instance.executer.client_side_filters == client_filters
-        assert instance.executer.server_side_filters == server_filters
-        assert res == instance
-
-    return _run_with_test_case
-
-
 def test_select_invalid(instance):
     """
     Tests select method works expectedly - with no inputs
@@ -159,54 +105,115 @@ def test_where_with_kwargs(instance):
     assert res == instance
 
 
-def test_run_with_optional_params(run_with_test_case):
+def test_run_invalid_params(instance):
     """
-    Tests that run method works expectedly - with subset meta_params kwargs
-    method should get client_side and server_side filters and forward them to query runner object
-
+    Tests run method - when neither cloud_account or from_subset given
+    should raise an error
     """
-    run_with_test_case(data_subset=NonCallableMock(), mock_kwargs=None)
+    with pytest.raises(ParseQueryError):
+        instance.run()
 
 
-def test_run_with_kwargs(run_with_test_case):
+def test_run_from_subset(instance):
     """
-    Tests that run method works expectedly - with subset kwargs
-    method should get client_side and server_side filters and forward them to query runner object
-
+    Tests run method with from subset params
+    method should call executer.run_with_subset
     """
-    run_with_test_case(data_subset=None, mock_kwargs={"arg1": "val1", "arg2": "val2"})
+    mock_subset = NonCallableMock()
 
+    client_filter = NonCallableMock()
+    instance.builder.client_side_filters = [client_filter]
 
-def test_run_with_nothing(run_with_test_case):
-    """
-    Tests that run method works expectedly - with subset kwargs
-    method should get client_side and server_side filters and forward them to query runner object
+    fallback_filter = NonCallableMock()
+    instance.builder.server_filter_fallback = [fallback_filter]
+    instance.chainer.forwarded_info = None, None
 
-    """
-    run_with_test_case(data_subset=None, mock_kwargs=None)
-
-
-def test_run_with_kwargs_and_subset(run_with_test_case):
-    """
-    Tests that run method works expectedly - with subset kwargs
-    method should get client_side and server_side filters and forward them to query runner object
-
-    """
-    run_with_test_case(
-        data_subset=NonCallableMock(),
-        mock_kwargs={"arg1": "val1", "arg2": "val2"},
+    res = instance.run(from_subset=mock_subset)
+    instance.executer.run_with_subset.assert_called_once_with(
+        subset=mock_subset, client_side_filters=[client_filter, fallback_filter]
     )
 
+    instance.executer.apply_forwarded_results.assert_not_called()
+    assert res == instance
 
-def test_run_with_forwarded_vals(run_with_test_case):
+
+@patch("openstack_query.api.query_api.deepcopy")
+def test_run_from_subset_with_chained_values(mock_deepcopy, instance):
     """
-    Tests that run method works - with forwarded vals
-    method run query as normal, then run executer.apply_forwarded_results
+    Tests run method with from subset params and chained values
+    method should call executer.run_with_subset and then executer.apply_forwarded_results
     """
-    run_with_test_case(
-        data_subset=NonCallableMock(),
-        mock_forwarded_info=(NonCallableMock(), NonCallableMock()),
+    mock_subset = NonCallableMock()
+
+    client_filter = NonCallableMock()
+    instance.builder.client_side_filters = [client_filter]
+
+    fallback_filter = NonCallableMock()
+    instance.builder.server_filter_fallback = [fallback_filter]
+
+    mock_link_prop = NonCallableMock()
+    mock_forwarded_vals = NonCallableMock()
+    instance.chainer.forwarded_info = mock_link_prop, mock_forwarded_vals
+
+    res = instance.run(from_subset=mock_subset)
+
+    instance.executer.run_with_subset.assert_called_once_with(
+        subset=mock_subset, client_side_filters=[client_filter, fallback_filter]
     )
+
+    instance.executer.apply_forwarded_results.assert_called_once_with(
+        mock_link_prop, mock_deepcopy.return_value
+    )
+    mock_deepcopy.assert_called_once_with(mock_forwarded_vals)
+    assert res == instance
+
+
+def test_run_with_openstacksdk(instance):
+    """
+    Tests run method with cloud_account param
+    method should call executer.run_with_openstacksdk
+    """
+    mock_cloud_account = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+
+    instance.chainer.forwarded_info = None, None
+
+    res = instance.run(cloud_account=mock_cloud_account, **mock_kwargs)
+    instance.executer.run_with_openstacksdk.assert_called_once_with(
+        cloud_account=mock_cloud_account,
+        client_side_filters=instance.builder.client_side_filters,
+        server_side_filters=instance.builder.server_side_filters,
+        **mock_kwargs
+    )
+    instance.executer.apply_forwarded_results.assert_not_called()
+    assert res == instance
+
+
+@patch("openstack_query.api.query_api.deepcopy")
+def test_run_with_openstacksdk_with_chained_values(mock_deepcopy, instance):
+    """
+    Tests run method with cloud_account param and chained values
+    method should call executer.run_with_openstacksdk and then executer.apply_forwarded_results
+    """
+    mock_cloud_account = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+
+    mock_link_prop = NonCallableMock()
+    mock_forwarded_val = NonCallableMock()
+    instance.chainer.forwarded_info = mock_link_prop, mock_forwarded_val
+
+    res = instance.run(cloud_account=mock_cloud_account, **mock_kwargs)
+    instance.executer.run_with_openstacksdk.assert_called_once_with(
+        cloud_account=mock_cloud_account,
+        client_side_filters=instance.builder.client_side_filters,
+        server_side_filters=instance.builder.server_side_filters,
+        **mock_kwargs
+    )
+    instance.executer.apply_forwarded_results.assert_called_once_with(
+        mock_link_prop, mock_deepcopy.return_value
+    )
+    mock_deepcopy.assert_called_once_with(mock_forwarded_val)
+    assert res == instance
 
 
 def test_to_props(instance):
