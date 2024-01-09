@@ -126,7 +126,7 @@ class Emailer:
 
             # convert style tags to inline styles for emails
 
-            # wierd issue where pylint can't find the module - works fine though
+            # weird issue where pylint can't find the module - works fine though
             # pylint:disable=no-member
             inliner = css_inline.CSSInliner(keep_style_tags=True)
             html_body = inliner.inline(html_body)
