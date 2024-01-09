@@ -125,6 +125,9 @@ class Emailer:
             html_body = self._template_handler.render_html_template(wrapper_template)
 
             # convert style tags to inline styles for emails
+
+            # wierd issue where pylint can't find the module - works fine though
+            # pylint:disable=no-member
             inliner = css_inline.CSSInliner(keep_style_tags=True)
             html_body = inliner.inline(html_body)
             return MIMEText(html_body, "html")
