@@ -40,3 +40,11 @@ decom_flavor:
     decom_table: "No VMs affected"
   html_filepath: "html/decom_flavor.html.j2"
   plaintext_filepath: "plaintext/decom_flavor.txt.j2"
+
+decom_image:
+  schema:
+    username: null
+    affected_images_table: "No Images"
+    decom_table: "No VMs affected"
+  html_filepath: "html/decom_image.html.j2"
+  plaintext_filepath: "plaintext/decom_image.txt.j2"
