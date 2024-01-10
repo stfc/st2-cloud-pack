@@ -216,11 +216,11 @@ def test_build_email_body_plaintext(mock_mime_text, instance, template_handler):
 
 
 @patch("email_api.emailer.MIMEText")
-@patch("email_api.emailer.css_inline")
+@patch("email_api.emailer.CSSInliner")
 @patch("email_api.emailer.EmailTemplateDetails")
 def test_build_email_body_html(
     mock_email_template_details,
-    mock_css_inline,
+    mock_css_inliner,
     mock_mime_text,
     instance,
     template_handler,
@@ -250,8 +250,8 @@ def test_build_email_body_html(
         call(template_2),
         call(mock_email_template_details.return_value),
     ]
-    mock_css_inline.CSSInliner.assert_called_once_with(keep_style_tags=True)
-    mock_css_inline_obj = mock_css_inline.CSSInliner.return_value
+    mock_css_inliner.assert_called_once_with(keep_style_tags=True)
+    mock_css_inline_obj = mock_css_inliner.return_value
     mock_css_inline_obj.inline.assert_called_once_with("template-render-wrapper")
     mock_mime_text.assert_called_once_with(
         mock_css_inline_obj.inline.return_value, "html"
