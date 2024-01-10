@@ -16,9 +16,10 @@ from structs.email.email_params import EmailParams
 from structs.email.smtp_account import SMTPAccount
 from structs.email.email_template_details import EmailTemplateDetails
 
-import css_inline
+# weird issue where pylint can't find the module - works fine though
+# pylint:disable=no-name-in-module
+from css_inline import CSSInliner
 
-# pylint:disable=too-few-public-methods
 logger = logging.getLogger(__name__)
 
 
@@ -125,10 +126,7 @@ class Emailer:
             html_body = self._template_handler.render_html_template(wrapper_template)
 
             # convert style tags to inline styles for emails
-
-            # weird issue where pylint can't find the module - works fine though
-            # pylint:disable=no-member
-            inliner = css_inline.CSSInliner(keep_style_tags=True)
+            inliner = CSSInliner(keep_style_tags=True)
             html_body = inliner.inline(html_body)
             return MIMEText(html_body, "html")
         return MIMEText(msg_body, "plain", "utf-8")
