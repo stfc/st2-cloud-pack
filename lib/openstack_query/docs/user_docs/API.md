@@ -463,6 +463,7 @@ def to_string(title: Optional[str] = None,
 
 - `title`: An optional title to print on top
 - `groups`: a list of group keys to limit output by - this will only work if `to_groups()` has been set - else it produces an error
+- `include_group_titles`: A boolean (Default True), if True, will print the group key as a subtitle before printing each selected group table, if False no subtitle will be printed.
 - `kwargs`: kwargs to pass to tabulate to tweak table generation
   - see [tabulate](https://pypi.org/project/tabulate/) for valid kwargs
   - note `to_string` calls tabulate with `tablefmt="plaintext"`
@@ -519,6 +520,7 @@ def to_html(title: Optional[str] = None,
 
 - `title`: An optional title to print on top
 - `groups`: a list of group keys to limit output by - this will only work if `to_groups()` has been set - else it produces an error
+- `include_group_titles`: A boolean (Default True), if True, will print the group key as a subtitle before printing each selected group table, if False no subtitle will be printed.
 - `kwargs`: kwargs to pass to tabulate to tweak table generation
   - see [tabulate](https://pypi.org/project/tabulate/) for valid kwargs
   - note `to_html` calls tabulate with `tablefmt="html"`
