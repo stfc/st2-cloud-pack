@@ -57,25 +57,25 @@ def test_get_affected_images_plaintext(mock_tabulate):
 
 def test_get_image_info_image_list_empty():
     """Tests that get_image_info returns error when passed empty image name list"""
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError):
         get_image_info([], [], [])
 
 
 def test_get_image_info_eol_list_unequal():
     """Tests that get_image_info returns error when lists passed are unequal (eol)"""
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError):
         get_image_info(["img1"], [], ["up-img1"])
 
 
 def test_get_image_info_upg_list_unequal():
     """Tests that get_image_info returns error when lists passed are unequal (upgrade_list)"""
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError):
         get_image_info(["img1"], ["2024/01/01"], ["up-img1", "up-img2"])
 
 
 def test_get_image_info_eol_invalid():
     """Tests that get_image_info returns error when eol not passed as YYYY/MM/DD"""
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError):
         get_image_info(["img1"], ["24th June 2024"], ["up-img1", "up-img2"])
 
 
@@ -460,7 +460,10 @@ def test_send_decom_image_email_send_plaintext(
     )
 
     mock_query.to_string.assert_has_calls(
-        [call(groups=["user_id1"]), call(groups=["user_id2"])]
+        [
+            call(groups=["user_id1"], include_group_titles=False),
+            call(groups=["user_id2"], include_group_titles=False),
+        ]
     )
 
     mock_emailer.assert_has_calls(
@@ -775,7 +778,10 @@ def test_send_decom_image_email_use_override(
     )
 
     mock_query.to_string.assert_has_calls(
-        [call(groups=["user_id1"]), call(groups=["user_id2"])]
+        [
+            call(groups=["user_id1"], include_group_titles=False),
+            call(groups=["user_id2"], include_group_titles=False),
+        ]
     )
 
     mock_emailer.assert_has_calls(
@@ -790,7 +796,7 @@ def test_send_decom_image_email_use_override(
 
 def test_raise_error_when_both_from_projects_all_projects():
     """Tests that send_decom_image_email raises error if both from_projects or all_projects given"""
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError):
         send_decom_image_email(
             smtp_account="",
             cloud_account="",
@@ -804,7 +810,7 @@ def test_raise_error_when_both_from_projects_all_projects():
 
 def test_raise_error_when_neither_from_projects_all_projects():
     """Tests that send_decom_image_email raises error if neither from_projects or all_projects given"""
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError):
         send_decom_image_email(
             smtp_account="",
             cloud_account="",

@@ -51,18 +51,19 @@ def get_image_info(
     function validates key-word arguments related to displaying information on images to decommission and parses it
     into a list of dictionaries
     """
-    assert (
-        len(image_name_list) > 0
-    ), "please provide a list of image names to decommission"
+    if len(image_name_list) == 0:
+        raise RuntimeError("please provide a list of image names to decommission")
 
-    assert len(image_name_list) == len(
-        image_eol_list
-    ), "Lists un-equal: Each image to decommission requires an EOL date"
+    if not len(image_name_list) == len(image_eol_list):
+        raise RuntimeError(
+            "Lists un-equal: Each image to decommission requires an EOL date"
+        )
 
-    assert len(image_name_list) == len(image_upgrade_list), (
-        "Lists un-equal: Each image to decommission requires a recommended upgraded image to replace it, "
-        "leave blank '' to specify if no upgrade image exists (and deletion is recommended)"
-    )
+    if not len(image_name_list) == len(image_upgrade_list):
+        raise RuntimeError(
+            "Lists un-equal: Each image to decommission requires a recommended upgraded image to replace it, "
+            "leave blank '' to specify if no upgrade image exists (and deletion is recommended)"
+        )
 
     img_list = []
     for image_name, eol, upgrade_image in zip(
@@ -235,9 +236,14 @@ def send_decom_image_email(
     :param cc_cloud_support: flag if set will cc cloud-support email address to each generated email
     :param email_params_kwargs: see EmailParams dataclass class docstring
     """
-    assert (limit_by_projects or all_projects) and not (
-        limit_by_projects and all_projects
-    ), "Choose either a list of project identifiers or use the 'all_projects' flag"
+    if limit_by_projects and all_projects:
+        raise RuntimeError(
+            "given both project list and all_projects flag - please choose only one"
+        )
+    elif not (limit_by_projects or all_projects):
+        raise RuntimeError(
+            "please provide either a list of project identifiers or with flag 'all_projects' to run globally"
+        )
 
     decom_image_info = get_image_info(
         image_name_list, image_eol_list, image_upgrade_list
@@ -266,14 +272,21 @@ def send_decom_image_email(
             )
 
         else:
+            if as_html:
+                image_list = get_affected_images_html(decom_image_info)
+                server_list = server_query.to_html(
+                    groups=[user_id], include_group_titles=False
+                )
+            else:
+                image_list = get_affected_images_plaintext(decom_image_info)
+                server_list = server_query.to_string(
+                    groups=[user_id], include_group_titles=False
+                )
+
             email_params = build_email_params(
                 user_name,
-                get_affected_images_plaintext(decom_image_info)
-                if not as_html
-                else get_affected_images_html(decom_image_info),
-                server_query.to_string(groups=[user_id])
-                if not as_html
-                else server_query.to_html(groups=[user_id], include_group_titles=False),
+                image_list,
+                server_list,
                 email_to=send_to,
                 as_html=as_html,
                 email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
