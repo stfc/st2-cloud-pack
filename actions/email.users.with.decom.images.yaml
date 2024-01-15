@@ -39,7 +39,7 @@ parameters:
   image_upgrade_list:
     type: array
     description: "comma-spaced list of images to upgrade to for each Image in image-name-list.
-      Use '' to specify no upgraded image available"
+      Use empty string '' to specify no upgraded image available"
     required: True
   limit_by_projects:
     type: array

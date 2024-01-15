@@ -62,16 +62,17 @@ def get_image_info(
     if not len(image_name_list) == len(image_upgrade_list):
         raise RuntimeError(
             "Lists un-equal: Each image to decommission requires a recommended upgraded image to replace it, "
-            "leave blank '' to specify if no upgrade image exists (and deletion is recommended)"
+            "leave empty string '' per image to specify if no upgrade image exists (and deletion is recommended)"
         )
 
     img_list = []
     for image_name, eol, upgrade_image in zip(
         image_name_list, image_eol_list, image_upgrade_list
     ):
-        assert datetime.strptime(
-            eol, "%Y/%m/%d"
-        ), "End Of Life string must be in format YYYY/MM/DD"
+        try:
+            datetime.strptime(eol, "%Y/%m/%d")
+        except ValueError:
+            raise RuntimeError("End Of Life string must be in format YYYY/MM/DD")
         if upgrade_image.lower() in ("", "none"):
             upgrade_image = "None (deletion recommended)"
         img_list.append({"name": image_name, "eol": eol, "upgrade": upgrade_image})

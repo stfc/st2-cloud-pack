@@ -76,7 +76,7 @@ def test_get_image_info_upg_list_unequal():
 def test_get_image_info_eol_invalid():
     """Tests that get_image_info returns error when eol not passed as YYYY/MM/DD"""
     with pytest.raises(RuntimeError):
-        get_image_info(["img1"], ["24th June 2024"], ["up-img1", "up-img2"])
+        get_image_info(["img1"], ["24th June 2024"], ["up-img1"])
 
 
 def test_get_image_info_valid():
