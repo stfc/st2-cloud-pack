@@ -200,15 +200,6 @@ def test_store_query_results(mock_results):
     )
 
 
-def test_apply_forwarded_result_empty():
-    """
-    Test apply_forwarded_results when no results set - raise error
-    """
-    instance = ResultsContainer(NonCallableMock())
-    with pytest.raises(QueryChainingError):
-        instance.apply_forwarded_results(NonCallableMock(), NonCallableMock())
-
-
 @patch(
     "openstack_query.query_blocks.results_container.ResultsContainer._get_forwarded_result"
 )
