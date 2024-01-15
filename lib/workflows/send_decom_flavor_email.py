@@ -67,9 +67,6 @@ def find_servers_with_decom_flavors(
 
     flavor_query = FlavorQuery()
     flavor_query.where(
-        QueryPresetsGeneric.EQUAL_TO, FlavorProperties.FLAVOR_IS_PUBLIC, value=True
-    )
-    flavor_query.where(
         QueryPresetsGeneric.ANY_IN,
         FlavorProperties.FLAVOR_NAME,
         values=flavor_name_list,
