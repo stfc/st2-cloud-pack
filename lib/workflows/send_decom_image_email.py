@@ -71,8 +71,10 @@ def get_image_info(
     ):
         try:
             datetime.strptime(eol, "%Y/%m/%d")
-        except ValueError:
-            raise RuntimeError("End Of Life string must be in format YYYY/MM/DD")
+        except ValueError as exp:
+            raise RuntimeError(
+                "End Of Life string must be in format YYYY/MM/DD"
+            ) from exp
         if upgrade_image.lower() in ("", "none"):
             upgrade_image = "None (deletion recommended)"
         img_list.append({"name": image_name, "eol": eol, "upgrade": upgrade_image})
@@ -241,7 +243,7 @@ def send_decom_image_email(
         raise RuntimeError(
             "given both project list and all_projects flag - please choose only one"
         )
-    elif not (limit_by_projects or all_projects):
+    if not (limit_by_projects or all_projects):
         raise RuntimeError(
             "please provide either a list of project identifiers or with flag 'all_projects' to run globally"
         )
