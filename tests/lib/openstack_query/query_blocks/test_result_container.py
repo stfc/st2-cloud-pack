@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock, patch, call, NonCallableMock
 import pytest
 
-from exceptions.query_chaining_error import QueryChainingError
 from openstack_query.query_blocks.results_container import ResultsContainer
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
