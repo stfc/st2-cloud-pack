@@ -327,10 +327,10 @@ def test_build_params(mock_email_params, mock_email_template_details):
     mock_email_template_details.assert_has_calls(
         [
             call(
-                template_name="decom_email",
+                template_name="decom_flavor",
                 template_params={
                     "username": user_name,
-                    "affected_flavors": flavor_table,
+                    "affected_flavors_table": flavor_table,
                     "decom_table": decom_table,
                 },
             ),
