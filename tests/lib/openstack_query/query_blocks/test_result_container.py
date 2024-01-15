@@ -228,6 +228,15 @@ def test_apply_forwarded_result(mock_get_forwarded_result, setup_instance_with_r
     res2.update_forwarded_properties(mock_get_forwarded_result.return_value)
 
 
+def test_apply_forwarded_result_empty():
+    """
+    Test apply_forwarded_results when no results set - do nothing
+    """
+    instance = ResultsContainer(NonCallableMock())
+    instance.apply_forwarded_results(NonCallableMock(), NonCallableMock())
+    assert instance.to_props() == []
+
+
 def test_get_forwarded_results_many_to_one():
     """
     Tests get_forwarded_results static method, where forwarded results contains
