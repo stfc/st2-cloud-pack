@@ -176,11 +176,6 @@ def test_find_users_with_decom_flavor_valid(mock_flavor_query):
 
     mock_flavor_query.assert_called_once()
     mock_flavor_query_obj.where.assert_any_call(
-        QueryPresetsGeneric.EQUAL_TO,
-        FlavorProperties.FLAVOR_IS_PUBLIC,
-        value=True,
-    )
-    mock_flavor_query_obj.where.assert_any_call(
         QueryPresetsGeneric.ANY_IN,
         FlavorProperties.FLAVOR_NAME,
         values=["flavor1", "flavor2"],
@@ -228,11 +223,6 @@ def test_find_users_with_decom_flavor_invalid_flavor(mock_flavor_query):
 
     mock_flavor_query.assert_called_once()
     mock_flavor_query_obj.where.assert_any_call(
-        QueryPresetsGeneric.EQUAL_TO,
-        FlavorProperties.FLAVOR_IS_PUBLIC,
-        value=True,
-    )
-    mock_flavor_query_obj.where.assert_any_call(
         QueryPresetsGeneric.ANY_IN,
         FlavorProperties.FLAVOR_NAME,
         values=["invalid-flavor"],
@@ -259,11 +249,6 @@ def test_find_users_with_decom_flavor_no_servers_found(mock_flavor_query):
         )
 
     mock_flavor_query.assert_called_once()
-    mock_flavor_query_obj.where.assert_any_call(
-        QueryPresetsGeneric.EQUAL_TO,
-        FlavorProperties.FLAVOR_IS_PUBLIC,
-        value=True,
-    )
     mock_flavor_query_obj.where.assert_any_call(
         QueryPresetsGeneric.ANY_IN,
         FlavorProperties.FLAVOR_NAME,
