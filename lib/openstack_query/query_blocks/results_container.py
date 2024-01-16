@@ -1,6 +1,5 @@
 from typing import Union, List, Dict, Callable
 from enums.query.props.prop_enum import PropEnum
-from exceptions.query_chaining_error import QueryChainingError
 from openstack_query.query_blocks.result import Result
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
 
@@ -72,9 +71,8 @@ class ResultsContainer:
         """
 
         if not self._results:
-            raise QueryChainingError(
-                "Query Chaining Error: Tried to apply a set of forwarded results when query has not been run yet"
-            )
+            # no info to chain since there's no results
+            return
 
         for item in self._results:
             prop_val = item.get_prop(link_prop)

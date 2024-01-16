@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock, patch, call, NonCallableMock
 import pytest
 
-from exceptions.query_chaining_error import QueryChainingError
 from openstack_query.query_blocks.results_container import ResultsContainer
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
@@ -200,15 +199,6 @@ def test_store_query_results(mock_results):
     )
 
 
-def test_apply_forwarded_result_empty():
-    """
-    Test apply_forwarded_results when no results set - raise error
-    """
-    instance = ResultsContainer(NonCallableMock())
-    with pytest.raises(QueryChainingError):
-        instance.apply_forwarded_results(NonCallableMock(), NonCallableMock())
-
-
 @patch(
     "openstack_query.query_blocks.results_container.ResultsContainer._get_forwarded_result"
 )
@@ -236,6 +226,15 @@ def test_apply_forwarded_result(mock_get_forwarded_result, setup_instance_with_r
 
     res1.update_forwarded_properties(mock_get_forwarded_result.return_value)
     res2.update_forwarded_properties(mock_get_forwarded_result.return_value)
+
+
+def test_apply_forwarded_result_empty():
+    """
+    Test apply_forwarded_results when no results set - do nothing
+    """
+    instance = ResultsContainer(NonCallableMock())
+    instance.apply_forwarded_results(NonCallableMock(), NonCallableMock())
+    assert instance.to_props() == []
 
 
 def test_get_forwarded_results_many_to_one():
