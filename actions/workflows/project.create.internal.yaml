@@ -11,7 +11,6 @@ input:
   - parent_id
   - admin_user_list
   - stfc_user_list
-  - network_name: "Internal"
 
 vars:
   - project_uuid: null
@@ -31,122 +30,22 @@ tasks:
         publish:
           - project_uuid: <% result().result.id %>
         do:
-          - wait_for_default_security_group
-          - create_security_group_http
-          - create_security_group_https
+          - set_project_defaults
           - create_rbac_policy
-          - create_admin_roles
           - create_stfc_roles
+          - create_admin_roles
 
   create_rbac_policy:
     action: stackstorm_openstack.network.rbac.create
       cloud_account=<% ctx().cloud_account %>
       rbac_action="shared"
-      network_identifier="<% ctx().network_name %>"
+      network_identifier="Internal"
       project_identifier=<% ctx().project_uuid %>
 
-  wait_for_default_security_group:
-    # We need to force Openstack to resync between the
-    # DB and Neutron by querying. This avoids the default
-    # SC not appearing until someone goes onto the web UI
-    action: stackstorm_openstack.security.group.list
+  set_project_defaults:
+    action: stackstorm_openstack.workflow.project.defaults.set
       cloud_account=<% ctx().cloud_account %>
-      project_identifier=<% ctx().project_name %>
-    next:
-      - when: <% succeeded() %>
-        do:
-          - allow_all_icmp_by_default
-          - allow_ssh_by_default
-          - allow_aquilon_notify_by_default
-
-  allow_all_icmp_by_default:
-    action: stackstorm_openstack.security.group.rule.create
-      cloud_account=<% ctx().cloud_account %>
-      project_identifier=<% ctx().project_uuid %>
-      security_group_identifier="default"
-      direction="ingress"
-      ether_type="IPV4"
-      protocol="ICMP"
-      start_port="*"
-      end_port="*"
-
-  allow_ssh_by_default:
-    action: stackstorm_openstack.security.group.rule.create
-      cloud_account=<% ctx().cloud_account %>
-      project_identifier=<% ctx().project_uuid %>
-      security_group_identifier="default"
-      direction="ingress"
-      ether_type="IPV4"
-      protocol="TCP"
-      start_port="22"
-      end_port="22"
-
-  allow_aquilon_notify_by_default:
-    action: stackstorm_openstack.security.group.rule.create
-      cloud_account=<% ctx().cloud_account %>
-      project_identifier=<% ctx().project_uuid %>
-      security_group_identifier="default"
-      direction="ingress"
-      ether_type="IPV4"
-      protocol="UDP"
-      start_port="7777"
-      end_port="7777"
-
-  create_security_group_http:
-    action: stackstorm_openstack.security.group.create
-      cloud_account=<% ctx().cloud_account %>
-      project_identifier=<% ctx().project_uuid %>
-      group_name="HTTP"
-      group_description="Rules allowing HTTP traffic ingress"
-    next:
-      - when: <% succeeded() %>
-        do: allow_http_traffic
-
-  allow_http_traffic:
-    action: stackstorm_openstack.security.group.rule.create
-      cloud_account=<% ctx().cloud_account %>
-      project_identifier=<% ctx().project_uuid %>
-      security_group_identifier="HTTP"
-      direction="ingress"
-      ether_type="IPV4"
-      protocol="TCP"
-      start_port="80"
-      end_port="80"
-
-  create_security_group_https:
-    action: stackstorm_openstack.security.group.create
-      cloud_account=<% ctx().cloud_account %>
-      project_identifier=<% ctx().project_uuid %>
-      group_name="HTTPS"
-      group_description="Rules allowing HTTPS traffic ingress"
-    next:
-      - when: <% succeeded() %>
-        do:
-          - allow_https_traffic
-          - allow_https_HTTP3_traffic
-
-  allow_https_traffic:
-    action: stackstorm_openstack.security.group.rule.create
-      cloud_account=<% ctx().cloud_account %>
-      project_identifier=<% ctx().project_uuid %>
-      security_group_identifier="HTTPS"
-      direction="ingress"
-      ether_type="IPV4"
-      protocol="TCP"
-      start_port="443"
-      end_port="443"
-
-  allow_https_HTTP3_traffic:
-    # HTTP3 runs over UDP (aka QUIC protocol)
-    action: stackstorm_openstack.security.group.rule.create
-      cloud_account=<% ctx().cloud_account %>
-      project_identifier=<% ctx().project_uuid %>
-      security_group_identifier="HTTPS"
-      direction="ingress"
-      ether_type="IPV4"
-      protocol="UDP"
-      start_port="443"
-      end_port="443"
+      project_uuid=<% ctx().project_uuid %>
 
   create_admin_roles:
     with: <% ctx(admin_user_list) %>
