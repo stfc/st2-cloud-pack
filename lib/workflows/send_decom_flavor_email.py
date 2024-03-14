@@ -228,12 +228,16 @@ def send_decom_flavor_email(
         else:
             email_params = build_email_params(
                 user_name,
-                ", ".join(flavor_name_list)
-                if not as_html
-                else get_flavor_list_html(flavor_name_list),
-                server_query.to_string(groups=[user_id])
-                if not as_html
-                else server_query.to_html(groups=[user_id]),
+                (
+                    ", ".join(flavor_name_list)
+                    if not as_html
+                    else get_flavor_list_html(flavor_name_list)
+                ),
+                (
+                    server_query.to_string(groups=[user_id])
+                    if not as_html
+                    else server_query.to_html(groups=[user_id])
+                ),
                 email_to=send_to,
                 as_html=as_html,
                 email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,

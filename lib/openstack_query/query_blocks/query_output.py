@@ -157,9 +157,11 @@ class QueryOutput:
                 output += self._generate_table(
                     results[group_title],
                     return_html=True,
-                    title=f"<b> {group_title}: </b><br/> "
-                    if include_group_titles
-                    else None,
+                    title=(
+                        f"<b> {group_title}: </b><br/> "
+                        if include_group_titles
+                        else None
+                    ),
                     **kwargs,
                 )
         else:
