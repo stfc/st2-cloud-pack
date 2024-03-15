@@ -44,9 +44,4 @@ parameters:
     default: []
     type: array
     description: List of Users (stfc domain) (IDs or Names) to give local user access
-  network_name:
-    required: true
-    type: string
-    description: Network to allow access to (e.g. Internal or External)
-    default: Internal
 runner_type: orquesta
