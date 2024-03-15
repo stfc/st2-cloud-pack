@@ -13,6 +13,7 @@ def get_common(query_mapping: Type[MappingInterface]) -> "QueryAPI":
     using QueryFactory
     :param query_mapping: a mapping class that defines property, runner and handler mappings
     """
+    # pylint: disable=import-outside-toplevel
     from openstack_query.api.query_api import QueryAPI
     from openstack_query.query_factory import QueryFactory
 
