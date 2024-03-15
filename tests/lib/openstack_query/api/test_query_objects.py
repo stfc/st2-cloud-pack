@@ -12,8 +12,8 @@ from openstack_query.api.query_objects import (
 )
 
 
-@patch("openstack_query.api.query_objects.QueryFactory")
-@patch("openstack_query.api.query_objects.QueryAPI")
+@patch("openstack_query.query_factory.QueryFactory")
+@patch("openstack_query.api.query_api.QueryAPI")
 def test_get_common(mock_query_api, mock_query_factory):
     """
     tests that function _get_common works
