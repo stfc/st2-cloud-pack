@@ -7,7 +7,6 @@ from enums.cloud_domains import CloudDomains
 from enums.query.props.prop_enum import PropEnum
 from enums.query.sort_order import SortOrder
 from enums.query.query_presets import QueryPresets
-from enums.query.query_types import QueryTypes
 from exceptions.parse_query_error import ParseQueryError
 from structs.query.query_components import QueryComponents
 
@@ -222,7 +221,7 @@ class QueryAPI:
         return self.output.to_csv(self.results_container, dir_path)
 
     def then(
-        self, query_type: Union[str, QueryTypes], keep_previous_results: bool = True
+        self, query_type: Union[str, "QueryTypes"], keep_previous_results: bool = True
     ):
         """
         Public method to chain current query into another query of a different type
@@ -242,7 +241,7 @@ class QueryAPI:
 
     def append_from(
         self,
-        query_type: Union[str, QueryTypes],
+        query_type: Union[str, "QueryTypes"],
         cloud_account: Union[str, CloudDomains],
         *props: PropEnum,
     ):

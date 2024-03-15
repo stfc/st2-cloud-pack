@@ -6,6 +6,7 @@ hypervisor remove downtime
 hypervisor service enable
 hypervisor service disable
 """
+
 import datetime
 import json
 
@@ -29,7 +30,7 @@ class Hypervisor(OpenstackAction):
             "hypervisor_service_disable": lambda **kwargs: self.hypervisor_service_status(
                 func="disable", **kwargs
             ),
-            "hypervisor_show": self.hypervisor_show
+            "hypervisor_show": self.hypervisor_show,
             # hypervisor create
             # hypervisor update
             # hypervisor get stats
