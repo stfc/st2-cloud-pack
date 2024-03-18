@@ -64,6 +64,31 @@ def test_parse_group_by_invalid(instance):
         instance.parse_group_by(ServerProperties.SERVER_ID)
 
 
+def test_parse_group_by_with_string_aliases(mock_results_container):
+    """
+    Tests parse_group_by accepts string aliases
+    """
+    mock_as_object_vals = [
+        {"name": "a", "id": 1},
+        {"name": "a", "id": 2},
+        {"name": "b", "id": 3},
+        {"name": "b", "id": 4},
+    ]
+
+    expected_out = {
+        "a": [{"name": "a", "id": 1}, {"name": "a", "id": 2}],
+        "b": [{"name": "b", "id": 3}, {"name": "b", "id": 4}],
+    }
+
+    mock_obj_list = mock_results_container(mock_as_object_vals)
+    instance = QueryGrouper(prop_enum_cls=ServerProperties)
+    instance.parse_group_by(ServerProperties.SERVER_NAME)
+    res = instance.run_group_by(mock_obj_list)
+    for key, vals in res.items():
+        assert key in res.keys()
+        assert expected_out[key] == [i.as_object() for i in vals]
+
+
 def test_run_group_by_no_group_mappings(run_group_by_runner, mock_results_container):
     """
     Tests run_group_by when given no group mappings

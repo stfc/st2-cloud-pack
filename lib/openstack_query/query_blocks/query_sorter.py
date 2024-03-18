@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 import logging
 
 from openstack_query.query_blocks.result import Result
@@ -19,11 +19,31 @@ class QuerySorter:
         self._prop_enum_cls = prop_enum_cls
         self._sort_by = {}
 
-    def parse_sort_by(self, *sort_by: Tuple[PropEnum, SortOrder]) -> None:
+    def _parse_sort_by_inputs(
+        self, *sort_by: Tuple[Union[PropEnum, str], Union[SortOrder, str]]
+    ) -> List[Tuple[PropEnum, SortOrder]]:
+        """
+        Converts list of sort_by() user inputs into Enums, any string aliases will be converted into Enums
+        :param sort_by: one or more tuples of property Enum/String alias to sort by and order Enum/string alias
+        """
+        parsed_sort_by = []
+        for prop, order in sort_by:
+            if isinstance(prop, str):
+                prop = self._prop_enum_cls.from_string(prop)
+            if isinstance(order, str):
+                order = SortOrder.from_string(order)
+            parsed_sort_by.append((prop, order))
+        return parsed_sort_by
+
+    def parse_sort_by(
+        self, *sort_by: Tuple[Union[str, PropEnum], Union[str, SortOrder]]
+    ) -> None:
         """
         Public method used to configure sorting results
         :param sort_by: one or more tuples of property name to sort by and order enum
         """
+        sort_by = self._parse_sort_by_inputs(*sort_by)
+
         sort_by_dict = {}
         for user_selected_prop, _ in sort_by:
             if user_selected_prop not in self._prop_enum_cls:

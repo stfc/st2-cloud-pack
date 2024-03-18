@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 import logging
 from collections import OrderedDict
 from openstack_query.query_blocks.result import Result
@@ -98,9 +98,18 @@ class QueryGrouper:
             for name, map_func in self._group_mappings.items()
         }
 
+    def _parse_group_by_inputs(self, prop):
+        """
+        Converts list of select() 'prop' user inputs into Enums, any string aliases will be converted into Enums
+        :param prop: property to group by
+        """
+        if isinstance(prop, str):
+            prop = self._prop_enum_cls.from_string(prop)
+        return prop
+
     def parse_group_by(
         self,
-        group_by: PropEnum,
+        group_by: Union[str, PropEnum],
         group_ranges: Optional[GroupRanges] = None,
         include_missing: Optional[bool] = False,
     ) -> None:
@@ -112,6 +121,7 @@ class QueryGrouper:
         :param include_missing: a flag which, if set, will include an extra grouping for values
         that don't fall into any group specified in group_ranges
         """
+        group_by = self._parse_group_by_inputs(group_by)
 
         if group_by not in self._prop_enum_cls:
             raise ParseQueryError(

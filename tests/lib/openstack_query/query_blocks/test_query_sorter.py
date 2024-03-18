@@ -18,15 +18,6 @@ def instance_fixture():
     return QuerySorter(prop_enum_cls=mock_prop_enum_cls)
 
 
-def test_parse_sort_by_invalid(instance):
-    """
-    Tests parse_sort_by method works expectedly - raise error if property is invalid
-    should raise ParseQueryError
-    """
-    with pytest.raises(ParseQueryError):
-        instance.parse_sort_by((ServerProperties.SERVER_ID, SortOrder.DESC))
-
-
 @pytest.fixture(name="run_sort_by_runner")
 def run_sort_by_runner_fixture(instance, mock_get_prop_mapping):
     """
@@ -48,6 +39,45 @@ def run_sort_by_runner_fixture(instance, mock_get_prop_mapping):
             )
 
     return _run_sort_by_runner
+
+
+def test_parse_sort_by_invalid(instance):
+    """
+    Tests parse_sort_by method works expectedly - raise error if property is invalid
+    should raise ParseQueryError
+    """
+    with pytest.raises(ParseQueryError):
+        instance.parse_sort_by((ServerProperties.SERVER_ID, SortOrder.DESC))
+
+
+@pytest.mark.parametrize(
+    "mock_sort_by_specs",
+    [
+        [("name", "asc")],
+        [("id", "desc")],
+    ],
+)
+def test_parse_sort_by_with_string_aliases(mock_sort_by_specs, mock_results_container):
+    """
+    Tests parse_sort_by accepts string aliases for prop and sort order
+    """
+    mock_as_object_vals = [
+        {"name": "a", "id": 2},
+        {"name": "c", "id": 4},
+        {"name": "d", "id": 3},
+        {"name": "b", "id": 1},
+    ]
+    mock_obj_list = mock_results_container(mock_as_object_vals)
+    instance = QuerySorter(prop_enum_cls=ServerProperties)
+
+    mock_string = mock_sort_by_specs[0][0]
+    reverse = mock_sort_by_specs[0][1] == "desc"
+    expected_list = sorted(
+        mock_as_object_vals, key=lambda k: k[mock_string], reverse=reverse
+    )
+    instance.parse_sort_by(*mock_sort_by_specs)
+    res = instance.run_sort_by(mock_obj_list)
+    assert [item.as_object() for item in res] == expected_list
 
 
 @pytest.mark.parametrize(

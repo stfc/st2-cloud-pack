@@ -25,7 +25,9 @@ class QueryParser:
         self._sort = False
         self._group = False
 
-    def parse_sort_by(self, *sort_by: Tuple[PropEnum, SortOrder]):
+    def parse_sort_by(
+        self, *sort_by: Tuple[Union[PropEnum, str], Union[SortOrder, str]]
+    ):
         """
         public method to set sorting parameters. Forwards onto sorter.parse_sort_by
         :param sort_by: one or more tuples of property name to sort by and order enum
@@ -35,7 +37,7 @@ class QueryParser:
 
     def parse_group_by(
         self,
-        group_by: PropEnum,
+        group_by: Union[str, PropEnum],
         group_ranges: Optional[GroupRanges] = None,
         include_missing: Optional[bool] = False,
     ):
