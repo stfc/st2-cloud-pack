@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import call, patch
 import pytest
 
 from enums.query.props.server_properties import ServerProperties
@@ -166,7 +166,7 @@ def test_run_sort_with_multiple_key(
     ],
 )
 def test_run_sort_with_boolean(
-    mock_sort_by_specs, instance, run_sort_by_runner, mock_results_container
+    mock_sort_by_specs, run_sort_by_runner, mock_results_container
 ):
     """
     Tests that run_sort functions expectedly - sorting by boolean

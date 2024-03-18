@@ -1,8 +1,7 @@
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import call, patch
 import pytest
 
 from openstack_query.query_blocks.query_grouper import QueryGrouper
-from enums.query.sort_order import SortOrder
 from enums.query.props.server_properties import ServerProperties
 
 from exceptions.parse_query_error import ParseQueryError

@@ -4,10 +4,11 @@ import logging
 from custom_types.openstack_query.aliases import GroupRanges
 
 from enums.query.sort_order import SortOrder
+from enums.query.props.prop_enum import PropEnum
+
 from openstack_query.query_blocks.query_grouper import QueryGrouper
 from openstack_query.query_blocks.query_sorter import QuerySorter
 from openstack_query.query_blocks.result import Result
-from enums.query.props.prop_enum import PropEnum
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class QueryParser:
 
     def parse_group_by(
         self,
-        group_by: Union[PropEnum, str],
+        group_by: PropEnum,
         group_ranges: Optional[GroupRanges] = None,
         include_missing: Optional[bool] = False,
     ):
