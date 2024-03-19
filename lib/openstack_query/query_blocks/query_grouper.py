@@ -86,7 +86,8 @@ class QueryGrouper:
         # if group mappings not specified - make a group for each unique value found for prop
         if not self._group_mappings:
             logger.info(
-                f"no group ranges specified - grouping by unique values of {self._group_by.name} property",
+                "no group ranges specified - grouping by unique values of %s property",
+                self._group_by.name,
             )
             self._group_mappings = self._build_unique_val_groups(
                 [item.as_object() for item in obj_list]
