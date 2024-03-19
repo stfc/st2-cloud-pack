@@ -76,9 +76,8 @@ class QuerySorter:
 
         logger.debug("running multi-sort")
         sort_num = len(self._sort_by)
-        for i, (sort_key, reverse) in enumerate(
-            reversed(tuple(self._sort_by.items())), 1
-        ):
+        obj_iter = enumerate(reversed(tuple(self._sort_by.items())), 1)
+        for i, (sort_key, reverse) in obj_iter:
             logger.debug("running sort %s / %s", i, sort_num)
             logger.debug("sorting by: %s, reverse=%s", sort_key, reverse)
             prop_func = self._prop_enum_cls.get_prop_mapping(sort_key)

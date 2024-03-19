@@ -53,7 +53,7 @@ class QueryGrouper:
         """
         # if ungrouped group wanted - filter for all not in any range specified
         all_prop_list = set()
-        for _, prop_list in group_ranges.items():
+        for prop_list in group_ranges.values():
             all_prop_list.update(set(prop_list))
 
         prop_func = self._prop_enum_cls.get_prop_mapping(self._group_by)
@@ -86,19 +86,18 @@ class QueryGrouper:
         # if group mappings not specified - make a group for each unique value found for prop
         if not self._group_mappings:
             logger.info(
-                "no group ranges specified - grouping by unique values of %s property",
-                self._group_by.name,
+                f"no group ranges specified - grouping by unique values of {self._group_by.name} property",
             )
             self._group_mappings = self._build_unique_val_groups(
                 [item.as_object() for item in obj_list]
             )
 
-        return {
-            name: [item for item in obj_list if map_func(item.as_object())]
-            for name, map_func in self._group_mappings.items()
-        }
+        res = {}
+        for name, map_func in self._group_mappings.items():
+            res[name] = [item for item in obj_list if map_func(item.as_object())]
+        return res
 
-    def _parse_group_by_inputs(self, prop):
+    def _parse_group_by_inputs(self, prop: Union[str, PropEnum]) -> PropEnum:
         """
         Converts list of select() 'prop' user inputs into Enums, any string aliases will be converted into Enums
         :param prop: property to group by
@@ -112,7 +111,7 @@ class QueryGrouper:
         group_by: Union[str, PropEnum],
         group_ranges: Optional[GroupRanges] = None,
         include_missing: Optional[bool] = False,
-    ) -> None:
+    ):
         """
         Public method used to configure grouping results.
         :param group_by: name of the property to group by
