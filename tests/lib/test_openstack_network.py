@@ -357,7 +357,7 @@ class OpenstackNetworkTests(unittest.TestCase):
                 "network_id": self.instance.find_network.return_value.id
             },
             is_distributed=details.is_distributed,
-            is_ha=details.is_ha,
+            is_ha=True,
         )
         assert returned == self.network_api.create_router.return_value
 

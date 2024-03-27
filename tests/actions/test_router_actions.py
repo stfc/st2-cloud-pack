@@ -30,11 +30,8 @@ class TestRouterActions(OpenstackActionTestBase):
         """
         cloud, project = NonCallableMock(), NonCallableMock()
         name, description = NonCallableMock(), NonCallableMock()
-        gateway, distributed, ha = (
-            NonCallableMock(),
-            NonCallableMock(),
-            NonCallableMock(),
-        )
+        gateway, distributed = NonCallableMock(), NonCallableMock()
+
         returned = self.action.router_create(
             cloud,
             project_identifier=project,
@@ -42,11 +39,10 @@ class TestRouterActions(OpenstackActionTestBase):
             router_description=description,
             external_gateway=gateway,
             is_distributed=distributed,
-            is_ha=ha,
         )
 
         self.network_mock.create_router.assert_called_once_with(
-            cloud, RouterDetails(project, name, description, gateway, distributed, ha)
+            cloud, RouterDetails(project, name, description, gateway, distributed)
         )
         expected = self.network_mock.create_router.return_value
         assert returned == (True, expected)

@@ -36,8 +36,4 @@ parameters:
     description: The distributed state of the router, which is distributed True or not False
     type: boolean
     default: False
-  is_ha:
-    description: The highly-available state of the router, which is highly available True or not False.
-    type: boolean
-    default: False
 runner_type: python-script

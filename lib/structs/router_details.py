@@ -9,4 +9,3 @@ class RouterDetails:
     router_description: str
     external_gateway: str
     is_distributed: bool
-    is_ha: bool
