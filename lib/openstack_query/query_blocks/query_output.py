@@ -94,7 +94,7 @@ class QueryOutput:
         results = results_container.to_props(*self.selected_props)
         results = self._validate_groups(results, groups)
         if flatten:
-            results = self.flatten(results)
+            results = self._flatten(results)
         return results
 
     def to_string(
@@ -126,10 +126,12 @@ class QueryOutput:
                     title=f"{group_title}:\n" if include_group_titles else None,
                     **kwargs,
                 )
+                output += "\n\n"
         else:
             output += self._generate_table(
                 results, return_html=False, title=None, **kwargs
             )
+            output += "\n\n"
         return output
 
     def to_html(
@@ -150,7 +152,7 @@ class QueryOutput:
         """
         results = results_container.to_props(*self.selected_props)
         results = self._validate_groups(results, groups)
-        output = "" if not title else f"<b> {title}: </b><br/> "
+        output = "" if not title else f"<b>{title}:</b><br/>"
 
         if isinstance(results, dict):
             for group_title in list(results.keys()):
@@ -158,16 +160,16 @@ class QueryOutput:
                     results[group_title],
                     return_html=True,
                     title=(
-                        f"<b> {group_title}: </b><br/> "
-                        if include_group_titles
-                        else None
+                        f"<b>{group_title}:</b><br/>" if include_group_titles else None
                     ),
                     **kwargs,
                 )
+                output += "<br/><br/>"
         else:
             output += self._generate_table(
                 results, return_html=True, title=None, **kwargs
             )
+            output += "<br/><br/>"
         return output
 
     def _parse_select_inputs(self, props):
@@ -223,13 +225,12 @@ class QueryOutput:
             output += tabulate(
                 rows, headers, tablefmt="html" if return_html else "grid", **kwargs
             )
-            output += "\n\n"
         else:
             output += "No results found"
         return output
 
     @staticmethod
-    def flatten(data: Union[List, Dict]) -> Optional[Dict]:
+    def _flatten(data: Union[List, Dict]) -> Optional[Dict]:
         """
         Utility function for flattening output to instead get list of unique
         values found for each property selected. results will also be grouped if given
@@ -266,56 +267,49 @@ class QueryOutput:
             res[key] = [d[key] for d in data]
         return res
 
-    def to_csv_list(self, data: Union[List, Dict], output_filepath):
+    @staticmethod
+    def _write_file(data: Union[List, Dict], output_filepath: Path) -> None:
         """
-        Takes a list of dictionaries and outputs them into a designated csv file 'self._parse_properties'
-        :param data: this is the list of dictionaries passed in to this function
-        :param output_filepath: this is the output path that is passed in to the function for it to use
-        :return: Does not return anything.
+        takes a list of results, calls to_props() and outputs them to a file
+        :param data: list of results to write
+        :param output_filepath: Path object containing filepath to write to
         """
 
-        if data and len(data) > 0:
-            fields = data[0].keys()
-        else:
-            raise RuntimeError("data is empty")
+        if not data or not data[0].keys():
+            raise RuntimeError(
+                "Error: Could not write to csv file: "
+                "No results found, or no properties selected to output"
+            )
 
+        fields = data[0].keys()
         with open(output_filepath, "w", encoding="utf-8") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fields)
             writer.writeheader()
             writer.writerows(data)
 
-        print("List Written to csv")
-
-    def to_csv_dictionary(self, data: Union[List, Dict], dir_path):
+    @staticmethod
+    def _write_files(data: Union[List, Dict], dir_path: Path) -> None:
         """
-        Takes a dictionary of dictionaries and outputs them into separate designated csv file 'self._parse_properties'
-        :param data: this is the dictionary of dictionaries passed in to this function
-        :param dir_path: this is the output path the csv files will be created in
-        :return: Does not return anything.
+        takes grouped results and outputs each group to a separate file in specified directory
+        :param data: grouped results to write to files
+        :param dir_path: Path object containing path to directory the files will be written to
         """
-
         for group_name_id, group_item_info in data.items():
-            file_path = Path(dir_path).joinpath(f"{group_name_id}.csv")
-            self.to_csv_list(group_item_info, file_path)
+            file_path = dir_path.joinpath(f"{group_name_id}.csv")
+            QueryOutput._write_file(group_item_info, file_path)
 
-        print("Dictionary written to csv")
-
-    def to_csv(self, results_container: ResultsContainer, dir_path):
+    def to_csv(self, results_container: ResultsContainer, dir_path: str) -> None:
         """
-        Takes a dictionary of dictionaries or list of dictionaries and a filepath or directory path.
-        It then decides if the to_csv_list or to_csv_Dictionaries function is needed then call the required one.
-        :param results_container: this is the dictionary of dictionaries or list of dictionaries that is passed in to
-        other functions.
-        :param dir_path: this is a directory path where csv files will be created in.
-        :return: Does not return anything.
+        Method to return results as csv files. Will output grouped results as separate files.
+        :param results_container: container object which stores results
+        :param dir_path: string representing a directory path where csv files will be created in.
+            - If results aren't grouped, file called "query_out.csv" will be written inside the directory
+            - If results are grouped, files matching the group keys will be written inside the directory
         """
         dir_path = Path(dir_path)
         data = self.to_props(results_container)
 
         if isinstance(data, list):
             filepath = dir_path.joinpath("query_out.csv")
-            self.to_csv_list(data, filepath)
-        elif isinstance(data, dict):
-            self.to_csv_dictionary(data, dir_path)
-        else:
-            raise RuntimeError("Error: The enter data is not a list or dictionary")
+            return self._write_file(data, filepath)
+        return self._write_files(data, dir_path)
