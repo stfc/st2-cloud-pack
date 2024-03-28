@@ -248,7 +248,7 @@ class OpenstackNetwork(OpenstackWrapperBase):
                 description=details.router_description,
                 external_gateway_info={"network_id": external_network.id},
                 is_distributed=details.is_distributed,
-                is_ha=details.is_ha,
+                is_ha=True,
             )
 
     def get_router(

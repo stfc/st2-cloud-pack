@@ -30,7 +30,6 @@ class RouterActions(OpenstackAction):
         router_description: str,
         external_gateway: str,
         is_distributed: bool,
-        is_ha: bool,
     ) -> Tuple[bool, Router]:
         """
         Create openstack router for project
@@ -39,7 +38,6 @@ class RouterActions(OpenstackAction):
         :param router_name: The new router name
         :param router_description: The new router's description
         :param is_distributed: Is the new router distributed
-        :param is_ha: Is the new router high availability
         :param external_gateway: Name or ID of the external gateway the router should use
         :return: Status, new router object
         """
@@ -51,7 +49,6 @@ class RouterActions(OpenstackAction):
                 router_description=router_description,
                 external_gateway=external_gateway,
                 is_distributed=is_distributed,
-                is_ha=is_ha,
             ),
         )
         return bool(router), router
