@@ -205,6 +205,7 @@ class OpenstackSecurityGroupsTests(unittest.TestCase):
             port_range_max=None,
         )
 
+    # pylint:disable=too-many-arguments
     @parameterized.expand(
         [
             (
