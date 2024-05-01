@@ -32,8 +32,7 @@ tasks:
         do:
           - set_project_defaults
           - create_rbac_policy
-          - create_stfc_roles
-          - create_admin_roles
+          - wait_for_default_security_group
 
   create_rbac_policy:
     action: stackstorm_openstack.network.rbac.create
@@ -64,6 +63,53 @@ tasks:
       role="user"
       user_identifier=<% item() %>
       user_domain="stfc"
+
+  wait_for_default_security_group:
+    # We need to force Openstack to resync between the
+    # DB and Neutron by querying. This avoids the default
+    # SC not appearing until someone goes onto the web UI
+    action: stackstorm_openstack.security.group.list
+      cloud_account=<% ctx().cloud_account %>
+      project_identifier=<% ctx().project_uuid %>
+    next:
+      - when: <% succeeded() %>
+        do:
+          - allow_all_icmp_by_default
+          - allow_ssh_by_default
+          - allow_aquilon_notify_by_default
+
+  allow_all_icmp_by_default:
+    action: stackstorm_openstack.security.group.rule.create
+      cloud_account=<% ctx().cloud_account %>
+      project_identifier=<% ctx().project_uuid %>
+      security_group_identifier="default"
+      direction="ingress"
+      ether_type="IPV4"
+      protocol="ICMP"
+      start_port="*"
+      end_port="*"
+
+  allow_ssh_by_default:
+    action: stackstorm_openstack.security.group.rule.create
+      cloud_account=<% ctx().cloud_account %>
+      project_identifier=<% ctx().project_uuid %>
+      security_group_identifier="default"
+      direction="ingress"
+      ether_type="IPV4"
+      protocol="TCP"
+      start_port="22"
+      end_port="22"
+
+  allow_aquilon_notify_by_default:
+    action: stackstorm_openstack.security.group.rule.create
+      cloud_account=<% ctx().cloud_account %>
+      project_identifier=<% ctx().project_uuid %>
+      security_group_identifier="default"
+      direction="ingress"
+      ether_type="IPV4"
+      protocol="UDP"
+      start_port="7777"
+      end_port="7777"
 
 output:
   - stderr: <% ctx().stderr %>

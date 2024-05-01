@@ -48,6 +48,7 @@ tasks:
           - create_router
           - allocate_floating_ips
           - set_project_defaults
+          - wait_for_default_security_group
           - create_stfc_roles
           - create_admin_roles
 
@@ -139,6 +140,25 @@ tasks:
       role="user"
       user_identifier=<% item() %>
       user_domain="stfc"
+
+  wait_for_default_security_group:
+    # We need to force Openstack to resync between the
+    # DB and Neutron by querying. This avoids the default
+    # SC not appearing until someone goes onto the web UI
+    action: stackstorm_openstack.security.group.list
+      cloud_account=<% ctx().cloud_account %>
+      project_identifier=<% ctx().project_uuid %>
+    next:
+      - when: <% succeeded() %>
+        do:
+          - set_external_security_group_rules
+
+  set_external_security_group_rules:
+    action: stackstorm_openstack.security.group.rule.set.external
+      cloud_account=<% ctx().cloud_account %>
+      project_identifier=<% ctx().project_uuid %>
+      security_group_identifier="default"
+
 
 output:
   - project_id: <% ctx().project_uuid %>
