@@ -200,7 +200,7 @@ def test_apply_forwarded_result_empty():
 
 def mock_result(get_prop_return):
     """
-    Helper function to mock a Result object with a mocked value to return when get_prop() is caled
+    Helper function to mock a Result object with a mocked value to return when get_prop() is called
     """
     mock_prop = MagicMock()
     mock_prop.get_prop.return_value = get_prop_return

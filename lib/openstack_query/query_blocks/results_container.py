@@ -85,7 +85,7 @@ class ResultsContainer:
         self, prop_val: str, forwarded_results: Dict[str, List]
     ) -> Optional[Dict]:
         """
-        static helper method to return forwarded values that match a given property value. Used for chaining
+        helper method to return forwarded values that match a given property value. Used for chaining
         This handles two chaining cases:
             - many-to-one (or one-to-one as we're using duplicates)
                 - where multiple forwarded outputs maps to one openstack object in result
