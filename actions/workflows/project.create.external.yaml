@@ -151,6 +151,15 @@ tasks:
     next:
       - when: <% succeeded() %>
         do:
+          - set_default_quota
+
+  set_default_quota:
+    action: stackstorm_openstack.quota.set
+      project_identifier=<% ctx().project_uuid %>
+      num_security_group_rules=200
+    next:
+      - when: <% succeeded() %>
+        do:
           - set_external_security_group_rules
 
   set_external_security_group_rules:
