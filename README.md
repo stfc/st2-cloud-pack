@@ -1,6 +1,6 @@
 # stackstorm-openstack-pack
 
-A Stackstorm pack for running Openstack scripts built for the STFC Cloud team - Akhil-dev branch
+A Stackstorm pack for running Openstack scripts built for the STFC Cloud team - Akhil-dev branch for stackstorm test
 
 ### Documentation Links
 - [Actions](docs/ACTIONS.md)
