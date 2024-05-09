@@ -30,6 +30,7 @@ class OpenstackSecurityGroups(OpenstackWrapperBase):
         :param security_group_identifier: The name or Openstack ID of the associated security group
         :return: The security group if found
         """
+        # TODO turn this into a private method
         security_group_identifier = security_group_identifier.strip()
         if not security_group_identifier:
             raise MissingMandatoryParamError("A security group identifier is required")
@@ -52,6 +53,7 @@ class OpenstackSecurityGroups(OpenstackWrapperBase):
         :param project_identifier: The project to get all associated security groups with
         :return: A list of all security groups
         """
+        # TODO: delete this once we remove orquesta workflows for project creation
         project = self._identity_api.find_mandatory_project(
             cloud_account, project_identifier=project_identifier
         )

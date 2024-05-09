@@ -45,29 +45,6 @@ class SecurityGroupActions(Action):
         )
         return bool(security_group), security_group
 
-    def security_group_find(
-        self,
-        cloud_account: str,
-        project_identifier: str,
-        security_group_identifier: str,
-    ) -> Tuple[bool, Union[SecurityGroup, str]]:
-        """
-        Show a security group
-        :param cloud_account: The associated clouds.yaml account
-        :param project_identifier: Openstack Project ID or Name,
-        :param security_group_identifier: Openstack Security Group ID or Name
-        :return: status, Security Group object or error message
-        """
-        security_group = self._api.find_security_group(
-            cloud_account, project_identifier, security_group_identifier
-        )
-        output = (
-            security_group
-            if security_group
-            else "The requested security group could not be found"
-        )
-        return bool(security_group), output
-
     def security_group_list(
         self, cloud_account: str, project_identifier
     ) -> Tuple[bool, List[SecurityGroup]]:
@@ -77,6 +54,7 @@ class SecurityGroupActions(Action):
         :param project_identifier: Openstack Project ID or Name,
         :return: status, list of associated security groups
         """
+        # TODO change this to use the query library when rewriting this to use workflow_actions framework
         found = self._api.search_security_group(cloud_account, project_identifier)
         return bool(found), found
 
