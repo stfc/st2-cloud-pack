@@ -79,28 +79,14 @@ class OpenstackNetwork(OpenstackWrapperBase):
         :param network_identifier: The ID or name to search for
         :return: The found network or None
         """
+        # TODO convert find_network to private method - this should not be used outside the class
+
         network_identifier = network_identifier.strip()
         if not network_identifier:
             raise MissingMandatoryParamError("A network identifier is required")
 
         with self._connection_cls(cloud_account) as conn:
             return conn.network.find_network(network_identifier, ignore_missing=True)
-
-    def search_network_rbacs(
-        self, cloud_account: str, project_identifier: str
-    ) -> List[RBACPolicy]:
-        """
-        Finds a given RBAC network policy associated with a project
-        :param cloud_account: The associated clouds.yaml account
-        :param project_identifier: The name or Openstack ID of the project the policy applies to
-        :return: A list of found RBAC policies for the given project
-        """
-        project = self._identity_api.find_mandatory_project(
-            cloud_account, project_identifier
-        )
-
-        with self._connection_cls(cloud_account) as conn:
-            return list(conn.network.rbac_policies(project_id=project.id))
 
     def create_network(
         self, cloud_account: str, details: NetworkDetails
@@ -260,6 +246,7 @@ class OpenstackNetwork(OpenstackWrapperBase):
         :param project_identifier: The project name or ID to search in
         :param router_identifier: The router name or ID to get
         """
+        # TODO: this is only used in add_interface_to_router so it should be private or be removed
         project = self._identity_api.find_mandatory_project(
             cloud_account, project_identifier
         )

@@ -142,22 +142,6 @@ class OpenstackNetworkTests(unittest.TestCase):
         )
         assert returned == self.network_api.find_network.return_value
 
-    def test_search_network_forwards_results(self):
-        """
-        Tests that find network forwards its results as-is
-        """
-        cloud, identifier = NonCallableMock(), NonCallableMock()
-        result = self.instance.search_network_rbacs(cloud, identifier)
-
-        self.identity_module.find_mandatory_project.assert_called_once_with(
-            cloud, identifier
-        )
-        self.mocked_connection.assert_called_once_with(cloud)
-        self.network_api.rbac_policies.assert_called_once_with(
-            project_id=self.identity_module.find_mandatory_project.return_value.id
-        )
-        assert result == list(self.network_api.rbac_policies.return_value)
-
     @raises(MissingMandatoryParamError)
     def test_create_network_no_name(self):
         """

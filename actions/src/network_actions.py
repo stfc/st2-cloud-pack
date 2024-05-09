@@ -28,30 +28,6 @@ class NetworkActions(Action):
     # network_update
     # network_rbac_update
 
-    def network_find(
-        self, cloud_account: str, network_identifier: str
-    ) -> Tuple[bool, Union[Network, str]]:
-        """
-        Show Network Properties
-        :param cloud_account: The account from the clouds configuration to use
-        :param network_identifier: Network Name or ID
-        :return: (status (Bool), reason/output (String/Dict)
-        """
-        network = self._api.find_network(cloud_account, network_identifier)
-        output = network if network else "The requested network could not be found"
-        return bool(network), output
-
-    def network_rbac_search(
-        self, cloud_account: str, project_identifier: str
-    ) -> List[RBACPolicy]:
-        """
-        Finds all Network RBAC policies belonging applying to a project
-        :param cloud_account: The account from the clouds configuration to use
-        :param project_identifier: The project this applies to
-        :return: List of found RBAC policies
-        """
-        return self._api.search_network_rbacs(cloud_account, project_identifier)
-
     # pylint: disable=too-many-arguments
     def network_create(
         self,
