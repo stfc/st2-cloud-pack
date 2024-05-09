@@ -344,6 +344,7 @@ class OpenstackNetwork(OpenstackWrapperBase):
         :param project_identifier: The project name or ID to search in
         :param subnet_identifier: The subnet name or ID to get
         """
+        # TODO convert this into a private method - any action methods that use this should be part of this Class
         project = self._identity_api.find_mandatory_project(
             cloud_account, project_identifier
         )

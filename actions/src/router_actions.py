@@ -1,4 +1,4 @@
-from typing import Tuple, Dict, Union, Callable
+from typing import Tuple, Dict, Callable
 
 from openstack.exceptions import ResourceNotFound
 from openstack.network.v2.router import Router
@@ -72,22 +72,6 @@ class RouterActions(OpenstackAction):
         )
         return bool(router), router
 
-    def router_get(
-        self, cloud_account: str, project_identifier: str, router_identifier: str
-    ) -> Tuple[bool, Union[Router, str]]:
-        """
-        Gets a router in the specified project with the given name or ID
-        :param cloud_account: The account from the clouds configuration to use
-        :param project_identifier: The project name or ID to search in
-        :param router_identifier: The name or ID of the router
-        :return: status, Router or error message
-        """
-        found = self._api.get_router(
-            cloud_account, project_identifier, router_identifier
-        )
-        to_return = found if found else "The specified router could not be found"
-        return bool(found), to_return
-
     def router_remove_interface(self, router, subnet, port):
         """
         Remove interface to Openstack router
@@ -125,31 +109,10 @@ class RouterActions(OpenstackAction):
             return False, f"Removing Router Interface Failed {err}"
         return True, router
 
-    def router_show(self, router):
-        """
-        Show router properties
-        :param router: Name or ID
-        :return: (status (Bool), reason (String))
-        """
-        try:
-            router = self.conn.network.find_router(router, ignore_missing=False)
-        except ResourceNotFound as err:
-            return False, f"Router not found {repr(err)}"
-        return True, router
-
     def router_delete(self, router):
         """
         Delete router
         :param router: Name or ID
-        :return: (status (Bool), reason (String))
-        """
-        raise NotImplementedError
-
-    def router_update(self, router, **update_kwargs):
-        """
-        Update router properties
-        :param router: Name or ID
-        :param update_kwargs: see action definintion yaml file for details)
         :return: (status (Bool), reason (String))
         """
         raise NotImplementedError
