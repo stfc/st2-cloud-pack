@@ -1,5 +1,4 @@
-from unittest.mock import call, create_autospec, NonCallableMock
-from openstack_api.dataclasses import QueryParams
+from unittest.mock import create_autospec, NonCallableMock
 
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_project import OpenstackProject
@@ -184,56 +183,6 @@ class TestProjectAction(OpenstackActionTestBase):
             ),
         )
 
-    def test_project_find_success(self):
-        """
-        Tests that the correct results are given for a found project
-        """
-        expected = NonCallableMock()
-        self.identity_mock.find_project.return_value = expected
-        returned_values = self.action.project_find(NonCallableMock(), NonCallableMock())
-        assert returned_values == (True, expected)
-
-    def test_project_find_failure(self):
-        """
-        Tests that the correct return is given when a project is not found
-        """
-        self.identity_mock.find_project.return_value = None
-        returned_values = self.action.project_find(NonCallableMock(), NonCallableMock())
-        assert returned_values[0] is False
-        assert "could not be found" in returned_values[1]
-
-    def test_update_project(self):
-        """
-        Tests that update project forwards the result when successful
-        """
-        expected_proj_params = {
-            i: NonCallableMock()
-            for i in ["name", "description", "is_enabled", "immutable"]
-        }
-        expected_proj_params.update({"email": "Test@Test.com"})
-
-        # Check that default gets hard-coded in too
-        packaged_proj = ProjectDetails(**expected_proj_params)
-
-        # Ensure is_enabled is assigned if specefied
-        for value in ["unchanged", "true", "false"]:
-            expected_proj_params["is_enabled"] = value
-            expected_proj_params["immutable"] = value
-            packaged_proj.is_enabled = None if value == "unchanged" else value == "true"
-            packaged_proj.immutable = None if value == "unchanged" else value == "true"
-
-            returned_values = self.action.project_update(
-                cloud_account="foo", project_identifier="bar", **expected_proj_params
-            )
-            self.identity_mock.update_project.assert_called_with(
-                cloud_account="foo",
-                project_identifier="bar",
-                project_details=packaged_proj,
-            )
-
-            assert returned_values[0] is True
-            assert returned_values[1] == self.identity_mock.update_project.return_value
-
     def test_run_dispatch(self):
         """
         Tests that dynamic dispatch works for all the expected methods
@@ -242,45 +191,5 @@ class TestProjectAction(OpenstackActionTestBase):
             [
                 "project_create",
                 "project_delete",
-                "project_find",
-                "project_list",
-                "project_update",
             ]
         )
-
-    def test_list(self):
-        """
-        Tests the action that lists projects
-        """
-        calls = []
-        for query_preset in OpenstackProject.SEARCH_QUERY_PRESETS:
-            project_identifier = NonCallableMock()
-            query_params = QueryParams(
-                query_preset=query_preset,
-                properties_to_select=NonCallableMock(),
-                group_by=NonCallableMock(),
-                return_html=NonCallableMock(),
-            )
-            extra_args = {
-                "ids": None,
-                "names": None,
-                "name_snippets": None,
-            }
-            self.action.project_list(
-                cloud_account="test",
-                project_identifier=project_identifier,
-                query_preset=query_preset,
-                properties_to_select=query_params.properties_to_select,
-                group_by=query_params.group_by,
-                return_html=query_params.return_html,
-                **extra_args,
-            )
-            calls.append(
-                call(
-                    cloud_account="test",
-                    query_params=query_params,
-                    project_identifier=project_identifier,
-                    **extra_args,
-                )
-            )
-        self.project_mock.search.assert_has_calls(calls)

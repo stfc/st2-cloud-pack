@@ -1,8 +1,7 @@
-from typing import Tuple, Optional, Dict, Callable, Union, List
+from typing import Tuple, Optional, Dict, Callable
 
 from openstack.identity.v3.project import Project
 
-from openstack_api.dataclasses import QueryParams
 from openstack_api.openstack_identity import OpenstackIdentity
 from openstack_api.openstack_project import OpenstackProject
 from openstack_api.openstack_query import OpenstackQuery
@@ -68,21 +67,6 @@ class ProjectAction(Action):
             f"Tick the delete checkbox to delete the project:\n\n{project_string}",
         )
 
-    def project_find(
-        self, cloud_account: str, project_identifier: str
-    ) -> Tuple[bool, Union[Project, str]]:
-        """
-        find and return a given project's properties
-        :param cloud_account: The account from the clouds configuration to use
-        :param project_identifier: Name or Openstack ID
-        :return: status , Project object or error string
-        """
-        project = self._identity_api.find_project(
-            cloud_account=cloud_account, project_identifier=project_identifier
-        )
-        output = project if project else "The project could not be found."
-        return bool(project), output
-
     # pylint:disable=too-many-arguments
     def project_create(
         self,
@@ -116,79 +100,5 @@ class ProjectAction(Action):
         )
         project = self._identity_api.create_project(
             cloud_account=cloud_account, project_details=details
-        )
-        return bool(project), project
-
-    # pylint:disable=too-many-arguments
-    def project_list(
-        self,
-        cloud_account: str,
-        query_preset: str,
-        properties_to_select: List[str],
-        group_by: str,
-        return_html: bool,
-        **kwargs,
-    ) -> str:
-        """
-        Finds all projects that match a particular query
-        :param cloud_account: The account from the clouds configuration to use
-        :param query_preset: The query to use when searching for projects
-        :param properties_to_select: The list of properties to select and output from the found projects
-        :param group_by: Property to group returned results - can be empty for no grouping
-        :param return_html: When True tables returned are in html format
-        :return: (String or Dictionary of strings) Table(s) of results grouped by the 'group_by' parameter
-        """
-
-        return self._project_api.search(
-            cloud_account=cloud_account,
-            query_params=QueryParams(
-                query_preset=query_preset,
-                properties_to_select=properties_to_select,
-                group_by=group_by,
-                return_html=return_html,
-            ),
-            **kwargs,
-        )
-
-    def project_update(
-        self,
-        cloud_account: str,
-        project_identifier: str,
-        name: str,
-        email: str,
-        description: str,
-        is_enabled: str,
-        immutable: str,
-    ) -> Tuple[bool, Optional[Project]]:
-        """
-        Find and update a given project's properties.
-        :param cloud_account: The account from the clouds configuration to use
-        :param project_identifier: Name or Openstack ID of the project to update
-        :param name: Name of the project
-        :param email: Contact email of the project
-        :param description: Description of the project
-        :param is_enabled: Enable or disable the project (takes values of unchanged, true or false)
-        :param immutable: Make the project immutable or not (takes values of unchanged, true or false)
-        :return: status, optional project
-        """
-
-        def convert_to_optional_bool(value: str) -> Optional[bool]:
-            if value.casefold() == "true".casefold():
-                return True
-            if value.casefold() == "false".casefold():
-                return False
-            return None
-
-        details = ProjectDetails(
-            name=name,
-            email=email,
-            description=description,
-            is_enabled=convert_to_optional_bool(is_enabled),
-            immutable=convert_to_optional_bool(immutable),
-        )
-        project = self._identity_api.update_project(
-            cloud_account=cloud_account,
-            project_identifier=project_identifier,
-            project_details=details,
         )
         return bool(project), project
