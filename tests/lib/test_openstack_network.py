@@ -96,33 +96,6 @@ class OpenstackNetworkTests(unittest.TestCase):
         assert returned == [expected, expected]
 
     @raises(MissingMandatoryParamError)
-    def test_get_floating_ip_throws_missing_address(self):
-        """
-        Tests that get floating IP will throw for a missing address
-        """
-        self.instance.get_floating_ip(NonCallableMock(), " \t")
-
-    def test_get_floating_ip_call_success(self):
-        """
-        Tests get floating IP returns correctly
-        """
-        cloud, ip_address = NonCallableMock(), NonCallableMock()
-        returned = self.instance.get_floating_ip(cloud, ip_address)
-
-        self.mocked_connection.assert_called_with(cloud)
-        self.network_api.get_ip.assert_called_once_with(ip_address.strip())
-        assert returned == self.network_api.get_ip.return_value
-
-    def test_get_floating_ip_call_failure(self):
-        """
-        Tests get floating IP returns None if a result isn't found
-        """
-        cloud, ip_address = NonCallableMock(), NonCallableMock()
-        self.network_api.get_ip.side_effect = ResourceNotFound
-        returned = self.instance.get_floating_ip(cloud, ip_address)
-        assert returned is None
-
-    @raises(MissingMandatoryParamError)
     def test_find_network_raises_for_missing_param(self):
         """
         Tests that find network will raise if the identifier is missing

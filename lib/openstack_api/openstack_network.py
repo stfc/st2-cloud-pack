@@ -53,23 +53,6 @@ class OpenstackNetwork(OpenstackWrapperBase):
                 )
         return created
 
-    def get_floating_ip(self, cloud_account: str, ip_addr: str) -> Optional[FloatingIP]:
-        """
-        Gets the details of a given floating IP address
-        :param cloud_account: The account from the clouds configuration to use
-        :param ip_addr: The IP address to return details of
-        :return: The associated IP Address record if available, else None
-        """
-        ip_addr = ip_addr.strip()
-        if not ip_addr:
-            raise MissingMandatoryParamError("An IP address is required")
-
-        with self._connection_cls(cloud_account) as conn:
-            try:
-                return conn.network.get_ip(ip_addr)
-            except ResourceNotFound:
-                return None
-
     def find_network(
         self, cloud_account: str, network_identifier: str
     ) -> Optional[Network]:
