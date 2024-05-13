@@ -3,8 +3,7 @@ from typing import Tuple, Optional, Dict, Callable
 from openstack.identity.v3.project import Project
 
 from openstack_api.openstack_identity import OpenstackIdentity
-from openstack_api.openstack_project import OpenstackProject
-from openstack_api.openstack_query import OpenstackQuery
+
 from structs.project_details import ProjectDetails
 from st2common.runners.base_action import Action
 
@@ -15,12 +14,6 @@ class ProjectAction(Action):
         super().__init__(*args, config=config, **kwargs)
         self._identity_api: OpenstackIdentity = config.get(
             "openstack_identity_api", OpenstackIdentity()
-        )
-        self._project_api: OpenstackProject = config.get(
-            "openstack_project_api", OpenstackProject()
-        )
-        self._query_api: OpenstackQuery = config.get(
-            "openstack_query_api", OpenstackQuery()
         )
 
     def run(self, submodule: str, **kwargs):
@@ -47,13 +40,7 @@ class ProjectAction(Action):
         project = self._identity_api.find_mandatory_project(
             cloud_account=cloud_account, project_identifier=project_identifier
         )
-        project_string = self._query_api.parse_and_output_table(
-            items=[project],
-            property_funcs=self._project_api.get_query_property_funcs(cloud_account),
-            properties_to_select=["id", "name", "description", "email"],
-            group_by="",
-            return_html=False,
-        )
+        project_string = {k: project[k] for k in ["id", "name", "description", "email"]}
 
         if delete:
             delete_ok = self._identity_api.delete_project(
