@@ -2,7 +2,6 @@ import ipaddress
 import random
 from typing import Optional, List
 
-from openstack.exceptions import ResourceNotFound
 from openstack.network.v2.floating_ip import FloatingIP
 from openstack.network.v2.network import Network
 from openstack.network.v2.rbac_policy import RBACPolicy

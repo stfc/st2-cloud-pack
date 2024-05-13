@@ -3,7 +3,6 @@ import unittest
 from unittest.mock import NonCallableMock, Mock, ANY, MagicMock, patch
 
 from nose.tools import raises
-from openstack.exceptions import ResourceNotFound
 
 from enums.network_providers import NetworkProviders
 from enums.rbac_network_actions import RbacNetworkActions
