@@ -1,7 +1,5 @@
-from unittest.mock import call, create_autospec, NonCallableMock
-from openstack_api.dataclasses import QueryParams
+from unittest.mock import create_autospec, NonCallableMock
 
-from openstack_api.openstack_floating_ip import OpenstackFloatingIP
 from openstack_api.openstack_network import OpenstackNetwork
 from openstack_api.openstack_query import OpenstackQuery
 from src.floating_ip_actions import FloatingIPActions
@@ -22,16 +20,13 @@ class TestFloatingIPActions(OpenstackActionTestBase):
         """
         super().setUp()
         self.network_mock = create_autospec(OpenstackNetwork)
-        self.floating_ip_mock = create_autospec(OpenstackFloatingIP)
         # Want to keep __getitem__ otherwise all f"search_{query_preset}"
         # calls will go to the same mock
-        self.floating_ip_mock.__getitem__ = OpenstackFloatingIP.__getitem__
 
         self.query_mock = create_autospec(OpenstackQuery)
         self.action: FloatingIPActions = self.get_action_instance(
             api_mocks={
                 "openstack_network_api": self.network_mock,
-                "openstack_floating_ip_api": self.floating_ip_mock,
                 "openstack_query_api": self.query_mock,
             }
         )
