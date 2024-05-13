@@ -1,4 +1,4 @@
-from typing import Tuple, Union, Dict, List, Callable
+from typing import Tuple, Dict, List, Callable
 
 from openstack.network.v2.floating_ip import FloatingIP
 

@@ -1,7 +1,5 @@
 from typing import Dict, Callable
 
-from openstack.exceptions import ResourceNotFound
-
 from openstack_action import OpenstackAction
 from openstack_api.openstack_quota import OpenstackQuota
 from structs.quota_details import QuotaDetails

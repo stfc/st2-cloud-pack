@@ -1,4 +1,4 @@
-from typing import Dict, Union, Tuple, Optional, Callable, List
+from typing import Dict, Tuple, Optional, Callable
 
 from openstack.network.v2.network import Network
 from openstack.network.v2.rbac_policy import RBACPolicy

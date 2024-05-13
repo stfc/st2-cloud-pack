@@ -1,4 +1,4 @@
-from typing import Dict, Callable, Tuple
+from typing import Dict, Callable
 
 from st2common.runners.base_action import Action
 

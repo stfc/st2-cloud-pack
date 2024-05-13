@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, Union, List, Callable
+from typing import Dict, Tuple, List, Callable
 
 from openstack.network.v2.security_group import SecurityGroup
 from st2common.runners.base_action import Action
