@@ -324,7 +324,7 @@ class OpenstackNetworkTests(unittest.TestCase):
         Tests that add interface to router will throw if the router
         was not found
         """
-        self.instance.get_router = Mock(return_value=None)
+        self.instance.find_router = Mock(return_value=None)
         self.instance.add_interface_to_router(
             NonCallableMock(), NonCallableMock(), NonCallableMock(), NonCallableMock()
         )
@@ -335,7 +335,7 @@ class OpenstackNetworkTests(unittest.TestCase):
         Tests that add interface to router will throw if the network
         was not found
         """
-        self.instance.get_router = Mock()
+        self.instance.find_router = Mock()
         self.instance.find_subnet = Mock(return_value=None)
         self.instance.add_interface_to_router(
             NonCallableMock(),
@@ -348,7 +348,7 @@ class OpenstackNetworkTests(unittest.TestCase):
         """
         Tests that the correct call is made when add_interface is called
         """
-        self.instance.get_router = Mock()
+        self.instance.find_router = Mock()
         self.instance.find_subnet = Mock()
         cloud, project = NonCallableMock(), NonCallableMock()
         router_id, subnet_id = NonCallableMock(), NonCallableMock()
@@ -358,21 +358,21 @@ class OpenstackNetworkTests(unittest.TestCase):
         )
 
         self.mocked_connection.assert_called_once_with(cloud)
-        self.instance.get_router.assert_called_once_with(cloud, project, router_id)
+        self.instance.find_router.assert_called_once_with(cloud, project, router_id)
         self.instance.find_subnet.assert_called_once_with(cloud, project, subnet_id)
 
         self.network_api.add_interface_to_router.assert_called_once_with(
-            router=self.instance.get_router.return_value,
+            router=self.instance.find_router.return_value,
             subnet_id=self.instance.find_subnet.return_value.id,
         )
-        assert returned == self.instance.get_router.return_value
+        assert returned == self.instance.find_router.return_value
 
     def test_get_router(self):
         """
         Tests the get router call is correct
         """
         cloud, project, router = NonCallableMock(), NonCallableMock(), NonCallableMock()
-        returned = self.instance.get_router(cloud, project, router)
+        returned = self.instance.find_router(cloud, project, router)
 
         self.identity_module.find_mandatory_project.assert_called_once_with(
             cloud, project
@@ -392,7 +392,7 @@ class OpenstackNetworkTests(unittest.TestCase):
         """
         cloud, network = NonCallableMock(), NonCallableMock()
         self.instance.find_network = Mock(return_value=None)
-        self.instance.get_used_subnet_nets(cloud, network)
+        self.instance.find_used_subnet_nets(cloud, network)
 
     def test_get_used_subnet_nets(self):
         """
@@ -408,7 +408,7 @@ class OpenstackNetworkTests(unittest.TestCase):
         subnet_2.gateway_ip = "10.0.123.7"
 
         self.network_api.subnets.return_value = [subnet_1, subnet_2]
-        result = self.instance.get_used_subnet_nets(cloud, network)
+        result = self.instance.find_used_subnet_nets(cloud, network)
 
         self.mocked_connection.assert_called_once_with(cloud)
         self.network_api.subnets.assert_called_once_with(
@@ -427,7 +427,7 @@ class OpenstackNetworkTests(unittest.TestCase):
         cloud, network = NonCallableMock(), NonCallableMock()
 
         self.network_api.subnets.return_value = []
-        result = self.instance.get_used_subnet_nets(cloud, network)
+        result = self.instance.find_used_subnet_nets(cloud, network)
 
         self.mocked_connection.assert_called_once_with(cloud)
         self.network_api.subnets.assert_called_once_with(
@@ -445,10 +445,10 @@ class OpenstackNetworkTests(unittest.TestCase):
         used_networks = [
             ipaddress.ip_network(f"192.168.{i}.0/24") for i in range(1, 255) if i != 32
         ]
-        self.instance.get_used_subnet_nets = Mock(return_value=used_networks)
+        self.instance.find_used_subnet_nets = Mock(return_value=used_networks)
 
         subnet = self.instance.select_random_subnet(cloud, network)
-        self.instance.get_used_subnet_nets.assert_called_once_with(cloud, network)
+        self.instance.find_used_subnet_nets.assert_called_once_with(cloud, network)
         assert subnet == ipaddress.ip_network("192.168.32.0/24")
 
     def test_select_random_does_not_pass_in_used_subnets(self):
@@ -461,7 +461,7 @@ class OpenstackNetworkTests(unittest.TestCase):
         used_networks = [
             ipaddress.ip_network(f"192.168.{i}.0/24") for i in range(1, 100)
         ]
-        self.instance.get_used_subnet_nets = Mock(return_value=used_networks)
+        self.instance.find_used_subnet_nets = Mock(return_value=used_networks)
 
         with patch("openstack_api.openstack_network.random.choice") as mocked_choice:
             self.instance.select_random_subnet(cloud, network)
@@ -476,7 +476,7 @@ class OpenstackNetworkTests(unittest.TestCase):
         used_subnets = [
             ipaddress.ip_network(f"192.168.{i}.0/24") for i in range(1, 255)
         ]
-        self.instance.get_used_subnet_nets = Mock(return_value=used_subnets)
+        self.instance.find_used_subnet_nets = Mock(return_value=used_subnets)
         self.instance.select_random_subnet(NonCallableMock(), NonCallableMock())
 
     def test_create_subnet(self):

@@ -185,7 +185,7 @@ class OpenstackNetwork(OpenstackWrapperBase):
         :param subnet_identifier: The subnet name or ID of the router to add an interface to
         :return: The router the subnet was added to
         """
-        router = self.get_router(cloud_account, project_identifier, router_identifier)
+        router = self.find_router(cloud_account, project_identifier, router_identifier)
         if not router:
             raise ItemNotFoundError("The specified router was not found")
 
@@ -220,7 +220,7 @@ class OpenstackNetwork(OpenstackWrapperBase):
                 is_ha=True,
             )
 
-    def get_router(
+    def find_router(
         self, cloud_account: str, project_identifier: str, router_identifier: str
     ) -> Optional[Router]:
         """
@@ -239,7 +239,7 @@ class OpenstackNetwork(OpenstackWrapperBase):
                 name_or_id=router_identifier, project_id=project.id, ignore_missing=True
             )
 
-    def get_used_subnet_nets(
+    def find_used_subnet_nets(
         self, cloud_account: str, network_identifier: str
     ) -> List[ipaddress.IPv4Network]:
         """
@@ -272,7 +272,7 @@ class OpenstackNetwork(OpenstackWrapperBase):
         """
         avail = [ipaddress.ip_network(f"192.168.{i}.0/24") for i in range(1, 255)]
 
-        used_subnets = self.get_used_subnet_nets(cloud_account, network_identifier)
+        used_subnets = self.find_used_subnet_nets(cloud_account, network_identifier)
         avail = [i for i in avail if i not in used_subnets]
         if not avail:
             raise ItemNotFoundError("No available subnets")
