@@ -1,4 +1,4 @@
-from typing import Union, List, Dict, Callable
+from typing import Union, List, Dict, Callable, Optional
 from enums.query.props.prop_enum import PropEnum
 from openstack_query.query_blocks.result import Result
 from custom_types.openstack_query.aliases import OpenstackResourceObj, PropValue
@@ -79,15 +79,13 @@ class ResultsContainer:
 
             # NOTE: This mutates forwarded_results
             forwarded_result = self._get_forwarded_result(prop_val, forwarded_results)
-
             item.update_forwarded_properties(forwarded_result)
 
-    @staticmethod
     def _get_forwarded_result(
-        prop_val: str, forwarded_results: Dict[str, List]
-    ) -> Dict:
+        self, prop_val: str, forwarded_results: Dict[str, List]
+    ) -> Optional[Dict]:
         """
-        static helper method to return forwarded values that match a given property value. Used for chaining
+        helper method to return forwarded values that match a given property value. Used for chaining
         This handles two chaining cases:
             - many-to-one (or one-to-one as we're using duplicates)
                 - where multiple forwarded outputs maps to one openstack object in result
@@ -100,8 +98,10 @@ class ResultsContainer:
         :param forwarded_results: a grouped dictionary which holds forwarded values grouped by common property value
         """
 
-        if not forwarded_results:
-            return {}
+        # if no forwarded value given - we set it with default out
+        if prop_val not in forwarded_results:
+            forwarded_keys = list(forwarded_results.values())[0][0].keys()
+            return {k: self.DEFAULT_OUT for k in forwarded_keys}
 
         result_to_attach = forwarded_results[prop_val][0]
 
