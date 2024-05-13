@@ -40,7 +40,9 @@ class ProjectAction(Action):
         project = self._identity_api.find_mandatory_project(
             cloud_account=cloud_account, project_identifier=project_identifier
         )
-        project_string = {k: project[k] for k in ["id", "name", "description", "email"]}
+        project_string = "\n".join(
+            f"{k}: {project[k]}" for k in ["id", "name", "description", "email"]
+        )
 
         if delete:
             delete_ok = self._identity_api.delete_project(

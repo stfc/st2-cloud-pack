@@ -116,30 +116,38 @@ class TestProjectAction(OpenstackActionTestBase):
         Tests that on successful deletion it returns the correct status and string
         """
         self.identity_mock.delete_project.return_value = True
-        self.identity_mock.find_mandatory_project.return_value = NonCallableMock()
+        self.identity_mock.find_mandatory_project.return_value = {
+            "id": "ProjectID",
+            "name": "proj-name",
+            "description": "desc",
+            "email": "example@example.com",
+            "ignored1": "foo",
+            "ignored2": "foo",
+        }
+
         returned_values = self.action.project_delete(
             cloud_account="test",
             project_identifier="ProjectID",
             delete=True,
         )
+
         self.identity_mock.find_mandatory_project.assert_called_once_with(
             cloud_account="test", project_identifier="ProjectID"
         )
-        self.query_mock.parse_and_output_table.assert_called_once_with(
-            items=[self.identity_mock.find_mandatory_project.return_value],
-            property_funcs=self.project_mock.get_query_property_funcs.return_value,
-            properties_to_select=["id", "name", "description", "email"],
-            group_by="",
-            return_html=False,
-        )
+
         self.identity_mock.delete_project.assert_called_once_with(
             cloud_account="test", project_identifier="ProjectID"
         )
+
         self.assertEqual(
             returned_values,
             (
                 True,
-                f"The following project has been deleted:\n\n{self.query_mock.parse_and_output_table.return_value}",
+                "The following project has been deleted:\n\n"
+                "id: ProjectID\n"
+                "name: proj-name\n"
+                "description: desc\n"
+                "email: example@example.com",
             ),
         )
 
@@ -148,31 +156,34 @@ class TestProjectAction(OpenstackActionTestBase):
         Tests that project_delete does not delete when delete is False
         """
         self.identity_mock.delete_project.return_value = True
-        self.identity_mock.find_mandatory_project.return_value = NonCallableMock()
+        self.identity_mock.find_mandatory_project.return_value = {
+            "id": "ProjectID",
+            "name": "proj-name",
+            "description": "desc",
+            "email": "example@example.com",
+            "ignored1": "foo",
+            "ignored2": "foo",
+        }
+
         returned_values = self.action.project_delete(
             cloud_account="test",
             project_identifier="ProjectID",
             delete=False,
         )
+
         self.identity_mock.find_mandatory_project.assert_called_once_with(
             cloud_account="test", project_identifier="ProjectID"
         )
-        self.query_mock.parse_and_output_table.assert_called_once_with(
-            items=[self.identity_mock.find_mandatory_project.return_value],
-            property_funcs=self.project_mock.get_query_property_funcs.return_value,
-            properties_to_select=["id", "name", "description", "email"],
-            group_by="",
-            return_html=False,
-        )
-        self.identity_mock.delete_project.assert_not_called()
+
         self.assertEqual(
             returned_values,
             (
                 False,
-                (
-                    f"Tick the delete checkbox to delete the project:"
-                    f"\n\n{self.query_mock.parse_and_output_table.return_value}"
-                ),
+                "Tick the delete checkbox to delete the project:\n\n"
+                "id: ProjectID\n"
+                "name: proj-name\n"
+                "description: desc\n"
+                "email: example@example.com",
             ),
         )
 
