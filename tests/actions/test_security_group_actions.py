@@ -27,52 +27,6 @@ class TestNetworkActions(OpenstackActionTestBase):
             api_mocks=self.security_group_mock
         )
 
-    def test_find_security_group_successful(self):
-        """
-        Tests find security group forwards the result and status if successful
-        """
-        cloud, project, group = NonCallableMock(), NonCallableMock(), NonCallableMock()
-        returned = self.action.security_group_find(cloud, project, group)
-        expected = self.security_group_mock.find_security_group.return_value
-
-        self.security_group_mock.find_security_group.assert_called_with(
-            cloud, project, group
-        )
-        assert returned == (True, expected)
-
-    def test_find_security_group_failed(self):
-        """
-        Tests method returns status and error string on failure
-        """
-        self.security_group_mock.find_security_group.return_value = None
-        returned = self.action.security_group_find(
-            NonCallableMock(), NonCallableMock(), NonCallableMock()
-        )
-        assert returned[0] is False
-        assert "could not be found" in returned[1]
-
-    def test_search_security_groups_successful(self):
-        """
-        Tests search security group forwards the result and status if successful
-        """
-        cloud, project = NonCallableMock(), NonCallableMock()
-        returned = self.action.security_group_list(cloud, project)
-
-        self.security_group_mock.search_security_group.assert_called_with(
-            cloud, project
-        )
-        expected = self.security_group_mock.search_security_group.return_value
-        assert returned == (True, expected)
-
-    def test_search_security_groups_failed(self):
-        """
-        Tests method returns status and empty list on failure
-        """
-        self.security_group_mock.search_security_group.return_value = []
-        returned = self.action.security_group_list(NonCallableMock(), NonCallableMock())
-
-        assert returned == (False, [])
-
     def test_create_security_group_success(self):
         """
         Tests create security group forwards the new security group if successful

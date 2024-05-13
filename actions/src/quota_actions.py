@@ -12,7 +12,7 @@ class QuotaActions(OpenstackAction):
         self._api: OpenstackQuota = config.get("openstack_api", OpenstackQuota())
 
         # lists possible functions that could be run as an action
-        self.func = {"quota_set": self.quota_set, "quota_show": self.quota_show}
+        self.func = {"quota_set": self.quota_set}
 
     def run(self, submodule: str, **kwargs):
         """
