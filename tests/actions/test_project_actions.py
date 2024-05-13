@@ -1,8 +1,6 @@
 from unittest.mock import create_autospec, NonCallableMock
 
 from openstack_api.openstack_identity import OpenstackIdentity
-from openstack_api.openstack_project import OpenstackProject
-from openstack_api.openstack_query import OpenstackQuery
 from src.project_actions import ProjectAction
 from structs.project_details import ProjectDetails
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase
@@ -22,17 +20,12 @@ class TestProjectAction(OpenstackActionTestBase):
         """
         super().setUp()
         self.identity_mock = create_autospec(OpenstackIdentity)
-        self.project_mock = create_autospec(OpenstackProject)
         # Want to keep __getitem__ otherwise all f"search_{query_preset}"
         # calls will go to the same mock
-        self.project_mock.__getitem__ = OpenstackProject.__getitem__
 
-        self.query_mock = create_autospec(OpenstackQuery)
         self.action: ProjectAction = self.get_action_instance(
             api_mocks={
                 "openstack_identity_api": self.identity_mock,
-                "openstack_project_api": self.project_mock,
-                "openstack_query_api": self.query_mock,
             }
         )
 
