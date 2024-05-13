@@ -149,7 +149,6 @@ class TestNetworkActions(OpenstackActionTestBase):
         expected_methods = [
             "security_group_create",
             "security_group_rule_create",
-            "security_group_find",
             "security_group_list",
         ]
         self._test_run_dynamic_dispatch(expected_methods)

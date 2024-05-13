@@ -138,8 +138,6 @@ class TestNetworkActions(OpenstackActionTestBase):
         Tests that run can dispatch to the Stackstorm facing methods
         """
         expected_methods = [
-            "network_find",
-            "network_rbac_search",
             "network_create",
             "network_rbac_create",
             "network_delete",

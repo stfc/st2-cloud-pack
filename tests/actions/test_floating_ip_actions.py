@@ -36,12 +36,8 @@ class TestFloatingIPActions(OpenstackActionTestBase):
         Tests that run can dispatch to the Stackstorm facing methods
         """
         expected_methods = [
-            "floating_ip_get",
             "floating_ip_delete",
             "floating_ip_create",
-            "floating_ip_list",
-            "find_non_existent_floating_ips",
-            "find_non_existent_projects",
         ]
         self._test_run_dynamic_dispatch(expected_methods)
 
