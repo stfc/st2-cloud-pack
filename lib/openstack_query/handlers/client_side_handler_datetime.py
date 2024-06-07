@@ -84,7 +84,7 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         given_timestamp = TimeUtils.get_timestamp_in_seconds(
             days, hours, minutes, seconds
         )
-        return not prop_timestamp > given_timestamp
+        return prop_timestamp <= given_timestamp
 
     @staticmethod
     def _prop_younger_than(
@@ -137,6 +137,6 @@ class ClientSideHandlerDateTime(ClientSideHandler):
         if prop is None:
             return False
         prop_datetime = datetime.strptime(prop, "%Y-%m-%dT%H:%M:%SZ").timestamp()
-        return not prop_datetime < TimeUtils.get_timestamp_in_seconds(
+        return prop_datetime >= TimeUtils.get_timestamp_in_seconds(
             days, hours, minutes, seconds
         )

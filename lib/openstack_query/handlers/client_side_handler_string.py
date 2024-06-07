@@ -31,4 +31,5 @@ class ClientSideHandlerString(ClientSideHandler):
         """
         if prop is None:
             return False
-        return bool(re.match(re.compile(rf"{value}"), prop))
+        res = re.match(re.compile(rf"{value}"), prop)
+        return bool(res)

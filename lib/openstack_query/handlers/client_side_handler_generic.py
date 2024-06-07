@@ -35,7 +35,8 @@ class ClientSideHandlerGeneric(ClientSideHandler):
             raise MissingMandatoryParamError(
                 "values list must contain at least one item to match against"
             )
-        return not any(prop == val for val in values)
+        res = any(prop == val for val in values)
+        return not res
 
     @staticmethod
     def _prop_any_in(prop: Any, values: List[PropValue]) -> bool:
