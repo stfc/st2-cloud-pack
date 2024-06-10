@@ -15,25 +15,31 @@ class ClientSideHandlerGeneric(ClientSideHandler):
     Filter functions which map to QueryPresetsGeneric are defined here
     """
 
-    def __init__(self, filter_function_mappings: PresetPropMappings):
-        super().__init__(filter_function_mappings)
-
-        self._filter_functions = {
+    def __init__(self, preset_prop_mappings: PresetPropMappings):
+        filter_mappings = {
             QueryPresetsGeneric.ANY_IN: self._prop_any_in,
             QueryPresetsGeneric.EQUAL_TO: self._prop_equal_to,
             QueryPresetsGeneric.NOT_ANY_IN: self._prop_not_any_in,
             QueryPresetsGeneric.NOT_EQUAL_TO: self._prop_not_equal_to,
         }
+        super().__init__(filter_mappings, preset_prop_mappings)
 
-    def _prop_not_any_in(self, prop: Any, values: List[PropValue]) -> bool:
+    @staticmethod
+    def _prop_not_any_in(prop: Any, values: List[PropValue]) -> bool:
         """
         Filter function which returns true if a prop does not match any in a given list
         :param prop: prop value to check against
         :param values: a list of values to check against
         """
-        return not self._prop_any_in(prop, values)
+        if len(values) == 0:
+            raise MissingMandatoryParamError(
+                "values list must contain at least one item to match against"
+            )
+        res = any(prop == val for val in values)
+        return not res
 
-    def _prop_any_in(self, prop: Any, values: List[PropValue]) -> bool:
+    @staticmethod
+    def _prop_any_in(prop: Any, values: List[PropValue]) -> bool:
         """
         Filter function which returns true if a prop matches any in a given list
         :param prop: prop value to check against
@@ -45,15 +51,17 @@ class ClientSideHandlerGeneric(ClientSideHandler):
             )
         return any(prop == val for val in values)
 
-    def _prop_not_equal_to(self, prop: Any, value: PropValue) -> bool:
+    @staticmethod
+    def _prop_not_equal_to(prop: Any, value: PropValue) -> bool:
         """
         Filter function which returns true if a prop is not equal to a given value
         :param prop: prop value to check against
         :param value: given value to check against
         """
-        return not self._prop_equal_to(prop, value)
+        return not prop == value
 
-    def _prop_equal_to(self, prop: Any, value: PropValue) -> bool:
+    @staticmethod
+    def _prop_equal_to(prop: Any, value: PropValue) -> bool:
         """
         Filter function which returns true if a prop is equal to a given value
         :param prop: prop value to check against

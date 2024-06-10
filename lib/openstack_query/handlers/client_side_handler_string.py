@@ -1,6 +1,6 @@
 import re
 
-from typing import Any
+from typing import Union
 from custom_types.openstack_query.aliases import PresetPropMappings
 
 from enums.query.query_presets import QueryPresetsString
@@ -16,17 +16,20 @@ class ClientSideHandlerString(ClientSideHandler):
     Filter functions which map to QueryPresetsString are defined here
     """
 
-    def __init__(self, filter_function_mappings: PresetPropMappings):
-        super().__init__(filter_function_mappings)
-
-        self._filter_functions = {
+    def __init__(self, preset_prop_mappings: PresetPropMappings):
+        filter_mappings = {
             QueryPresetsString.MATCHES_REGEX: self._prop_matches_regex,
         }
+        super().__init__(filter_mappings, preset_prop_mappings)
 
-    def _prop_matches_regex(self, prop: Any, value: str) -> bool:
+    @staticmethod
+    def _prop_matches_regex(prop: Union[str, None], value: str) -> bool:
         """
         Filter function which returns true if a prop matches a regex pattern
         :param prop: prop value to check against
         :param value: a string which can be converted into a valid regex pattern to run
         """
-        return bool(re.match(re.compile(rf"{value}"), prop))
+        if prop is None:
+            return False
+        res = re.match(re.compile(rf"{value}"), prop)
+        return bool(res)

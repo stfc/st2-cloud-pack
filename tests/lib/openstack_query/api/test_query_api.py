@@ -7,8 +7,6 @@ from exceptions.parse_query_error import ParseQueryError
 from tests.lib.openstack_query.mocks.mocked_query_presets import MockQueryPresets
 from tests.lib.openstack_query.mocks.mocked_props import MockProperties
 
-# pylint:disable=protected-access
-
 
 @pytest.fixture(name="instance")
 def instance_fixture():
@@ -16,7 +14,6 @@ def instance_fixture():
     Returns an instance to run tests with
     """
     res = QueryAPI(query_components=MagicMock())
-    # pylint: disable=protected-access
     res.results_container = MagicMock()
     return res
 
@@ -300,7 +297,6 @@ def test_to_string(instance):
     mock_include_group_titles = NonCallableMock()
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
-    # pylint: disable=protected-access
     instance.results_container = MagicMock()
 
     res = instance.to_string(
