@@ -104,7 +104,7 @@ class QueryChainer:
 
         # remove user-defined parsing
         prev_selected_props = current_query.output.selected_props
-        prev_grouping = current_query.parser.group_by
+        prev_grouping = current_query.parser.grouper
         current_query.parser.group_by = None
 
         # grab all link prop values - including duplicates
@@ -113,7 +113,7 @@ class QueryChainer:
         ]
 
         # re-configure user-defined parsing
-        current_query.parser.group_by = prev_grouping
+        current_query.parser.grouper = prev_grouping
         current_query.output.selected_props = prev_selected_props
 
         new_query = QueryAPI(QueryFactory.build_query_deps(query_type.value))
