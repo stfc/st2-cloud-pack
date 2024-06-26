@@ -25,6 +25,9 @@ class QueryParser:
         self._sort = False
         self._group = False
 
+    def reset_group_by(self):
+        self._group = False
+
     def parse_sort_by(
         self, *sort_by: Tuple[Union[PropEnum, str], Union[SortOrder, str]]
     ):
