@@ -221,7 +221,7 @@ def test_find_servers_with_decom_images_valid(mock_list_to_regex, mock_image_que
     mock_server_query_obj.to_props.assert_called_once()
 
     mock_server_query_obj.append_from.assert_called_once_with(
-        "PROJECT_QUERY", "test-cloud-account", "name"
+        "PROJECT_QUERY", "test-cloud-account", ["name"]
     )
     mock_server_query_obj.group_by.assert_called_once_with("user_id")
     assert res == mock_server_query_obj

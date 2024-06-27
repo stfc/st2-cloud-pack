@@ -203,7 +203,7 @@ def test_find_users_with_decom_flavor_valid(mock_flavor_query):
     mock_server_query_obj.to_props.assert_called_once()
 
     mock_server_query_obj.append_from.assert_called_once_with(
-        "PROJECT_QUERY", "test-cloud-account", ProjectProperties.PROJECT_NAME
+        "PROJECT_QUERY", "test-cloud-account", [ProjectProperties.PROJECT_NAME]
     )
 
     mock_server_query_obj.group_by.assert_called_once_with(ServerProperties.USER_ID)
