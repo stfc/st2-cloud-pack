@@ -212,7 +212,7 @@ class QueryAPI:
             self.results_container, title, groups, include_group_titles, **kwargs
         )
 
-    def to_csv(self, dir_path: str) -> str:
+    def to_csv(self, dir_path: str) -> None:
         """
         Creates csv files
         :param dir_path: string representing directory to store csv files.
