@@ -136,7 +136,7 @@ class QueryChainer:
         current_query,
         query_type: Union[str, QueryTypes],
         cloud_account: Union[str, CloudDomains],
-        *props: PropEnum,
+        props: List[PropEnum],
     ):
         """
         Public static method to run query from an append_from call - and return result

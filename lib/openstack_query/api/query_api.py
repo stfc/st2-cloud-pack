@@ -243,7 +243,7 @@ class QueryAPI:
         self,
         query_type: Union[str, "QueryTypes"],
         cloud_account: Union[str, CloudDomains],
-        *props: PropEnum,
+        props: List[PropEnum],
     ):
         """
         Public method to append specific properties from other queries to the output
@@ -259,7 +259,7 @@ class QueryAPI:
         :param props: list of props from new queries to get
         """
         link_prop, results = self.chainer.run_append_from_query(
-            self, query_type, cloud_account, *props
+            self, query_type, cloud_account, props
         )
         self.results_container.apply_forwarded_results(link_prop, results)
         return self
