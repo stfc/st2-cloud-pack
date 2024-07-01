@@ -82,9 +82,10 @@ def test_check_supported_all_presets(instance):
 def test_prop_older_than(run_prop_test_case):
     """
     Tests prop_older_than client-side-filter with different values
-    This essentially compares two numbers (number of seconds) and if the prop value is higher, it returns True
+    This essentially compares two numbers (number of seconds) and if the prop value is lower, it returns True
+    because older timestamps have fewer seconds passed since 1970 than newer ones
     """
-    for i, expected in [(200, True), (400, False), (300, False)]:
+    for i, expected in [(200, False), (400, True), (300, False)]:
         assert run_prop_test_case(QueryPresetsDateTime.OLDER_THAN, 300, i) == expected
 
 
@@ -92,8 +93,9 @@ def test_prop_younger_than(run_prop_test_case):
     """
     Tests younger_than client-side-filter with different values
     This essentially compares two numbers (number of seconds) and if the prop value is lower, it returns True
+    because newer timestamps have more seconds passed since 1970 than older ones
     """
-    for i, expected in [(200, False), (400, True), (300, False)]:
+    for i, expected in [(200, True), (400, False), (300, False)]:
         assert run_prop_test_case(QueryPresetsDateTime.YOUNGER_THAN, 300, i) == expected
 
 
@@ -102,7 +104,7 @@ def test_prop_younger_than_or_equal_to(run_prop_test_case):
     Tests prop_younger_than_or_equal_to client-side-filter with different values
     Same as prop_younger_than, but if equal will also return True
     """
-    for i, expected in [(200, False), (400, True), (300, True)]:
+    for i, expected in [(200, True), (400, False), (300, True)]:
         assert (
             run_prop_test_case(QueryPresetsDateTime.YOUNGER_THAN_OR_EQUAL_TO, 300, i)
             == expected
@@ -114,7 +116,7 @@ def test_prop_older_than_or_equal_to(run_prop_test_case):
     Tests prop_older_than_or_equal_to client-side-filter with different values
     Same as prop_older_than, but if equal will also return True
     """
-    for i, expected in [(200, True), (400, False), (300, True)]:
+    for i, expected in [(200, False), (400, True), (300, True)]:
         assert (
             run_prop_test_case(QueryPresetsDateTime.OLDER_THAN_OR_EQUAL_TO, 300, i)
             == expected
