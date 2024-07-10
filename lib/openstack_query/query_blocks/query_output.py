@@ -122,7 +122,7 @@ class QueryOutput:
             for group_title in list(results.keys()):
                 output += self._generate_table(
                     results[group_title],
-                    return_html=True,
+                    return_html=False,
                     title=f"{group_title}:\n" if include_group_titles else None,
                     **kwargs,
                 )
@@ -223,7 +223,7 @@ class QueryOutput:
             headers = list(results[0].keys())
             rows = [list(row.values()) for row in results]
             output += tabulate(
-                rows, headers, tablefmt="html" if return_html else "grid", **kwargs
+                rows, headers, tablefmt="html" if return_html else "orgtbl", **kwargs
             )
         else:
             output += "No results found"
