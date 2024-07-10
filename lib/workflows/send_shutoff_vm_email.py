@@ -181,4 +181,12 @@ def send_shutoff_vm_email(
 
 if __name__ == "__main__":
     temp = SMTPAccount(username="", password="", server="ob-mgw.stfc.ac.uk", port=26, secure=False, smtp_auth=False)
-    send_shutoff_vm_email(smtp_account=temp, cloud_account="prod", all_projects=True,send_email=True,subject="You have Shutoff VMs", email_from="akhil.maganti@stfc.ac.uk")
+    send_shutoff_vm_email(
+        smtp_account=temp,
+        cloud_account="prod",
+        all_projects=True,
+        as_html=True,
+        send_email=True,
+        subject="You have Shutoff VMs",
+        email_from="akhil.maganti@stfc.ac.uk"
+    )
