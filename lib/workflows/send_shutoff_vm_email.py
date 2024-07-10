@@ -26,7 +26,9 @@ def find_servers_with_shutoff_vms(
     # server_query.where(QueryPresetsDateTime.OLDER_THAN, ServerProperties.SERVER_LAST_UPDATED_DATE, days=60)
     server_query.run(
         cloud_account,
-        as_admin=False
+        as_admin=False,
+        from_projects=from_projects if from_projects else None,
+        all_projects=not from_projects,
     )
 
     server_query.select("id", "name", "addresses")
@@ -46,21 +48,21 @@ def find_servers_with_shutoff_vms(
 
 
 def print_email_params(
-        email_addr: str, user_name: str, as_html: bool, decom_table: str
+        email_addr: str, user_name: str, as_html: bool, shutoff_table: str
 ):
     """
     Print email params instead of sending the email
     :param email_addr: email address to send to
     :param user_name: name of user in openstack
     :param as_html: A boolean which if selected will send an email, otherwise prints email details only
-    :param decom_table: a table representing info found in openstack
-    about VMs running with decommissioned images
+    :param shutoff_table: a table representing info found in openstack
+    about VMs in shutoff state
     """
     print(
         f"Send Email To: {email_addr}\n"
-        f"email_templates decom-email: username {user_name}\n"
+        f"email_templates shutoff-email: username {user_name}\n"
         f"send as html: {as_html}\n"
-        f"decom table: {decom_table}\n"
+        f"shutoff table: {shutoff_table}\n"
     )
 
 
@@ -178,5 +180,5 @@ def send_shutoff_vm_email(
 
 
 if __name__ == "__main__":
-    temp = SMTPAccount(username="", password="", server="mail.gridpp.rl.ac.uk", port=465, secure=False, smtp_auth=False)
-    send_shutoff_vm_email(smtp_account=temp, cloud_account="prod", all_projects=True,send_email=True,subject="You have shutoff VMs", email_from="akhil.maganti@stfc.ac.uk")
+    temp = SMTPAccount(username="", password="", server="ob-mgw.stfc.ac.uk", port=26, secure=False, smtp_auth=False)
+    send_shutoff_vm_email(smtp_account=temp, cloud_account="prod", all_projects=True,send_email=True,subject="You have Shutoff VMs", email_from="akhil.maganti@stfc.ac.uk")
