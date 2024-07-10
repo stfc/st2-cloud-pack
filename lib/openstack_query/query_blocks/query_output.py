@@ -122,7 +122,7 @@ class QueryOutput:
             for group_title in list(results.keys()):
                 output += self._generate_table(
                     results[group_title],
-                    return_html=False,
+                    return_html=True,
                     title=f"{group_title}:\n" if include_group_titles else None,
                     **kwargs,
                 )
