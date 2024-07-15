@@ -406,7 +406,7 @@ def test_send_shutoff_vm_email_print(
         cloud_account=cloud_account,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
-        as_html=True,
+        as_html=False,
         send_email=False,
         use_override=False,
         **mock_kwargs,
@@ -426,13 +426,13 @@ def test_send_shutoff_vm_email_print(
             call(
                 "user_email1",
                 "user1",
-                True,
+                False,
                 mock_query.to_string.return_value,
             ),
             call(
                 "user_email2",
                 "user2",
-                True,
+                False,
                 mock_query.to_string.return_value,
             ),
         ]
