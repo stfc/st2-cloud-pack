@@ -13,8 +13,7 @@ from structs.email.smtp_account import SMTPAccount
 
 
 def find_servers_with_shutoff_vms(
-        cloud_account: str,
-        from_projects: Optional[List[str]] = None
+    cloud_account: str, from_projects: Optional[List[str]] = None
 ):
     """
     :param cloud_account: string represents cloud account to use
@@ -23,7 +22,9 @@ def find_servers_with_shutoff_vms(
 
     # Find VMs that have been in shutoff state for more than 60 days
     server_query = ServerQuery()
-    server_query.where(QueryPresetsGeneric.ANY_IN, ServerProperties.SERVER_STATUS, values=["SHUTOFF"])
+    server_query.where(
+        QueryPresetsGeneric.ANY_IN, ServerProperties.SERVER_STATUS, values=["SHUTOFF"]
+    )
     server_query.run(
         cloud_account,
         as_admin=False,
@@ -46,7 +47,7 @@ def find_servers_with_shutoff_vms(
 
 
 def print_email_params(
-        email_addr: str, user_name: str, as_html: bool, shutoff_table: str
+    email_addr: str, user_name: str, as_html: bool, shutoff_table: str
 ):
     """
     Print email params instead of sending the email
@@ -64,9 +65,7 @@ def print_email_params(
     )
 
 
-def build_email_params(
-        user_name: str, shutoff_table: str, **email_kwargs
-):
+def build_email_params(user_name: str, shutoff_table: str, **email_kwargs):
     """
     build email params dataclass which will be used to configure how to send the email
     :param user_name: name of user in openstack
@@ -107,16 +106,16 @@ def find_user_info(user_id, cloud_account, override_email_address):
 # pylint:disable=too-many-arguments
 # pylint:disable=too-many-locals
 def send_shutoff_vm_email(
-        smtp_account: SMTPAccount,
-        cloud_account: Union[CloudDomains, str],
-        limit_by_projects: Optional[List[str]] = None,
-        all_projects: bool = False,
-        as_html: bool = False,
-        send_email: bool = False,
-        use_override: bool = False,
-        override_email_address: Optional[str] = "cloud-support@stfc.ac.uk",
-        cc_cloud_support: bool = False,
-        **email_params_kwargs,
+    smtp_account: SMTPAccount,
+    cloud_account: Union[CloudDomains, str],
+    limit_by_projects: Optional[List[str]] = None,
+    all_projects: bool = False,
+    as_html: bool = False,
+    send_email: bool = False,
+    use_override: bool = False,
+    override_email_address: Optional[str] = "cloud-support@stfc.ac.uk",
+    cc_cloud_support: bool = False,
+    **email_params_kwargs,
 ):
     """
     Sends an email to each user who owns one or more VMs that are in shutoff state
@@ -144,8 +143,9 @@ def send_shutoff_vm_email(
     server_query = find_servers_with_shutoff_vms(cloud_account, limit_by_projects)
 
     for user_id in server_query.to_props().keys():
-        user_name, email_addr = (
-            find_user_info(user_id, cloud_account, override_email_address))
+        user_name, email_addr = find_user_info(
+            user_id, cloud_account, override_email_address
+        )
         send_to = [email_addr]
         if use_override:
             send_to = [override_email_address]
@@ -160,12 +160,7 @@ def send_shutoff_vm_email(
             )
 
         if not send_email:
-            print_email_params(
-                send_to[0],
-                user_name,
-                as_html,
-                server_list
-            )
+            print_email_params(send_to[0], user_name, as_html, server_list)
 
         else:
             email_params = build_email_params(
@@ -180,7 +175,14 @@ def send_shutoff_vm_email(
 
 
 if __name__ == "__main__":
-    temp = SMTPAccount(username="", password="", server="ob-mgw.stfc.ac.uk", port=26, secure=False, smtp_auth=False)
+    temp = SMTPAccount(
+        username="",
+        password="",
+        server="ob-mgw.stfc.ac.uk",
+        port=26,
+        secure=False,
+        smtp_auth=False,
+    )
     send_shutoff_vm_email(
         smtp_account=temp,
         cloud_account="prod",
@@ -188,5 +190,5 @@ if __name__ == "__main__":
         as_html=True,
         send_email=True,
         subject="You have Shutoff VMs",
-        email_from="akhil.maganti@stfc.ac.uk"
+        email_from="akhil.maganti@stfc.ac.uk",
     )
