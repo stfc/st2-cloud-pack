@@ -95,9 +95,7 @@ def test_find_servers_with_shutoff_vms_valid(mock_server_query):
     """
     mock_server_query_obj = mock_server_query.return_value
 
-    res = find_servers_with_shutoff_vms(
-        "test-cloud-account", ["project1", "project2"]
-    )
+    res = find_servers_with_shutoff_vms("test-cloud-account", ["project1", "project2"])
 
     mock_server_query_obj.run.assert_called_once_with(
         "test-cloud-account",
@@ -124,9 +122,7 @@ def test_find_servers_with_shutoff_vms_no_servers_found(mock_server_query):
     mock_server_query_obj.to_props.return_value = None
 
     with pytest.raises(RuntimeError):
-        find_servers_with_shutoff_vms(
-            "test-cloud-account", ["project1", "project2"]
-        )
+        find_servers_with_shutoff_vms("test-cloud-account", ["project1", "project2"])
 
     mock_server_query_obj.run.assert_called_once_with(
         "test-cloud-account",
@@ -238,9 +234,7 @@ def test_send_shutoff_vm_email_send_plaintext(
         **mock_kwargs,
     )
 
-    mock_find_servers.assert_called_once_with(
-        cloud_account, limit_by_projects
-    )
+    mock_find_servers.assert_called_once_with(cloud_account, limit_by_projects)
     mock_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
@@ -293,10 +287,10 @@ def test_send_shutoff_vm_email_send_plaintext(
 @patch("workflows.send_shutoff_vm_email.build_email_params")
 @patch("workflows.send_shutoff_vm_email.Emailer")
 def test_send_shutoff_vm_email_send_html(
-        mock_emailer,
-        mock_build_email_params,
-        mock_find_user_info,
-        mock_find_servers,
+    mock_emailer,
+    mock_build_email_params,
+    mock_find_user_info,
+    mock_find_servers,
 ):
     """
     Tests send_shutoff_vm_email() function actually sends email - as_html True
@@ -330,9 +324,7 @@ def test_send_shutoff_vm_email_send_html(
         **mock_kwargs,
     )
 
-    mock_find_servers.assert_called_once_with(
-        cloud_account, limit_by_projects
-    )
+    mock_find_servers.assert_called_once_with(cloud_account, limit_by_projects)
     mock_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
@@ -384,9 +376,9 @@ def test_send_shutoff_vm_email_send_html(
 @patch("workflows.send_shutoff_vm_email.find_user_info")
 @patch("workflows.send_shutoff_vm_email.print_email_params")
 def test_send_shutoff_vm_email_print(
-        mock_print_email_params,
-        mock_find_user_info,
-        mock_find_servers,
+    mock_print_email_params,
+    mock_find_user_info,
+    mock_find_servers,
 ):
     """
     Tests send_shutoff_vm_email() function prints when send_email=False
@@ -420,9 +412,7 @@ def test_send_shutoff_vm_email_print(
         **mock_kwargs,
     )
 
-    mock_find_servers.assert_called_once_with(
-        cloud_account, limit_by_projects
-    )
+    mock_find_servers.assert_called_once_with(cloud_account, limit_by_projects)
     mock_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
@@ -462,10 +452,10 @@ def test_send_shutoff_vm_email_print(
 @patch("workflows.send_shutoff_vm_email.build_email_params")
 @patch("workflows.send_shutoff_vm_email.Emailer")
 def test_send_shutoff_vm_email_use_override(
-        mock_emailer,
-        mock_build_email_params,
-        mock_find_user_info,
-        mock_find_servers,
+    mock_emailer,
+    mock_build_email_params,
+    mock_find_user_info,
+    mock_find_servers,
 ):
     """
     Tests send_shutoff_vm_email() function sends email to override email - when use_override set
@@ -501,9 +491,7 @@ def test_send_shutoff_vm_email_use_override(
         **mock_kwargs,
     )
 
-    mock_find_servers.assert_called_once_with(
-        cloud_account, limit_by_projects
-    )
+    mock_find_servers.assert_called_once_with(cloud_account, limit_by_projects)
     mock_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
@@ -556,21 +544,15 @@ def test_raise_error_when_both_from_projects_all_projects():
         send_shutoff_vm_email(
             smtp_account="",
             cloud_account="",
-            image_name_list=[],
-            image_eol_list=[],
-            image_upgrade_list=[],
             all_projects=True,
             limit_by_projects=["proj1", "proj2"],
         )
 
 
 def test_raise_error_when_neither_from_projects_all_projects():
-    """Tests that send_shutoff_vm_email raises error if neither from_projects or all_projects given"""
+    """Tests that send_shutoff_vm_email raises error if neither from_projects nor all_projects given"""
     with pytest.raises(RuntimeError):
         send_shutoff_vm_email(
             smtp_account="",
             cloud_account="",
-            image_name_list=[],
-            image_eol_list=[],
-            image_upgrade_list=[],
         )
