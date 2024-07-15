@@ -1,11 +1,12 @@
-from typing import List, Dict, Optional, Union
+from typing import List, Optional, Union
 
 from email_api.emailer import Emailer
-from enums.cloud_domains import CloudDomains
 from openstack_query import ServerQuery, UserQuery
 
+from enums.cloud_domains import CloudDomains
 from enums.query.props import ServerProperties
-from enums.query.query_presets import QueryPresetsGeneric, QueryPresetsDateTime
+from enums.query.query_presets import QueryPresetsGeneric
+
 from structs.email.email_params import EmailParams
 from structs.email.email_template_details import EmailTemplateDetails
 from structs.email.smtp_account import SMTPAccount
@@ -23,7 +24,6 @@ def find_servers_with_shutoff_vms(
     # Find VMs that have been in shutoff state for more than 60 days
     server_query = ServerQuery()
     server_query.where(QueryPresetsGeneric.ANY_IN, ServerProperties.SERVER_STATUS, values=["SHUTOFF"])
-    # server_query.where(QueryPresetsDateTime.OLDER_THAN, ServerProperties.SERVER_LAST_UPDATED_DATE, days=60)
     server_query.run(
         cloud_account,
         as_admin=False,
@@ -89,7 +89,7 @@ def build_email_params(
 
 def find_user_info(user_id, cloud_account, override_email_address):
     """
-    run a UserQuery to find the email address and user name associated for a user id.
+    run a UserQuery to find the email address and username associated for a user id.
     :param user_id: the openstack user id to find email address for
     :param cloud_account: string represents cloud account to use
     :param override_email_address: email address to return if no email address found via UserQuery
@@ -104,6 +104,8 @@ def find_user_info(user_id, cloud_account, override_email_address):
     return res["user_name"][0], res["user_email"][0]
 
 
+# pylint:disable=too-many-arguments
+# pylint:disable=too-many-locals
 def send_shutoff_vm_email(
         smtp_account: SMTPAccount,
         cloud_account: Union[CloudDomains, str],
