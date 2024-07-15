@@ -42,8 +42,6 @@ def find_servers_with_shutoff_vms(
     server_query.append_from("PROJECT_QUERY", cloud_account, "name")
     server_query.group_by("user_id")
 
-    print(server_query.to_html())
-
     return server_query
 
 
@@ -119,7 +117,7 @@ def send_shutoff_vm_email(
         **email_params_kwargs,
 ):
     """
-    Sends an email to each user who owns one or more VMs that are running an image that is to be decommissioned.
+    Sends an email to each user who owns one or more VMs that are in shutoff state
     This email will contain a notice to delete or rebuild the VM
     :param smtp_account: (SMTPAccount): SMTP config
     :param cloud_account: string represents cloud account to use
@@ -141,7 +139,7 @@ def send_shutoff_vm_email(
             "please provide either a list of project identifiers or with flag 'all_projects' to run globally"
         )
 
-    server_query = find_servers_with_shutoff_vms(cloud_account)
+    server_query = find_servers_with_shutoff_vms(cloud_account, limit_by_projects)
 
     for user_id in server_query.to_props().keys():
         user_name, email_addr = (
@@ -150,24 +148,24 @@ def send_shutoff_vm_email(
         if use_override:
             send_to = [override_email_address]
 
+        if as_html:
+            server_list = server_query.to_html(
+                groups=[user_id], include_group_titles=False
+            )
+        else:
+            server_list = server_query.to_string(
+                groups=[user_id], include_group_titles=False
+            )
+
         if not send_email:
             print_email_params(
                 send_to[0],
                 user_name,
                 as_html,
-                server_query.to_string(groups=[user_id], include_group_titles=False),
+                server_list
             )
 
         else:
-            if as_html:
-                server_list = server_query.to_html(
-                    groups=[user_id], include_group_titles=False
-                )
-            else:
-                server_list = server_query.to_string(
-                    groups=[user_id], include_group_titles=False
-                )
-
             email_params = build_email_params(
                 user_name,
                 server_list,
