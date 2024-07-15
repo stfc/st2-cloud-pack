@@ -223,7 +223,7 @@ class QueryOutput:
             headers = list(results[0].keys())
             rows = [list(row.values()) for row in results]
             output += tabulate(
-                rows, headers, tablefmt="html" if return_html else "orgtbl", **kwargs
+                rows, headers, tablefmt="html" if return_html else "grid", **kwargs
             )
         else:
             output += "No results found"
