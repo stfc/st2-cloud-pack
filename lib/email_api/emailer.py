@@ -1,7 +1,8 @@
 import time
+import ssl
 from typing import List
 from pathlib import Path
-from smtplib import SMTP_SSL
+from smtplib import SMTP
 import logging
 
 from email.header import Header
@@ -44,11 +45,14 @@ class Emailer:
         """
 
         logger.debug("connecting to SMTP server")
-
-        with SMTP_SSL(
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        with SMTP(
             self.smtp_account.server, self.smtp_account.port, timeout=60
         ) as server:
             server.ehlo()
+            server.starttls(context=context)
             logger.info("SMTP server connection established")
             logger.info("sending %s email(s)", len(emails))
             start = time.time()

@@ -28,8 +28,9 @@ def instance_fixture(template_handler):
 
 
 @patch("email_api.emailer.Emailer.build_email")
-@patch("email_api.emailer.SMTP_SSL")
-def test_send_emails(mock_smtp_ssl, mock_build_email, instance):
+@patch("email_api.emailer.SMTP")
+@patch("email_api.emailer.ssl")
+def test_send_emails(mock_ssl, mock_smtp, mock_build_email, instance):
     """
     Tests that send_emails method works expectedly
     Should setup SMTP_SSL connection to web server, and
@@ -53,18 +54,24 @@ def test_send_emails(mock_smtp_ssl, mock_build_email, instance):
     mock_email_param2.email_cc = None
     mock_email_param2.email_templates = [mock_template_1]
 
-    mock_server = mock_smtp_ssl.return_value.__enter__.return_value
+    mock_server = mock_smtp.return_value.__enter__.return_value
 
     instance.send_emails(
         emails=[mock_email_param, mock_email_param2],
     )
-    mock_smtp_ssl.assert_called_once_with(
+
+    mock_ssl.create_default_context.assert_called_once()
+
+    mock_smtp.assert_called_once_with(
         instance.smtp_account.server,
         instance.smtp_account.port,
         timeout=60,
     )
 
     mock_server.ehlo.assert_called_once()
+    mock_server.starttls.assert_called_once_with(
+        context=mock_ssl.create_default_context.return_value
+    )
 
     mock_server.sendmail.assert_has_calls(
         [
