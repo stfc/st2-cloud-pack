@@ -26,7 +26,7 @@ def find_servers_with_errored_vms(
     )
     server_query.run(
         cloud_account,
-        as_admin=False,
+        as_admin=True,
         from_projects=from_projects if from_projects else None,
         all_projects=not from_projects,
     )
