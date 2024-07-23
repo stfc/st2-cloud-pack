@@ -12,7 +12,7 @@ from structs.email.email_template_details import EmailTemplateDetails
 from structs.email.smtp_account import SMTPAccount
 
 
-def find_servers_with_shutoff_vms(
+def find_servers_with_errored_vms(
     cloud_account: str, from_projects: Optional[List[str]] = None
 ):
     """
@@ -20,14 +20,14 @@ def find_servers_with_shutoff_vms(
     :param from_projects: A list of project identifiers to limit search in
     """
 
-    # Find VMs that have been in shutoff state for more than 60 days
+
     server_query = ServerQuery()
     server_query.where(
         QueryPresetsGeneric.ANY_IN, ServerProperties.SERVER_STATUS, values=["ERROR"]
     )
     server_query.run(
         cloud_account,
-        as_admin=True,
+        as_admin=False,
         from_projects=from_projects if from_projects else None,
         all_projects=not from_projects,
     )
@@ -47,37 +47,37 @@ def find_servers_with_shutoff_vms(
 
 
 def print_email_params(
-    email_addr: str, user_name: str, as_html: bool, shutoff_table: str
+    email_addr: str, user_name: str, as_html: bool, error_table: str
 ):
     """
     Print email params instead of sending the email
     :param email_addr: email address to send to
     :param user_name: name of user in openstack
     :param as_html: A boolean which if selected will send an email, otherwise prints email details only
-    :param shutoff_table: a table representing info found in openstack
-    about VMs in shutoff state
+    :param error_table: a table representing info found in openstack
+    about VMs in error state
     """
     print(
         f"Send Email To: {email_addr}\n"
-        f"email_templates shutoff-email: username {user_name}\n"
+        f"email_templates errored-email: username {user_name}\n"
         f"send as html: {as_html}\n"
-        f"shutoff table: {shutoff_table}\n"
+        f"error table: {error_table}\n"
     )
 
 
-def build_email_params(user_name: str, shutoff_table: str, **email_kwargs):
+def build_email_params(user_name: str, error_table: str, **email_kwargs):
     """
     build email params dataclass which will be used to configure how to send the email
     :param user_name: name of user in openstack
-    :param shutoff_table: a table representing info found in openstack about VMs
-        that are in shutoff state
+    :param error_table: a table representing info found in openstack about VMs
+        that are in errored state
     :param email_kwargs: a set of email kwargs to pass to EmailParams
     """
     body = EmailTemplateDetails(
         template_name="errored_vm",
         template_params={
             "username": user_name,
-            "shutoff_table": shutoff_table,
+            "error_table": error_table,
         },
     )
 
@@ -105,7 +105,7 @@ def find_user_info(user_id, cloud_account, override_email_address):
 
 # pylint:disable=too-many-arguments
 # pylint:disable=too-many-locals
-def send_shutoff_vm_email(
+def send_errored_vm_email(
     smtp_account: SMTPAccount,
     cloud_account: Union[CloudDomains, str],
     limit_by_projects: Optional[List[str]] = None,
@@ -118,7 +118,7 @@ def send_shutoff_vm_email(
     **email_params_kwargs,
 ):
     """
-    Sends an email to each user who owns one or more VMs that are in shutoff state
+    Sends an email to each user who owns one or more VMs that are in error state
     This email will contain a notice to delete or rebuild the VM
     :param smtp_account: (SMTPAccount): SMTP config
     :param cloud_account: string represents cloud account to use
@@ -140,7 +140,7 @@ def send_shutoff_vm_email(
             "please provide either a list of project identifiers or with flag 'all_projects' to run globally"
         )
 
-    server_query = find_servers_with_shutoff_vms(cloud_account, limit_by_projects)
+    server_query = find_servers_with_errored_vms(cloud_account, limit_by_projects)
 
     for user_id in server_query.to_props().keys():
         user_name, email_addr = find_user_info(
@@ -161,14 +161,15 @@ def send_shutoff_vm_email(
 
         if not send_email:
             print_email_params(send_to[0], user_name, as_html, server_list)
-            continue
 
-        email_params = build_email_params(
-            user_name,
-            server_list,
-            email_to=send_to,
-            as_html=as_html,
-            email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
-            **email_params_kwargs,
-        )
-        Emailer(smtp_account).send_emails([email_params])
+        else:
+            email_params = build_email_params(
+                user_name,
+                server_list,
+                email_to=send_to,
+                as_html=as_html,
+                email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
+                **email_params_kwargs,
+            )
+            Emailer(smtp_account).send_emails([email_params])
+
