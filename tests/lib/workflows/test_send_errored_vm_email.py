@@ -1,16 +1,16 @@
 from unittest.mock import patch, call, NonCallableMock
 import pytest
 
-from workflows.send_shutoff_vm_email import (
-    find_servers_with_shutoff_vms,
+from workflows.send_errored_vm_email import (
+    find_servers_with_errored_vms,
     print_email_params,
     build_email_params,
     find_user_info,
-    send_shutoff_vm_email,
+    send_errored_vm_email
 )
 
 
-@patch("workflows.send_shutoff_vm_email.UserQuery")
+@patch("workflows.send_errored_vm_email.UserQuery")
 def test_find_user_info_valid(mock_user_query):
     """
     Tests find_user_info where query is given a valid user id
@@ -37,7 +37,7 @@ def test_find_user_info_valid(mock_user_query):
     assert res[1] == "foo@example.com"
 
 
-@patch("workflows.send_shutoff_vm_email.UserQuery")
+@patch("workflows.send_errored_vm_email.UserQuery")
 def test_find_user_info_invalid(mock_user_query):
     """
     Tests find_user_info where query is given an invalid user id
@@ -61,7 +61,7 @@ def test_find_user_info_invalid(mock_user_query):
     assert res[1] == mock_override_email
 
 
-@patch("workflows.send_shutoff_vm_email.UserQuery")
+@patch("workflows.send_errored_vm_email.UserQuery")
 def test_find_user_info_no_email_address(mock_user_query):
     """
     Tests find_user_info where query result contains no email address
@@ -88,14 +88,14 @@ def test_find_user_info_no_email_address(mock_user_query):
     assert res[1] == mock_override_email
 
 
-@patch("workflows.send_shutoff_vm_email.ServerQuery")
-def test_find_servers_with_shutoff_vms_valid(mock_server_query):
+@patch("workflows.send_errored_vm_email.ServerQuery")
+def test_find_servers_with_errored_vms_valid(mock_server_query):
     """
-    Tests find_servers_with_shutoff_vms() function
+    Tests find_servers_with_errored_vms() function
     """
     mock_server_query_obj = mock_server_query.return_value
 
-    res = find_servers_with_shutoff_vms("test-cloud-account", ["project1", "project2"])
+    res = find_servers_with_errored_vms("test-cloud-account", ["project1", "project2"])
 
     mock_server_query_obj.run.assert_called_once_with(
         "test-cloud-account",
@@ -113,16 +113,16 @@ def test_find_servers_with_shutoff_vms_valid(mock_server_query):
     assert res == mock_server_query_obj
 
 
-@patch("workflows.send_shutoff_vm_email.ServerQuery")
-def test_find_servers_with_shutoff_vms_no_servers_found(mock_server_query):
+@patch("workflows.send_errored_vm_email.ServerQuery")
+def test_find_servers_with_errored_vms_no_servers_found(mock_server_query):
     """
-    Tests that find_servers_with_shutoff_vms fails when provided
+    Tests that find_servers_with_errored_vms fails when provided
     """
     mock_server_query_obj = mock_server_query.return_value
     mock_server_query_obj.to_props.return_value = None
 
     with pytest.raises(RuntimeError):
-        find_servers_with_shutoff_vms("test-cloud-account", ["project1", "project2"])
+        find_servers_with_errored_vms("test-cloud-account", ["project1", "project2"])
 
     mock_server_query_obj.run.assert_called_once_with(
         "test-cloud-account",
@@ -141,38 +141,38 @@ def test_print_email_params():
     email_addr = "test@example.com"
     user_name = "John Doe"
     as_html = True
-    shutoff_table = "Shutoff Table Content"
+    error_table = "Error Table Content"
 
     with patch("builtins.print") as mock_print:
-        print_email_params(email_addr, user_name, as_html, shutoff_table)
+        print_email_params(email_addr, user_name, as_html, error_table)
 
     mock_print.assert_called_once_with(
         f"Send Email To: {email_addr}\n"
-        f"email_templates shutoff-email: username {user_name}\n"
+        f"email_templates errored-email: username {user_name}\n"
         f"send as html: {as_html}\n"
-        f"shutoff table: {shutoff_table}\n"
+        f"error table: {error_table}\n"
     )
 
 
-@patch("workflows.send_shutoff_vm_email.EmailTemplateDetails")
-@patch("workflows.send_shutoff_vm_email.EmailParams")
+@patch("workflows.send_errored_vm_email.EmailTemplateDetails")
+@patch("workflows.send_errored_vm_email.EmailParams")
 def test_build_params(mock_email_params, mock_email_template_details):
     """
     Test build_params() function creates email params appropriately and returns them
     """
 
     user_name = "John Doe"
-    shutoff_table = "Shutoff Table Content"
+    error_table = "Error Table Content"
     email_kwargs = {"arg1": "val1", "arg2": "val2"}
 
-    res = build_email_params(user_name, shutoff_table, **email_kwargs)
+    res = build_email_params(user_name, error_table, **email_kwargs)
     mock_email_template_details.assert_has_calls(
         [
             call(
-                template_name="shutoff_vm",
+                template_name="errored_vm",
                 template_params={
                     "username": user_name,
-                    "shutoff_table": shutoff_table,
+                    "error_table": error_table,
                 },
             ),
             call(template_name="footer", template_params={}),
@@ -192,18 +192,18 @@ def test_build_params(mock_email_params, mock_email_template_details):
 
 
 # pylint:disable=too-many-arguments
-@patch("workflows.send_shutoff_vm_email.find_servers_with_shutoff_vms")
-@patch("workflows.send_shutoff_vm_email.find_user_info")
-@patch("workflows.send_shutoff_vm_email.build_email_params")
-@patch("workflows.send_shutoff_vm_email.Emailer")
-def test_send_shutoff_vm_email_send_plaintext(
+@patch("workflows.send_errored_vm_email.find_servers_with_errored_vms")
+@patch("workflows.send_errored_vm_email.find_user_info")
+@patch("workflows.send_errored_vm_email.build_email_params")
+@patch("workflows.send_errored_vm_email.Emailer")
+def test_send_errored_vm_email_send_plaintext(
     mock_emailer,
     mock_build_email_params,
     mock_find_user_info,
     mock_find_servers,
 ):
     """
-    Tests send_shutoff_vm_email() function actually sends email - as_html False
+    Tests send_errored_vm_email() function actually sends email - as_html False
     """
     limit_by_projects = ["project1", "project2"]
     all_projects = False
@@ -223,7 +223,7 @@ def test_send_shutoff_vm_email_send_plaintext(
         ("user2", "user_email2"),
     ]
 
-    send_shutoff_vm_email(
+    send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
         limit_by_projects=limit_by_projects,
@@ -282,18 +282,18 @@ def test_send_shutoff_vm_email_send_plaintext(
 
 
 # pylint:disable=too-many-arguments
-@patch("workflows.send_shutoff_vm_email.find_servers_with_shutoff_vms")
-@patch("workflows.send_shutoff_vm_email.find_user_info")
-@patch("workflows.send_shutoff_vm_email.build_email_params")
-@patch("workflows.send_shutoff_vm_email.Emailer")
-def test_send_shutoff_vm_email_send_html(
+@patch("workflows.send_errored_vm_email.find_servers_with_errored_vms")
+@patch("workflows.send_errored_vm_email.find_user_info")
+@patch("workflows.send_errored_vm_email.build_email_params")
+@patch("workflows.send_errored_vm_email.Emailer")
+def test_send_errored_vm_email_send_html(
     mock_emailer,
     mock_build_email_params,
     mock_find_user_info,
     mock_find_servers,
 ):
     """
-    Tests send_shutoff_vm_email() function actually sends email - as_html True
+    Tests send_errored_vm_email() function actually sends email - as_html True
     """
     limit_by_projects = ["project1", "project2"]
     all_projects = False
@@ -313,7 +313,7 @@ def test_send_shutoff_vm_email_send_html(
         ("user2", "user_email2"),
     ]
 
-    send_shutoff_vm_email(
+    send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
         limit_by_projects=limit_by_projects,
@@ -372,16 +372,16 @@ def test_send_shutoff_vm_email_send_html(
 
 
 # pylint:disable=too-many-arguments
-@patch("workflows.send_shutoff_vm_email.find_servers_with_shutoff_vms")
-@patch("workflows.send_shutoff_vm_email.find_user_info")
-@patch("workflows.send_shutoff_vm_email.print_email_params")
-def test_send_shutoff_vm_email_print(
+@patch("workflows.send_errored_vm_email.find_servers_with_errored_vms")
+@patch("workflows.send_errored_vm_email.find_user_info")
+@patch("workflows.send_errored_vm_email.print_email_params")
+def test_send_errored_vm_email_print(
     mock_print_email_params,
     mock_find_user_info,
     mock_find_servers,
 ):
     """
-    Tests send_shutoff_vm_email() function prints when send_email=False
+    Tests send_errored_vm_email() function prints when send_email=False
     """
     limit_by_projects = ["project1", "project2"]
     all_projects = False
@@ -401,7 +401,7 @@ def test_send_shutoff_vm_email_print(
         ("user2", "user_email2"),
     ]
 
-    send_shutoff_vm_email(
+    send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
         limit_by_projects=limit_by_projects,
@@ -447,18 +447,18 @@ def test_send_shutoff_vm_email_print(
 
 
 # pylint:disable=too-many-arguments
-@patch("workflows.send_shutoff_vm_email.find_servers_with_shutoff_vms")
-@patch("workflows.send_shutoff_vm_email.find_user_info")
-@patch("workflows.send_shutoff_vm_email.build_email_params")
-@patch("workflows.send_shutoff_vm_email.Emailer")
-def test_send_shutoff_vm_email_use_override(
+@patch("workflows.send_errored_vm_email.find_servers_with_errored_vms")
+@patch("workflows.send_errored_vm_email.find_user_info")
+@patch("workflows.send_errored_vm_email.build_email_params")
+@patch("workflows.send_errored_vm_email.Emailer")
+def test_send_errored_vm_email_use_override(
     mock_emailer,
     mock_build_email_params,
     mock_find_user_info,
     mock_find_servers,
 ):
     """
-    Tests send_shutoff_vm_email() function sends email to override email - when use_override set
+    Tests send_errored_vm_email() function sends email to override email - when use_override set
     """
     limit_by_projects = ["project1", "project2"]
     all_projects = False
@@ -479,7 +479,7 @@ def test_send_shutoff_vm_email_use_override(
         ("user2", "user_email2"),
     ]
 
-    send_shutoff_vm_email(
+    send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
         limit_by_projects=limit_by_projects,
@@ -539,9 +539,9 @@ def test_send_shutoff_vm_email_use_override(
 
 
 def test_raise_error_when_both_from_projects_all_projects():
-    """Tests that send_shutoff_vm_email raises error if both from_projects or all_projects given"""
+    """Tests that send_errored_vm_email raises error if both from_projects or all_projects given"""
     with pytest.raises(RuntimeError):
-        send_shutoff_vm_email(
+        send_errored_vm_email(
             smtp_account="",
             cloud_account="",
             all_projects=True,
@@ -550,9 +550,9 @@ def test_raise_error_when_both_from_projects_all_projects():
 
 
 def test_raise_error_when_neither_from_projects_all_projects():
-    """Tests that send_shutoff_vm_email raises error if neither from_projects nor all_projects given"""
+    """Tests that send_errored_vm_email raises error if neither from_projects nor all_projects given"""
     with pytest.raises(RuntimeError):
-        send_shutoff_vm_email(
+        send_errored_vm_email(
             smtp_account="",
             cloud_account="",
         )

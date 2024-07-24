@@ -33,6 +33,11 @@ parameters:
     description: "comma-spaced project to limit action to - incompatible with all_projects"
     required: false
     default: null
+  search_by_time:
+    type: integer
+    description: "How old a VM needs to be to qualify in days - requires search_by_time to be true"
+    required: false
+    default: -1
   all_projects:
     type: boolean
     description: "tick to search in all projects - default True"

@@ -5,7 +5,7 @@ from openstack_query import ServerQuery, UserQuery
 
 from enums.cloud_domains import CloudDomains
 from enums.query.props import ServerProperties
-from enums.query.query_presets import QueryPresetsGeneric
+from enums.query.query_presets import QueryPresetsGeneric, QueryPresetsDateTime
 
 from structs.email.email_params import EmailParams
 from structs.email.email_template_details import EmailTemplateDetails
@@ -13,7 +13,7 @@ from structs.email.smtp_account import SMTPAccount
 
 
 def find_servers_with_errored_vms(
-    cloud_account: str, from_projects: Optional[List[str]] = None
+    cloud_account: str, timevar:int, from_projects: Optional[List[str]] = None
 ):
     """
     :param cloud_account: string represents cloud account to use
@@ -21,6 +21,10 @@ def find_servers_with_errored_vms(
     """
 
     server_query = ServerQuery()
+    if timevar > 0:
+        server_query.where(
+            QueryPresetsDateTime.OLDER_THAN, ServerProperties.SERVER_LAST_UPDATED_DATE, days=timevar
+        )
     server_query.where(
         QueryPresetsGeneric.ANY_IN, ServerProperties.SERVER_STATUS, values=["ERROR"]
     )
@@ -108,6 +112,7 @@ def send_errored_vm_email(
     smtp_account: SMTPAccount,
     cloud_account: Union[CloudDomains, str],
     limit_by_projects: Optional[List[str]] = None,
+    time_variable: int = -1,
     all_projects: bool = False,
     as_html: bool = False,
     send_email: bool = False,
@@ -139,7 +144,7 @@ def send_errored_vm_email(
             "please provide either a list of project identifiers or with flag 'all_projects' to run globally"
         )
 
-    server_query = find_servers_with_errored_vms(cloud_account, limit_by_projects)
+    server_query = find_servers_with_errored_vms(cloud_account, time_variable, limit_by_projects)
 
     for user_id in server_query.to_props().keys():
         user_name, email_addr = find_user_info(
