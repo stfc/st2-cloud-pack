@@ -13,7 +13,7 @@ from structs.email.smtp_account import SMTPAccount
 
 
 def find_servers_with_errored_vms(
-    cloud_account: str, timevar:int, from_projects: Optional[List[str]] = None
+    cloud_account: str, time_variable:int, from_projects: Optional[List[str]] = None
 ):
     """
     :param cloud_account: string represents cloud account to use
@@ -21,9 +21,9 @@ def find_servers_with_errored_vms(
     """
 
     server_query = ServerQuery()
-    if timevar > 0:
+    if time_variable > 0:
         server_query.where(
-            QueryPresetsDateTime.OLDER_THAN, ServerProperties.SERVER_LAST_UPDATED_DATE, days=timevar
+            QueryPresetsDateTime.OLDER_THAN, ServerProperties.SERVER_LAST_UPDATED_DATE, days=time_variable
         )
     server_query.where(
         QueryPresetsGeneric.ANY_IN, ServerProperties.SERVER_STATUS, values=["ERROR"]

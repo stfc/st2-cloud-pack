@@ -95,11 +95,11 @@ def test_find_servers_with_errored_vms_valid(mock_server_query):
     """
     mock_server_query_obj = mock_server_query.return_value
 
-    res = find_servers_with_errored_vms("test-cloud-account", ["project1", "project2"])
+    res = find_servers_with_errored_vms("test-cloud-account", -1,  ["project1", "project2"])
 
     mock_server_query_obj.run.assert_called_once_with(
         "test-cloud-account",
-        as_admin=False,
+        as_admin=True,
         from_projects=["project1", "project2"],
         all_projects=False,
     )
@@ -122,11 +122,11 @@ def test_find_servers_with_errored_vms_no_servers_found(mock_server_query):
     mock_server_query_obj.to_props.return_value = None
 
     with pytest.raises(RuntimeError):
-        find_servers_with_errored_vms("test-cloud-account", ["project1", "project2"])
+        find_servers_with_errored_vms("test-cloud-account", -1, ["project1", "project2"])
 
     mock_server_query_obj.run.assert_called_once_with(
         "test-cloud-account",
-        as_admin=False,
+        as_admin=True,
         from_projects=["project1", "project2"],
         all_projects=False,
     )
@@ -226,6 +226,7 @@ def test_send_errored_vm_email_send_plaintext(
     send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
+        time_variable= -1,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
         as_html=False,
@@ -234,7 +235,7 @@ def test_send_errored_vm_email_send_plaintext(
         **mock_kwargs,
     )
 
-    mock_find_servers.assert_called_once_with(cloud_account, limit_by_projects)
+    mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
     mock_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
@@ -316,6 +317,7 @@ def test_send_errored_vm_email_send_html(
     send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
+        time_variable= -1,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
         as_html=True,
@@ -324,7 +326,7 @@ def test_send_errored_vm_email_send_html(
         **mock_kwargs,
     )
 
-    mock_find_servers.assert_called_once_with(cloud_account, limit_by_projects)
+    mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
     mock_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
@@ -385,6 +387,7 @@ def test_send_errored_vm_email_print(
     """
     limit_by_projects = ["project1", "project2"]
     all_projects = False
+    time_variable = -1
     cloud_account = NonCallableMock()
     smtp_account = NonCallableMock()
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
@@ -404,6 +407,7 @@ def test_send_errored_vm_email_print(
     send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
+        time_variable=-1,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
         as_html=False,
@@ -412,7 +416,7 @@ def test_send_errored_vm_email_print(
         **mock_kwargs,
     )
 
-    mock_find_servers.assert_called_once_with(cloud_account, limit_by_projects)
+    mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
     mock_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
@@ -463,6 +467,7 @@ def test_send_errored_vm_email_use_override(
     limit_by_projects = ["project1", "project2"]
     all_projects = False
     cloud_account = NonCallableMock()
+    time_variable = -1
     smtp_account = NonCallableMock()
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
     override_email_address = "example@example.com"
@@ -482,6 +487,7 @@ def test_send_errored_vm_email_use_override(
     send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
+        time_variable= -1,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
         as_html=False,
@@ -491,7 +497,7 @@ def test_send_errored_vm_email_use_override(
         **mock_kwargs,
     )
 
-    mock_find_servers.assert_called_once_with(cloud_account, limit_by_projects)
+    mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
     mock_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
