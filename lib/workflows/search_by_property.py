@@ -47,7 +47,7 @@ def search_by_property(
     query.where(
         preset=QueryPresetsGeneric.from_string(search_mode),
         prop=property_to_search_by,
-        args={"values": values},
+        values=values,
     )
 
     if sort_by:

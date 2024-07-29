@@ -101,6 +101,11 @@ parameters:
     type: array
     default: null
     required: false
+  all_projects:
+    type: boolean
+    description: "tick to search in all projects - default True"
+    required: true
+    default: true
   group_by:
     description: "(Optional) server property to group unique results by"
     type: string

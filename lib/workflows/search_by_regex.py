@@ -39,7 +39,7 @@ def search_by_regex(
     query.where(
         preset=QueryPresetsString.MATCHES_REGEX,
         prop=property_to_search_by,
-        args={"value": pattern},
+        value=pattern,
     )
 
     if sort_by:

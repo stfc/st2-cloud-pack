@@ -35,7 +35,7 @@ def test_search_by_datetime_minimal(
     mock_query.where.assert_called_once_with(
         preset=mock_preset_enum.from_string.return_value,
         prop=params["property_to_search_by"],
-        args={
+        **{
             "days": 1,
             "hours": 0,
             "minutes": 0,
@@ -102,7 +102,7 @@ def test_search_by_datetime_all(mock_preset_enum, mock_openstack_query, output_t
     mock_query.where.assert_called_once_with(
         preset=mock_preset_enum.from_string.return_value,
         prop=params["property_to_search_by"],
-        args={
+        **{
             "days": 1,
             "hours": 0,
             "minutes": 0,
