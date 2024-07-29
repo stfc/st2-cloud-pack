@@ -153,3 +153,24 @@ class TestNetworkActions(OpenstackActionTestBase):
             "security_group_list",
         ]
         self._test_run_dynamic_dispatch(expected_methods)
+
+    def test_security_group_rule_set_external(self):
+        """
+        Tests that security_group_rule_set_external calls appropriate method
+        """
+        cloud, project_identifier, security_group_identifier = (
+            NonCallableMock(),
+            NonCallableMock(),
+            NonCallableMock(),
+        )
+
+        result = self.action.security_group_rule_set_external(
+            cloud_account=cloud,
+            project_identifier=project_identifier,
+            security_group_identifier=security_group_identifier,
+        )
+
+        expected = (
+            self.security_group_mock.create_external_security_group_rules.return_value
+        )
+        assert result == (True, expected)

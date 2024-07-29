@@ -116,3 +116,20 @@ class SecurityGroupActions(Action):
         )
         rule = self._api.create_security_group_rule(cloud_account, details)
         return bool(rule), rule
+
+    def security_group_rule_set_external(
+        self,
+        cloud_account: str,
+        project_identifier: str,
+        security_group_identifier: str,
+    ):
+        """
+        set external security group rules
+        :param cloud_account: The associated clouds.yaml account
+        :param project_identifier: Openstack Project ID or Name,
+        :param security_group_identifier: Openstack Security Group ID or Name
+        """
+        rules = self._api.create_external_security_group_rules(
+            cloud_account, project_identifier, security_group_identifier
+        )
+        return bool(rules), rules

@@ -11,10 +11,13 @@ from unittest.mock import (
 from nose.tools import assert_raises, raises
 from parameterized import parameterized
 
+from enums.ip_version import IPVersion
+from enums.network_direction import NetworkDirection
 from enums.protocol import Protocol
 from exceptions.item_not_found_error import ItemNotFoundError
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from openstack_api.openstack_security_groups import OpenstackSecurityGroups
+from structs.security_group_rule_details import SecurityGroupRuleDetails
 
 
 class OpenstackSecurityGroupsTests(unittest.TestCase):
@@ -201,3 +204,241 @@ class OpenstackSecurityGroupsTests(unittest.TestCase):
             port_range_min=None,
             port_range_max=None,
         )
+
+    # pylint:disable=too-many-arguments
+    @parameterized.expand(
+        [
+            (
+                NetworkDirection.INGRESS,
+                IPVersion.IPV4,
+                Protocol.ICMP,
+                "0.0.0.0/0",
+                ("*", "*"),
+            ),
+            (
+                NetworkDirection.INGRESS,
+                IPVersion.IPV4,
+                Protocol.TCP,
+                "0.0.0.0/0",
+                ("22", "22"),
+            ),
+            (
+                NetworkDirection.EGRESS,
+                IPVersion.IPV4,
+                Protocol.TCP,
+                "130.246.0.0/16",
+                ("53", "53"),
+            ),
+            (
+                NetworkDirection.INGRESS,
+                IPVersion.IPV4,
+                Protocol.TCP,
+                "130.246.0.0/16",
+                ("53", "53"),
+            ),
+            (
+                NetworkDirection.EGRESS,
+                IPVersion.IPV4,
+                Protocol.TCP,
+                "130.246.180.101/32",
+                ("80", "80"),
+            ),
+            (
+                NetworkDirection.EGRESS,
+                IPVersion.IPV4,
+                Protocol.TCP,
+                "130.246.180.163/32",
+                ("80", "80"),
+            ),
+            (
+                NetworkDirection.INGRESS,
+                IPVersion.IPV4,
+                Protocol.TCP,
+                "130.246.180.13/32",
+                ("80", "80"),
+            ),
+            (
+                NetworkDirection.EGRESS,
+                IPVersion.IPV4,
+                Protocol.TCP,
+                "130.246.180.13/32",
+                ("80", "80"),
+            ),
+            (
+                NetworkDirection.INGRESS,
+                IPVersion.IPV4,
+                Protocol.TCP,
+                "130.246.223.126/32",
+                ("80", "9999"),
+            ),
+            (
+                NetworkDirection.INGRESS,
+                IPVersion.IPV4,
+                Protocol.TCP,
+                "130.246.180.101/32",
+                ("80", "80"),
+            ),
+            (
+                NetworkDirection.INGRESS,
+                IPVersion.IPV4,
+                Protocol.TCP,
+                "130.246.186.163/32",
+                ("80", "80"),
+            ),
+            (
+                NetworkDirection.EGRESS,
+                IPVersion.IPV4,
+                Protocol.TCP,
+                "130.246.180.101/32",
+                ("443", "443"),
+            ),
+            (
+                NetworkDirection.EGRESS,
+                IPVersion.IPV4,
+                Protocol.TCP,
+                "130.246.223.126/32",
+                ("9999", "9999"),
+            ),
+            (
+                NetworkDirection.EGRESS,
+                IPVersion.IPV4,
+                Protocol.UDP,
+                "130.246.0.0/16",
+                ("53", "53"),
+            ),
+            (
+                NetworkDirection.INGRESS,
+                IPVersion.IPV4,
+                Protocol.UDP,
+                "130.246.0.0/16",
+                ("53", "53"),
+            ),
+            (
+                NetworkDirection.EGRESS,
+                IPVersion.IPV4,
+                Protocol.TCP,
+                "130.246.176.0/22",
+                ("443", "443"),
+            ),
+        ]
+    )
+    def test_create_external_rules_default_rules(
+        self,
+        direction,
+        ip_version,
+        protocol,
+        remote_ip_cidr,
+        port_range,
+    ):
+        """
+        Tests that specific rules are created for external security groups
+        """
+        cloud, project_identifier, security_group_identifier = (
+            NonCallableMock(),
+            NonCallableMock(),
+            NonCallableMock(),
+        )
+        self.instance.create_security_group_rule = Mock()
+        self.instance.create_external_security_group_rules(
+            cloud, project_identifier, security_group_identifier
+        )
+        self.instance.create_security_group_rule.assert_any_call(
+            cloud,
+            SecurityGroupRuleDetails(
+                security_group_identifier=security_group_identifier,
+                project_identifier=project_identifier,
+                direction=direction,
+                ip_version=ip_version,
+                protocol=protocol,
+                remote_ip_cidr=remote_ip_cidr,
+                port_range=port_range,
+            ),
+        )
+
+    @parameterized.expand(
+        [
+            "8.0.0.0/7",
+            "192.170.0.0/15",
+            "172.64.0.0/10",
+            "192.160.0.0/13",
+            "192.169.0.0/16",
+            "192.176.0.0/12",
+            "192.128.0.0/11",
+            "173.0.0.0/8",
+            "172.0.0.0/12",
+            "130.248.0.0/12",
+            "193.0.0.0/8",
+            "130.247.0.0/16",
+            "32.0.0.0/3",
+            "131.0.0.0/8",
+            "196.0.0.0/6",
+            "176.0.0.0/4",
+            "128.0.0.0/7",
+            "174.0.0.0/7",
+            "144.0.0.0/4",
+            "172.128.0.0/9",
+            "192.172.0.0/14",
+            "192.192.0.0/10",
+            "208.0.0.0/4",
+            "194.0.0.0/7",
+            "168.0.0.0/6",
+            "132.0.0.0/6",
+            "192.0.0.0/9",
+            "160.0.0.0/5",
+            "172.32.0.0/11",
+            "12.0.0.0/6",
+            "16.0.0.0/4",
+            "130.128.0.0/10",
+            "130.224.0.0/12",
+            "130.0.0.0/9",
+            "64.0.0.0/2",
+            "130.244.0.0/15",
+            "200.0.0.0/5",
+            "130.240.0.0/14",
+            "11.0.0.0/8",
+            "130.192.0.0/11",
+            "136.0.0.0/5",
+            "0.0.0.0/5",
+        ]
+    )
+    def test_create_external_rules_tcp_udp_cidrs(self, cidr):
+        """
+        Tests that tcp and udp egress rules created for a set of cidrs
+        """
+        cloud, project_identifier, security_group_identifier = (
+            NonCallableMock(),
+            NonCallableMock(),
+            NonCallableMock(),
+        )
+        self.instance.create_security_group_rule = Mock()
+        self.instance.create_external_security_group_rules(
+            cloud, project_identifier, security_group_identifier
+        )
+        self.instance.create_security_group_rule.assert_any_call(
+            cloud,
+            SecurityGroupRuleDetails(
+                security_group_identifier=security_group_identifier,
+                project_identifier=project_identifier,
+                direction=NetworkDirection.EGRESS,
+                ip_version=IPVersion.IPV4,
+                protocol=Protocol.TCP,
+                remote_ip_cidr=cidr,
+                port_range=("1", "65535"),
+            ),
+        )
+
+    def test_external_security_rules_count(self):
+        """
+        Tests number of external rules is as expected
+        """
+        self.instance.create_security_group_rule = Mock()
+        cloud, project_identifier, security_group_identifier = (
+            NonCallableMock(),
+            NonCallableMock(),
+            NonCallableMock(),
+        )
+        self.instance.create_external_security_group_rules(
+            cloud, project_identifier, security_group_identifier
+        )
+
+        assert self.instance.create_security_group_rule.call_count == 100
