@@ -35,7 +35,7 @@ def test_search_by_property_minimal(
     mock_query.where.assert_called_once_with(
         preset=mock_preset_enum.from_string.return_value,
         prop=params["property_to_search_by"],
-        args={"values": params["values"]},
+        values=params["values"],
     )
     mock_query.run.assert_called_once_with(mock_cloud_account)
 
@@ -98,7 +98,7 @@ def test_search_by_property_all(mock_preset_enum, mock_openstack_query, output_t
     mock_query.where.assert_called_once_with(
         preset=mock_preset_enum.from_string.return_value,
         prop=params["property_to_search_by"],
-        args={"values": params["values"]},
+        values=params["values"],
     )
     mock_query.sort_by.assert_called_once_with(
         *[(p, SortOrder.DESC) for p in params["sort_by"]]

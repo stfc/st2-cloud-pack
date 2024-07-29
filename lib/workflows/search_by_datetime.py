@@ -54,7 +54,7 @@ def search_by_datetime(
     query.where(
         preset=QueryPresetsDateTime.from_string(search_mode),
         prop=property_to_search_by,
-        args={
+        **{
             "days": days,
             "hours": hours,
             "minutes": minutes,
