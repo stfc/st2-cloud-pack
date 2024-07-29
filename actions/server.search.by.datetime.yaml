@@ -108,11 +108,16 @@ parameters:
     type: integer
     default: 0
     required: false
-  from_projects:
-    description: "(Optional) comma-spaced list of projects id/names to limit query to, if not provided, runs against all projects"
+  limit_by_projects:
+    description: "comma-spaced project to limit action to - incompatible with all_projects"
     type: array
     default: null
     required: false
+  all_projects:
+    type: boolean
+    description: "tick to search in all projects - default True"
+    required: true
+    default: true
   group_by:
     description: "(Optional) server property to group unique results by"
     type: string
