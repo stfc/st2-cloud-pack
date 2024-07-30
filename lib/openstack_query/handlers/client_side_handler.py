@@ -13,7 +13,7 @@ from custom_types.openstack_query.aliases import (
     PropFunc,
     FilterParams,
     OpenstackResourceObj,
-    PresetToClientSideFilterFunc,
+    PresetToFilterFunc,
 )
 
 from enums.query.query_presets import QueryPresets
@@ -31,7 +31,7 @@ class ClientSideHandler(HandlerBase):
 
     def __init__(
         self,
-        filter_mappings: PresetToClientSideFilterFunc,
+        filter_mappings: PresetToFilterFunc,
         preset_prop_mappings: PresetPropMappings,
     ):
         self._filter_function_mappings = preset_prop_mappings
