@@ -61,14 +61,14 @@ def ImageQuery() -> "QueryAPI":
     return get_common(ImageMapping)
 
 
-def HypervisorQuery() -> QueryAPI:
+def HypervisorQuery() -> "QueryAPI":
     """
     Simple helper function to setup a query using a factory
     """
     return get_common(HypervisorMapping)
 
 
-def AggregateQuery() -> QueryAPI:
+def AggregateQuery() -> "QueryAPI":
     """
     Simple helper function to setup a query using a factory
     """
