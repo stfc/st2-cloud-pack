@@ -99,7 +99,7 @@ def test_find_servers_with_shutoff_vms_valid(mock_server_query):
 
     mock_server_query_obj.run.assert_called_once_with(
         "test-cloud-account",
-        as_admin=False,
+        as_admin=True,
         from_projects=["project1", "project2"],
         all_projects=False,
     )
@@ -126,7 +126,7 @@ def test_find_servers_with_shutoff_vms_no_servers_found(mock_server_query):
 
     mock_server_query_obj.run.assert_called_once_with(
         "test-cloud-account",
-        as_admin=False,
+        as_admin=True,
         from_projects=["project1", "project2"],
         all_projects=False,
     )
