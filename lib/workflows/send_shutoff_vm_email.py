@@ -27,7 +27,7 @@ def find_servers_with_shutoff_vms(
     )
     server_query.run(
         cloud_account,
-        as_admin=False,
+        as_admin=True,
         from_projects=from_projects if from_projects else None,
         all_projects=not from_projects,
     )
@@ -161,14 +161,14 @@ def send_shutoff_vm_email(
 
         if not send_email:
             print_email_params(send_to[0], user_name, as_html, server_list)
+            return
 
-        else:
-            email_params = build_email_params(
-                user_name,
-                server_list,
-                email_to=send_to,
-                as_html=as_html,
-                email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
-                **email_params_kwargs,
-            )
-            Emailer(smtp_account).send_emails([email_params])
+        email_params = build_email_params(
+            user_name,
+            server_list,
+            email_to=send_to,
+            as_html=as_html,
+            email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
+            **email_params_kwargs,
+        )
+        Emailer(smtp_account).send_emails([email_params])
