@@ -161,7 +161,7 @@ def send_shutoff_vm_email(
 
         if not send_email:
             print_email_params(send_to[0], user_name, as_html, server_list)
-            return
+            continue
 
         email_params = build_email_params(
             user_name,
