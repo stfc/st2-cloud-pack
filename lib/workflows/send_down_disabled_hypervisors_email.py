@@ -101,7 +101,7 @@ def build_email_params(
 
     return EmailParams(email_templates=[body, footer], **email_kwargs)
 
-def send_hypervisor_down_disabled_email(
+def send_down_disabled_hypervisors_email(
     smtp_account: SMTPAccount,
     cloud_account: Union[CloudDomains, str],
     as_html: bool = False,
