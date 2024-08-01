@@ -32,6 +32,8 @@ tasks:
         do:
           - set_project_defaults
           - create_rbac_policy
+          - create_stfc_roles
+          - create_admin_roles
           - wait_for_default_security_group
 
   create_rbac_policy:
