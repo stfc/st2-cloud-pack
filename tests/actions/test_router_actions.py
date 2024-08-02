@@ -47,26 +47,6 @@ class TestRouterActions(OpenstackActionTestBase):
         expected = self.network_mock.create_router.return_value
         assert returned == (True, expected)
 
-    def test_find_router_found(self):
-        """
-        Tests that find router returns the correct result when found
-        """
-        cloud, project, router = NonCallableMock(), NonCallableMock(), NonCallableMock()
-        returned = self.action.router_get(cloud, project, router)
-        self.network_mock.get_router.assert_called_once_with(cloud, project, router)
-        assert returned == (True, self.network_mock.get_router.return_value)
-
-    def test_find_router_not_found(self):
-        """
-        Tests that find router returns the correct result if nothing is found
-        """
-        self.network_mock.get_router.return_value = None
-        returned = self.action.router_get(
-            NonCallableMock(), NonCallableMock(), NonCallableMock()
-        )
-        assert returned[0] is False
-        assert "router could not be found" in returned[1]
-
     def test_add_interface_to_router(self):
         """
         Tests that add interface to router makes the correct call

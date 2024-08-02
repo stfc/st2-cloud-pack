@@ -2,7 +2,6 @@ import ipaddress
 import random
 from typing import Optional, List
 
-from openstack.exceptions import ResourceNotFound
 from openstack.network.v2.floating_ip import FloatingIP
 from openstack.network.v2.network import Network
 from openstack.network.v2.rbac_policy import RBACPolicy
@@ -53,23 +52,6 @@ class OpenstackNetwork(OpenstackWrapperBase):
                 )
         return created
 
-    def get_floating_ip(self, cloud_account: str, ip_addr: str) -> Optional[FloatingIP]:
-        """
-        Gets the details of a given floating IP address
-        :param cloud_account: The account from the clouds configuration to use
-        :param ip_addr: The IP address to return details of
-        :return: The associated IP Address record if available, else None
-        """
-        ip_addr = ip_addr.strip()
-        if not ip_addr:
-            raise MissingMandatoryParamError("An IP address is required")
-
-        with self._connection_cls(cloud_account) as conn:
-            try:
-                return conn.network.get_ip(ip_addr)
-            except ResourceNotFound:
-                return None
-
     def find_network(
         self, cloud_account: str, network_identifier: str
     ) -> Optional[Network]:
@@ -79,28 +61,14 @@ class OpenstackNetwork(OpenstackWrapperBase):
         :param network_identifier: The ID or name to search for
         :return: The found network or None
         """
+        # TODO convert find_network to private method - this should not be used outside the class
+
         network_identifier = network_identifier.strip()
         if not network_identifier:
             raise MissingMandatoryParamError("A network identifier is required")
 
         with self._connection_cls(cloud_account) as conn:
             return conn.network.find_network(network_identifier, ignore_missing=True)
-
-    def search_network_rbacs(
-        self, cloud_account: str, project_identifier: str
-    ) -> List[RBACPolicy]:
-        """
-        Finds a given RBAC network policy associated with a project
-        :param cloud_account: The associated clouds.yaml account
-        :param project_identifier: The name or Openstack ID of the project the policy applies to
-        :return: A list of found RBAC policies for the given project
-        """
-        project = self._identity_api.find_mandatory_project(
-            cloud_account, project_identifier
-        )
-
-        with self._connection_cls(cloud_account) as conn:
-            return list(conn.network.rbac_policies(project_id=project.id))
 
     def create_network(
         self, cloud_account: str, details: NetworkDetails
@@ -216,7 +184,7 @@ class OpenstackNetwork(OpenstackWrapperBase):
         :param subnet_identifier: The subnet name or ID of the router to add an interface to
         :return: The router the subnet was added to
         """
-        router = self.get_router(cloud_account, project_identifier, router_identifier)
+        router = self.find_router(cloud_account, project_identifier, router_identifier)
         if not router:
             raise ItemNotFoundError("The specified router was not found")
 
@@ -251,7 +219,7 @@ class OpenstackNetwork(OpenstackWrapperBase):
                 is_ha=True,
             )
 
-    def get_router(
+    def find_router(
         self, cloud_account: str, project_identifier: str, router_identifier: str
     ) -> Optional[Router]:
         """
@@ -260,6 +228,7 @@ class OpenstackNetwork(OpenstackWrapperBase):
         :param project_identifier: The project name or ID to search in
         :param router_identifier: The router name or ID to get
         """
+        # TODO: this is only used in add_interface_to_router so it should be private or be removed
         project = self._identity_api.find_mandatory_project(
             cloud_account, project_identifier
         )
@@ -269,7 +238,7 @@ class OpenstackNetwork(OpenstackWrapperBase):
                 name_or_id=router_identifier, project_id=project.id, ignore_missing=True
             )
 
-    def get_used_subnet_nets(
+    def find_used_subnet_nets(
         self, cloud_account: str, network_identifier: str
     ) -> List[ipaddress.IPv4Network]:
         """
@@ -302,7 +271,7 @@ class OpenstackNetwork(OpenstackWrapperBase):
         """
         avail = [ipaddress.ip_network(f"192.168.{i}.0/24") for i in range(1, 255)]
 
-        used_subnets = self.get_used_subnet_nets(cloud_account, network_identifier)
+        used_subnets = self.find_used_subnet_nets(cloud_account, network_identifier)
         avail = [i for i in avail if i not in used_subnets]
         if not avail:
             raise ItemNotFoundError("No available subnets")
@@ -357,6 +326,7 @@ class OpenstackNetwork(OpenstackWrapperBase):
         :param project_identifier: The project name or ID to search in
         :param subnet_identifier: The subnet name or ID to get
         """
+        # TODO convert this into a private method - any action methods that use this should be part of this Class
         project = self._identity_api.find_mandatory_project(
             cloud_account, project_identifier
         )

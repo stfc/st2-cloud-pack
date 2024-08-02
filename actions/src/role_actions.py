@@ -1,4 +1,4 @@
-from typing import Dict, Callable, Tuple
+from typing import Dict, Callable
 
 from st2common.runners.base_action import Action
 
@@ -77,35 +77,3 @@ class RoleActions(Action):
         )
         self._api.remove_role_from_user(cloud_account=cloud_account, details=details)
         return True
-
-    # pylint: disable=duplicate-code, too-many-arguments
-    def user_has_role(
-        self,
-        cloud_account: str,
-        user_identifier: str,
-        project_identifier: str,
-        role: str,
-        user_domain: str,
-    ) -> Tuple[bool, str]:
-        """
-        Checks a given user has the specified role
-        :param cloud_account: The account from the clouds configuration to use
-        :param user_identifier: Name or ID of the user to check
-        :param project_identifier: Name or ID of the project this applies to
-        :param role: Name or ID of the role to check
-        :param user_domain: The domain the user is associated with
-        :return: If the user has the role (bool)
-        """
-        details = RoleDetails(
-            user_identifier=user_identifier,
-            project_identifier=project_identifier,
-            role_identifier=role,
-            user_domain=UserDomains.from_string(user_domain),
-        )
-        found = self._api.has_role(cloud_account=cloud_account, details=details)
-        out = (
-            "The user has the specified role"
-            if found
-            else "The user does not have the specified role"
-        )
-        return bool(found), out

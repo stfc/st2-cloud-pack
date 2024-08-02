@@ -19,14 +19,6 @@ class SubnetActions(Action):
         func: Callable = getattr(self, submodule)
         return func(**kwargs)
 
-    def subnet_show(self, subnet):
-        """
-        Show subnet properties
-        :param subnet: Name or ID
-        :return: (status (Bool), reason/output (String/Dict))
-        """
-        raise NotImplementedError("Not ported to new API")
-
     # pylint: disable=too-many-arguments
     def subnet_create(
         self,

@@ -57,27 +57,13 @@ class OpenstackRoles(OpenstackWrapperBase):
         :param cloud_account: The account from the clouds configuration to use
         :param role_identifier: Name or ID of the role to find
         """
+        # TODO make this a private method
         role_identifier = role_identifier.strip()
         if not role_identifier:
             raise MissingMandatoryParamError("A role name or ID is required")
 
         with self._connection_cls(cloud_account) as conn:
             return conn.identity.find_role(role_identifier, ignore_missing=True)
-
-    def has_role(self, cloud_account: str, details: RoleDetails) -> bool:
-        """
-        Checks if the specified user has the given role
-        :param cloud_account: The account from the clouds configuration to use
-        :param details: The details to find the role with
-        """
-        user, project, role = self._find_role_details(cloud_account, details)
-
-        # Note: this changed as of commit
-        # https://github.com/openstack/openstacksdk/commit/95cec28723a7b1a66b2b6a34aefcb2660140d81c
-        with self._connection_cls(cloud_account) as conn:
-            return conn.identity.validate_user_has_role(
-                project=project, user=user, role=role
-            )
 
     def remove_role_from_user(self, cloud_account: str, details: RoleDetails) -> None:
         """
