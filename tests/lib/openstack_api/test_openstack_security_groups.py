@@ -122,6 +122,7 @@ def test_create_https_security_group_invalid_project():
     mock_conn.network.create_security_group.assert_not_called()
 
 
+# pylint: disable=too-many-arguments
 @pytest.mark.parametrize(
     "direction, ip_version, protocol, remote_ip_cidr, port_range",
     [
