@@ -403,10 +403,10 @@ def test_append_from(instance):
     )
 
     res = instance.append_from(
-        mock_query_type, mock_cloud_account, mock_prop1, mock_prop2
+        mock_query_type, mock_cloud_account, [mock_prop1, mock_prop2]
     )
     instance.chainer.run_append_from_query.assert_called_once_with(
-        instance, mock_query_type, mock_cloud_account, mock_prop1, mock_prop2
+        instance, mock_query_type, mock_cloud_account, [mock_prop1, mock_prop2]
     )
     instance.results_container.apply_forwarded_results(
         mock_link_prop, mock_new_query_results

@@ -238,7 +238,7 @@ def test_run_append_from_query(mock_query_types, instance):
     mock_new_query = mock_current_query.then.return_value
 
     res = instance.run_append_from_query(
-        mock_current_query, query_type, mock_cloud_account, *mock_props
+        mock_current_query, query_type, mock_cloud_account, mock_props
     )
 
     mock_query_types.from_string.assert_called_once_with(query_type)

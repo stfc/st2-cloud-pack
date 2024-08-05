@@ -100,7 +100,7 @@ def find_servers_with_decom_flavors(
         )
 
     server_query.append_from(
-        "PROJECT_QUERY", cloud_account, ProjectProperties.PROJECT_NAME
+        "PROJECT_QUERY", cloud_account, [ProjectProperties.PROJECT_NAME]
     )
     server_query.group_by(ServerProperties.USER_ID)
 
