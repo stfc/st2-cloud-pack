@@ -1,4 +1,3 @@
-from typing import Optional
 from openstack.connection import Connection
 from openstack.network.v2.router import Router
 from structs.router_details import RouterDetails

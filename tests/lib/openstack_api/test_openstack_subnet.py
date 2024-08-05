@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
-import pytest
 import ipaddress
+import pytest
+
 from openstack_api.openstack_subnet import create_subnet
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from exceptions.item_not_found_error import ItemNotFoundError

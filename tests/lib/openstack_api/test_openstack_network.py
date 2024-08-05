@@ -66,7 +66,7 @@ def run_allocate_floating_ip_success_test():
         mock_project_identifier = "foo"
         mock_network_identifier = "bar  "
         mock_conn = MagicMock()
-        mock_conn.network.create_ip.side_effect = [i for i in range(expected_calls)]
+        mock_conn.network.create_ip.side_effect = list(range(expected_calls))
         res = allocate_floating_ips(
             mock_conn,
             mock_network_identifier,
@@ -89,7 +89,7 @@ def run_allocate_floating_ip_success_test():
                 for _ in range(expected_calls)
             ]
         )
-        assert res == [i for i in range(expected_calls)]
+        assert res == list(range(expected_calls))
 
     return _run_internal
 
