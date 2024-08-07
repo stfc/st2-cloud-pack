@@ -1,14 +1,11 @@
-from typing import List, Optional, Union
-
-import openstack
+from typing import Optional, Union
 
 from email_api.emailer import Emailer
 from enums.cloud_domains import CloudDomains
-from enums.query.props import ServerProperties
 from enums.query.query_presets import QueryPresetsGeneric
 from enums.query.props.hypervisor_properties import HypervisorProperties
 
-from openstack_query import HypervisorQuery, ServerQuery, UserQuery
+from openstack_query import HypervisorQuery
 from structs.email.email_params import EmailParams
 from structs.email.email_template_details import EmailTemplateDetails
 from structs.email.smtp_account import SMTPAccount
@@ -35,6 +32,9 @@ def find_down_hypervisors(cloud_account: str):
         HypervisorProperties.HYPERVISOR_STATUS,
     )
 
+    if not hypervisor_query_down.to_props():
+        raise RuntimeError(f"No hypervisors found in [DOWN] state")
+
     return hypervisor_query_down
 
 
@@ -59,6 +59,9 @@ def find_disabled_hypervisors(cloud_account: str):
         HypervisorProperties.HYPERVISOR_STATUS,
     )
 
+    if not hypervisor_query_disabled.to_props():
+        raise RuntimeError(f"No hypervisors found with [DISABLED] status")
+
     return hypervisor_query_disabled
 
 
@@ -80,9 +83,7 @@ def print_email_params(
     )
 
 
-def build_email_params(
-    down_table: str, disabled_table: str, **email_kwargs
-):
+def build_email_params(down_table: str, disabled_table: str, **email_kwargs):
     """
     build email params dataclass which will be used to configure how to send the email
     :param down_table: a table representing info found in openstack about HVs in down state
@@ -100,6 +101,7 @@ def build_email_params(
     footer = EmailTemplateDetails(template_name="footer", template_params={})
 
     return EmailParams(email_templates=[body, footer], **email_kwargs)
+
 
 def send_down_disabled_hypervisors_email(
     smtp_account: SMTPAccount,
@@ -127,7 +129,7 @@ def send_down_disabled_hypervisors_email(
     hypervisor_query_down = find_down_hypervisors(cloud_account)
     hypervisor_query_disabled = find_disabled_hypervisors(cloud_account)
 
-    send_to = ["akhil.maganti@stfc.ac.uk"]
+    send_to = ["ops-team"]
     if use_override:
         send_to = [override_email_address]
 
@@ -151,4 +153,3 @@ def send_down_disabled_hypervisors_email(
         **email_params_kwargs,
     )
     Emailer(smtp_account).send_emails([email_params])
-
