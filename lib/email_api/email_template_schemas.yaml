@@ -27,7 +27,8 @@ footer:
 
 hypervisor_down_disabled:
   schema:
-    hypervisor_down_disabled: "No Hypervisors in down state or disabled status"
+    down_table: "No Hypervisors in down state"
+    disabled_table: "No Hypervisors with disabled status"
   html_filepath: "html/hypervisor_down_disabled.html.j2"
   plaintext_filepath: "plaintext/hypervisor_down_disabled.txt.j2"
 
