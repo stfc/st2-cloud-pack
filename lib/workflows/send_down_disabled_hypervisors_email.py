@@ -90,7 +90,7 @@ def build_email_params(
     :param email_kwargs: a set of email kwargs to pass to EmailParams
     """
     body = EmailTemplateDetails(
-        template_name="shutoff_vm",
+        template_name="hypervisor_down_disabled",
         template_params={
             "down_table": down_table,
             "disabled_table": disabled_table,
