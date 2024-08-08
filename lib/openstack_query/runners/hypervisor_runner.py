@@ -26,6 +26,7 @@ class HypervisorRunner(RunnerWrapper):
         logger.debug("HypervisorQuery has no meta-params available")
         return super().parse_meta_params(conn, **kwargs)
 
+    # pylint: disable=unused-argument
     def run_query(
         self,
         conn: OpenstackConnection,
