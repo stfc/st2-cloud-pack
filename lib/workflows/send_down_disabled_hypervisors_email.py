@@ -33,7 +33,7 @@ def find_down_hypervisors(cloud_account: str):
     )
 
     if not hypervisor_query_down.to_props():
-        raise RuntimeError(f"No hypervisors found in [DOWN] state")
+        raise RuntimeError("No hypervisors found in [DOWN] state")
 
     return hypervisor_query_down
 
@@ -60,7 +60,7 @@ def find_disabled_hypervisors(cloud_account: str):
     )
 
     if not hypervisor_query_disabled.to_props():
-        raise RuntimeError(f"No hypervisors found with [DISABLED] status")
+        raise RuntimeError("No hypervisors found with [DISABLED] status")
 
     return hypervisor_query_disabled
 

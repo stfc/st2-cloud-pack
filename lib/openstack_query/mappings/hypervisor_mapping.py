@@ -25,7 +25,8 @@ from structs.query.query_client_side_handlers import QueryClientSideHandlers
 class HypervisorMapping(MappingInterface):
     """
     Mapping class for querying Openstack Hypervisor objects
-    Define property mappings, kwarg mappings and filter function mappings, and runner mapping related to hypervisors here
+    Define property mappings, kwarg mappings and filter function mappings,
+    and runner mapping related to hypervisors here
     """
 
     @staticmethod

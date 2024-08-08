@@ -1,6 +1,5 @@
 from typing import Type
 
-from enums.query.props.hypervisor_properties import HypervisorProperties
 from structs.query.query_client_side_handlers import QueryClientSideHandlers
 
 from enums.query.props.server_properties import ServerProperties
@@ -13,6 +12,7 @@ from enums.query.props.user_properties import UserProperties
 from enums.query.props.project_properties import ProjectProperties
 from enums.query.props.flavor_properties import FlavorProperties
 from enums.query.props.image_properties import ImageProperties
+from enums.query.props.hypervisor_properties import HypervisorProperties
 
 from openstack_query.handlers.server_side_handler import ServerSideHandler
 
