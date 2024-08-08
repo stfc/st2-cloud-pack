@@ -6,6 +6,7 @@ from .api.query_objects import (
     FlavorQuery,
     ProjectQuery,
     ImageQuery,
+    HypervisorQuery,
 )
 
 # Create logger

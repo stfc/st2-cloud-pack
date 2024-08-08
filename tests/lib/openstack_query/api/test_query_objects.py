@@ -8,6 +8,7 @@ from openstack_query.api.query_objects import (
     FlavorQuery,
     ProjectQuery,
     ImageQuery,
+    HypervisorQuery,
     get_common,
 )
 
@@ -98,3 +99,14 @@ def test_image_query(run_query_test_case):
         "openstack_query.api.query_objects.ImageMapping"
     ) as mock_project_mapping:
         run_query_test_case(ImageQuery, mock_project_mapping)
+
+
+def test_hypervisor_query(run_query_test_case):
+    """
+    tests that function ProjectQuery works
+    should call get_common with ProjectMapping
+    """
+    with patch(
+        "openstack_query.api.query_objects.HypervisorMapping"
+    ) as mock_project_mapping:
+        run_query_test_case(HypervisorQuery, mock_project_mapping)

@@ -25,6 +25,13 @@ footer:
   html_filepath: "html/footer.html"
   plaintext_filepath: "plaintext/footer.txt"
 
+hypervisor_down_disabled:
+  schema:
+    down_table: "No Hypervisors in down state"
+    disabled_table: "No Hypervisors with disabled status"
+  html_filepath: "html/hypervisor_down_disabled.html.j2"
+  plaintext_filepath: "plaintext/hypervisor_down_disabled.txt.j2"
+
 shutoff_error:
   schema:
     username: null

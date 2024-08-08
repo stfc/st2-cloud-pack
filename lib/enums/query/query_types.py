@@ -7,6 +7,7 @@ from openstack_query.mappings.image_mapping import ImageMapping
 from openstack_query.mappings.project_mapping import ProjectMapping
 from openstack_query.mappings.server_mapping import ServerMapping
 from openstack_query.mappings.user_mapping import UserMapping
+from openstack_query.mappings.hypervisor_mapping import HypervisorMapping
 
 # pylint: disable=too-few-public-methods
 
@@ -22,6 +23,7 @@ class QueryTypes(EnumWithAliases):
     SERVER_QUERY = ServerMapping
     USER_QUERY = UserMapping
     IMAGE_QUERY = ImageMapping
+    HYPERVISOR_QUERY = HypervisorMapping
 
     @staticmethod
     def _get_aliases() -> Dict:
@@ -40,4 +42,5 @@ class QueryTypes(EnumWithAliases):
             ],
             QueryTypes.USER_QUERY: ["user", "users"],
             QueryTypes.IMAGE_QUERY: ["image", "images"],
+            QueryTypes.HYPERVISOR_QUERY: ["hypervisor", "hypervisors"],
         }
