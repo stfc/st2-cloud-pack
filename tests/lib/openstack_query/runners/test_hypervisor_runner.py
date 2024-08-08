@@ -41,6 +41,7 @@ def test_run_query_no_server_filters(
 
     res = instance.run_query(
         mock_connection,
+        filter_kwargs=None,
     )
 
     mock_run_paginated_query.assert_called_once_with(
