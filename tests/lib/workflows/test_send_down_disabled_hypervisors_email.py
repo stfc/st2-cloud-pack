@@ -278,7 +278,6 @@ def test_send_down_disabled_hypervisors_email_send_html(
 @patch("workflows.send_down_disabled_hypervisors_email.print_email_params")
 @patch("workflows.send_down_disabled_hypervisors_email.Emailer")
 def test_send_down_disabled_hypervisors_email_print(
-    mock_emailer,
     mock_print_email_params,
     mock_find_disabled_hypervisors,
     mock_find_down_hypervisors,
@@ -324,7 +323,7 @@ def test_send_down_disabled_hypervisors_email_print(
 @patch("workflows.send_down_disabled_hypervisors_email.find_disabled_hypervisors")
 @patch("workflows.send_down_disabled_hypervisors_email.build_email_params")
 @patch("workflows.send_down_disabled_hypervisors_email.Emailer")
-def test_send_down_disabled_hypervisors_email_send_html(
+def test_send_down_disabled_hypervisors_email_use_override(
     mock_emailer,
     mock_build_email_params,
     mock_find_disabled_hypervisors,
