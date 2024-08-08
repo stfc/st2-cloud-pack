@@ -36,12 +36,11 @@ def test_run_query_no_server_filters(
         "hv2",
         "hv3",
     ]
-    mock_filter_kwargs = None
+
     mock_connection = MagicMock()
 
     res = instance.run_query(
         mock_connection,
-        filter_kwargs=mock_filter_kwargs,
     )
 
     mock_run_paginated_query.assert_called_once_with(

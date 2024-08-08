@@ -103,6 +103,8 @@ def build_email_params(down_table: str, disabled_table: str, **email_kwargs):
     return EmailParams(email_templates=[body, footer], **email_kwargs)
 
 
+# pylint:disable=too-many-arguments
+# pylint:disable=too-many-locals
 def send_down_disabled_hypervisors_email(
     smtp_account: SMTPAccount,
     cloud_account: Union[CloudDomains, str],
