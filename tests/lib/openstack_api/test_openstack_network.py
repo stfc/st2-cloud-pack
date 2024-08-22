@@ -62,7 +62,14 @@ def test_allocate_floating_ip_zero_ips():
 
 @pytest.fixture(name="run_allocate_floating_ip_success")
 def run_allocate_floating_ip_success_test():
+    """fixture for testing successful allocation for one or more floating ip(s)"""
+
     def _run_internal(number_to_create, expected_calls):
+        """
+        internal test function
+        :param number_to_create: number of floating ips to create
+        :param expected_calls: number of times create_ip is expected to be called
+        """
         mock_project_identifier = "foo"
         mock_network_identifier = "bar  "
         mock_conn = MagicMock()
