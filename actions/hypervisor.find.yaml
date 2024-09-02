@@ -1,0 +1,27 @@
+---
+description: Common Queries about Hypervisors
+enabled: true
+entry_point: src/hypervisor_actions.py
+name: hypervisor.find
+parameters:
+  submodule:
+    default: find_hypervisor
+    immutable: True
+    type: string
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  search_type:
+    description: Type of search to perform
+    required: true
+    type: string
+    default: "empty_hvs"
+    enum:
+      - "empty_hvs"
+
+runner_type: python-script
