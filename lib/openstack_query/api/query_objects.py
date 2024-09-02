@@ -1,11 +1,16 @@
+from typing import TYPE_CHECKING
 from typing import Type
-from openstack_query.mappings.mapping_interface import MappingInterface
-from openstack_query.mappings.user_mapping import UserMapping
-from openstack_query.mappings.server_mapping import ServerMapping
+
 from openstack_query.mappings.flavor_mapping import FlavorMapping
-from openstack_query.mappings.project_mapping import ProjectMapping
-from openstack_query.mappings.image_mapping import ImageMapping
 from openstack_query.mappings.hypervisor_mapping import HypervisorMapping
+from openstack_query.mappings.image_mapping import ImageMapping
+from openstack_query.mappings.mapping_interface import MappingInterface
+from openstack_query.mappings.project_mapping import ProjectMapping
+from openstack_query.mappings.server_mapping import ServerMapping
+from openstack_query.mappings.user_mapping import UserMapping
+
+if TYPE_CHECKING:
+    from openstack_query.api.query_api import QueryAPI
 
 
 def get_common(query_mapping: Type[MappingInterface]) -> "QueryAPI":

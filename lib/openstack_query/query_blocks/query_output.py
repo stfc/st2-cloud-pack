@@ -100,7 +100,7 @@ class QueryOutput:
     def to_string(
         self,
         results_container: ResultsContainer,
-        title: str = None,
+        title: Optional[str] = None,
         groups: Optional[List[str]] = None,
         include_group_titles: [bool] = True,
         **kwargs,

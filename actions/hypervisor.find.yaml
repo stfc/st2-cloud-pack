@@ -20,8 +20,8 @@ parameters:
     description: Type of search to perform
     required: true
     type: string
-    default: "empty_hvs"
+    default: "EMPTY_HVS"
     enum:
-      - "empty_hvs"
+      - "EMPTY_HVS"
 
 runner_type: python-script
