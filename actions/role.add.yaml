@@ -1,11 +1,15 @@
 ---
 description: Add User Role to Project
 enabled: true
-entry_point: src/role_actions.py
+entry_point: src/openstack_actions.py
 name: role.add
 parameters:
-  submodule:
-    default: role_add
+  lib_entry_point:
+    default: openstack_api.openstack_roles.assign_role_to_user
+    immutable: true
+    type: string
+  requires_openstack:
+    default: true
     immutable: true
     type: string
   cloud_account:

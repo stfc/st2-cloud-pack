@@ -1,11 +1,15 @@
 ---
 description: Removes a role from a user's project permissions
 enabled: true
-entry_point: src/role_actions.py
+entry_point: src/openstack_actions.py
 name: role.remove
 parameters:
-  submodule:
-    default: role_remove
+  lib_entry_point:
+    default: openstack_api.openstack_roles.remove_role_from_user
+    immutable: true
+    type: string
+  requires_openstack:
+    default: true
     immutable: true
     type: string
   cloud_account:

@@ -1,13 +1,13 @@
 ---
 description: Search for servers property using regex pattern, or not matching given value(s)
 enabled: true
-entry_point: src/workflow_actions.py
+entry_point: src/openstack_actions.py
 name: server.search.by.regex
 parameters:
   timeout:
     default: 5400
-  action_name:
-    default: search_by_regex
+  lib_entry_point:
+    default: workflows.search_by_regex.search_by_regex
     immutable: true
     type: string
   query_type:

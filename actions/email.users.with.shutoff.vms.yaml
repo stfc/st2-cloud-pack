@@ -1,13 +1,13 @@
 ---
 description: Sends an email to inform users that they have VMs in Shutoff state
 enabled: true
-entry_point: src/workflow_actions.py
+entry_point: src/openstack_actions.py
 name: email.users.with.shutoff.vms
 parameters:
   timeout:
     default: 5400
-  action_name:
-    default: send_shutoff_vm_email
+  lib_entry_point:
+    default: workflows.send_shutoff_vm_email.send_shutoff_vm_email
     immutable: true
     type: string
   subject:
