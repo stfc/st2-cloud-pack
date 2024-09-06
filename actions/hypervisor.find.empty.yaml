@@ -1,11 +1,11 @@
 ---
 description: Common Queries about Hypervisors
 enabled: true
-entry_point: src/hypervisor_actions.py
-name: hypervisor.find
+entry_point: src/workflow_actions.py
+name: hypervisor.find.empty
 parameters:
-  submodule:
-    default: find_hypervisor
+  action_name:
+    default: find_empty_hypervisors
     immutable: True
     type: string
   cloud_account:
@@ -16,12 +16,5 @@ parameters:
     enum:
       - "dev"
       - "prod"
-  search_type:
-    description: Type of search to perform
-    required: true
-    type: string
-    default: "EMPTY_HVS"
-    enum:
-      - "EMPTY_HVS"
 
 runner_type: python-script
