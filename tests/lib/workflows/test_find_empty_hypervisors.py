@@ -18,7 +18,7 @@ def test_with_empty_hvs(mocked_query_factory):
         fake_query_output
     )
 
-    result = find_empty_hypervisors(cloud_account="test")
+    result = find_empty_hypervisors(cloud_account="test", include_offline=True)
     mocked_query_factory.assert_called_once_with()
 
     query_obj.select.assert_called_once_with(HypervisorProperties.HYPERVISOR_NAME)
@@ -36,3 +36,26 @@ def test_with_empty_hvs(mocked_query_factory):
     sort_by_chain.to_props.assert_called_once_with(flatten=True)
 
     assert result == fake_query_output["hypervisor_name"]
+
+
+@patch("workflows.find_empty_hypervisors.HypervisorQuery")
+def test_with_empty_hvs_excluding_offline(mocked_query_factory):
+    """
+    Tests that the query is correctly set up and run for empty hypervisors
+    including the where clause to filter out un-contactable hypervisors
+    """
+    query_obj = mocked_query_factory.return_value
+    find_empty_hypervisors(cloud_account="test", include_offline=False)
+
+    mocked_query_factory.assert_called_once_with()
+    query_obj.select.assert_called_once_with(HypervisorProperties.HYPERVISOR_NAME)
+    query_obj.where.assert_any_call(
+        QueryPresetsGeneric.EQUAL_TO,
+        HypervisorProperties.HYPERVISOR_VCPUS_USED,
+        value=0,
+    )
+    query_obj.where.assert_any_call(
+        QueryPresetsGeneric.EQUAL_TO,
+        HypervisorProperties.HYPERVISOR_STATE,
+        value="up",
+    )
