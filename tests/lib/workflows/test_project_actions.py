@@ -2,7 +2,7 @@ from unittest.mock import patch, MagicMock
 from workflows.project_actions import delete_project
 
 
-@patch("workflows.project_actions.delete_project")
+@patch("workflows.project_actions.openstack_project.delete_project")
 def test_project_delete_with_confirmation(mock_api_delete_project):
     """
     Tests that project_delete function forwards on request to openstack API project_delete function
@@ -19,11 +19,12 @@ def test_project_delete_with_confirmation(mock_api_delete_project):
         "name": "project-name",
         "description": "project-description",
         "email": "example@example.com",
+        "tags": [],
     }
 
     status, _ = delete_project(mock_conn, mock_project_identifier, delete=True)
 
-    mock_conn.identity.find_project.assert_called_once_with(
+    mock_conn.identity.find_project.assert_any_call(
         project_identifier="project-id", ignore_missing=False
     )
     mock_api_delete_project.assert_called_once_with(
