@@ -51,11 +51,8 @@ def test_create_external_project(
     project_email = "test@example.com"
     project_description = "Test Description"
     external_network_name = "External Network"
-    external_network_description = "External Network Description"
     external_subnet_name = "External Subnet"
-    external_subnet_description = "External Subnet Description"
     external_router_name = "External Router"
-    external_router_description = "External Router Description"
     floating_ip_num = 2
     project_immutable = True
     parent_id = "parent-id"
@@ -69,11 +66,8 @@ def test_create_external_project(
         project_email,
         project_description,
         external_network_name,
-        external_network_description,
         external_subnet_name,
-        external_subnet_description,
         external_router_name,
-        external_router_description,
         floating_ip_num,
         project_immutable,
         parent_id,
@@ -97,7 +91,7 @@ def test_create_external_project(
         mock_conn,
         NetworkDetails(
             name=external_network_name,
-            description=external_network_description,
+            description="",
             project_identifier="project-id",
             provider_network_type=NetworkProviders.VXLAN,
             port_security_enabled=True,
@@ -109,7 +103,7 @@ def test_create_external_project(
         mock_conn,
         RouterDetails(
             router_name=external_router_name,
-            router_description=external_router_description,
+            router_description="",
             project_identifier="project-id",
             external_gateway="External",
             is_distributed=False,
@@ -119,7 +113,7 @@ def test_create_external_project(
         mock_conn,
         network_identifier="network-id",
         subnet_name=external_subnet_name,
-        subnet_description=external_subnet_description,
+        subnet_description="",
         dhcp_enabled=True,
     )
     mock_add_interface_to_router.assert_called_once_with(

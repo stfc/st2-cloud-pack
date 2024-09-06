@@ -37,11 +37,8 @@ def create_external_project(
     project_email: str,
     project_description: str,
     external_network_name: str,
-    external_network_description: str,
     external_subnet_name: str,
-    external_subnet_description: str,
     external_router_name: str,
-    external_router_description: str,
     floating_ip_num: int = 1,
     project_immutable: Optional[bool] = None,
     parent_id: Optional[str] = None,
@@ -55,11 +52,8 @@ def create_external_project(
     :param project_email: A string for email associated with the project
     :param project_description: A string for project description
     :param external_network_name: A string for external network name
-    :param external_network_description: A string for external network description
     :param external_subnet_name: A string for external subnet name
-    :param external_subnet_description: A string for external subnet description
     :param external_router_name: A string for external router name
-    :param external_router_description: A string for external router description
     :param floating_ip_num: Number of floating ips to assign to project (default=1)
     :param project_immutable: (Optional) A boolean representing if project is immutable (True) or not (False)
     :param parent_id: (Optional) A string for parent project
@@ -87,7 +81,7 @@ def create_external_project(
         conn,
         NetworkDetails(
             name=external_network_name,
-            description=external_network_description,
+            description="",
             project_identifier=project["id"],
             provider_network_type=NetworkProviders.VXLAN,
             port_security_enabled=True,
@@ -99,7 +93,7 @@ def create_external_project(
         conn,
         RouterDetails(
             router_name=external_router_name,
-            router_description=external_router_description,
+            router_description="",
             project_identifier=project["id"],
             external_gateway="External",
             is_distributed=False,
@@ -110,7 +104,7 @@ def create_external_project(
         conn,
         network_identifier=network["id"],
         subnet_name=external_subnet_name,
-        subnet_description=external_subnet_description,
+        subnet_description="",
         dhcp_enabled=True,
     )
 
