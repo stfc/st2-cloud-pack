@@ -58,11 +58,28 @@ def delete_project(conn: Connection, project_identifier: str) -> bool:
         project_identifier=project_identifier, ignore_missing=False
     )
 
+    if not _is_project_safe_to_delete(project):
+        raise ValueError("Project is a protected project and cannot be deleted!")
+
     if _is_project_immutable(project):
         raise ValueError("Project is immutable and so can't be deleted")
 
     result = conn.identity.delete_project(project=project, ignore_missing=False)
     return result is None  # Where None == success
+
+
+def _is_project_safe_to_delete(project: Project) -> bool:
+    """
+    Returns true if the project is safe to delete - avoid deleting admin project for instance
+    :param project: project to check against
+    :return: True if safe to delete else False
+    """
+    # these are core project uuids that we shouldn't delete
+    return project["id"] not in [
+        "0e60669c49d4497aad91d8f729cfdd77",
+        "4de86830e89b4a46b590536571b6ccd4",
+        "c9aee696c4b54f12a645af2c951327dc",
+    ]
 
 
 def _find_project_tag(
