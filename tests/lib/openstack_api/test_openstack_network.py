@@ -179,7 +179,7 @@ def test_create_network_success():
         description="bar",
         provider_network_type="vxlan",
         is_port_security_enabled=True,
-        has_external_router=True,
+        is_router_external=True,
     )
 
     assert res == mock_conn.network.create_network.return_value

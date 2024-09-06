@@ -115,6 +115,7 @@ def test_delete_immutable_project_throws():
     """
     mock_conn = MagicMock()
     mock_conn.identity.find_project.return_value = {
+        "id": "project-id",
         "name": "foo",
         "tags": ["test@test.com", "immutable", "other-tag"],
     }
@@ -135,6 +136,7 @@ def test_delete_project_successful_with_name_or_id():
     """
     mock_conn = MagicMock()
     mock_conn.identity.find_project.return_value = {
+        "id": "project-id",
         "name": "foo",
         "tags": ["test@test.com", "other-tag"],
     }
