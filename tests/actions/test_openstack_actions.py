@@ -16,24 +16,24 @@ def test_module_exists(action_name):
     assert hasattr(workflow_module, action_name)
 
 
-class TestWorkflowActions(OpenstackActionTestBase):
+class TestOpenstackActions(OpenstackActionTestBase):
     """
     Unit tests for actions that use workflow modules
     """
 
-    action_cls = WorkflowActions
+    action_cls = OpenstackActions
     # pylint: disable=invalid-name
 
     def setUp(self):
         """setup for tests"""
         super().setUp()
-        self.action: WorkflowActions = self.get_action_instance()
+        self.action: OpenstackActions = self.get_action_instance()
         self.mock_kwargs = {
             "kwarg1": NonCallableMock(),
             "kwarg2": NonCallableMock(),
         }
 
-    @patch("src.workflow_actions.import_module")
+    @patch("src.openstack_actions.import_module")
     def test_run(self, mock_import):
         """
         Tests that run method can dispatch to workflow methods
@@ -51,39 +51,44 @@ class TestWorkflowActions(OpenstackActionTestBase):
             **mock_parse_configs.return_value
         )
 
-    @patch("src.workflow_actions.import_module")
-    @patch("src.workflow_actions.OpenstackConnection")
+    @patch("src.openstack_actions.import_module")
+    @patch("src.openstack_actions.OpenstackConnection")
     def test_run_with_openstack(self, mock_openstack_connection, mock_import):
         """
         Tests that run method can dispatch to workflow methods
         and sets up openstack connection when requires_openstack is True
         """
-
         mock_action_module_name = "workflow.submodule.module.fn1"
         mock_conn = MagicMock()
         mock_openstack_connection.return_value.__enter__.return_value = mock_conn
+
         with patch.object(self.action, "parse_configs") as mock_parse_configs:
-            mock_parse_configs.return_value = dict(
-                self.mock_kwargs, **{"cloud_account": "prod"}
-            )
+
+            mock_parse_configs.return_value = {
+                "kwarg1": "foo",
+                "kwarg2": "bar",
+                "cloud_account": "prod",
+            }
+
             self.action.run(
                 lib_entry_point=mock_action_module_name,
-                **self.mock_kwargs,
+                requires_openstack=True,
+                kwarg1="foo",
+                kwarg2="bar",
+                cloud_account="prod",
             )
 
-        mock_parse_configs.assert_called_once_with(**self.mock_kwargs)
-        mock_import.assert_called_once_with("workflow.submodule.module")
         mock_openstack_connection.assert_called_once_with("prod")
+        mock_parse_configs.assert_called_once_with(
+            kwarg1="foo", kwarg2="bar", cloud_account="prod"
+        )
+        mock_import.assert_called_once_with("workflow.submodule.module")
 
         mock_import.return_value.fn1.assert_called_once_with(
-            **{
-                "conn": mock_openstack_connection.return_value,
-                "kwarg1": NonCallableMock(),
-                "kwarg2": NonCallableMock(),
-            }
+            conn=mock_conn, kwarg1="foo", kwarg2="bar"
         )
 
-    @patch("src.workflow_actions.SMTPAccount")
+    @patch("src.openstack_actions.SMTPAccount")
     def parse_configs_with_smtp_account(self, mock_smtp_account):
         """
         tests that parse_configs parses smtp_account_name properly if provided
