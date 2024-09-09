@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict
 
 from email_api.emailer import Emailer
 from openstack_query import ServerQuery, UserQuery
@@ -14,10 +14,12 @@ from structs.email.smtp_account import SMTPAccount
 
 def find_servers_with_errored_vms(
     cloud_account: str, time_variable:int, from_projects: Optional[List[str]] = None
-):
+) -> ServerQuery:
     """
+    Search for machines that are in error state and return the user id, name and email address. 
     :param cloud_account: string represents cloud account to use
     :param from_projects: A list of project identifiers to limit search in
+    :param time_variable: An integer which specifies a minimum age of machine to search for when querying
     """
 
     server_query = ServerQuery()
@@ -68,7 +70,7 @@ def print_email_params(
     )
 
 
-def build_email_params(user_name: str, error_table: str, **email_kwargs):
+def build_email_params(user_name: str, error_table: str, **email_kwargs) -> EmailParams:
     """
     build email params dataclass which will be used to configure how to send the email
     :param user_name: name of user in openstack
@@ -89,7 +91,7 @@ def build_email_params(user_name: str, error_table: str, **email_kwargs):
     return EmailParams(email_templates=[body, footer], **email_kwargs)
 
 
-def find_user_info(user_id, cloud_account, override_email_address):
+def find_user_info(user_id, cloud_account, override_email_address) -> Dict:
     """
     run a UserQuery to find the email address and username associated for a user id.
     :param user_id: the openstack user id to find email address for
