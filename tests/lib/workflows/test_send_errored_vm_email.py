@@ -412,7 +412,6 @@ def test_send_errored_vm_email_print(
     """
     limit_by_projects = ["project1", "project2"]
     all_projects = False
-    time_variable = -1
     cloud_account = NonCallableMock()
     smtp_account = NonCallableMock()
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
@@ -492,7 +491,6 @@ def test_send_errored_vm_email_use_override(
     limit_by_projects = ["project1", "project2"]
     all_projects = False
     cloud_account = NonCallableMock()
-    time_variable = -1
     smtp_account = NonCallableMock()
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
     override_email_address = "example@example.com"
