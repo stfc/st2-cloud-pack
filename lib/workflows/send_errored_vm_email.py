@@ -126,6 +126,7 @@ def send_errored_vm_email(
     """
     Sends an email to each user who owns one or more VMs that are in error state
     This email will contain a notice to delete or rebuild the VM
+    
     :param smtp_account: (SMTPAccount): SMTP config
     :param cloud_account: string represents cloud account to use
     :param limit_by_projects: A list of project names or ids to limit search in
@@ -136,6 +137,7 @@ def send_errored_vm_email(
     :param override_email_address: an overriding email address to use if override_email set
     :param cc_cloud_support: flag if set will cc cloud-support email address to each generated email
     :param email_params_kwargs: see EmailParams dataclass class docstring
+    :param time_variable: An integer which specifies a minimum age of machine to search for when querying
     """
     if limit_by_projects and all_projects:
         raise RuntimeError(
@@ -167,14 +169,14 @@ def send_errored_vm_email(
 
         if not send_email:
             print_email_params(send_to[0], user_name, as_html, server_list)
+            continue
 
-        else:
-            email_params = build_email_params(
-                user_name,
-                server_list,
-                email_to=send_to,
-                as_html=as_html,
-                email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
-                **email_params_kwargs,
+        email_params = build_email_params(
+            user_name,
+            server_list,
+            email_to=send_to,
+            as_html=as_html,
+            email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
+            **email_params_kwargs,
             )
             Emailer(smtp_account).send_emails([email_params])
