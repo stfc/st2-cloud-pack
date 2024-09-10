@@ -1,4 +1,4 @@
-from typing import List, Optional, Union, Dict
+from typing import List, Optional, Union, Tuple
 
 from email_api.emailer import Emailer
 from openstack_query import ServerQuery, UserQuery
@@ -13,10 +13,10 @@ from structs.email.smtp_account import SMTPAccount
 
 
 def find_servers_with_errored_vms(
-    cloud_account: str, time_variable:int, from_projects: Optional[List[str]] = None
+    cloud_account: str, time_variable: int, from_projects: Optional[List[str]] = None
 ) -> ServerQuery:
     """
-    Search for machines that are in error state and return the user id, name and email address. 
+    Search for machines that are in error state and return the user id, name and email address.
     :param cloud_account: string represents cloud account to use
     :param from_projects: A list of project identifiers to limit search in
     :param time_variable: An integer which specifies a minimum age of machine to search for when querying
@@ -25,7 +25,9 @@ def find_servers_with_errored_vms(
     server_query = ServerQuery()
     if time_variable > 0:
         server_query.where(
-            QueryPresetsDateTime.OLDER_THAN, ServerProperties.SERVER_LAST_UPDATED_DATE, days=time_variable
+            QueryPresetsDateTime.OLDER_THAN,
+            ServerProperties.SERVER_LAST_UPDATED_DATE,
+            days=time_variable,
         )
     server_query.where(
         QueryPresetsGeneric.ANY_IN, ServerProperties.SERVER_STATUS, values=["ERROR"]
@@ -91,7 +93,7 @@ def build_email_params(user_name: str, error_table: str, **email_kwargs) -> Emai
     return EmailParams(email_templates=[body, footer], **email_kwargs)
 
 
-def find_user_info(user_id, cloud_account, override_email_address) -> Dict:
+def find_user_info(user_id, cloud_account, override_email_address) -> Tuple[str, str]:
     """
     run a UserQuery to find the email address and username associated for a user id.
     :param user_id: the openstack user id to find email address for
@@ -126,7 +128,7 @@ def send_errored_vm_email(
     """
     Sends an email to each user who owns one or more VMs that are in error state
     This email will contain a notice to delete or rebuild the VM
-    
+
     :param smtp_account: (SMTPAccount): SMTP config
     :param cloud_account: string represents cloud account to use
     :param limit_by_projects: A list of project names or ids to limit search in
@@ -148,7 +150,9 @@ def send_errored_vm_email(
             "please provide either a list of project identifiers or with flag 'all_projects' to run globally"
         )
 
-    server_query = find_servers_with_errored_vms(cloud_account, time_variable, limit_by_projects)
+    server_query = find_servers_with_errored_vms(
+        cloud_account, time_variable, limit_by_projects
+    )
 
     for user_id in server_query.to_props().keys():
         user_name, email_addr = find_user_info(
@@ -178,5 +182,5 @@ def send_errored_vm_email(
             as_html=as_html,
             email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
             **email_params_kwargs,
-            )
-            Emailer(smtp_account).send_emails([email_params])
+        )
+        Emailer(smtp_account).send_emails([email_params])
