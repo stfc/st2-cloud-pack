@@ -6,7 +6,7 @@ from workflows.send_errored_vm_email import (
     print_email_params,
     build_email_params,
     find_user_info,
-    send_errored_vm_email
+    send_errored_vm_email,
 )
 
 
@@ -95,7 +95,9 @@ def test_find_servers_with_errored_vms_valid(mock_server_query):
     """
     mock_server_query_obj = mock_server_query.return_value
 
-    res = find_servers_with_errored_vms("test-cloud-account", -1,  ["project1", "project2"])
+    res = find_servers_with_errored_vms(
+        "test-cloud-account", -1, ["project1", "project2"]
+    )
 
     mock_server_query_obj.run.assert_called_once_with(
         "test-cloud-account",
@@ -120,7 +122,9 @@ def test_find_servers_with_errored_vms_valid_time(mock_server_query):
     """
     mock_server_query_obj = mock_server_query.return_value
 
-    res = find_servers_with_errored_vms("test-cloud-account", 10,  ["project1", "project2"])
+    res = find_servers_with_errored_vms(
+        "test-cloud-account", 10, ["project1", "project2"]
+    )
 
     mock_server_query_obj.run.assert_called_once_with(
         "test-cloud-account",
@@ -147,7 +151,9 @@ def test_find_servers_with_errored_vms_no_servers_found(mock_server_query):
     mock_server_query_obj.to_props.return_value = None
 
     with pytest.raises(RuntimeError):
-        find_servers_with_errored_vms("test-cloud-account", -1, ["project1", "project2"])
+        find_servers_with_errored_vms(
+            "test-cloud-account", -1, ["project1", "project2"]
+        )
 
     mock_server_query_obj.run.assert_called_once_with(
         "test-cloud-account",
@@ -251,7 +257,7 @@ def test_send_errored_vm_email_send_plaintext(
     send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
-        time_variable= -1,
+        time_variable=-1,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
         as_html=False,
@@ -342,7 +348,7 @@ def test_send_errored_vm_email_send_html(
     send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
-        time_variable= -1,
+        time_variable=-1,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
         as_html=True,
@@ -510,7 +516,7 @@ def test_send_errored_vm_email_use_override(
     send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
-        time_variable= -1,
+        time_variable=-1,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
         as_html=False,
