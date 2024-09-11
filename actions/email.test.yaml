@@ -1,13 +1,13 @@
 ---
 description: Sends a test email
 enabled: true
-entry_point: src/workflow_actions.py
+entry_point: src/openstack_actions.py
 name: email.test
 parameters:
   timeout:
     default: 5400
-  action_name:
-    default: send_test_email
+  lib_entry_point:
+    default: workflows.send_test_email.send_test_email
     immutable: true
     type: string
   email_to:

@@ -1,11 +1,15 @@
 ---
 description: Delete Openstack Project
 enabled: true
-entry_point: src/project_actions.py
+entry_point: src/openstack_actions.py
 name: project.delete
 parameters:
-  submodule:
-    default: project_delete
+  lib_entry_point:
+    default: openstack_api.openstack_project.delete_project
+    immutable: true
+    type: string
+  requires_openstack:
+    default: true
     immutable: true
     type: string
   cloud_account:

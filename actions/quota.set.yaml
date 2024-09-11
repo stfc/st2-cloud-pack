@@ -1,11 +1,15 @@
 ---
 description: Set quota for project
 enabled: true
-entry_point: src/quota_actions.py
+entry_point: src/openstack_actions.py
 name: quota.set
 parameters:
-  submodule:
-    default: quota_set
+  lib_entry_point:
+    default: openstack_api.openstack_quota.set_quota
+    immutable: true
+    type: string
+  requires_openstack:
+    default: true
     immutable: true
     type: string
   cloud_account:

@@ -1,13 +1,13 @@
 ---
 description: Sends an email to inform users that they have VMs running on flavors that are to be decommissioned
 enabled: true
-entry_point: src/workflow_actions.py
+entry_point: src/openstack_actions.py
 name: email.users.with.decom.flavors
 parameters:
   timeout:
     default: 5400
-  action_name:
-    default: send_decom_flavor_email
+  lib_entry_point:
+    default: workflows.send_decom_flavor_email.send_decom_flavor_email
     immutable: true
     type: string
   subject:

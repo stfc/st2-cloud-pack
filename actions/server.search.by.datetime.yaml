@@ -1,13 +1,13 @@
 ---
 description: Query servers based on a datetime property (e.g. created-at or last-updated)
 enabled: true
-entry_point: src/workflow_actions.py
+entry_point: src/openstack_actions.py
 name: server.search.by.datetime
 parameters:
   timeout:
     default: 5400
-  action_name:
-    default: search_by_datetime
+  lib_entry_point:
+    default: workflows.search_by_datetime_search_by_datetime
     immutable: true
     type: string
   query_type:
