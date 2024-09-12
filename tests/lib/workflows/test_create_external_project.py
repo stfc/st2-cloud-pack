@@ -84,6 +84,7 @@ def test_create_external_project(
             description=project_description,
             immutable=project_immutable,
             parent_id=parent_id,
+            is_enabled=True,
         ),
     )
 

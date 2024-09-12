@@ -61,6 +61,7 @@ def test_create_internal_project(
             description=project_description,
             immutable=project_immutable,
             parent_id=parent_id,
+            is_enabled=True,
         ),
     )
     mock_refresh_security_groups.assert_called_once_with(mock_conn, "project-id")
