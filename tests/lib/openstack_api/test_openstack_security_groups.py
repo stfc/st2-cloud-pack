@@ -25,6 +25,16 @@ def run_create_security_group_rule_test():
         if mock_details.port_range == ("*", "*"):
             start_port, end_port = (None, None)
 
+        mock_conn.identity.find_project.assert_any_call(
+            mock_details.project_identifier.strip(), ignore_missing=False
+        )
+
+        mock_conn.network.find_security_group.assert_any_call(
+            mock_details.security_group_identifier.strip(),
+            ignore_missing=False,
+            project_id=mock_conn.identity.find_project.return_value.id,
+        )
+
         mock_conn.network.create_security_group_rule.assert_any_call(
             project_id=mock_conn.identity.find_project.return_value.id,
             security_group_id=mock_conn.network.find_security_group.return_value.id,

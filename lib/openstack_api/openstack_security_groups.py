@@ -396,15 +396,16 @@ def _create_security_group_rule(
     details.security_group_identifier = details.security_group_identifier.strip()
     if not details.security_group_identifier:
         raise MissingMandatoryParamError("A security group name or ID is required")
-    security_group = conn.network.find_security_group(
-        details.security_group_identifier, ignore_missing=False
-    )
 
     details.project_identifier = details.project_identifier.strip()
     if not details.project_identifier:
         raise MissingMandatoryParamError("A project name or ID is required")
     project = conn.identity.find_project(
         details.project_identifier, ignore_missing=False
+    )
+
+    security_group = conn.network.find_security_group(
+        details.security_group_identifier, ignore_missing=False, project_id=project.id
     )
 
     start_port = str(details.port_range[0]).strip()
