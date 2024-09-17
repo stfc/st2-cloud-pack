@@ -1,4 +1,5 @@
 from importlib import import_module
+from structs.jira.jira_account import JiraAccount
 from st2common.runners.base_action import Action
 
 from openstack_api.openstack_connection import OpenstackConnection
@@ -42,4 +43,9 @@ class OpenstackActions(Action):
                 self.config, kwargs["smtp_account_name"]
             )
             del kwargs["smtp_account_name"]
+        if "atlassian_account_name" in kwargs:
+            kwargs["atlassian_account"] = JiraAccount.from_pack_config(
+                self.config, kwargs["atlassian_account_name"]
+            )
+            del kwargs["atlassian_account_name"]
         return kwargs

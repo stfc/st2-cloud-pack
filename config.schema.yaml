@@ -67,3 +67,32 @@ attachment_datastore_ttl:
   type: "integer"
   required: false
   default: 1800
+
+jira_accounts:
+  type: "array"
+  required: true
+  description: Jira Settings and tokens
+  items:
+    type: "object"
+    required: true
+    properties:
+      name:
+        description: "Name of the jira account"
+        type: "string"
+        secret: false
+        required: true
+      username:
+        type: "string"
+        description: "Username for stfc.atlassian.net"
+        required: true
+      api_token:
+        type: "string"
+        description: "Token for stfc.atlassian.net"
+        required: true
+        secret: true
+      atlassian_endpoint:
+        type: "string"
+        description: "atlassian endpoint"
+        required: true
+        secret: false
+        default: "https://stfc.atlassian.net"

@@ -1,0 +1,49 @@
+---
+description: Create a test jira task
+enabled: true
+entry_point: src/openstack_actions.py
+name: jira.create_test_issue
+parameters:
+  timeout:
+    default: 5400
+  lib_entry_point:
+    default: workflows.create_test_issue.create_test_issue
+    immutable: true
+    type: string
+  project_id:
+    type: string
+    description: "comma-spaced email addresses to send email to"
+    required: true
+  issue_type:
+    description: The clouds.yaml account to use whilst performing this action
+    required: true
+    type: string
+    default: "Task"
+    enum:
+      - "Task"
+      - "Epic"
+      - "Bug"
+  summary:
+    type: string
+    description: "comma-spaced email addresses to send email to"
+    required: true
+  description:
+    type: string
+    description: "comma-spaced email addresses to send email to"
+    required: true
+  components:
+    type: array
+    description: "comma-spaced email addresses to send email to"
+    required: true
+    default: [{"name": "Dev Ops"}]
+    immutable: true
+  epic_id:
+    type: string
+    description: "comma-spaced email addresses to send email to"
+    required: true
+  atlassian_account_name:
+    type: string
+    description: "Name of Atlassian Account to use. Must be configured in in the pack settings."
+    required: true
+    default: "default"
+runner_type: python-script
