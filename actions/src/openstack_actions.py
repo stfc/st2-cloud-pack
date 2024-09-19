@@ -1,9 +1,9 @@
 from importlib import import_module
-from structs.jira.jira_account import JiraAccount
 from st2common.runners.base_action import Action
 
 from openstack_api.openstack_connection import OpenstackConnection
 from structs.email.smtp_account import SMTPAccount
+from structs.jira.jira_account import JiraAccount
 
 
 class OpenstackActions(Action):

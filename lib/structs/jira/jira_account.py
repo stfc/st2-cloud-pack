@@ -6,7 +6,7 @@ from typing import Dict
 class JiraAccount:
     """
     Jira account Parameters dictating config info dictating how to create an issue.
-    :param username: Atlassian username 
+    :param username: Atlassian username
     :param api_token: Atlassian Token
     :param atlassian_endpoint: Atlassian server name to use
     """

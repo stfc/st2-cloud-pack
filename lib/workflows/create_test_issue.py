@@ -4,6 +4,7 @@ from structs.jira.jira_issue_details import IssueDetails
 from structs.jira.jira_account import JiraAccount
 
 
+# pylint: disable=too-many-arguments
 def create_test_issue(
     atlassian_account: JiraAccount,
     project_id: str,

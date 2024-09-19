@@ -7,8 +7,9 @@ from enums.issue_types import IssueType
 @dataclass
 class IssueDetails:
     """
-    Dataclass containinf fields needed to create a jira issue
+    Dataclass containing fields needed to create a jira issue
     """
+
     project_id: str
     issue_type: IssueType
     summary: str

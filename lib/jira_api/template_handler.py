@@ -10,6 +10,7 @@ from exceptions.jira_template_error import JiraTemplateError
 from structs.jira.jira_template_details import JiraTemplateDetails
 
 
+# pylint: disable=too-few-public-methods
 class TemplateHandler:
     """
     TemplateHandler class is used to get template files and render them using jinja2 templating engine.
