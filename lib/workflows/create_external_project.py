@@ -36,10 +36,10 @@ def create_external_project(
     project_name: str,
     project_email: str,
     project_description: str,
-    external_network_name: str,
-    external_subnet_name: str,
-    external_router_name: str,
-    floating_ip_num: int = 1,
+    network_name: str,
+    subnet_name: str,
+    router_name: str,
+    number_of_floating_ips: int = 1,
     project_immutable: Optional[bool] = None,
     parent_id: Optional[str] = None,
     admin_user_list: Optional[List[str]] = None,
@@ -51,10 +51,10 @@ def create_external_project(
     :param project_name: A string for project name
     :param project_email: A string for email associated with the project
     :param project_description: A string for project description
-    :param external_network_name: A string for external network name
-    :param external_subnet_name: A string for external subnet name
-    :param external_router_name: A string for external router name
-    :param floating_ip_num: Number of floating ips to assign to project (default=1)
+    :param network_name: A string for external network name
+    :param subnet_name: A string for external subnet name
+    :param router_name: A string for external router name
+    :param number_of_floating_ips: Number of floating ips to assign to project (default=1)
     :param project_immutable: (Optional) A boolean representing if project is immutable (True) or not (False)
     :param parent_id: (Optional) A string for parent project
     :param admin_user_list: (Optional) A list of strings to add as admins to the project
@@ -81,7 +81,7 @@ def create_external_project(
     network = create_network(
         conn,
         NetworkDetails(
-            name=external_network_name,
+            name=network_name,
             description="",
             project_identifier=project["id"],
             provider_network_type=NetworkProviders.VXLAN,
@@ -93,7 +93,7 @@ def create_external_project(
     router = create_router(
         conn,
         RouterDetails(
-            router_name=external_router_name,
+            router_name=router_name,
             router_description="",
             project_identifier=project["id"],
             external_gateway="External",
@@ -104,7 +104,7 @@ def create_external_project(
     subnet = create_subnet(
         conn,
         network_identifier=network["id"],
-        subnet_name=external_subnet_name,
+        subnet_name=subnet_name,
         subnet_description="",
         dhcp_enabled=True,
     )
@@ -139,7 +139,7 @@ def create_external_project(
         conn,
         network_identifier=network["id"],
         project_identifier=project["id"],
-        number_to_create=floating_ip_num,
+        number_to_create=number_of_floating_ips,
     )
 
     for admin_user in admin_user_list:
