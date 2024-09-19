@@ -56,7 +56,7 @@ parameters:
     Anything else will raise an error"
     required: false
   output_type:
-    default: "to_str"
+    default: "to_string"
     type: string
     enum:
       - "to_html"
