@@ -8,6 +8,7 @@ class JiraConnection:
     """
     Wrapper for Jira connection
     """
+
     def __init__(self, account: JiraAccount):
         self.conn = None
         self.endpoint = account.atlassian_endpoint
@@ -48,14 +49,15 @@ def create_jira_task(account, issue_details: IssueDetails) -> str:
     }
 
     with JiraConnection(account) as conn:
-        if not conn.project(issue_details.project_id):
-            raise ValueError("Project not found")
-
-        if (issue_details.epic_id is not None) and not conn.issue(
-            issue_details.epic_id
-        ):
-            raise ValueError("Epic not found")
+        # Check jira project exists
+        conn.project(issue_details.project_id)
         task = conn.create_issue(fields=fields)
-        if issue_details.epic_id is not None:
-            conn.add_issues_to_epic(epic_id=issue_details.epic_id, issue_keys=task.key)
+
+        if not issue_details.epic_id:
+            return task.id
+
+        # Check jira epic exists
+        conn.issue(issue_details.epic_id)
+
+        conn.add_issues_to_epic(epic_id=issue_details.epic_id, issue_keys=task.key)
         return task.id
