@@ -125,7 +125,7 @@ def test_delete_immutable_project_throws():
         delete_project(mock_conn, mock_project_identifier)
 
     mock_conn.identity.find_project.assert_called_once_with(
-        project_identifier=mock_project_identifier, ignore_missing=False
+        mock_project_identifier, ignore_missing=False
     )
 
 
@@ -147,7 +147,7 @@ def test_delete_project_successful_with_name_or_id():
     res = delete_project(mock_conn, mock_project_identifier)
 
     mock_conn.identity.find_project.assert_called_once_with(
-        project_identifier=mock_project_identifier, ignore_missing=False
+        mock_project_identifier, ignore_missing=False
     )
 
     mock_conn.identity.delete_project.assert_called_once_with(
@@ -173,6 +173,6 @@ def test_delete_protected_project_fails(protected_project_id):
     with pytest.raises(ValueError):
         delete_project(mock_conn, mock_project_identifier)
     mock_conn.identity.find_project.assert_called_once_with(
-        project_identifier=mock_project_identifier, ignore_missing=False
+        mock_project_identifier, ignore_missing=False
     )
     mock_conn.identity.delete_project.assert_not_called()

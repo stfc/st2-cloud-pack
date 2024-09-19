@@ -54,9 +54,7 @@ def delete_project(conn: Connection, project_identifier: str) -> bool:
     :param project_identifier: The name or Openstack ID for the project
     :return: True if the project was deleted, False if the operation failed
     """
-    project = conn.identity.find_project(
-        project_identifier=project_identifier, ignore_missing=False
-    )
+    project = conn.identity.find_project(project_identifier, ignore_missing=False)
 
     if not _is_project_safe_to_delete(project):
         raise ValueError("Project is a protected project and cannot be deleted!")

@@ -15,9 +15,7 @@ def delete_project(
                    chances of accidental deletion
     :return: The result of the operation
     """
-    project = conn.identity.find_project(
-        project_identifier=project_identifier, ignore_missing=False
-    )
+    project = conn.identity.find_project(project_identifier, ignore_missing=False)
     project_string = "\n".join(
         f"{k}: {project.get(k, 'Not Found')}"
         for k in ["id", "name", "description", "email"]

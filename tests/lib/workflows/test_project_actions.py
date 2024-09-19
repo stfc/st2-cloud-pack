@@ -24,9 +24,7 @@ def test_project_delete_with_confirmation(mock_api_delete_project):
 
     status, _ = delete_project(mock_conn, mock_project_identifier, delete=True)
 
-    mock_conn.identity.find_project.assert_any_call(
-        project_identifier="project-id", ignore_missing=False
-    )
+    mock_conn.identity.find_project.assert_any_call("project-id", ignore_missing=False)
     mock_api_delete_project.assert_called_once_with(
         mock_conn, project_identifier=mock_project_identifier
     )
@@ -55,7 +53,7 @@ def test_project_delete_without_confirmation(mock_api_delete_project):
     status, _ = delete_project(mock_conn, mock_project_identifier, delete=False)
 
     mock_conn.identity.find_project.assert_called_once_with(
-        project_identifier="project-id", ignore_missing=False
+        "project-id", ignore_missing=False
     )
     mock_api_delete_project.assert_not_called()
     assert not status
