@@ -5,7 +5,7 @@ entry_point: src/openstack_actions.py
 name: quota.set
 parameters:
   lib_entry_point:
-    default: openstack_api.openstack_quota.set_quota
+    default: workflows.quota_actions.quota_set
     immutable: true
     type: string
   requires_openstack:

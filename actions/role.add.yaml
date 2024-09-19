@@ -5,7 +5,7 @@ entry_point: src/openstack_actions.py
 name: role.add
 parameters:
   lib_entry_point:
-    default: openstack_api.openstack_roles.assign_role_to_user
+    default: workflows.role_actions.role_add
     immutable: true
     type: string
   requires_openstack:
