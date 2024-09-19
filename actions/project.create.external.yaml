@@ -66,5 +66,10 @@ parameters:
     required: true
     type: integer
     default: 1
-    description: Floating Ips to allocate to the project
+    description: Number of Floating Ips to allocate to the project - and is also the quota
+  number_of_security_group_rules:
+    required: true
+    type: integer
+    default: 200
+    description: Quota for number of Security Group Rules - needs to be at least 3
 runner_type: python-script

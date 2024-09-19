@@ -12,6 +12,7 @@ from openstack_api.openstack_network import (
     allocate_floating_ips,
 )
 from openstack_api.openstack_project import create_project
+from openstack_api.openstack_quota import set_quota
 from openstack_api.openstack_router import create_router, add_interface_to_router
 from openstack_api.openstack_security_groups import (
     refresh_security_groups,
@@ -25,6 +26,7 @@ from structs.network_details import NetworkDetails
 from structs.network_rbac import NetworkRbac
 
 from structs.project_details import ProjectDetails
+from structs.quota_details import QuotaDetails
 from structs.role_details import RoleDetails
 from structs.router_details import RouterDetails
 
@@ -40,6 +42,7 @@ def create_external_project(
     subnet_name: str,
     router_name: str,
     number_of_floating_ips: int = 1,
+    number_of_security_group_rules: int = 200,
     project_immutable: Optional[bool] = None,
     parent_id: Optional[str] = None,
     admin_user_list: Optional[List[str]] = None,
@@ -55,6 +58,7 @@ def create_external_project(
     :param subnet_name: A string for external subnet name
     :param router_name: A string for external router name
     :param number_of_floating_ips: Number of floating ips to assign to project (default=1)
+    :param number_of_security_group_rules: Quota for the no. of security group rules to assign (default=200)
     :param project_immutable: (Optional) A boolean representing if project is immutable (True) or not (False)
     :param parent_id: (Optional) A string for parent project
     :param admin_user_list: (Optional) A list of strings to add as admins to the project
@@ -118,6 +122,15 @@ def create_external_project(
 
     # wait for default security group
     refresh_security_groups(conn, project["id"])
+
+    set_quota(
+        conn,
+        QuotaDetails(
+            project_identifier=project["id"],
+            num_floating_ips=number_of_floating_ips,
+            num_security_group_rules=number_of_security_group_rules,
+        ),
+    )
 
     # create default security group rules
     create_external_security_group_rules(

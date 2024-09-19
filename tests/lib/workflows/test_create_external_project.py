@@ -6,6 +6,7 @@ from enums.user_domains import UserDomains
 from structs.network_details import NetworkDetails
 from structs.network_rbac import NetworkRbac
 from structs.project_details import ProjectDetails
+from structs.quota_details import QuotaDetails
 from structs.role_details import RoleDetails
 from structs.router_details import RouterDetails
 from workflows.create_external_project import create_external_project
@@ -19,6 +20,7 @@ from workflows.create_external_project import create_external_project
 @patch("workflows.create_external_project.create_subnet")
 @patch("workflows.create_external_project.add_interface_to_router")
 @patch("workflows.create_external_project.refresh_security_groups")
+@patch("workflows.create_external_project.set_quota")
 @patch("workflows.create_external_project.create_external_security_group_rules")
 @patch("workflows.create_external_project.create_http_security_group")
 @patch("workflows.create_external_project.create_https_security_group")
@@ -32,6 +34,7 @@ def test_create_external_project(
     mock_create_https_security_group,
     mock_create_http_security_group,
     mock_create_external_security_group_rules,
+    mock_set_quota,
     mock_refresh_security_groups,
     mock_add_interface_to_router,
     mock_create_subnet,
@@ -50,10 +53,11 @@ def test_create_external_project(
     project_name = "Test Project"
     project_email = "test@example.com"
     project_description = "Test Description"
-    external_network_name = "External Network"
-    external_subnet_name = "External Subnet"
-    external_router_name = "External Router"
-    floating_ip_num = 2
+    network_name = "External Network"
+    subnet_name = "External Subnet"
+    router_name = "External Router"
+    number_of_floating_ips = 2
+    number_of_security_group_rules = 200
     project_immutable = True
     parent_id = "parent-id"
     admin_user_list = ["admin1", "admin2"]
@@ -65,10 +69,11 @@ def test_create_external_project(
         project_name,
         project_email,
         project_description,
-        external_network_name,
-        external_subnet_name,
-        external_router_name,
-        floating_ip_num,
+        network_name,
+        subnet_name,
+        router_name,
+        number_of_floating_ips,
+        number_of_security_group_rules,
         project_immutable,
         parent_id,
         admin_user_list,
@@ -91,7 +96,7 @@ def test_create_external_project(
     mock_create_network.assert_called_once_with(
         mock_conn,
         NetworkDetails(
-            name=external_network_name,
+            name=network_name,
             description="",
             project_identifier="project-id",
             provider_network_type=NetworkProviders.VXLAN,
@@ -103,7 +108,7 @@ def test_create_external_project(
     mock_create_router.assert_called_once_with(
         mock_conn,
         RouterDetails(
-            router_name=external_router_name,
+            router_name=router_name,
             router_description="",
             project_identifier="project-id",
             external_gateway="External",
@@ -113,7 +118,7 @@ def test_create_external_project(
     mock_create_subnet.assert_called_once_with(
         mock_conn,
         network_identifier="network-id",
-        subnet_name=external_subnet_name,
+        subnet_name=subnet_name,
         subnet_description="",
         dhcp_enabled=True,
     )
@@ -124,6 +129,16 @@ def test_create_external_project(
         subnet_identifier="subnet-id",
     )
     mock_refresh_security_groups.assert_called_once_with(mock_conn, "project-id")
+
+    mock_set_quota.assert_called_once_with(
+        mock_conn,
+        QuotaDetails(
+            project_identifier="project-id",
+            num_floating_ips=number_of_floating_ips,
+            num_security_group_rules=number_of_security_group_rules,
+        ),
+    )
+
     mock_create_external_security_group_rules.assert_called_once_with(
         mock_conn, project_identifier="project-id", security_group_identifier="default"
     )
@@ -145,7 +160,7 @@ def test_create_external_project(
         mock_conn,
         network_identifier="network-id",
         project_identifier="project-id",
-        number_to_create=floating_ip_num,
+        number_to_create=number_of_floating_ips,
     )
 
     # Assert that roles were assigned to the admins
