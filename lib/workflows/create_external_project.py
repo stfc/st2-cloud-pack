@@ -150,7 +150,7 @@ def create_external_project(
 
     allocate_floating_ips(
         conn,
-        network_identifier=network["id"],
+        network_identifier="External",
         project_identifier=project["id"],
         number_to_create=number_of_floating_ips,
     )
