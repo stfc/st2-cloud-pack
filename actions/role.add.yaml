@@ -24,7 +24,7 @@ parameters:
     description: Project (Name or ID)
     required: true
     type: string
-  role:
+  role_identifier:
     description: Role to add (Name or ID)
     required: true
     type: string

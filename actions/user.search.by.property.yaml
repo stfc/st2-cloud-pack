@@ -48,9 +48,9 @@ parameters:
     description: "
     A string representing how to return the results of the query
       - 'to_html' - a tabulate table (in html)
-      - 'to_list' - properties dicts as a python list
-      - 'to_object_list - as a list of openstack resources
-      - 'to_str' - a tabulate table"
+      - 'to_props' - properties dicts as a python list
+      - 'to_objects - as a list of openstack resources
+      - 'to_string' - a tabulate table"
     required: true
   property_to_search_by:
     default: "user_name"

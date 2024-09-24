@@ -140,7 +140,6 @@ def test_create_network_missing_project():
     Tests that create network with no project throws
     """
     mock_details = NetworkDetails(
-        # name empty
         name="foo",
         description="",
         project_identifier="  ",
@@ -160,7 +159,6 @@ def test_create_network_success():
     Tests that create network succeeds when provided valid inputs
     """
     mock_details = NetworkDetails(
-        # name empty
         name="foo",
         description="bar",
         project_identifier="baz",

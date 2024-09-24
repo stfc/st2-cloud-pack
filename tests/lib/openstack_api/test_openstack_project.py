@@ -8,7 +8,7 @@ from openstack_api.openstack_project import create_project, delete_project
 
 def test_create_project_name_missing_throws():
     """
-    Tests calling the API wrapper without a domain will throw
+    Tests calling the API wrapper without a project name will throw
     """
     mock_project_details = MagicMock()
     mock_project_details.name = ""

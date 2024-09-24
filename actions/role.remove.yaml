@@ -24,7 +24,7 @@ parameters:
     description: Project name (Name or ID)
     required: true
     type: string
-  role:
+  role_identifier:
     description: Role to remove (Name or ID)
     required: true
     type: string

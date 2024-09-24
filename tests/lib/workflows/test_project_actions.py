@@ -48,6 +48,7 @@ def test_project_delete_without_confirmation(mock_api_delete_project):
         "name": "project-name",
         "description": "project-description",
         "email": "example@example.com",
+        "tags": [],
     }
 
     status, _ = delete_project(mock_conn, mock_project_identifier, delete=False)

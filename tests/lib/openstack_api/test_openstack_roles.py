@@ -74,7 +74,7 @@ def test_assign_roles_throws_missing_role(missing_param_test):
 
 def test_assign_roles_successful():
     """
-    Tests that an exception is thrown if the specified user is missing
+    Tests that assignment is successful
     """
     mock_role_details = RoleDetails(
         user_identifier="foo",
@@ -157,7 +157,7 @@ def test_remove_roles_throws_missing_role(missing_param_test):
 
 def test_remove_roles_successful():
     """
-    Tests that an exception is thrown if the specified user is missing
+    Tests that remove role is successful
     """
     mock_role_details = RoleDetails(
         user_identifier="foo",

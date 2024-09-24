@@ -9,7 +9,7 @@ def role_add(
     conn: Connection,
     user_identifier: str,
     project_identifier: str,
-    role: str,
+    role_identifier: str,
     user_domain: str,
 ) -> bool:
     """
@@ -17,14 +17,14 @@ def role_add(
     :param conn: Openstack connection object
     :param user_identifier: Name or ID of the user to assign a role to
     :param project_identifier: Name or ID of the project this applies to
-    :param role: Name or ID of the role to assign
+    :param role_identifier: Name or ID of the role to assign
     :param user_domain: The domain the user is associated with
     :return: status
     """
     details = RoleDetails(
         user_identifier=user_identifier,
         project_identifier=project_identifier,
-        role_identifier=role,
+        role_identifier=role_identifier,
         user_domain=UserDomains.from_string(user_domain),
     )
     openstack_roles.assign_role_to_user(conn, details=details)
@@ -35,7 +35,7 @@ def role_remove(
     conn: Connection,
     user_identifier: str,
     project_identifier: str,
-    role: str,
+    role_identifier: str,
     user_domain: str,
 ) -> bool:
     """
@@ -43,14 +43,14 @@ def role_remove(
     :param conn: Openstack connection object
     :param user_identifier: Name or ID of the user to remove a role from
     :param project_identifier: Name or ID of the project this applies to
-    :param role: Name or ID of the role to remove
+    :param role_identifier: Name or ID of the role to remove
     :param user_domain: The domain the user is associated with
     :return: status
     """
     details = RoleDetails(
         user_identifier=user_identifier,
         project_identifier=project_identifier,
-        role_identifier=role,
+        role_identifier=role_identifier,
         user_domain=UserDomains.from_string(user_domain),
     )
     openstack_roles.remove_role_from_user(conn, details=details)

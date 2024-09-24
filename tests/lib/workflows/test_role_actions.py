@@ -16,14 +16,14 @@ def test_role_add(mock_api_assign_role_to_user):
     mock_conn = MagicMock()
     mock_user_identifier = "user-id"
     mock_project_identifier = "project-id"
-    mock_role = "user"
+    mock_role_identifier = "user"
     mock_user_domain = "stfc"
 
     status = role_add(
         mock_conn,
         mock_user_identifier,
         mock_project_identifier,
-        mock_role,
+        mock_role_identifier,
         mock_user_domain,
     )
 
@@ -32,7 +32,7 @@ def test_role_add(mock_api_assign_role_to_user):
         details=RoleDetails(
             user_identifier=mock_user_identifier,
             project_identifier=mock_project_identifier,
-            role_identifier=mock_role,
+            role_identifier=mock_role_identifier,
             user_domain=UserDomains.STFC,
         ),
     )
@@ -51,14 +51,14 @@ def test_role_remove(mock_api_remove_role_from_user):
     mock_conn = MagicMock()
     mock_user_identifier = "user-id"
     mock_project_identifier = "project-id"
-    mock_role = "user"
+    mock_role_identifier = "user"
     mock_user_domain = "stfc"
 
     status = role_remove(
         mock_conn,
         mock_user_identifier,
         mock_project_identifier,
-        mock_role,
+        mock_role_identifier,
         mock_user_domain,
     )
 
@@ -67,7 +67,7 @@ def test_role_remove(mock_api_remove_role_from_user):
         details=RoleDetails(
             user_identifier=mock_user_identifier,
             project_identifier=mock_project_identifier,
-            role_identifier=mock_role,
+            role_identifier=mock_role_identifier,
             user_domain=UserDomains.STFC,
         ),
     )
