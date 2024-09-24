@@ -1,13 +1,13 @@
 ---
 description: Search for servers property using regex pattern, or not matching given value(s)
 enabled: true
-entry_point: src/workflow_actions.py
+entry_point: src/openstack_actions.py
 name: server.search.by.regex
 parameters:
   timeout:
     default: 5400
-  action_name:
-    default: search_by_regex
+  lib_entry_point:
+    default: workflows.search_by_regex.search_by_regex
     immutable: true
     type: string
   query_type:
@@ -56,7 +56,7 @@ parameters:
     Anything else will raise an error"
     required: false
   output_type:
-    default: "to_str"
+    default: "to_string"
     type: string
     enum:
       - "to_html"
@@ -66,9 +66,9 @@ parameters:
     description: "
     A string representing how to return the results of the query
       - 'to_html' - a tabulate table (in html)
-      - 'to_list' - properties dicts as a python list
-      - 'to_object_list - as a list of openstack resources
-      - 'to_str' - a tabulate table"
+      - 'to_props' - properties dicts as a python list
+      - 'to_objects - as a list of openstack resources
+      - 'to_string' - a tabulate table"
     required: true
   property_to_search_by:
     default: "server_name"

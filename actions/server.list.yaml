@@ -1,13 +1,13 @@
 ---
 description: List all servers
 enabled: true
-entry_point: src/workflow_actions.py
+entry_point: src/openstack_actions.py
 name: server.list
 parameters:
   timeout:
     default: 5400
-  action_name:
-    default: list_all_openstack
+  lib_entry_point:
+    default: workflows.list_all_openstack.list_all_openstack
     immutable: true
     type: string
   query_type:
@@ -56,7 +56,7 @@ parameters:
     Anything else will raise an error"
     required: false
   output_type:
-    default: "to_str"
+    default: "to_string"
     type: string
     enum:
       - "to_html"

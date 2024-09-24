@@ -1,0 +1,55 @@
+---
+description: Create internal project
+enabled: true
+entry_point: src/openstack_actions.py
+name: project.create.internal
+parameters:
+  lib_entry_point:
+    default: workflows.create_internal_project.create_internal_project
+    immutable: true
+    type: string
+  requires_openstack:
+    default: true
+    immutable: true
+    type: boolean
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  project_name:
+    required: true
+    type: string
+    description: Project Name to create
+  project_email:
+    description: Contact email of new project
+    required: true
+    type: string
+  project_description:
+    required: true
+    type: string
+    description: Project Description
+  project_immutable:
+    default: false
+    description: Project is immutable or not
+    type: boolean
+  parent_id:
+    default: ""
+    description: Set the ID of the parent Domain/project. Leave as blank and it will use the "Default Domain"
+    type: string
+  admin_user_list:
+    required: false
+    default: []
+    type: array
+    items:
+      type: string
+    description: Comma seperated list of Users (IDs or Names) to assign administrator access to
+  stfc_user_list:
+    required: false
+    default: []
+    type: array
+    description: List of Users (stfc domain) (IDs or Names) to give local user access
+runner_type: python-script

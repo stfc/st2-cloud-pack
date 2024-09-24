@@ -1,13 +1,17 @@
 ---
 description: Set quota for project
 enabled: true
-entry_point: src/quota_actions.py
+entry_point: src/openstack_actions.py
 name: quota.set
 parameters:
-  submodule:
-    default: quota_set
+  lib_entry_point:
+    default: workflows.quota_actions.quota_set
     immutable: true
     type: string
+  requires_openstack:
+    default: true
+    immutable: true
+    type: boolean
   cloud_account:
     description: The clouds.yaml account to use whilst performing this action
     required: true
