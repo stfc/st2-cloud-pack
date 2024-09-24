@@ -84,11 +84,6 @@ parameters:
     type: string
     required: false
     default: null
-    enum:
-      - "user_domain_id"
-      - "user_description"
-      - "user_name"
-      - "user_email"
   sort_by:
     description: "(Optional) comma-spaced list of user properties to sort by (by ascending only)
     - multiple of the same property will be ignored.

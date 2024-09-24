@@ -114,29 +114,29 @@ parameters:
     description: "a comma-spaced list of values to search for"
     required: true
     type: array
-
   group_by:
-    description: "(Optional) hypervisor property to group unique results by"
+    description: "(Optional) hypervisor property to group unique results by
+    One of
+      - 'current_workload'
+      - 'local_disk_free'
+      - 'local_disk_size'
+      - 'local_disk_used'
+      - 'id'
+      - 'ip'
+      - 'memory_free'
+      - 'memory_size'
+      - 'memory_used'
+      - 'name'
+      - 'running_vms'
+      - 'state'
+      - 'status'
+      - 'vcpus'
+      - 'vcpus_used'
+      - 'disabled_reason'
+    Anything else will raise an error"
     type: string
     required: false
     default: null
-    enum:
-      - "current_workload"
-      - "local_disk_free"
-      - "local_disk_size"
-      - "local_disk_used"
-      - "id"
-      - "ip"
-      - "memory_free"
-      - "memory_size"
-      - "memory_used"
-      - "name"
-      - "running_vms"
-      - "state"
-      - "status"
-      - "vcpus"
-      - "vcpus_used"
-      - "disabled_reason"
   sort_by:
     description: "(Optional) comma-spaced list of hypervisor properties to sort by (by ascending only)
     - multiple of the same property will be ignored.
