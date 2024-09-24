@@ -16,5 +16,10 @@ parameters:
     enum:
       - "dev"
       - "prod"
+  include_offline:
+    description: Include hypervisors marked offline from OpenStack in the results
+    required: true
+    type: boolean
+    default: false
 
 runner_type: python-script
