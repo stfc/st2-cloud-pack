@@ -81,7 +81,7 @@ parameters:
       - 'to_string' - a tabulate table"
     required: true
   property_to_search_by:
-    default: "server_name"
+    default: "name"
     description: "choose property to search by (acts as OR for each)"
     enum:
       - "current_workload"
