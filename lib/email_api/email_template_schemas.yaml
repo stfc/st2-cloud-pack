@@ -47,6 +47,13 @@ shutoff_vm:
   html_filepath: "html/shutoff_vm.html.j2"
   plaintext_filepath: "plaintext/shutoff_vm.txt.j2"
 
+hypervisor_vm:
+  schema:
+    username: null
+    vm_table: "No VMs"
+  html_filepath: "html/hypervisor_vm.html.j2"
+  plaintext_filepath: "plaintext/hypervisor_vm.txt.j2"
+
 decom_flavor:
   schema:
     username: null
