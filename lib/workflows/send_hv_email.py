@@ -12,7 +12,7 @@ from structs.email.email_template_details import EmailTemplateDetails
 from structs.email.smtp_account import SMTPAccount
 
 
-def find_servers_servers_on_hv(
+def find_servers_on_hv(
     cloud_account: str, hypervisor_name: str, from_projects: Optional[List[str]] = None
 ):
     """
@@ -141,9 +141,7 @@ def send_hv_email(
             "please provide either a list of project identifiers or with flag 'all_projects' to run globally"
         )
 
-    server_query = find_servers_servers_on_hv(
-        cloud_account, hypervisor_name, limit_by_projects
-    )
+    server_query = find_servers_on_hv(cloud_account, hypervisor_name, limit_by_projects)
 
     for user_id in server_query.to_props().keys():
         user_name, email_addr = find_user_info(
