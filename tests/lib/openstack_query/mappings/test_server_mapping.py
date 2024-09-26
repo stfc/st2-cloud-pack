@@ -210,7 +210,7 @@ def test_get_chain_mappings():
         ServerProperties.PROJECT_ID: ProjectProperties.PROJECT_ID,
         ServerProperties.FLAVOR_ID: FlavorProperties.FLAVOR_ID,
         ServerProperties.IMAGE_ID: ImageProperties.IMAGE_ID,
-        ServerProperties.HYPERVISOR_ID: HypervisorProperties.HYPERVISOR_ID,
+        ServerProperties.HYPERVISOR_NAME: HypervisorProperties.HYPERVISOR_NAME,
     }
 
     assert ServerMapping.get_chain_mappings() == expected_mappings
