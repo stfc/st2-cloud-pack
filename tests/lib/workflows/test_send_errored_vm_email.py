@@ -109,7 +109,7 @@ def test_find_servers_with_errored_vms_valid(mock_server_query):
     mock_server_query_obj.to_props.assert_called_once()
 
     mock_server_query_obj.append_from.assert_called_once_with(
-        "PROJECT_QUERY", "test-cloud-account", "name"
+        "PROJECT_QUERY", "test-cloud-account", ["name"]
     )
     mock_server_query_obj.group_by.assert_called_once_with("user_id")
     assert res == mock_server_query_obj
@@ -136,7 +136,7 @@ def test_find_servers_with_errored_vms_valid_time(mock_server_query):
     mock_server_query_obj.to_props.assert_called_once()
 
     mock_server_query_obj.append_from.assert_called_once_with(
-        "PROJECT_QUERY", "test-cloud-account", "name"
+        "PROJECT_QUERY", "test-cloud-account", ["name"]
     )
     mock_server_query_obj.group_by.assert_called_once_with("user_id")
     assert res == mock_server_query_obj

@@ -47,7 +47,7 @@ def find_servers_with_errored_vms(
             f"{','.join(from_projects) if from_projects else '[all projects]'}"
         )
 
-    server_query.append_from("PROJECT_QUERY", cloud_account, "name")
+    server_query.append_from("PROJECT_QUERY", cloud_account, ["name"])
     server_query.group_by("user_id")
 
     return server_query
