@@ -103,7 +103,7 @@ def test_get_chain_mappings():
     Tests get_chain_mapping outputs correctly
     """
     expected_mappings = {
-        HypervisorProperties.HYPERVISOR_ID: ServerProperties.HYPERVISOR_ID,
+        HypervisorProperties.HYPERVISOR_NAME: ServerProperties.HYPERVISOR_NAME,
     }
 
     assert HypervisorMapping.get_chain_mappings() == expected_mappings
