@@ -48,7 +48,7 @@ def test_flavor_id_serialization(val):
 )
 def test_hypervisor_name_serialization(val):
     """
-    Tests that variants of HYPERVISOR_ID can be serialized
+    Tests that variants of HYPERVISOR_NAME can be serialized
     """
     assert ServerProperties.from_string(val) is ServerProperties.HYPERVISOR_NAME
 

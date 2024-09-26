@@ -30,7 +30,7 @@ from enums.query.props.server_properties import ServerProperties
 | Property Enum            | Type         | Aliases                       | Description                                                                                                                                                                                                                                          |
 |--------------------------|--------------|-------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | FLAVOR_ID                | `string`     | `None`                        | The ID of the Flavor the Server is using                                                                                                                                                                                                             |
-| HYPERVISOR_ID            | `string`     | `None`                        | The ID of the Hypervisor the Server is being hosted on                                                                                                                                                                                               |
+| HYPERVISOR_NAME            | `string`     | `None`                        | Name of the Hypervisor the Server is being hosted on                                                                                                                                                                                               |
 | IMAGE_ID                 | `string`     | `None`                        | The ID of the Image the Server is using                                                                                                                                                                                                              |
 | PROJECT_ID               | `string`     | `None`                        | The ID of the Project the Server is associated with                                                                                                                                                                                                  |
 | SERVER_CREATION_DATE     | `string` (x) | "created_at"                  | Timestamp of when the server was created.                                                                                                                                                                                                            |
@@ -69,7 +69,7 @@ The following shared-common properties are listed below (as well as the Query ob
 | ServerProperties.PROJECT_ID    | ProjectProperties.PROJECT_ID       | Many-to-One | `ServerQuery` to `ProjectQuery`    | [PROJECTS.md](PROJECTS.md)       |
 | ServerProperties.FLAVOR_ID     | FlavorProperties.FLAVOR_ID         | Many-to-One | `ServerQuery` to `FlavorQuery`     | [FLAVORS.md](FLAVORS.md)         |
 | ServerProperties.IMAGE_ID      | ImageProperties.IMAGE_ID           | Many-to-One | `ServerQuery` to `ImageQuery`      | [IMAGES.md](IMAGES.md)           |
-| ServerProperties.HYPERVISOR_ID | HypervisorProperties.HYPERVISOR_ID | Many-to-One | `ServerQuery` to `HypervisorQuery` | [HYPERVISORS.md](HYPERVISORS.md) |
+| ServerProperties.HYPERVISOR_NAME | HypervisorProperties.HYPERVISOR_NAME | Many-to-One | `ServerQuery` to `HypervisorQuery` | [HYPERVISORS.md](HYPERVISORS.md) |
 
 
 
@@ -82,7 +82,7 @@ Chaining from other `ServerQuery` requires passing `SERVER_QUERY` or any aliases
 | `ProjectQuery`    | ProjectProperties.PROJECT_ID       | ServerProperties.PROJECT_ID | One-to-Many | [PROJECTS.md](PROJECTS.md)       |
 | `FlavorQuery`     | FlavorProperties.FLAVOR_ID         | ServerProperties.FLAVOR_ID  | One-to-Many | [FLAVORS.md](FLAVORS.md)         |
 | `ImageQuery`      | ImageProperties.IMAGE_ID           | ServerProperties.IMAGE_ID   | Many-to-One | [IMAGES.md](IMAGES.md)           |
-| `HypervisorQuery` | HypervisorProperties.HYPERVISOR_ID | ServerProperties.FLAVOR_ID  | One-to-Many | [HYPERVISORS.md](HYPERVISORS.md) |
+| `HypervisorQuery` | HypervisorProperties.HYPERVISOR_NAME | ServerProperties.FLAVOR_ID  | One-to-Many | [HYPERVISORS.md](HYPERVISORS.md) |
 
 
 ## run() meta-parameters

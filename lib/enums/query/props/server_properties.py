@@ -27,7 +27,10 @@ class ServerProperties(PropEnum):
         A method that returns all valid string alias mappings
         """
         return {
-            ServerProperties.HYPERVISOR_NAME: ["hv_name", "hypervisor_name"],
+            ServerProperties.HYPERVISOR_NAME: [
+                "hv_name",  # using hypervisor name as the shared-common property because the hypervisor id
+                "hypervisor_name",  # was inconsistent between servers and hypervisors
+            ],
             ServerProperties.SERVER_CREATION_DATE: ["created_at"],
             ServerProperties.SERVER_DESCRIPTION: [
                 "description",
