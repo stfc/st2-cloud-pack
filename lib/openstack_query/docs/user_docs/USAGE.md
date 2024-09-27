@@ -133,7 +133,7 @@ server_query.run("prod", as_admin=True, all_projects=True)
 #   p.run("prod")
 #   res = p.to_props()
 # `res` is then combined zipped together into the current output
-server_query.append_from("PROJECT_QUERY", "prod", ProjectProperties.PROJECT_ID)
+server_query.append_from("PROJECT_QUERY", "prod", [ProjectProperties.PROJECT_ID])
 
 # Note it's not possible to group by external properties (yet)
 server_query.group_by(ServerProperties.PROJECT_ID)
