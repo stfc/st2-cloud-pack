@@ -1,13 +1,13 @@
 ---
 description: Sends an email about down and disabled hypervisors
 enabled: true
-entry_point: src/workflow_actions.py
+entry_point: src/openstack_actions.py
 name: email.ops.down.disabled.hypervisors
 parameters:
   timeout:
     default: 5400
-  action_name:
-    default: send_down_disabled_hypervisors_email
+  lib_entry_point:
+    default: workflows.send_down_disabled_hypervisors_email.send_down_disabled_hypervisors_email
     immutable: true
     type: string
   subject:
