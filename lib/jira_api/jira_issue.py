@@ -33,6 +33,7 @@ def create_jira_task(account, issue_details: IssueDetails) -> str:
     """
     Creates a JIRA issue in a given project
     :param project_id: ID or key of the JIRA project
+    :return: Jira Issue ID
     """
     if not issue_details.project_id:
         raise MissingMandatoryParamError("The project id is missing")

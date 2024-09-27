@@ -43,7 +43,8 @@ class TemplateHandler:
     @staticmethod
     def _load_all_metadata(metadata_fp) -> Dict:
         """
-        Method which reads in jira templates yaml file. This file holds metadata for each template name.
+        Method which reads in jira templates yaml file. This file holds metadata for each template name,
+        e.g. file path to template.
         """
         with open(metadata_fp, "r", encoding="utf-8") as stream:
             try:
@@ -62,6 +63,7 @@ class TemplateHandler:
         attribute values either set to mapped values in 'given_vals' or set to a default given by 'template_schema'
         :param template_details: A dataclass containing info on templates
         :param template_schema: A dictionary holding required attribute names mapped to defaults
+        :return: A dictionary containing attributes to replace for the template that has been provided
         """
         template_params = {}
         if template_details.template_params:
@@ -87,6 +89,7 @@ class TemplateHandler:
         """
         Method to read in template file as a jinja template from filepath.
         :param template_fp: a relative filepath for template file starting from 'JIRA_TEMPLATE_ROOT_DIR'
+        :return: A Jinja Template object if the template file is found.
         """
         try:
             return self._template_env.get_template(template_fp)
@@ -99,6 +102,8 @@ class TemplateHandler:
         """
         Method to get metadata values for a specific template from all metadata file
         :param template_name: name of template to get metadata for
+        :return: A dictionary containing the metadata values for the specified template,
+                see jira_template_schema.yaml for keys.
         """
         metadata = self._template_metadata.get(template_name, None)
         if not metadata:
@@ -108,11 +113,12 @@ class TemplateHandler:
             )
         return metadata
 
-    def render_plaintext_template(self, template_details: JiraTemplateDetails):
+    def render_plaintext_template(self, template_details: JiraTemplateDetails) -> str:
         """
         Method to get plaintext jira template, substitute given values from 'template_params' using jinja2 and return
         a rendered string
         :param template_details: dataclass representing user-defined values for template
+        :return: A rendered string with the substituted values.
         """
         return self._render_template(
             template_details=template_details,
@@ -128,6 +134,7 @@ class TemplateHandler:
         Helper method to render template
         :param template_details: dataclass representing user-defined values for template
         :param file_path_key: metadata dictionary key which holds the filepath pointing to template file
+        :return: A rendered string with the substituted values.
         """
         metadata = self._get_template_metadata(template_details.template_name)
         try:
