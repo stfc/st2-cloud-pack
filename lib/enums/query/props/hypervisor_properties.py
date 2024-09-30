@@ -84,7 +84,7 @@ class HypervisorProperties(PropEnum):
             HypervisorProperties.HYPERVISOR_MEMORY_SIZE: lambda a: a["memory_mb"],
             HypervisorProperties.HYPERVISOR_MEMORY_USED: lambda a: a["memory_mb_used"],
             HypervisorProperties.HYPERVISOR_NAME: lambda a: a["name"],
-            HypervisorProperties.HYPERVISOR_SERVER_COUNT: lambda a: a["runnning_vms"],
+            HypervisorProperties.HYPERVISOR_SERVER_COUNT: lambda a: a["running_vms"],
             HypervisorProperties.HYPERVISOR_STATE: lambda a: a["state"],
             HypervisorProperties.HYPERVISOR_STATUS: lambda a: a["status"],
             HypervisorProperties.HYPERVISOR_VCPUS: lambda a: a["vcpus"],
