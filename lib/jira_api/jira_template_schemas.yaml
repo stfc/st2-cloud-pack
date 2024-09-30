@@ -1,0 +1,21 @@
+# This file holds configuration information on each template
+# Each template requires two filepaths - one to html version of template and one to plaintext
+# If you want to use jinja to substitute parts of the email with python generated strings
+#   - specify the name of the attribute to replace in 'schema' list.
+#   - you can optionally map each 'schema' key to a default value to signify optional arguments
+#   - or map the value to 'null' to signify a mandatory argument
+
+jira_hypervisor:
+  schema:
+    hostname: "No Hypervisors in down state"
+    ip_address: "No Hypervisors in down state"
+    machine_name: "No Hypervisors in down state"
+    os_version: "No Hypervisors in down state"
+    kernel_version: "No Hypervisors in down state"
+    icinga_status: "No Hypervisors in down state"
+    downtime: "No Hypervisors in down state"
+    is_enabled: "No Hypervisors in down state"
+    disabled_reason: "No Hypervisors in down state"
+    is_empty: "No Hypervisors in down state"
+    position: "No Hypervisors in down state"
+  plaintext_filepath: "hypervisor.txt.j2"

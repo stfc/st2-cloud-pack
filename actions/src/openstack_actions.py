@@ -3,6 +3,7 @@ from st2common.runners.base_action import Action
 
 from openstack_api.openstack_connection import OpenstackConnection
 from structs.email.smtp_account import SMTPAccount
+from structs.jira.jira_account import JiraAccount
 
 
 class OpenstackActions(Action):
@@ -42,4 +43,11 @@ class OpenstackActions(Action):
                 self.config, kwargs["smtp_account_name"]
             )
             del kwargs["smtp_account_name"]
+
+        # get token and username from stackstorm config under name atlassian_account_name
+        if "atlassian_account_name" in kwargs:
+            kwargs["atlassian_account"] = JiraAccount.from_pack_config(
+                self.config, kwargs["atlassian_account_name"]
+            )
+            del kwargs["atlassian_account_name"]
         return kwargs

@@ -9,6 +9,7 @@ python-dateutil
 Jinja2
 css-inline
 pytz
+jira
 
 # for tests
 nose

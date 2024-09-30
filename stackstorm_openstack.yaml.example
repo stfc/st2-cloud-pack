@@ -4,13 +4,19 @@ jupyter:
     training_token:
     dev_token:
 
+jira_accounts:
+  - name: "default"
+    username:
+    api_token:
+    atlassian_endpoint:
+
 smtp_accounts:
   - name: "default"
     password:
-    port: 465
-    secure: false
-    server: "mail.gridpp.rl.ac.uk"
-    smtp_auth: false
-    username: "cloud-support@stfc.ac.uk"
+    port: 
+    secure: 
+    server: 
+    smtp_auth: 
+    username: 
 max_attachment_size: 1024
 attachment_datastore_ttl: 1800
