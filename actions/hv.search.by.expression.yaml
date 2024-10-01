@@ -53,6 +53,8 @@ parameters:
       - "memory_used"
       - "vcpus"
       - "vcpus_used"
+      - "current_workload"
+      - "running_vms"
     type: string
     required: true
   search_mode:
