@@ -96,3 +96,32 @@ jira_accounts:
         required: true
         secret: false
         default: "https://stfc.atlassian.net"
+
+icinga_accounts:
+  type: "array"
+  required: true
+  description: Icinga account
+  items:
+    type: "object"
+    required: true
+    properties:
+      name:
+        description: "Name of the jira account"
+        type: "string"
+        secret: false
+        required: true
+      username:
+        type: "string"
+        description: "Username for icinga"
+        required: true
+      password:
+        type: "string"
+        description: "Password for icinga"
+        required: true
+        secret: true
+      icinga_endpoint:
+        type: "string"
+        description: "icinga endpoint"
+        required: true
+        secret: false
+        default: ""

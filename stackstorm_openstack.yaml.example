@@ -10,13 +10,19 @@ jira_accounts:
     api_token:
     atlassian_endpoint:
 
+icinga_accounts:
+  - name: "default"
+    username:
+    password:
+    icinga_endpoint:
+
 smtp_accounts:
   - name: "default"
     password:
-    port: 
-    secure: 
-    server: 
-    smtp_auth: 
-    username: 
+    port:
+    secure:
+    server:
+    smtp_auth:
+    username:
 max_attachment_size: 1024
 attachment_datastore_ttl: 1800
