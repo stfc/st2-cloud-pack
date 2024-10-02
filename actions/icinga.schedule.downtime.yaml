@@ -10,7 +10,7 @@ parameters:
     required: true
   start_time:
     type: string
-    description: "Date and time (GMT) in the format: %d/%m/%y %H:%M:%S"
+    description: "Date and time (UTC) in the format: %d/%m/%y %H:%M:%S"
     required: true
   duration:
     type: integer

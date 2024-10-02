@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from structs.icinga.downtime_details import DowntimeDetails
 from structs.icinga.icinga_account import IcingaAccount
@@ -16,7 +16,9 @@ def schedule_downtime(
     is_fixed: bool,
 ):
 
-    datetime_object = datetime.strptime(start_time, "%d/%m/%y %H:%M:%S")
+    datetime_object = datetime.strptime(start_time, "%d/%m/%y %H:%M:%S").replace(
+        tzinfo=timezone.utc
+    )
 
     downtime_details = DowntimeDetails(
         object_type=object_type,

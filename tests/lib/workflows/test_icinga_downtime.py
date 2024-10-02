@@ -1,5 +1,5 @@
 from unittest.mock import patch, MagicMock
-from datetime import datetime
+from datetime import datetime, timezone
 from workflows.icinga_downtime import schedule_downtime, remove_downtime
 from structs.icinga.downtime_details import DowntimeDetails
 
@@ -15,12 +15,15 @@ def test_schedule_downtime(mock_schedule_downtime):
     comment = "Scheduled maintenance"
     is_fixed = True
 
+    datetime_object = datetime.strptime(start_time, "%d/%m/%y %H:%M:%S").replace(
+        tzinfo=timezone.utc
+    )
+    assert datetime_object.tzname() == "UTC"
+    assert datetime_object.timestamp() == 1727784000.0
+
     schedule_downtime(
         icinga_account, object_type, name, start_time, duration, comment, is_fixed
     )
-
-    datetime_object = datetime.strptime(start_time, "%d/%m/%y %H:%M:%S")
-    assert datetime_object.timestamp() == 1727780400.0
 
     expected_downtime_details = DowntimeDetails(
         object_type=object_type,
