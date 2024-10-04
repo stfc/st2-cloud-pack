@@ -23,8 +23,8 @@ def schedule_downtime(icinga_account: IcingaAccount, details: DowntimeDetails) -
     if not details.start_time:
         raise MissingMandatoryParamError("Missing start time")
 
-    if not details.duration:
-        raise MissingMandatoryParamError("Missing duration")
+    if not details.end_time:
+        raise MissingMandatoryParamError("Missing end time")
 
     if not details.comment:
         raise MissingMandatoryParamError("Missing comment")
@@ -35,7 +35,7 @@ def schedule_downtime(icinga_account: IcingaAccount, details: DowntimeDetails) -
         "author": "StackStorm",
         "comment": details.comment,
         "start_time": details.start_time,
-        "end_time": details.start_time + details.duration,
+        "end_time": details.end_time,
         "fixed": details.is_fixed,
         "duration": details.duration if not details.is_fixed else None,
     }

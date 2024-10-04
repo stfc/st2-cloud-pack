@@ -10,12 +10,16 @@ parameters:
     required: true
   start_time:
     type: string
-    description: "Date and time (UK Time) in the format: %d/%m/%y %H:%M:%S"
+    description: "Start Date and time (UK Time) in the format: %d/%m/%y %H:%M:%S"
+    required: true
+  end_time:
+    type: string
+    description: "End Date and time (UK Time) in the format: %d/%m/%y %H:%M:%S"
     required: true
   duration:
     type: integer
-    description: Duration of downtime in seconds
-    required: true
+    description: Duration of flexible downtime in seconds, not needed for fixed downtime
+    required: false
   comment:
     type: string
     description: Downtime reason

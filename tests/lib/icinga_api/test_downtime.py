@@ -16,9 +16,10 @@ class TestScheduleDowntime:
             object_type="Host",
             object_name="example_host",
             start_time=1725955200,
-            duration=3600,
+            end_time=1725958800,
             comment="Scheduled maintenance",
             is_fixed=True,
+            duration=3600,
         )
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -52,6 +53,7 @@ class TestScheduleDowntime:
             object_type="Host",
             object_name="example_host",
             start_time=1725955200,
+            end_time=1725958800,
             duration=3600,
             comment="Scheduled maintenance",
             is_fixed=False,
@@ -87,6 +89,7 @@ class TestScheduleDowntime:
             object_type="Host",
             object_name="",
             start_time=1725955200,
+            end_time=1725958800,
             duration=3600,
             comment="Scheduled maintenance",
             is_fixed=True,
@@ -101,6 +104,7 @@ class TestScheduleDowntime:
             object_type="Host",
             object_name="example_host",
             start_time=None,
+            end_time=1725958800,
             duration=3600,
             comment="Scheduled maintenance",
             is_fixed=True,
@@ -109,13 +113,14 @@ class TestScheduleDowntime:
         with pytest.raises(MissingMandatoryParamError):
             schedule_downtime(icinga_account, details)
 
-    def test_missing_schedule_downtime_duration(self):
+    def test_missing_schedule_downtime_end_time(self):
         icinga_account = MagicMock()
         details = DowntimeDetails(
             object_type="Host",
             object_name="example_host",
-            start_time=1725955200,
-            duration=None,
+            start_time=1725958800,
+            end_time=None,
+            duration=3600,
             comment="Scheduled maintenance",
             is_fixed=True,
         )
@@ -129,6 +134,7 @@ class TestScheduleDowntime:
             object_type="Host",
             object_name="example_host",
             start_time=1725955200,
+            end_time=1725958800,
             duration=3600,
             comment="",
             is_fixed=True,
