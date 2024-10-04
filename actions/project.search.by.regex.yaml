@@ -29,12 +29,22 @@ parameters:
   properties_to_select:
     default:
       - "description"
+      - "domain_id"
+      - "id"
+      - "is_domain"
+      - "is_enabled"
       - "name"
+      - "parent_id"
     type: array
     description: "
-    A comma-spaced list of server properties to display for the resulting hypervisors - leave empty for all properties. One of:
+    A comma-spaced list of server properties to display for the resulting projects - leave empty for all properties. One of:
       - 'description'
+      - 'domain_id'
+      - 'id'
+      - 'is_domain'
+      - 'is_enabled'
       - 'name'
+      - 'parent_id'
     Anything else will raise an error"
     required: false
   output_type:
@@ -57,12 +67,7 @@ parameters:
     description: "choose property to search by (acts as OR for each)"
     enum:
       - "description"
-      - "domain_id"
-      - "id"
-      - "is_domain"
-      - "is_enabled"
       - "name"
-      - "parent_id"
     type: string
     required: true
   pattern:
