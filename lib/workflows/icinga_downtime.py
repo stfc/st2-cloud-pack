@@ -1,4 +1,6 @@
-from datetime import datetime, timezone
+from datetime import datetime
+
+import pytz
 
 from structs.icinga.downtime_details import DowntimeDetails
 from structs.icinga.icinga_account import IcingaAccount
@@ -16,14 +18,18 @@ def schedule_downtime(
     is_fixed: bool,
 ):
 
-    datetime_object = datetime.strptime(start_time, "%d/%m/%y %H:%M:%S").replace(
-        tzinfo=timezone.utc
-    )
+    # Local UK time to Unix timestamp
+    datetime_object = datetime.strptime(start_time, "%d/%m/%y %H:%M:%S")
+
+    uk_timezone = pytz.timezone("Europe/London")
+    local_time = uk_timezone.localize(datetime_object)
+    utc_time = local_time.astimezone(pytz.utc)
+    unix_timestamp = int(utc_time.timestamp())
 
     downtime_details = DowntimeDetails(
         object_type=object_type,
         object_name=name,
-        start_time=datetime_object.timestamp(),
+        start_time=unix_timestamp,
         duration=duration,
         comment=comment,
         is_fixed=is_fixed,
