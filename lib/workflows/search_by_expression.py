@@ -21,7 +21,7 @@ def search_by_expression(
     """
     Method that builds and runs a query to find generic numerical resource based on a expression
     (less-than, greater-than etc)
-    :param cloud_account: A string representing the cloud account to use - set in clouds.ymal
+    :param cloud_account: A string representing the cloud account to use - set in clouds.yaml
     :param query_type: what Query object to use to run query with ServerQuery, UserQuery etc
     :param search_mode: A string representing a preset Enum
         LESS_THAN,
