@@ -3,6 +3,7 @@ from st2common.runners.base_action import Action
 
 from openstack_api.openstack_connection import OpenstackConnection
 from structs.email.smtp_account import SMTPAccount
+from structs.icinga.icinga_account import IcingaAccount
 from structs.jira.jira_account import JiraAccount
 
 
@@ -50,4 +51,11 @@ class OpenstackActions(Action):
                 self.config, kwargs["atlassian_account_name"]
             )
             del kwargs["atlassian_account_name"]
+
+        # get password and username from stackstorm config under name icinga_account_name
+        if "icinga_account_name" in kwargs:
+            kwargs["icinga_account"] = IcingaAccount.from_pack_config(
+                self.config, kwargs["icinga_account_name"]
+            )
+            del kwargs["icinga_account_name"]
         return kwargs

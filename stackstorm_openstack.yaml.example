@@ -10,6 +10,12 @@ jira_accounts:
     api_token:
     atlassian_endpoint:
 
+icinga_accounts:
+  - name: "default"
+    username:
+    password:
+    icinga_endpoint:
+
 smtp_accounts:
   - name: "default"
     password:
