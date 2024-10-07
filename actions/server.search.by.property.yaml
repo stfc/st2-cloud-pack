@@ -107,11 +107,8 @@ parameters:
     required: true
     default: true
   group_by:
-    description: "(Optional) server property to group unique results by"
-    type: string
-    required: false
-    default: null
-    enum:
+    description: "(Optional) server property to group unique results by
+    One of:
       - 'flavor_id'
       - 'hypervisor_id'
       - 'image_id'
@@ -123,6 +120,10 @@ parameters:
       - 'server_name'
       - 'server_status'
       - 'user_id'
+    Anything else will raise an error"
+    type: string
+    required: false
+    default: null
   sort_by:
     description: "(Optional) comma-spaced list of server properties to sort by (by ascending only)
     - multiple of the same property will be ignored.
