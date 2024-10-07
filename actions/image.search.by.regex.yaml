@@ -71,7 +71,6 @@ parameters:
     One of:
       - 'image_creation_date'
       - 'image_creation_progress'
-      - 'image_id'
       - 'image_last_updated_date'
       - 'image_minimum_ram'
       - 'image_minimum_disk'
@@ -84,7 +83,6 @@ parameters:
     enum:
       - "image_creation_date"
       - "image_creation_progress"
-      - "image_id"
       - "image_last_updated_date"
       - "image_minimum_ram"
       - "image_minimum_disk"
