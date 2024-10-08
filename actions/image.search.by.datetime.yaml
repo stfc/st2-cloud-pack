@@ -127,15 +127,15 @@ parameters:
     description: "(Optional) comma-spaced list of image properties to sort by (by ascending only)
     - multiple of the same property will be ignored.
     Any of:
-      - "image_creation_date"
-      - "image_creation_progress"
-      - "image_id"
-      - "image_last_updated_date"
-      - "image_minimum_ram"
-      - "image_minimum_disk"
-      - "image_name"
-      - "image_size"
-      - "image_status"
+      - 'image_creation_date'
+      - 'image_creation_progress'
+      - 'image_id'
+      - 'image_last_updated_date'
+      - 'image_minimum_ram'
+      - 'image_minimum_disk'
+      - 'image_name'
+      - 'image_size'
+      - 'image_status'
     Anything else will raise an error"
     type: array
     required: false
