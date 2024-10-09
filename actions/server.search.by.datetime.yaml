@@ -7,7 +7,7 @@ parameters:
   timeout:
     default: 5400
   lib_entry_point:
-    default: workflows.search_by_datetime_search_by_datetime
+    default: workflows.search_by_datetime.search_by_datetime
     immutable: true
     type: string
   query_type:
