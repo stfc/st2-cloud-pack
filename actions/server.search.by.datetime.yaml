@@ -124,6 +124,7 @@ parameters:
     required: false
     default: null
     enum:
+      - null
       - 'flavor_id'
       - 'hypervisor_id'
       - 'image_id'
