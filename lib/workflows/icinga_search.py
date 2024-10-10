@@ -16,6 +16,14 @@ def create_join_filter_functions(user_joins: List[str]) -> List[Callable[[Dict],
     """
 
     def get_value(a: Dict, filter1: str, filter2: str, states=None) -> str:
+        """
+        Returns a value from a nested dictionary
+        :param a: Dictionary to return value from
+        :param filter1: First dictionary key to filter by
+        :param filter2: Second dictionary key to filter by
+        :param states: Enum to convert host/service state from int value to string
+        :return: Value of the key filtered for
+        """
         value = a["joins"][filter1][filter2]
         return states(value).name if states else value
 
@@ -45,6 +53,13 @@ def create_property_filter_functions(
     """
 
     def get_value(a: Dict, filter1: str, states=None) -> str:
+        """
+        Returns a value from a dictionary
+        :param a: Dictionary to return value from
+        :param filter1: First dictionary key to filter by
+        :param states: Enum to convert host/service state from int value to string
+        :return: Value of the key filtered for
+        """
         value = a["attrs"][filter1]
         return states(value).name if states else value
 

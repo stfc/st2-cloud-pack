@@ -13,6 +13,9 @@ from workflows.icinga_search import (
 
 @pytest.fixture(name="mock_data")
 def mock_data_fixture():
+    """
+    mock data returned from a query
+    """
     return {
         "results": [
             {
@@ -65,6 +68,9 @@ def test_search_by_state_success(
     joins,
     expected,
 ):
+    """
+    Tests search by state succeeds when providing joins and without joins
+    """
     icinga_account = MagicMock()
 
     mock_query_object.return_value = [200, MagicMock()]
@@ -106,6 +112,9 @@ def test_search_by_name_success(
     joins,
     expected,
 ):
+    """
+    Tests search by name succeeds when providing joins and without joins
+    """
     icinga_account = MagicMock()
 
     mock_query_object.return_value = [200, MagicMock()]
@@ -130,6 +139,9 @@ def test_search_by_name_success(
 
 
 def test_create_join_filter_functions():
+    """
+    Tests that join_filter_functions return the correcy keys from a dictionary
+    """
     mock_user_joins = ["host.name", "host.state"]
     mock_data = {"joins": {"host": {"name": "Host2", "state": 0}}}
 
@@ -142,6 +154,9 @@ def test_create_join_filter_functions():
 
 
 def test_create_properties_filter_functions():
+    """
+    Tests that properties_filter_functions return the correcy keys from a dictionary
+    """
     mock_user_properties = ["name", "state"]
     mock_data = {"attrs": {"handled": False, "name": "ping6", "state": 3}}
 
@@ -162,6 +177,9 @@ def test_generate_table(
     mock_tabulate,
     mock_data,
 ):
+    """
+    tests that generate_table creates filter functions and creates a tabulate table
+    """
     mock_user_properties = ["name", "state"]
     mock_user_joins = ["host.name", "host.state"]
 

@@ -9,7 +9,10 @@ from structs.icinga.object_query import IcingaQuery
 
 @patch("icinga_api.query_objects.requests.post")
 @pytest.mark.parametrize("joins", [None, ["host.name", "host.state"]])
-def test_query_object_without_joins_success(mock_post, joins):
+def test_query_object_success(mock_post, joins):
+    """
+    Tests query_object succeeds when providing joins and without joins
+    """
     icinga_account = MagicMock()
 
     mock_icinga_query = IcingaQuery(
