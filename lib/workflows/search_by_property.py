@@ -2,6 +2,7 @@ from typing import List, Optional
 from enums.query.query_presets import QueryPresetsGeneric
 from enums.query.sort_order import SortOrder
 import openstack_query
+from workflows.to_webhook import to_webhook
 
 # pylint:disable=too-many-arguments
 
@@ -16,6 +17,7 @@ def search_by_property(
     output_type: Optional[str] = None,
     group_by: Optional[str] = None,
     sort_by: Optional[List[str]] = None,
+    webhook: Optional[str] = None,
     **kwargs
 ):
     """
@@ -32,6 +34,7 @@ def search_by_property(
     :param output_type: string representing how to output the query
     :param group_by: an optional string representing a property to group results by
     :param sort_by: an optional set of tuples representing way which properties to sort results by
+    :param webhook: an Optional string representing a stackstorm webhook url path, can't be used alongside group_by
     :param kwargs: A set of optional meta params to pass to the query
     """
 
@@ -56,6 +59,10 @@ def search_by_property(
         query.group_by(group_by)
 
     query.run(cloud_account, **kwargs)
+
+    if webhook:
+        to_webhook(webhook=webhook, payload=query.to_props())
+
     return {
         "to_html": query.to_html(),
         "to_string": query.to_string(),
