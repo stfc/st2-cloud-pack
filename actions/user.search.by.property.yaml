@@ -93,6 +93,7 @@ parameters:
     required: false
     default: null
     enum:
+      - null
       - "user_domain_id"
       - "user_description"
       - "user_name"
