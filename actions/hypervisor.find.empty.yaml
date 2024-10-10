@@ -4,9 +4,9 @@ enabled: true
 entry_point: src/workflow_actions.py
 name: hypervisor.find.empty
 parameters:
-  action_name:
-    default: find_empty_hypervisors
-    immutable: True
+  lib_entry_point:
+    default: workflows.find_empty_hypervisors.find_empty_hypervisors
+    immutable: true
     type: string
   cloud_account:
     description: The clouds.yaml account to use whilst performing this action
