@@ -65,12 +65,15 @@ def test_search_by_property_errors_when_no_values_given():
         )
 
 
+@patch("workflows.search_by_property.to_webhook")
 @patch("workflows.search_by_property.openstack_query")
 @patch("workflows.search_by_property.QueryPresetsGeneric")
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
-def test_search_by_property_all(mock_preset_enum, mock_openstack_query, output_type):
+def test_search_by_property_all(
+    mock_preset_enum, mock_openstack_query, mock_to_webhook, output_type
+):
     """
     Runs search_by_property providing all values
     """
@@ -89,6 +92,7 @@ def test_search_by_property_all(mock_preset_enum, mock_openstack_query, output_t
         "values": ["val1", "val2"],
         "group_by": NonCallableMock(),
         "sort_by": ["prop1", "prop2"],
+        "webhook": "test",
         "arg1": "val1",
         "arg2": "val2",
     }
@@ -106,6 +110,9 @@ def test_search_by_property_all(mock_preset_enum, mock_openstack_query, output_t
     mock_query.group_by.assert_called_once_with(params["group_by"])
     mock_query.run.assert_called_once_with(
         params["cloud_account"], arg1="val1", arg2="val2"
+    )
+    mock_to_webhook.assert_called_once_with(
+        webhook="test", payload=mock_query.to_props.return_value
     )
 
     assert (
