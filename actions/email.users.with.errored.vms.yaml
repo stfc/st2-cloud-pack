@@ -6,8 +6,8 @@ name: email.users.with.errored.vms
 parameters:
   timeout:
     default: 5400
-  action_name:
-    default: send_errored_vm_email
+  lib_entry_point:
+    default: workflows.send_errored_vm_email.send_errored_vm_email
     immutable: true
     type: string
   subject:
