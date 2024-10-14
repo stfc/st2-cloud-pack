@@ -1,0 +1,30 @@
+---
+description: Migrate a server to a new host
+enabled: true
+entry_point: src/openstack_actions.py
+name: server.migrate
+parameters:
+  timeout:
+    default: 5400
+  lib_entry_point:
+    default: workflows.migrate_server.server_migration
+    immutable: true
+    type: string
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  server_id:
+    type: string
+    required: true
+    description: ID of server to migrate
+  live:
+    type: bool
+    required: true
+    default: true
+    description: True to use live migration
+runner_type: python-script
