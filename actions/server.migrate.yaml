@@ -23,7 +23,7 @@ parameters:
     required: true
     description: ID of server to migrate
   live:
-    type: bool
+    type: boolean
     required: true
     default: true
     description: True to use live migration
