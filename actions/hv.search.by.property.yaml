@@ -7,7 +7,7 @@ parameters:
   timeout:
     default: 5400
   lib_entry_point:
-    default: workflows.search_by_regex.search_by_regex
+    default: workflows.search_by_property.search_by_property
     immutable: true
     type: string
   query_type:
