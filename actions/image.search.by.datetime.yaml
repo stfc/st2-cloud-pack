@@ -116,12 +116,15 @@ parameters:
     required: false
     default: null
     enum:
+      - null
       - "image_creation_date"
       - "image_creation_progress"
+      - "image_id"
       - "image_last_updated_date"
       - "image_minimum_ram"
       - "image_minimum_disk"
       - "image_name"
+      - "image_size"
       - "image_status"
   sort_by:
     description: "(Optional) comma-spaced list of image properties to sort by (by ascending only)

@@ -105,6 +105,7 @@ parameters:
     required: false
     default: null
     enum:
+      - null
       - "image_creation_date"
       - "image_creation_progress"
       - "image_id"

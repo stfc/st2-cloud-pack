@@ -67,26 +67,20 @@ parameters:
     required: true
     type: string
   group_by:
-    description: "(Optional) server property to group unique results by
-    One of:
-      - 'image_creation_date'
-      - 'image_creation_progress'
-      - 'image_last_updated_date'
-      - 'image_minimum_ram'
-      - 'image_minimum_disk'
-      - 'image_name'
-      - 'image_status'
-    Anything else will raise an error"
+    description: "(Optional) image property to group unique results by"
     type: string
     required: false
     default: null
     enum:
+      - null
       - "image_creation_date"
       - "image_creation_progress"
+      - "image_id"
       - "image_last_updated_date"
       - "image_minimum_ram"
       - "image_minimum_disk"
       - "image_name"
+      - "image_size"
       - "image_status"
   sort_by:
     description: "(Optional) comma-spaced list of image properties to sort by (by ascending only)
