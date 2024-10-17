@@ -43,7 +43,7 @@ from enums.query.props.hypervisor_properties import HypervisorProperties
 | HYPERVISOR_VCPUS              | `int`    | "vcpus"                            | The number of vCPUs on this hypervisor.                         |
 | HYPERVISOR_VCPUS_USED         | `int`    | "vcpus_used"                       | The number of vCPUs currently being used on this hypervisor.    |
 | HYPERVISOR_DISABLED_REASON    | `string` | "disabled_reason"                  | Comment of why the hypervisor is disabled, None if not disabled |
-
+| HYPERVISOR_UPTIME             | `string` | "uptime"                           | The total uptime of the hypervisor and info about average load  |
 
 Any of these properties can be used for any of the API methods that takes a property - like `select`, `where`, `sort_by` etc
 
