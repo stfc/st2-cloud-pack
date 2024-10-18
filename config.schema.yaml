@@ -125,3 +125,16 @@ icinga_accounts:
         required: true
         secret: false
         default: ""
+
+hypervisor_sensor:
+  description: "Hypervisor sensor specific settings."
+  type: "object"
+  required: false
+  additionalProperties: false
+  properties:
+    cloud_account:
+      type: "string"
+      description: "cloud account to use - set in clouds.ymal"
+    uptime_limit:
+      type: "integer"
+      description: "Number of uptime days before marking hypervisor for maintenance"
