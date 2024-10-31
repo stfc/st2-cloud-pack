@@ -35,8 +35,9 @@ class HypervisorStateSensor(PollingSensor):
         """
 
         data = query_hypervisor_state(self.cloud_account)
-
         for hypervisor in data:
+            if not isinstance(hypervisor, dict):
+                continue
             current_state = get_hypervisor_state(
                 hypervisor, uptime_limit=self.uptime_limit
             )
