@@ -136,6 +136,10 @@ parameters:
       - 'server_name'
       - 'server_status'
       - 'user_id'
+    Anything else will raise an error"
+    type: string
+    required: false
+    default: null
   sort_by:
     description: "(Optional) comma-spaced list of server properties to sort by (by ascending only)
     - multiple of the same property will be ignored.
