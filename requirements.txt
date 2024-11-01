@@ -10,6 +10,7 @@ Jinja2
 css-inline
 pytz
 jira
+paramiko
 
 # for tests
 nose
