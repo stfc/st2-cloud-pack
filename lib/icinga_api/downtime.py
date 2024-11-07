@@ -7,13 +7,12 @@ from structs.icinga.downtime_details import DowntimeDetails
 from structs.icinga.icinga_account import IcingaAccount
 
 
-def schedule_downtime(icinga_account: IcingaAccount, details: DowntimeDetails) -> int:
+def schedule_downtime(icinga_account: IcingaAccount, details: DowntimeDetails) -> None:
     """
     Schedules a downtime for a host or service
 
     :param details: Details for scheduling a downtime for a host or service
     :param is_fixed: If true, the downtime is fixed otherwise flexible
-    :return: Status code
     """
     basic = HTTPBasicAuth(icinga_account.username, icinga_account.password)
 
@@ -48,18 +47,18 @@ def schedule_downtime(icinga_account: IcingaAccount, details: DowntimeDetails) -
         data=json.dumps(payload),
         timeout=300,
     )
-    return res.status_code
+
+    res.raise_for_status()  # Raises HTTPError, if one occurred
 
 
 def remove_downtime(
     icinga_account: IcingaAccount, object_type: str, object_name: str
-) -> int:
+) -> None:
     """
     Removes all downtimes created by stackstorm for a host or service
 
     :param object_type: Icinga Object type, either Host or Service
     :param object_name: Name of Icinga object
-    :return: Status code
     """
     basic = HTTPBasicAuth(icinga_account.username, icinga_account.password)
 
@@ -80,4 +79,5 @@ def remove_downtime(
         data=json.dumps(payload),
         timeout=300,
     )
-    return res.status_code
+
+    res.raise_for_status()  # Raises HTTPError, if one occurred
