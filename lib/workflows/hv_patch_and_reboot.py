@@ -1,6 +1,6 @@
 from workflows.icinga_downtime import schedule_downtime
+
 from structs.icinga.icinga_account import IcingaAccount
-from workflows.icinga_downtime import remove_downtime
 
 
 def patch_and_reboot(
@@ -10,7 +10,7 @@ def patch_and_reboot(
     end_time: str,
 ):
     comment = f"starting downtime to patch and reboot host: {name}"
-    res = schedule_downtime(
+    schedule_downtime(
         icinga_account=icinga_account,
         object_type="Host",
         name=name,
@@ -19,4 +19,3 @@ def patch_and_reboot(
         is_fixed=True,
         comment=comment,
     )
-    return res
