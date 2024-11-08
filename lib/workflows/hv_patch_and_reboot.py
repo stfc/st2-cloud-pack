@@ -6,6 +6,8 @@ from structs.icinga.icinga_account import IcingaAccount
 
 from paramiko.ssh_exception import SSHException
 
+from requests import HTTPError
+
 
 def patch_and_reboot(
     icinga_account: IcingaAccount,
@@ -44,6 +46,8 @@ def patch_and_reboot(
         raise SSHException("SSH command failed during patch or reboot") from exc
     except MissingMandatoryParamError as exc:
         raise MissingMandatoryParamError("A required parameter is missing") from exc
+    except HTTPError as http_err:
+        raise HTTPError from http_err
     finally:
         if downtime_scheduled:
             remove_downtime(

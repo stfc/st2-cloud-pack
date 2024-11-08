@@ -25,4 +25,12 @@ parameters:
     description: "Name of Icinga Account to use. Must be configured in in the pack settings."
     required: true
     default: "default"
+  host:
+    description: Host to run action on
+    required: true
+    type: string
+  private_key_path:
+    description: Private key to authenticate with
+    required: true
+    type: string
 runner_type: python-script

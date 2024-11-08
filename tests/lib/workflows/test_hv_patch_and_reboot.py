@@ -60,3 +60,10 @@ def test_successful_patch_and_reboot(
     mock_remove_downtime.assert_called_once_with(
         icinga_account=icinga_account, object_type="Host", name=name
     )
+
+
+"""
+Need to test:
++ What happens when the schedule downtime doesnt work
++ What happens when one of the ssh requests doesnt work
+"""
