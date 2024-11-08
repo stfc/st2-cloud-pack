@@ -25,14 +25,14 @@ See [Stackstorm Docs](https://docs.stackstorm.com/actions.html) for guidance on 
 Action YAML configuration should be written to `actions` folder.
 
 
-You need to set the entry_point for your Action to point to `src/workflow_actions.py`
+You need to set the entry_point for your Action to point to `src/openstack_actions.py`
 And add an immutable parameter pointing to the file where your script is located
 see example:
 
 
 ```yaml
   ...
-  entry_point: src/workflow_actions.py # setting entry point
+  entry_point: src/openstack_actions.py # setting entry point
   ...
   parameters:
       ...
