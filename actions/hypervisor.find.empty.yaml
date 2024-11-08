@@ -1,7 +1,7 @@
 ---
 description: Common Queries about Hypervisors
 enabled: true
-entry_point: src/workflow_actions.py
+entry_point: src/openstack_actions.py
 name: hypervisor.find.empty
 parameters:
   lib_entry_point:

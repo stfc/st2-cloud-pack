@@ -1,7 +1,7 @@
 ---
 description: Sends an email to inform users that they have VMs in Errored state
 enabled: true
-entry_point: src/workflow_actions.py
+entry_point: src/openstack_actions.py
 name: email.users.with.errored.vms
 parameters:
   timeout:
