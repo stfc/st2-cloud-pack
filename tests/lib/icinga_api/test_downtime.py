@@ -2,6 +2,7 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
+from requests import HTTPError
 
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from icinga_api.downtime import remove_downtime, schedule_downtime
@@ -22,13 +23,13 @@ class TestScheduleDowntime:
             duration=3600,
         )
         mock_response = MagicMock()
-        mock_response.status_code = 200
+        mock_response.status_code = 201
         mock_post.return_value = mock_response
 
-        status_code = schedule_downtime(icinga_account, details)
+        schedule_downtime(icinga_account, details)
 
-        assert status_code == 200
         mock_post.assert_called_once()
+        mock_response.raise_for_status.assert_called_once()
 
         _, kwargs = mock_post.call_args
         payload = json.loads(kwargs["data"])
@@ -47,6 +48,29 @@ class TestScheduleDowntime:
         assert payload == expected_payload
 
     @patch("icinga_api.downtime.requests.post")
+    def test_schedule_downtime_request_fail(self, mock_post):
+        icinga_account = MagicMock()
+        details = DowntimeDetails(
+            object_type="Host",
+            object_name="missing_host",
+            start_time=1725955200,
+            end_time=1725958800,
+            comment="Scheduled maintenance",
+            is_fixed=True,
+            duration=3600,
+        )
+        mock_response = MagicMock()
+        mock_response.status_code = 404
+        mock_response.raise_for_status.side_effect = HTTPError("Not Found")
+        mock_post.return_value = mock_response
+
+        with pytest.raises(HTTPError):
+            schedule_downtime(icinga_account, details)
+
+        mock_post.assert_called_once()
+        mock_response.raise_for_status.assert_called_once()
+
+    @patch("icinga_api.downtime.requests.post")
     def test_schedule_flexible_downtime_success(self, mock_post):
         icinga_account = MagicMock()
         details = DowntimeDetails(
@@ -59,13 +83,13 @@ class TestScheduleDowntime:
             is_fixed=False,
         )
         mock_response = MagicMock()
-        mock_response.status_code = 200
+        mock_response.status_code = 201
         mock_post.return_value = mock_response
 
-        status_code = schedule_downtime(icinga_account, details)
+        schedule_downtime(icinga_account, details)
 
-        assert status_code == 200
         mock_post.assert_called_once()
+        mock_response.raise_for_status.assert_called_once()
 
         _, kwargs = mock_post.call_args
         payload = json.loads(kwargs["data"])
@@ -150,17 +174,17 @@ class TestRemoveDowntime:
         icinga_account = MagicMock()
 
         mock_response = MagicMock()
-        mock_response.status_code = 200
+        mock_response.status_code = 201
         mock_post.return_value = mock_response
 
-        status_code = remove_downtime(
+        remove_downtime(
             icinga_account,
             object_type="Host",
             object_name="example_host",
         )
 
-        assert status_code == 200
         mock_post.assert_called_once()
+        mock_response.raise_for_status.assert_called_once()
 
         _, kwargs = mock_post.call_args
         payload = json.loads(kwargs["data"])
@@ -172,6 +196,25 @@ class TestRemoveDowntime:
         }
 
         assert payload == expected_payload
+
+    @patch("icinga_api.downtime.requests.post")
+    def test_remove_downtime_request_fail(self, mock_post):
+        icinga_account = MagicMock()
+
+        mock_response = MagicMock()
+        mock_response.status_code = 404
+        mock_response.raise_for_status.side_effect = HTTPError("Not Found")
+        mock_post.return_value = mock_response
+
+        with pytest.raises(HTTPError):
+            remove_downtime(
+                icinga_account,
+                object_type="Host",
+                object_name="missing_host",
+            )
+
+        mock_post.assert_called_once()
+        mock_response.raise_for_status.assert_called_once()
 
     def test_missing_remove_downtime_object_name(self):
         icinga_account = MagicMock()
