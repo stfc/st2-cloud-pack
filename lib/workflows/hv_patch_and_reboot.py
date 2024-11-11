@@ -1,12 +1,7 @@
-from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from workflows.icinga_downtime import schedule_downtime, remove_downtime
 from workflows.ssh_remote_command import ssh_remote_command
 
 from structs.icinga.icinga_account import IcingaAccount
-
-from paramiko.ssh_exception import SSHException
-
-from requests import HTTPError
 
 
 def patch_and_reboot(
@@ -42,13 +37,8 @@ def patch_and_reboot(
             private_key_path=private_key_path,
             command=f"{host} reboot",
         )
-    except SSHException as exc:
-        raise SSHException("SSH command failed during patch or reboot") from exc
-    except MissingMandatoryParamError as exc:
-        raise MissingMandatoryParamError("A required parameter is missing") from exc
-    except HTTPError as http_err:
-        raise HTTPError from http_err
     finally:
+        print(downtime_scheduled)
         if downtime_scheduled:
             remove_downtime(
                 icinga_account=icinga_account,
