@@ -65,16 +65,19 @@ def print_email_params(email_addr: str, user_name: str, as_html: bool, vm_table:
     )
 
 
-def build_email_params(user_name: str, vm_table: str, **email_kwargs):
+def build_email_params(
+    email_template: str, user_name: str, vm_table: str, **email_kwargs
+):
     """
     build email params dataclass which will be used to configure how to send the email
+    :email_template: name of email template to use
     :param user_name: name of user in openstack
     :param vm_table: a table representing info found in openstack about VMs
         that are on a hypervisor
     :param email_kwargs: a set of email kwargs to pass to EmailParams
     """
     body = EmailTemplateDetails(
-        template_name="hypervisor_vm",
+        template_name=email_template,
         template_params={
             "username": user_name,
             "vm_table": vm_table,
@@ -107,6 +110,7 @@ def find_user_info(user_id, cloud_account, override_email_address):
 # pylint:disable=too-many-locals
 def send_hv_email(
     smtp_account: SMTPAccount,
+    email_template: str,
     cloud_account: Union[CloudDomains, str],
     hypervisor_name: str,
     limit_by_projects: Optional[List[str]] = None,
@@ -122,6 +126,7 @@ def send_hv_email(
     Sends an email to each user who owns one or more VMs on a hypervisor
     This email will contain a notice to delete or rebuild the VM
     :param smtp_account: (SMTPAccount): SMTP config
+    :email_template: name of email template to use
     :param cloud_account: string represents cloud account to use
     :param limit_by_projects: A list of project names or ids to limit search in
     :param all_projects: A boolean which if selected will search in all projects
@@ -165,11 +170,12 @@ def send_hv_email(
             continue
 
         email_params = build_email_params(
-            user_name,
-            server_list,
+            user_name=user_name,
+            vm_table=server_list,
             email_to=send_to,
             as_html=as_html,
             email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
+            email_template=email_template,
             **email_params_kwargs,
         )
         Emailer(smtp_account).send_emails([email_params])

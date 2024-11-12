@@ -1,8 +1,8 @@
 ---
-description: Sends an email to inform users that they have VMs in Shutoff state
+description: Sends an email to inform users that they have VMs on a faulty hypervisor
 enabled: true
 entry_point: src/openstack_actions.py
-name: email.users.with.vms.on.hv
+name: email.users.with.vms.on.hv.fault.notification
 parameters:
   timeout:
     default: 5400
@@ -10,11 +10,15 @@ parameters:
     default: workflows.send_hv_email.send_hv_email
     immutable: true
     type: string
+  email_template:
+    default: hypervisor_fault_notification
+    immutable: true
+    type: string
   subject:
     type: string
     description: "Subject to add to each email"
     required: true
-    default: "STFC Cloud VMs in Shutoff State"
+    default: "STFC Cloud Hypervisor Fault"
   smtp_account_name:
     type: string
     description: "Name of SMTP Account to use. Must be configured in the pack settings."

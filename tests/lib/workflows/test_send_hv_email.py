@@ -167,13 +167,19 @@ def test_build_params(mock_email_params, mock_email_template_details):
 
     user_name = "John Doe"
     vm_table = "VM Table Content"
+    email_template = "email_template"
     email_kwargs = {"arg1": "val1", "arg2": "val2"}
 
-    res = build_email_params(user_name, vm_table, **email_kwargs)
+    res = build_email_params(
+        email_template=email_template,
+        user_name=user_name,
+        vm_table=vm_table,
+        **email_kwargs,
+    )
     mock_email_template_details.assert_has_calls(
         [
             call(
-                template_name="hypervisor_vm",
+                template_name="email_template",
                 template_params={
                     "username": user_name,
                     "vm_table": vm_table,
@@ -214,6 +220,7 @@ def test_send_hv_email_send_plaintext(
     cloud_account = NonCallableMock()
     smtp_account = NonCallableMock()
     mock_hv_name = "hv01.nubes.rl.ac.uk"
+    email_template = "email_template"
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     mock_query = mock_find_servers.return_value
@@ -230,6 +237,7 @@ def test_send_hv_email_send_plaintext(
 
     send_hv_email(
         smtp_account=smtp_account,
+        email_template=email_template,
         cloud_account=cloud_account,
         hypervisor_name=mock_hv_name,
         limit_by_projects=limit_by_projects,
@@ -254,16 +262,18 @@ def test_send_hv_email_send_plaintext(
     mock_build_email_params.assert_has_calls(
         [
             call(
-                "user1",
-                mock_query.to_string.return_value,
+                user_name="user1",
+                vm_table=mock_query.to_string.return_value,
+                email_template=email_template,
                 email_to=["user_email1"],
                 as_html=False,
                 email_cc=None,
                 **mock_kwargs,
             ),
             call(
-                "user2",
-                mock_query.to_string.return_value,
+                user_name="user2",
+                vm_table=mock_query.to_string.return_value,
+                email_template=email_template,
                 email_to=["user_email2"],
                 as_html=False,
                 email_cc=None,
@@ -308,6 +318,7 @@ def test_send_hv_email_send_html(
     cloud_account = NonCallableMock()
     smtp_account = NonCallableMock()
     mock_hv_name = "hv01.nubes.rl.ac.uk"
+    email_template = ("email_template",)
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     mock_query = mock_find_servers.return_value
@@ -325,6 +336,7 @@ def test_send_hv_email_send_html(
     send_hv_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
+        email_template=email_template,
         hypervisor_name=mock_hv_name,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
@@ -348,16 +360,18 @@ def test_send_hv_email_send_html(
     mock_build_email_params.assert_has_calls(
         [
             call(
-                "user1",
-                mock_query.to_html.return_value,
+                user_name="user1",
+                vm_table=mock_query.to_html.return_value,
+                email_template=email_template,
                 email_to=["user_email1"],
                 as_html=True,
                 email_cc=None,
                 **mock_kwargs,
             ),
             call(
-                "user2",
-                mock_query.to_html.return_value,
+                user_name="user2",
+                vm_table=mock_query.to_html.return_value,
+                email_template=email_template,
                 email_to=["user_email2"],
                 as_html=True,
                 email_cc=None,
@@ -400,6 +414,7 @@ def test_send_hv_email_print(
     cloud_account = NonCallableMock()
     smtp_account = NonCallableMock()
     mock_hv_name = "hv01.nubes.rl.ac.uk"
+    email_template = "email_template"
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     mock_query = mock_find_servers.return_value
@@ -417,6 +432,7 @@ def test_send_hv_email_print(
     send_hv_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
+        email_template=email_template,
         hypervisor_name=mock_hv_name,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
@@ -481,6 +497,7 @@ def test_send_hv_email_use_override(
     cloud_account = NonCallableMock()
     smtp_account = NonCallableMock()
     mock_hv_name = "hv01.nubes.rl.ac.uk"
+    email_template = "email_template"
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
     override_email_address = "example@example.com"
 
@@ -499,6 +516,7 @@ def test_send_hv_email_use_override(
     send_hv_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
+        email_template=email_template,
         hypervisor_name=mock_hv_name,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
@@ -525,16 +543,18 @@ def test_send_hv_email_use_override(
     mock_build_email_params.assert_has_calls(
         [
             call(
-                "user1",
-                mock_query.to_string.return_value,
+                user_name="user1",
+                vm_table=mock_query.to_string.return_value,
+                email_template="email_template",
                 email_to=[override_email_address],
                 as_html=False,
                 email_cc=None,
                 **mock_kwargs,
             ),
             call(
-                "user2",
-                mock_query.to_string.return_value,
+                user_name="user2",
+                vm_table=mock_query.to_string.return_value,
+                email_template="email_template",
                 email_to=[override_email_address],
                 as_html=False,
                 email_cc=None,
@@ -565,6 +585,7 @@ def test_raise_error_when_both_from_projects_all_projects():
     with pytest.raises(RuntimeError):
         send_hv_email(
             hypervisor_name="hv01.nubes.rl.ac.uk",
+            email_template="email_template",
             smtp_account="",
             cloud_account="",
             all_projects=True,
@@ -577,6 +598,7 @@ def test_raise_error_when_neither_from_projects_all_projects():
     with pytest.raises(RuntimeError):
         send_hv_email(
             hypervisor_name="hv01.nubes.rl.ac.uk",
+            email_template="email_template",
             smtp_account="",
             cloud_account="",
         )
