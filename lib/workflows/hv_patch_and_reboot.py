@@ -1,48 +1,44 @@
-from workflows.icinga_downtime import schedule_downtime, remove_downtime
-from workflows.ssh_remote_command import ssh_remote_command
+import datetime
 
+from icinga_api.downtime import schedule_downtime, remove_downtime
+from structs.icinga.downtime_details import DowntimeDetails
 from structs.icinga.icinga_account import IcingaAccount
+from structs.ssh.ssh_connection_details import SSHDetails
+from ssh_api.exec_command import SSHConnection
 
 
 def patch_and_reboot(
     icinga_account: IcingaAccount,
     name: str,
-    start_time: str,
-    end_time: str,
     host: str,
     private_key_path: str,
 ):
-    comment = f"starting downtime to patch and reboot host: {name}"
-    downtime_scheduled = False
+    connection_details = SSHDetails(
+        host=host, username="stackstorm", private_key_path=private_key_path
+    )
+    ssh_client = SSHConnection(connection_details)
+    start_time = datetime.datetime.now()
+    end_time = start_time + datetime.timedelta(hours=6)
+    start_timestamp = int(start_time.timestamp())
+    end_timestamp = int(end_time.timestamp())
+    downtime_details = DowntimeDetails(
+        object_type="Host",
+        object_name=name,
+        start_time=start_timestamp,
+        end_time=end_timestamp,
+        comment=f"starting downtime to patch and reboot host: {name}",
+        is_fixed=True,
+        duration=end_timestamp - start_timestamp,
+    )
+    schedule_downtime(icinga_account=icinga_account, details=downtime_details)
     try:
-        schedule_downtime(
+        patch_out = ssh_client.run_command_on_host("patch").decode()
+        reboot_out = ssh_client.run_command_on_host("reboot").decode()
+
+    finally:
+        remove_downtime(
             icinga_account=icinga_account,
             object_type="Host",
-            name=name,
-            start_time=start_time,
-            end_time=end_time,
-            is_fixed=True,
-            comment=comment,
+            object_name=name,
         )
-        downtime_scheduled = True
-        patch_out = ssh_remote_command(
-            host=host,
-            username="stackstorm",
-            private_key_path=private_key_path,
-            command=f"{host} patch",
-        )
-        reboot_out = ssh_remote_command(
-            host=host,
-            username="stackstorm",
-            private_key_path=private_key_path,
-            command=f"{host} reboot",
-        )
-    finally:
-        print(downtime_scheduled)
-        if downtime_scheduled:
-            remove_downtime(
-                icinga_account=icinga_account,
-                object_type="Host",
-                name=name,
-            )
     return {"patch_output": patch_out, "reboot_output": reboot_out}

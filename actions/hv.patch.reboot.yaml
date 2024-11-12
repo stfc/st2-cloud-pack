@@ -8,14 +8,6 @@ parameters:
     type: string
     description: Name of host in Icinga
     required: true
-  start_time:
-    type: string
-    description: "Start Date and time (UK Time) in the format: %d/%m/%y %H:%M:%S"
-    required: true
-  end_time:
-    type: string
-    description: "End Date and time (UK Time) in the format: %d/%m/%y %H:%M:%S"
-    required: true
   lib_entry_point:
     type: string
     default: workflows.hv_patch_and_reboot.patch_and_reboot

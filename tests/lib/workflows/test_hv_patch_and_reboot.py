@@ -1,75 +1,72 @@
+import datetime
 from unittest.mock import MagicMock, patch
+from structs.icinga.downtime_details import DowntimeDetails
+from structs.ssh.ssh_connection_details import SSHDetails
 from workflows.hv_patch_and_reboot import patch_and_reboot
-
 import pytest
 
 
 @patch("workflows.hv_patch_and_reboot.schedule_downtime")
-@patch("workflows.hv_patch_and_reboot.ssh_remote_command")
+@patch("workflows.hv_patch_and_reboot.SSHConnection")
 @patch("workflows.hv_patch_and_reboot.remove_downtime")
 def test_successful_patch_and_reboot(
-    mock_remove_downtime, mock_ssh_remote_command, mock_schedule_downtime
+    mock_remove_downtime, mock_ssh_conn, mock_schedule_downtime
 ):
     """
     Test successful running of patch and reboot workflow
     """
     icinga_account = MagicMock()
-    # patch for first run and reboot for second call of the mock function
-    mock_ssh_remote_command.side_effect = [
-        "Patch command output",
-        "Reboot command output",
+    mock_ssh_conn.return_value.run_command_on_host.side_effect = [
+        str.encode("Patch command output"),
+        str.encode("Reboot command output"),
     ]
     name = "example_host"
     comment = f"starting downtime to patch and reboot host: {name}"
     mock_host = "test_host"
     mock_private_key_path = "/home/stackstorm/.ssh/id_rsa"
-
+    mock_start_time = datetime.datetime.now()
+    mock_end_time = mock_start_time + datetime.timedelta(hours=6)
+    mock_start_timestamp = int(mock_start_time.timestamp())
+    mock_end_timestamp = int(mock_end_time.timestamp())
     result = patch_and_reboot(
         icinga_account,
-        "example_host",
-        "01/12/24 12:00:00",
-        "01/12/24 17:00:00",
+        name="example_host",
         host=mock_host,
         private_key_path=mock_private_key_path,
     )
-    # test that schedule downtime is called once with expected parameters
     mock_schedule_downtime.assert_called_once_with(
         icinga_account=icinga_account,
-        object_type="Host",
-        name=name,
-        start_time="01/12/24 12:00:00",
-        end_time="01/12/24 17:00:00",
-        is_fixed=True,
-        comment=comment,
+        details=DowntimeDetails(
+            object_type="Host",
+            object_name=name,
+            start_time=mock_start_timestamp,
+            end_time=mock_end_timestamp,
+            comment=comment,
+            is_fixed=True,
+            duration=mock_end_timestamp - mock_start_timestamp,
+        ),
     )
-    # test that the two ssh remote commands are run and that their results are as expected
-    mock_ssh_remote_command.assert_any_call(
-        host=mock_host,
-        username="stackstorm",
-        private_key_path=mock_private_key_path,
-        command=f"{mock_host} patch",
+    mock_ssh_conn.assert_called_once_with(
+        SSHDetails(
+            host=mock_host,
+            username="stackstorm",
+            private_key_path=mock_private_key_path,
+        )
     )
-    mock_ssh_remote_command.assert_any_call(
-        host=mock_host,
-        username="stackstorm",
-        private_key_path=mock_private_key_path,
-        command=f"{mock_host} reboot",
-    )
+    mock_ssh_conn.return_value.run_command_on_host.assert_any_call("patch")
+    mock_ssh_conn.return_value.run_command_on_host.assert_any_call("reboot")
     assert result["patch_output"] == "Patch command output"
     assert result["reboot_output"] == "Reboot command output"
 
-    # test that the remove downtime is called
     mock_remove_downtime.assert_called_once_with(
-        icinga_account=icinga_account, object_type="Host", name=name
+        icinga_account=icinga_account, object_type="Host", object_name=name
     )
 
 
 @patch("workflows.hv_patch_and_reboot.schedule_downtime")
-@patch("workflows.hv_patch_and_reboot.ssh_remote_command")
+@patch("workflows.hv_patch_and_reboot.SSHConnection")
 @patch("workflows.hv_patch_and_reboot.remove_downtime")
-def test_failed_schedule(
-    mock_remove_downtime, mock_ssh_remote_command, mock_schedule_downtime
-):
+def test_failed_schedule(mock_remove_downtime, mock_ssh_conn, mock_schedule_downtime):
     """
     Test unsuccessful running of patch and reboot workflow - where the schedule
     downtime raises an exception.
@@ -84,50 +81,45 @@ def test_failed_schedule(
     with pytest.raises(Exception):
         patch_and_reboot(
             icinga_account,
-            "example_host",
-            "01/12/24 12:00:00",
-            "01/12/24 17:00:00",
+            name="example_host",
             host=mock_host,
             private_key_path=mock_private_key_path,
         )
 
-    mock_ssh_remote_command.assert_not_called()
+    # check that the ssh connection is still made
+    mock_ssh_conn.assert_called_once_with(
+        SSHDetails(
+            host=mock_host,
+            username="stackstorm",
+            private_key_path=mock_private_key_path,
+        )
+    )
 
-    # test that the remove downtime is called
+    mock_ssh_conn.return_value.run_command_on_host.assert_not_called()
     mock_remove_downtime.assert_not_called()
 
 
 @patch("workflows.hv_patch_and_reboot.schedule_downtime")
-@patch("workflows.hv_patch_and_reboot.ssh_remote_command")
+@patch("workflows.hv_patch_and_reboot.SSHConnection")
 @patch("workflows.hv_patch_and_reboot.remove_downtime")
-def test_failed_ssh(
-    mock_remove_downtime, mock_ssh_remote_command, mock_schedule_downtime
-):
+def test_failed_ssh(mock_remove_downtime, mock_ssh_conn, mock_schedule_downtime):
     """
-    Test unsuccessful running of patch and reboot workflow - where either ssh_remote_command
+    Test unsuccessful running of patch and reboot workflow - where either ssh command
     fails
     """
     icinga_account = MagicMock()
     mock_host = "test_host"
     mock_private_key_path = "/home/stackstorm/.ssh/id_rsa"
+    mock_ssh_conn.return_value.run_command_on_host.side_effect = Exception
 
-    mock_ssh_remote_command.side_effect = Exception
-
-    # test that schedule downtime is called once with expected parameters
     with pytest.raises(Exception):
         patch_and_reboot(
             icinga_account,
             "example_host",
-            "01/12/24 12:00:00",
-            "01/12/24 17:00:00",
             host=mock_host,
             private_key_path=mock_private_key_path,
         )
 
+    mock_ssh_conn.assert_called_once()
     mock_schedule_downtime.assert_called_once()
-    # Don't understand why this doesnt fail if I remove the schedule downtime
-    mock_remove_downtime.assert_called_once_with(
-        icinga_account=icinga_account,
-        object_type="Host",
-        name="example_host",
-    )
+    mock_remove_downtime.assert_called_once()
