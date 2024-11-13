@@ -78,4 +78,9 @@ parameters:
     required: true
     default: "cloud-support@stfc.ac.uk"
     immutable: true
+  webhook:
+    description: "Optional string representing a stackstorm webhook url path, can't be used alongside group_by"
+    default: null
+    type: string
+    required: false
 runner_type: python-script

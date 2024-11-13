@@ -89,9 +89,9 @@ def test_find_user_info_no_email_address(mock_user_query):
 
 
 @patch("workflows.send_hv_email.ServerQuery")
-def test_find_servers_with_shutoff_vms_valid(mock_server_query):
+def test_find_servers_on_hv_valid(mock_server_query):
     """
-    Tests find_servers_with_shutoff_vms() function
+    Tests find_servers_on_hv() function
     """
     mock_server_query_obj = mock_server_query.return_value
 
@@ -115,10 +115,42 @@ def test_find_servers_with_shutoff_vms_valid(mock_server_query):
     assert res == mock_server_query_obj
 
 
+@patch("workflows.send_hv_email.to_webhook")
 @patch("workflows.send_hv_email.ServerQuery")
-def test_find_servers_with_shutoff_vms_no_servers_found(mock_server_query):
+def test_find_servers_on_hv_to_webhook(mock_server_query, mock_to_webhook):
     """
-    Tests that find_servers_with_shutoff_vms fails when provided
+    Tests find_servers_on_hv() function
+    """
+    mock_server_query_obj = mock_server_query.return_value
+
+    res = find_servers_on_hv(
+        "test-cloud-account", "hv01.nubes.rl.ac.uk", ["project1", "project2"], "test"
+    )
+
+    mock_server_query_obj.run.assert_called_once_with(
+        "test-cloud-account",
+        as_admin=True,
+        from_projects=["project1", "project2"],
+        all_projects=False,
+    )
+    mock_server_query_obj.select.assert_called_once_with("id", "name", "addresses")
+
+    mock_to_webhook.assert_called_once_with(
+        webhook="test", payload=mock_server_query_obj.to_props.return_value
+    )
+    assert mock_server_query_obj.to_props.call_count == 2
+
+    mock_server_query_obj.append_from.assert_called_once_with(
+        "PROJECT_QUERY", "test-cloud-account", ["name"]
+    )
+    mock_server_query_obj.group_by.assert_called_once_with("user_id")
+    assert res == mock_server_query_obj
+
+
+@patch("workflows.send_hv_email.ServerQuery")
+def test_find_servers_on_hv_no_servers_found(mock_server_query):
+    """
+    Tests that find_servers_on_hv fails when provided
     """
     mock_server_query_obj = mock_server_query.return_value
     mock_server_query_obj.to_props.return_value = None
@@ -245,11 +277,12 @@ def test_send_hv_email_send_plaintext(
         as_html=False,
         send_email=True,
         use_override=False,
+        webhook=None,
         **mock_kwargs,
     )
 
     mock_find_servers.assert_called_once_with(
-        cloud_account, mock_hv_name, limit_by_projects
+        cloud_account, mock_hv_name, limit_by_projects, None
     )
     mock_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
@@ -343,11 +376,12 @@ def test_send_hv_email_send_html(
         as_html=True,
         send_email=True,
         use_override=False,
+        webhook=None,
         **mock_kwargs,
     )
 
     mock_find_servers.assert_called_once_with(
-        cloud_account, mock_hv_name, limit_by_projects
+        cloud_account, mock_hv_name, limit_by_projects, None
     )
     mock_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
@@ -439,11 +473,12 @@ def test_send_hv_email_print(
         as_html=False,
         send_email=False,
         use_override=False,
+        webhook=None,
         **mock_kwargs,
     )
 
     mock_find_servers.assert_called_once_with(
-        cloud_account, mock_hv_name, limit_by_projects
+        cloud_account, mock_hv_name, limit_by_projects, None
     )
     mock_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
@@ -524,13 +559,12 @@ def test_send_hv_email_use_override(
         send_email=True,
         use_override=True,
         override_email_address=override_email_address,
+        webhook=None,
         **mock_kwargs,
     )
 
     mock_find_servers.assert_called_once_with(
-        cloud_account,
-        mock_hv_name,
-        limit_by_projects,
+        cloud_account, mock_hv_name, limit_by_projects, None
     )
     mock_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(

@@ -10,10 +10,14 @@ from enums.query.query_presets import QueryPresetsGeneric
 from structs.email.email_params import EmailParams
 from structs.email.email_template_details import EmailTemplateDetails
 from structs.email.smtp_account import SMTPAccount
+from workflows.to_webhook import to_webhook
 
 
 def find_servers_on_hv(
-    cloud_account: str, hypervisor_name: str, from_projects: Optional[List[str]] = None
+    cloud_account: str,
+    hypervisor_name: str,
+    from_projects: Optional[List[str]] = None,
+    webhook: Optional[str] = None,
 ):
     """
     :param cloud_account: string represents cloud account to use
@@ -41,6 +45,9 @@ def find_servers_on_hv(
             f"No servers found on {hypervisor_name} in projects "
             f"{','.join(from_projects) if from_projects else '[all projects]'}"
         )
+
+    if webhook:
+        to_webhook(webhook=webhook, payload=server_query.to_props())
 
     server_query.append_from("PROJECT_QUERY", cloud_account, ["name"])
     server_query.group_by("user_id")
@@ -120,6 +127,7 @@ def send_hv_email(
     use_override: bool = False,
     override_email_address: Optional[str] = "cloud-support@stfc.ac.uk",
     cc_cloud_support: bool = False,
+    webhook: Optional[str] = None,
     **email_params_kwargs,
 ):
     """
@@ -146,7 +154,9 @@ def send_hv_email(
             "please provide either a list of project identifiers or with flag 'all_projects' to run globally"
         )
 
-    server_query = find_servers_on_hv(cloud_account, hypervisor_name, limit_by_projects)
+    server_query = find_servers_on_hv(
+        cloud_account, hypervisor_name, limit_by_projects, webhook
+    )
 
     for user_id in server_query.to_props().keys():
         user_name, email_addr = find_user_info(
