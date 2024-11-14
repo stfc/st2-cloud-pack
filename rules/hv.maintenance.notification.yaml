@@ -1,0 +1,26 @@
+---
+name: "hv.maintenance.notification"
+pack: "stackstorm_openstack"
+description: "Sends a notification to users when hypervisor is set to drain"
+enabled: true
+
+criteria:
+  trigger.previous_state:
+    type: equals
+    pattern: PENDING_MAINTENANCE
+  trigger.current_state:
+    type: equals
+    pattern: DRAINING
+
+trigger:
+  type: "stackstorm_openstack.hypervisor.state_change"
+
+action:
+  ref: "stackstorm_openstack.email.users.with.vms.on.hv.maintenance.notification"
+  parameters:
+    hypervisor_name: "{{ trigger.hypervisor_name }}"
+    cloud_account: "dev"
+    use_override: False
+    send_email: false
+    override_email_address: false
+    webhook: "migrate-server"
