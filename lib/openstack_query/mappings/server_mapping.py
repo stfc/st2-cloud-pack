@@ -47,7 +47,7 @@ class ServerMapping(MappingInterface):
             ServerProperties.PROJECT_ID: ProjectProperties.PROJECT_ID,
             ServerProperties.FLAVOR_ID: FlavorProperties.FLAVOR_ID,
             ServerProperties.IMAGE_ID: ImageProperties.IMAGE_ID,
-            ServerProperties.HYPERVISOR_ID: HypervisorProperties.HYPERVISOR_ID,
+            ServerProperties.HYPERVISOR_NAME: HypervisorProperties.HYPERVISOR_NAME,
         }
 
     @staticmethod

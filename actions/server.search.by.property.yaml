@@ -29,7 +29,7 @@ parameters:
   properties_to_select:
     default:
       - "flavor_id"
-      - "hypervisor_id"
+      - "hypervisor_name"
       - "image_id"
       - "project_id"
       - "server_creation_date"
@@ -43,7 +43,7 @@ parameters:
     description: "
     A comma-spaced list of server properties to display for the resulting servers - leave empty for all properties. One of:
       - 'flavor_id'
-      - 'hypervisor_id'
+      - 'hypervisor_name'
       - 'image_id'
       - 'project_id'
       - 'server_creation_date'
@@ -75,7 +75,7 @@ parameters:
     description: "choose property to search by (acts as OR for each)"
     enum:
       - "flavor_id"
-      - "hypervisor_id"
+      - "hypervisor_name"
       - "image_id"
       - "server_description"
       - "server_id"
@@ -114,7 +114,7 @@ parameters:
     enum:
       - null
       - 'flavor_id'
-      - 'hypervisor_id'
+      - 'hypervisor_name'
       - 'image_id'
       - 'project_id'
       - 'server_creation_date'
@@ -129,7 +129,7 @@ parameters:
     - multiple of the same property will be ignored.
     Any of:
       - 'flavor_id'
-      - 'hypervisor_id'
+      - 'hypervisor_name'
       - 'image_id'
       - 'project_id'
       - 'server_creation_date'

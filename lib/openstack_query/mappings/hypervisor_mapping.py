@@ -35,7 +35,7 @@ class HypervisorMapping(MappingInterface):
         Should return a dictionary containing property pairs mapped to query mappings.
         This is used to define how to chain results from this query to other possible queries
         """
-        return {HypervisorProperties.HYPERVISOR_ID: ServerProperties.HYPERVISOR_ID}
+        return {HypervisorProperties.HYPERVISOR_NAME: ServerProperties.HYPERVISOR_NAME}
 
     @staticmethod
     def get_runner_mapping() -> Type[RunnerWrapper]:

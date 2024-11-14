@@ -5,7 +5,6 @@
 #   - you can optionally map each 'schema' key to a default value to signify optional arguments
 #   - or map the value to 'null' to signify a mandatory argument
 
-
 # for internal use
 # sets wrapper for html emails
 wrapper:
@@ -46,6 +45,20 @@ shutoff_vm:
     shutoff_table: "No Shutoff VMs"
   html_filepath: "html/shutoff_vm.html.j2"
   plaintext_filepath: "plaintext/shutoff_vm.txt.j2"
+
+hypervisor_maintenance_notification:
+  schema:
+    username: null
+    vm_table: "No VMs"
+  html_filepath: "html/hypervisor_maintenance_notification.html.j2"
+  plaintext_filepath: "plaintext/hypervisor_maintenance_notification.txt.j2"
+
+hypervisor_fault_notification:
+  schema:
+    username: null
+    vm_table: "No VMs"
+  html_filepath: "html/hypervisor_fault_notification.html.j2"
+  plaintext_filepath: "plaintext/hypervisor_fault_notification.txt.j2"
 
 decom_flavor:
   schema:
