@@ -4,21 +4,17 @@ enabled: true
 entry_point: src/openstack_actions.py
 name: hv.patch.reboot
 parameters:
-  name:
-    type: string
-    description: Name of host in Icinga
-    required: true
   lib_entry_point:
     type: string
     default: workflows.hv_patch_and_reboot.patch_and_reboot
     immutable: true
   icinga_account_name:
     type: string
-    description: "Name of Icinga Account to use. Must be configured in in the pack settings."
+    description: Name of Icinga Account to use. Must be configured in the pack settings.
     required: true
     default: "default"
-  host:
-    description: Host to run action on
+  hypervisor_name:
+    description: Hypervisor to run action on, this should also be the host name on icinga.
     required: true
     type: string
   private_key_path:
