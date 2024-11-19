@@ -108,8 +108,8 @@ parameters:
     type: integer
     default: 0
     required: false
-  limit_by_projects:
-    description: "comma-spaced project to limit action to - incompatible with all_projects"
+  from_projects:
+    description: "(Optional) comma-spaced list of projects id/names to limit query to, if not provided, runs against all projects when all_projects is true"
     type: array
     default: null
     required: false
