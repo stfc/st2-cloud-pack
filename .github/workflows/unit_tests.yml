@@ -35,7 +35,7 @@ jobs:
          pytest tests/enums tests/lib --cov=lib --cov=tests/enums --cov=tests/lib --cov-report xml:coverage.xml
 
       - name: Submit Coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: true
           token: ${{secrets.CODECOV_TOKEN}}
