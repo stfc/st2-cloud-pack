@@ -74,7 +74,7 @@ parameters:
     type: string
     required: true
   from_projects:
-    description: "(Optional) comma-spaced list of projects id/names to limit query to, if not provided, runs against all projects"
+    description: "(Optional) comma-spaced list of projects id/names to limit query to, if not provided, runs against all projects when all_projects is true"
     type: array
     default: null
     required: false
@@ -96,11 +96,9 @@ parameters:
       - null
       - "image_creation_date"
       - "image_creation_progress"
-      - "image_id"
       - "image_last_updated_date"
       - "image_minimum_ram"
       - "image_minimum_disk"
-      - "image_name"
       - "image_size"
       - "image_status"
   sort_by:

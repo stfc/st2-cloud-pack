@@ -42,7 +42,7 @@ parameters:
       - 'to_string' - a tabulate table"
     required: true
   property_to_search_by:
-    default: "image_id"
+    default: "image_creation_progress"
     description: "choose property to search by (acts as OR for each)"
     enum:
       - "image_creation_progress"
@@ -78,7 +78,7 @@ parameters:
       - "image_status"
     type: array
     description: "
-    A comma-spaced list of server properties to display for the resulting images - leave empty for all properties. One of:
+    A comma-spaced list of image properties to display for the resulting images - leave empty for all properties. One of:
       - 'image_creation_date'
       - 'image_creation_progress'
       - 'image_id'
@@ -91,7 +91,7 @@ parameters:
     Anything else will raise an error"
     required: false
   from_projects:
-    description: "(Optional) comma-spaced list of projects id/names to limit query to, if not provided, runs against all projects"
+    description: "(Optional) comma-spaced list of projects id/names to limit query to, if not provided, runs against all projects when all_projects is true"
     type: array
     default: null
     required: false
@@ -112,7 +112,6 @@ parameters:
       - "image_last_updated_date"
       - "image_minimum_ram"
       - "image_minimum_disk"
-      - "image_name"
       - "image_size"
       - "image_status"
   sort_by:
