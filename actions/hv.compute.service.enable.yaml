@@ -30,6 +30,9 @@ parameters:
     description: The service ID or Instance.
     type: string
     required: true
-  service_binary: The name of the service, i.e. "Nova-Compute".
+  service_binary:
+    description: The name of the service, i.e. "Nova-Compute"
     type: string
+    required: false
+    default: "Nova-Compute"
 runner_type: python-script
