@@ -1,6 +1,5 @@
 from typing import Dict
 from openstack.connection import Connection
-from openstack.compute.v2.service.Service import *
 from openstack.compute.v2._proxy.Proxy import *
 
 '''
