@@ -48,6 +48,6 @@ def hv_compute_service_enable(
     service_binary = "nova-compute"
 
     if service:
-            enable_service(conn, service_identifier, hypervisor_name, service_binary)
+            enable_service(conn, service, hypervisor_name, service_binary)
     else:
         return "No Nova-Compute services found."
