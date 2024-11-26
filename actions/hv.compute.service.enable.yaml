@@ -1,0 +1,36 @@
+---
+description: Enables the nova compute service on a hypervisor
+enabled: true
+entry_point: src/openstack_actions.py
+name: hv.compute.service.enable
+parameters:
+  timeout:
+    default: 5400
+  lib_entry_point:
+    default: workflows.hv_compute_service_actions.hv_compute_service_enable
+    immutable: true
+    type: string
+  requires_openstack:
+    default: true
+    immutable: true
+    type: boolean
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  hypervisor_name:
+    description: Hypervisor to run action on, this should also be the host name on icinga.
+    required: true
+    type: string
+  service_identifier:
+    description: The service ID or Instance.
+    type: string
+    required: true
+  service_binary: The name of the service, i.e. "Nova-Compute".
+    type: string
+    required: false
+runner_type: python-script
