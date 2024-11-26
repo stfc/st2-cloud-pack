@@ -1,6 +1,7 @@
 from typing import Dict
 from openstack.connection import Connection
-from openstack.compute.v2._proxy.Proxy import *
+from openstack.compute.v2.service import Service
+from openstack.compute.v2._proxy import Proxy
 
 '''
 Find hypervisor, using user input // Hypervisor not found
