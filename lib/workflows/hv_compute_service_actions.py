@@ -2,15 +2,13 @@ from typing import Optional
 
 from openstack.connection import Connection
 from openstack_api.openstack_service import disable_service, enable_service
-#from openstack_api.openstack_hypervisor import get_hypervisor_state
 
 
 def hv_compute_service_disable(
     conn: Connection, 
-    service_identifier: str,
     hypervisor_name: str,
     service_binary:str,
-    disable_reason: str,
+    disabled_reason: str,
 ) -> None:
     """
     Disables an Openstack service
@@ -21,18 +19,15 @@ def hv_compute_service_disable(
     :param disable_reason: The reason for disabling the service.
     """
 
-    service = conn.compute.find_service("nova-compute", host=hypervisor_name)
-    service_binary = "nova-compute"
+    service = conn.compute.find_service(service_binary, ignore_missing=False, host=hypervisor_name)
+    print(service)
 
-    if service:
-            disable_service(conn, service_identifier, hypervisor_name, service_binary, disable_reason)
-    else:
-        return "No Nova-Compute services found."
+    disable_service(conn, service, hypervisor_name, service_binary, disabled_reason)
+
     
 
 def hv_compute_service_enable(
     conn: Connection, 
-    service_identifier: str,
     hypervisor_name: str,
     service_binary:str,
 ) -> None:
@@ -44,10 +39,7 @@ def hv_compute_service_enable(
     :param service_binary: The name of the service.
     """
 
-    service = conn.compute.find_service("nova-compute", host=hypervisor_name)
-    service_binary = "nova-compute"
+    service = conn.compute.find_service(service_binary, ignore_missing=False, host=hypervisor_name)
 
-    if service:
-            enable_service(conn, service_identifier, hypervisor_name, service_binary)
-    else:
-        return "No Nova-Compute services found."
+    enable_service(conn, service, hypervisor_name, service_binary)
+

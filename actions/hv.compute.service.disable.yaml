@@ -29,11 +29,9 @@ parameters:
   disabled_reason:
     description: The reason this service needs to be disabled.
     type: string
-  service_identifier:
-    description: The service ID or Instance.
+  service_binary:
+    description: The name of the service, i.e. "Nova-Compute"
     type: string
-    required: true
-  service_binary: The name of the service, i.e. "Nova-Compute".
-    type: string
-    required: false
+    immutable: true
+    default: "nova-compute"
 runner_type: python-script

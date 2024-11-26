@@ -26,11 +26,9 @@ parameters:
     description: Hypervisor to run action on, this should also be the host name on icinga.
     required: true
     type: string
-  service_identifier:
-    description: The service ID or Instance.
+  service_binary:
+    description: The name of the service, i.e. "Nova-Compute"
     type: string
-    required: true
-  service_binary: The name of the service, i.e. "Nova-Compute".
-    type: string
-    required: false
+    immutable: true
+    default: "nova-compute"
 runner_type: python-script
