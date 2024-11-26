@@ -35,5 +35,4 @@ parameters:
     required: true
   service_binary: The name of the service, i.e. "Nova-Compute".
     type: string
-    required: false
 runner_type: python-script
