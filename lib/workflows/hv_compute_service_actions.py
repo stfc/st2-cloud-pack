@@ -32,7 +32,7 @@ def hv_compute_service_disable(
 
 def hv_compute_service_enable(
     conn: Connection, 
-    service_identifier: str,
+    #service_identifier: str,
     hypervisor_name: str,
     service_binary:str,
 ) -> None:
