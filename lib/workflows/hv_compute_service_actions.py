@@ -20,6 +20,7 @@ def hv_compute_service_disable(
     """
 
     service = conn.compute.find_service(service_binary, ignore_missing=False, host=hypervisor_name)
+    print(service)
 
     disable_service(conn, service, hypervisor_name, service_binary, disabled_reason)
 
