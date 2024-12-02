@@ -44,6 +44,8 @@ def disable_service(
         return False, "Hypervisor is currently disabled - aborting."
     '''
 
+    conn.compute.disable_service(service=service_identifier, host=hypervisor_name, binary=service_binary, disable_reason=disable_reason)
+
 
 
 def enable_service(
