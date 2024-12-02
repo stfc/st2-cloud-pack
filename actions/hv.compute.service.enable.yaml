@@ -7,7 +7,7 @@ parameters:
   timeout:
     default: 5400
   lib_entry_point:
-    default: workflows.hv_compute_service_actions.hv_compute_service_enable
+    default: workflows.hv_service_actions.hv_service_enable
     immutable: true
     type: string
   requires_openstack:
@@ -27,7 +27,7 @@ parameters:
     required: true
     type: string
   service_binary:
-    description: The name of the service, i.e. "Nova-Compute"
+    description: The name of the service, i.e. "nova-compute"
     type: string
     immutable: true
     default: "nova-compute"
