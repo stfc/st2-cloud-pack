@@ -47,8 +47,7 @@ def disable_service(
 
 def enable_service(
     conn: Connection, 
-    #service_identifier: str,
-    service: Service,
+    service_identifier: str,
     hypervisor_name: str,
     service_binary:str,
 ) -> None:
@@ -59,10 +58,13 @@ def enable_service(
     :param hypervisor_name (str): The name or ID of the hypervisor.
     :param service_binary: The name of the service.
     """
-    
+    '''
     hypervisor_status = hypervisor_name.get("hypervisor_status")
     if hypervisor_status == "enabled":
-        conn.compute.disable_service(service, host=hypervisor_name, binary=service_binary)
+        conn.compute.disable_service(service=service_identifier, host=hypervisor_name, binary=service_binary)
         return f"The {service_binary} service has been enabled."
     else:
         return False, "Hypervisor is currently disabled - aborting."
+    '''
+    
+    conn.compute.disable_service(service=service_identifier, host=hypervisor_name, binary=service_binary)

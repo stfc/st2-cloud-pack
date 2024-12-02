@@ -1,8 +1,8 @@
 from typing import Optional
 
 from openstack.connection import Connection
-from openstack.compute.v2.service import Service
 from openstack_api.openstack_service import disable_service, enable_service
+#from openstack_api.openstack_hypervisor import get_hypervisor_state
 
 
 def hv_compute_service_disable(
@@ -32,8 +32,7 @@ def hv_compute_service_disable(
 
 def hv_compute_service_enable(
     conn: Connection, 
-    #service_identifier: str,
-    service: Service,
+    service_identifier: str,
     hypervisor_name: str,
     service_binary:str,
 ) -> None:
