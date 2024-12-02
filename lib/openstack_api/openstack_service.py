@@ -24,7 +24,7 @@ def disable_service(
     service_identifier: str,
     hypervisor_name: str,
     service_binary:str,
-    disable_reason: str,
+    disabled_reason: str,
 ) -> None:
     """
     Disables an Openstack service
@@ -44,7 +44,7 @@ def disable_service(
         return False, "Hypervisor is currently disabled - aborting."
     '''
 
-    conn.compute.disable_service(service=service_identifier, host=hypervisor_name, binary=service_binary, disable_reason=disable_reason)
+    conn.compute.disable_service(service=service_identifier, host=hypervisor_name, binary=service_binary, disabled_reason=disabled_reason)
 
 
 

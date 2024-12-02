@@ -10,7 +10,7 @@ def hv_compute_service_disable(
     #service_identifier: str,
     hypervisor_name: str,
     service_binary:str,
-    disable_reason: str,
+    disabled_reason: str,
 ) -> None:
     """
     Disables an Openstack service
@@ -25,7 +25,7 @@ def hv_compute_service_disable(
     service_binary = "nova-compute"
 
     if service:
-            disable_service(conn, service, hypervisor_name, service_binary, disable_reason)
+            disable_service(conn, service, hypervisor_name, service_binary, disabled_reason)
     else:
         return "No Nova-Compute services found."
     
