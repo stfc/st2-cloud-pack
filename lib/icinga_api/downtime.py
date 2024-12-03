@@ -1,6 +1,7 @@
 import json
 
 import requests
+from enums.icinga.icinga_objects import IcingaObject
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from requests.auth import HTTPBasicAuth
 from structs.icinga.downtime_details import DowntimeDetails
@@ -37,6 +38,7 @@ def schedule_downtime(icinga_account: IcingaAccount, details: DowntimeDetails) -
         "end_time": details.end_time,
         "fixed": details.is_fixed,
         "duration": details.duration if not details.is_fixed else None,
+        "all_services": details.object_type == IcingaObject.HOST,
     }
 
     res = requests.post(
