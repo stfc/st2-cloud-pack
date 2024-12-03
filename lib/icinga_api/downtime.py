@@ -30,8 +30,8 @@ def schedule_downtime(icinga_account: IcingaAccount, details: DowntimeDetails) -
         raise MissingMandatoryParamError("Missing comment")
 
     payload = {
-        "type": details.object_type,
-        "filter": f'{details.object_type.lower()}.name=="{details.object_name}"',
+        "type": details.object_type.name.capitalize(),
+        "filter": f'{details.object_type.name.lower()}.name=="{details.object_name}"',
         "author": "StackStorm",
         "comment": details.comment,
         "start_time": details.start_time,
@@ -54,7 +54,7 @@ def schedule_downtime(icinga_account: IcingaAccount, details: DowntimeDetails) -
 
 
 def remove_downtime(
-    icinga_account: IcingaAccount, object_type: str, object_name: str
+    icinga_account: IcingaAccount, object_type: IcingaObject, object_name: str
 ) -> None:
     """
     Removes all downtimes created by stackstorm for a host or service
@@ -68,8 +68,8 @@ def remove_downtime(
         raise MissingMandatoryParamError("Missing object name")
 
     payload = {
-        "type": object_type,
-        "filter": f'{object_type.lower()}.name=="{object_name}"',
+        "type": object_type.name.capitalize(),
+        "filter": f'{object_type.name.lower()}.name=="{object_name}"',
         "author": "StackStorm",  # Only remove downtimes created by StackStorm
     }
 
