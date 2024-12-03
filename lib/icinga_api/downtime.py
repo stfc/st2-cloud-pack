@@ -42,7 +42,7 @@ def schedule_downtime(icinga_account: IcingaAccount, details: DowntimeDetails) -
     res = requests.post(
         url=f"{icinga_account.icinga_endpoint}/v1/actions/schedule-downtime",
         auth=basic,
-        verify=False,
+        verify="/var/lib/icinga2/certs/ca.crt",
         headers={"Accept": "application/json"},
         data=json.dumps(payload),
         timeout=300,
@@ -74,7 +74,7 @@ def remove_downtime(
     res = requests.post(
         url=f"{icinga_account.icinga_endpoint}/v1/actions/remove-downtime",
         auth=basic,
-        verify=False,
+        verify="/var/lib/icinga2/certs/ca.crt",
         headers={"Accept": "application/json"},
         data=json.dumps(payload),
         timeout=300,
