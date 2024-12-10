@@ -1,11 +1,9 @@
 from typing import List, Optional, Union
 
 from email_api.emailer import Emailer
-from openstack_query import ServerQuery, UserQuery
+from openstackquery import ServerQuery, UserQuery
 
 from enums.cloud_domains import CloudDomains
-from enums.query.props import ServerProperties
-from enums.query.query_presets import QueryPresetsGeneric
 
 from structs.email.email_params import EmailParams
 from structs.email.email_template_details import EmailTemplateDetails
@@ -27,8 +25,8 @@ def find_servers_on_hv(
     # Find VMs that have been on a hypervisor
     server_query = ServerQuery()
     server_query.where(
-        QueryPresetsGeneric.EQUAL_TO,
-        ServerProperties.HYPERVISOR_NAME,
+        "equal_to",
+        "hypervisor_name",
         value=hypervisor_name,
     )
     server_query.run(

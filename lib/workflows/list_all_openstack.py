@@ -1,6 +1,6 @@
 from typing import List, Optional
 from enums.query.sort_order import SortOrder
-import openstack_query
+import openstackquery
 
 # pylint:disable=too-many-arguments
 
@@ -25,7 +25,7 @@ def list_all_openstack(
     :param kwargs: A set of optional meta params to pass to the query
 
     """
-    query = getattr(openstack_query, query_type)()
+    query = getattr(openstackquery, query_type)()
 
     if not properties_to_select:
         query.select_all()

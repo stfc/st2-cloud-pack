@@ -1,11 +1,9 @@
 from typing import List, Optional, Union, Tuple
 
 from email_api.emailer import Emailer
-from openstack_query import ServerQuery, UserQuery
+from openstackquery import ServerQuery, UserQuery
 
 from enums.cloud_domains import CloudDomains
-from enums.query.props import ServerProperties
-from enums.query.query_presets import QueryPresetsGeneric, QueryPresetsDateTime
 
 from structs.email.email_params import EmailParams
 from structs.email.email_template_details import EmailTemplateDetails
@@ -25,13 +23,11 @@ def find_servers_with_errored_vms(
     server_query = ServerQuery()
     if time_variable > 0:
         server_query.where(
-            QueryPresetsDateTime.OLDER_THAN,
-            ServerProperties.SERVER_LAST_UPDATED_DATE,
+            "olser_than",
+            "server_last_updated_date",
             days=time_variable,
         )
-    server_query.where(
-        QueryPresetsGeneric.ANY_IN, ServerProperties.SERVER_STATUS, values=["ERROR"]
-    )
+    server_query.where("any_in", "server_status", values=["ERROR"])
     server_query.run(
         cloud_account,
         as_admin=True,

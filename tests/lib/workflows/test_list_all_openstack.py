@@ -5,7 +5,7 @@ from enums.query.sort_order import SortOrder
 from workflows.list_all_openstack import list_all_openstack
 
 
-@patch("workflows.list_all_openstack.openstack_query")
+@patch("workflows.list_all_openstack.openstackquery")
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
@@ -39,7 +39,7 @@ def test_list_all_openstack_minimal(mock_openstack_query, output_type):
     )
 
 
-@patch("workflows.list_all_openstack.openstack_query")
+@patch("workflows.list_all_openstack.openstackquery")
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )

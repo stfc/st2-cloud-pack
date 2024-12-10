@@ -1,7 +1,6 @@
 from typing import List, Optional
-from enums.query.query_presets import QueryPresetsString
-from enums.query.sort_order import SortOrder
-import openstack_query
+
+import openstackquery
 from workflows.to_webhook import to_webhook
 
 # pylint:disable=too-many-arguments
@@ -33,20 +32,20 @@ def search_by_regex(
     :param kwargs: A set of optional meta params to pass to the query
     """
 
-    query = getattr(openstack_query, query_type)()
+    query = getattr(openstackquery, query_type)()
     if not properties_to_select:
         query.select_all()
     else:
         query.select(*properties_to_select)
 
     query.where(
-        preset=QueryPresetsString.MATCHES_REGEX,
+        preset="regex",
         prop=property_to_search_by,
         value=pattern,
     )
 
     if sort_by:
-        query.sort_by(*[(p, SortOrder.DESC) for p in sort_by])
+        query.sort_by(*[(p, "desc") for p in sort_by])
     if group_by:
         query.group_by(group_by)
 

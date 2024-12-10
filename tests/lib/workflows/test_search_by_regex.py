@@ -1,12 +1,10 @@
 from unittest.mock import patch, NonCallableMock, MagicMock
 import pytest
 
-from enums.query.query_presets import QueryPresetsString
-from enums.query.sort_order import SortOrder
 from workflows.search_by_regex import search_by_regex
 
 
-@patch("workflows.search_by_regex.openstack_query")
+@patch("workflows.search_by_regex.openstackquery")
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
@@ -30,7 +28,7 @@ def test_search_by_regex_minimal(mock_openstack_query, output_type):
 
     mock_query.select_all.assert_called_once()
     mock_query.where.assert_called_once_with(
-        preset=QueryPresetsString.MATCHES_REGEX,
+        preset="regex",
         prop=params["property_to_search_by"],
         value=params["pattern"],
     )
@@ -48,7 +46,7 @@ def test_search_by_regex_minimal(mock_openstack_query, output_type):
 
 
 @patch("workflows.search_by_regex.to_webhook")
-@patch("workflows.search_by_regex.openstack_query")
+@patch("workflows.search_by_regex.openstackquery")
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
@@ -78,12 +76,12 @@ def test_search_by_regex_all(mock_openstack_query, mock_to_webhook, output_type)
 
     mock_query.select.assert_called_once_with(*params["properties_to_select"])
     mock_query.where.assert_called_once_with(
-        preset=QueryPresetsString.MATCHES_REGEX,
+        preset="regex",
         prop=params["property_to_search_by"],
         value=params["pattern"],
     )
     mock_query.sort_by.assert_called_once_with(
-        *[(p, SortOrder.DESC) for p in params["sort_by"]]
+        *[(p, "desc") for p in params["sort_by"]]
     )
     mock_query.group_by.assert_called_once_with(params["group_by"])
     mock_query.run.assert_called_once_with(

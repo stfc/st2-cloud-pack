@@ -1,4 +1,4 @@
-from openstack_query.api.query_objects import HypervisorQuery
+from openstackquery.api.query_objects import HypervisorQuery
 
 
 def query_hypervisor_state(cloud_account: str):
