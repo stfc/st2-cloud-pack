@@ -6,7 +6,7 @@ enabled: true
 
 trigger:
   type: "core.st2.webhook"
-  parameters: 
+  parameters:
     url: "migrate-server"
 
 action:
