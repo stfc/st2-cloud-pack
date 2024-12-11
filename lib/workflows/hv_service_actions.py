@@ -13,9 +13,9 @@ def hv_service_disable(
     """
     Disables an Openstack service
     :param conn: Openstack connection
-    :param hypervisor_name (str): The name or ID of the hypervisor.
+    :param hypervisor_name: (str): The name or ID of the hypervisor.
     :param service_binary: The name of the service.
-    :param disable_reason: The reason for disabling the service.
+    :param disabled_reason: The reason for disabling the service.
     """
 
     service = conn.compute.find_service(service_binary, ignore_missing=False, host=hypervisor_name)
@@ -32,7 +32,7 @@ def hv_service_enable(
     """
     Enables an Openstack service
     :param conn: Openstack connection
-    :param hypervisor_name (str): The name or ID of the hypervisor.
+    :param hypervisor_name: (str): The name or ID of the hypervisor.
     :param service_binary: The name of the service.
     """
 
