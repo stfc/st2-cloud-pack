@@ -39,7 +39,7 @@ def enable_service(
     Enables an Openstack service
     :param conn: Openstack connection
     :param service: The instance of the service class.
-    :param hypervisor_name: (str): The name or ID of the hypervisor.
+    :param hypervisor_name: The name or ID of the hypervisor.
     :param service_binary: The name of the service.
     """
 
