@@ -7,7 +7,7 @@ def disable_service(
     conn: Connection,
     service: Service,
     hypervisor_name: str,
-    service_binary:str,
+    service_binary: str,
     disabled_reason: str,
 ) -> Optional[Service]:
     """
@@ -20,17 +20,20 @@ def disable_service(
     """
 
     if service.status == "enabled":
-        return conn.compute.disable_service(service, host=hypervisor_name, binary=service_binary, disabled_reason=disabled_reason)
-    else:
-        return None
-
+        return conn.compute.disable_service(
+            service,
+            host=hypervisor_name,
+            binary=service_binary,
+            disabled_reason=disabled_reason,
+        )
+    return None
 
 
 def enable_service(
-    conn: Connection, 
+    conn: Connection,
     service: Service,
     hypervisor_name: str,
-    service_binary:str,
+    service_binary: str,
 ) -> Optional[Service]:
     """
     Enables an Openstack service
@@ -39,8 +42,9 @@ def enable_service(
     :param hypervisor_name: (str): The name or ID of the hypervisor.
     :param service_binary: The name of the service.
     """
-    
+
     if service.status == "disabled":
-        return conn.compute.enable_service(service, host=hypervisor_name, binary=service_binary)
-    else:
-        return None
+        return conn.compute.enable_service(
+            service, host=hypervisor_name, binary=service_binary
+        )
+    return None

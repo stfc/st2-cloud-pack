@@ -1,13 +1,11 @@
-from typing import Optional
-
 from openstack.connection import Connection
 from openstack_api.openstack_service import disable_service, enable_service
 
 
 def hv_service_disable(
-    conn: Connection, 
+    conn: Connection,
     hypervisor_name: str,
-    service_binary:str,
+    service_binary: str,
     disabled_reason: str,
 ) -> None:
     """
@@ -18,16 +16,17 @@ def hv_service_disable(
     :param disabled_reason: The reason for disabling the service.
     """
 
-    service = conn.compute.find_service(service_binary, ignore_missing=False, host=hypervisor_name)
+    service = conn.compute.find_service(
+        service_binary, ignore_missing=False, host=hypervisor_name
+    )
 
     disable_service(conn, service, hypervisor_name, service_binary, disabled_reason)
 
 
-
 def hv_service_enable(
-    conn: Connection, 
+    conn: Connection,
     hypervisor_name: str,
-    service_binary:str,
+    service_binary: str,
 ) -> None:
     """
     Enables an Openstack service
@@ -36,7 +35,8 @@ def hv_service_enable(
     :param service_binary: The name of the service.
     """
 
-    service = conn.compute.find_service(service_binary, ignore_missing=False, host=hypervisor_name)
+    service = conn.compute.find_service(
+        service_binary, ignore_missing=False, host=hypervisor_name
+    )
 
     enable_service(conn, service, hypervisor_name, service_binary)
-
