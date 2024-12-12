@@ -1,7 +1,7 @@
 from typing import List, Optional, Union
 
 from email_api.emailer import Emailer
-from openstack_query import ServerQuery, UserQuery
+from openstackquery import ServerQuery, UserQuery
 
 from enums.cloud_domains import CloudDomains
 

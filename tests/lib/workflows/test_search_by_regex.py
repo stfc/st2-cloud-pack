@@ -8,7 +8,7 @@ from workflows.search_by_regex import search_by_regex
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
-def test_search_by_regex_minimal(mock_openstack_query, output_type):
+def test_search_by_regex_minimal(mock_openstackquery, output_type):
     """
     Runs search_by_regex only providing required values
     """
@@ -16,7 +16,7 @@ def test_search_by_regex_minimal(mock_openstack_query, output_type):
     mock_query = MagicMock()
     mock_cloud_account = NonCallableMock()
 
-    mock_openstack_query.MockQuery.return_value = mock_query
+    mock_openstackquery.MockQuery.return_value = mock_query
     params = {
         "cloud_account": mock_cloud_account,
         "query_type": "MockQuery",
@@ -50,7 +50,7 @@ def test_search_by_regex_minimal(mock_openstack_query, output_type):
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
-def test_search_by_regex_all(mock_openstack_query, mock_to_webhook, output_type):
+def test_search_by_regex_all(mock_openstackquery, mock_to_webhook, output_type):
     """
     Runs search_by_regex providing all values
     """
@@ -58,7 +58,7 @@ def test_search_by_regex_all(mock_openstack_query, mock_to_webhook, output_type)
     mock_query = MagicMock()
     mock_cloud_account = NonCallableMock()
 
-    mock_openstack_query.MockQuery.return_value = mock_query
+    mock_openstackquery.MockQuery.return_value = mock_query
     params = {
         "cloud_account": mock_cloud_account,
         "query_type": "MockQuery",

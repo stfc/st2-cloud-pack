@@ -1,5 +1,4 @@
 from typing import List, Optional
-from enums.query.sort_order import SortOrder
 import openstackquery
 
 # pylint:disable=too-many-arguments
@@ -33,7 +32,7 @@ def list_all_openstack(
         query.select(*properties_to_select)
 
     if sort_by:
-        query.sort_by(*[(p, SortOrder.DESC) for p in sort_by])
+        query.sort_by(*[(p, "desc") for p in sort_by])
     if group_by:
         query.group_by(group_by)
 
