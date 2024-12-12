@@ -47,4 +47,6 @@ def enable_service(
         return conn.compute.enable_service(
             service, host=hypervisor_name, binary=service_binary
         )
-    return None
+    raise RuntimeError(
+        f"Failed to enable {service_binary} on {hypervisor_name}. Already enabled."
+    )
