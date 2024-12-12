@@ -17,6 +17,7 @@ def disable_service(
     :param hypervisor_name: The name or ID of the hypervisor.
     :param service_binary: The name of the service.
     :param disabled_reason: The reason for disabling the service.
+    :return: Returns the Service object.
     """
 
     if service.status == "enabled":
@@ -26,7 +27,9 @@ def disable_service(
             binary=service_binary,
             disabled_reason=disabled_reason,
         )
-    return None
+    raise RuntimeError(
+        f"Failed to disable {service_binary} on {hypervisor_name}. Already disabled."
+    )
 
 
 def enable_service(
@@ -41,6 +44,7 @@ def enable_service(
     :param service: The instance of the service class.
     :param hypervisor_name: The name or ID of the hypervisor.
     :param service_binary: The name of the service.
+    :return: Returns the Service object.
     """
 
     if service.status == "disabled":
