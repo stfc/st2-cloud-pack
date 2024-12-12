@@ -14,7 +14,7 @@ def disable_service(
     Disables an Openstack service
     :param conn: Openstack connection
     :param service: The instance of the service class.
-    :param hypervisor_name: (str): The name or ID of the hypervisor.
+    :param hypervisor_name: The name or ID of the hypervisor.
     :param service_binary: The name of the service.
     :param disabled_reason: The reason for disabling the service.
     """
@@ -39,7 +39,7 @@ def enable_service(
     Enables an Openstack service
     :param conn: Openstack connection
     :param service: The instance of the service class.
-    :param hypervisor_name: (str): The name or ID of the hypervisor.
+    :param hypervisor_name: The name or ID of the hypervisor.
     :param service_binary: The name of the service.
     """
 
@@ -47,4 +47,6 @@ def enable_service(
         return conn.compute.enable_service(
             service, host=hypervisor_name, binary=service_binary
         )
-    return None
+    raise RuntimeError(
+        f"Failed to enable {service_binary} on {hypervisor_name}. Already enabled."
+    )
