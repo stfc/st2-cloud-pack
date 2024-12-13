@@ -1,4 +1,4 @@
-from openstackquery.api.query_objects import HypervisorQuery
+from openstackquery.api.query_objects import HypervisorQuery, ServerQuery
 
 
 def query_hypervisor_state(cloud_account: str):
@@ -17,9 +17,19 @@ def query_hypervisor_state(cloud_account: str):
         "hypervisor_state",
         "hypervisor_status",
         "hypervisor_uptime_days",
-        "hypervisor_server_count",
     )
 
-    state_query.run(cloud_account=cloud_account)
+    state_query.run(cloud_account=cloud_account, all_projects=True, as_admin=True)
+    hypervisor_info = state_query.to_props()
+    server_query = ServerQuery()
+    server_query.group_by("hypervisor_name")
+    server_query.run(cloud_account=cloud_account, all_projects=True, as_admin=True)
 
-    return state_query.to_props()
+    servers_on_hypervisor = server_query.to_props()
+
+    for hv in hypervisor_info:
+        hv["hypervisor_server_count"] = len(
+            servers_on_hypervisor.get(hv["hypervisor_name"], [])
+        )
+
+    return hypervisor_info
