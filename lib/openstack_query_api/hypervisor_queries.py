@@ -16,7 +16,7 @@ def query_hypervisor_state(cloud_account: str):
         "hypervisor_name",
         "hypervisor_state",
         "hypervisor_status",
-        "hypervisor_uptime",
+        "hypervisor_uptime_days",
         "hypervisor_server_count",
     )
 
