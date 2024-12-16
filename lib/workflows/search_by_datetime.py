@@ -1,7 +1,5 @@
 from typing import List, Optional
-from enums.query.query_presets import QueryPresetsDateTime
-from enums.query.sort_order import SortOrder
-import openstack_query
+import openstackquery
 from workflows.to_webhook import to_webhook
 
 # pylint:disable=too-many-arguments
@@ -48,14 +46,14 @@ def search_by_datetime(
             "At least one value for days, hours, minutes, seconds must be > 0"
         )
 
-    query = getattr(openstack_query, query_type)()
+    query = getattr(openstackquery, query_type)()
     if not properties_to_select:
         query.select_all()
     else:
         query.select(*properties_to_select)
 
     query.where(
-        preset=QueryPresetsDateTime.from_string(search_mode),
+        preset=search_mode,
         prop=property_to_search_by,
         **{
             "days": days,
@@ -65,7 +63,7 @@ def search_by_datetime(
         },
     )
     if sort_by:
-        query.sort_by(*[(p, SortOrder.DESC) for p in sort_by])
+        query.sort_by(*[(p, "desc") for p in sort_by])
     if group_by:
         query.group_by(group_by)
 

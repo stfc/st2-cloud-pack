@@ -1,11 +1,9 @@
 from typing import List, Optional, Union
 
 from email_api.emailer import Emailer
-from openstack_query import ServerQuery, UserQuery
+from openstackquery import ServerQuery, UserQuery
 
 from enums.cloud_domains import CloudDomains
-from enums.query.props import ServerProperties
-from enums.query.query_presets import QueryPresetsGeneric
 
 from structs.email.email_params import EmailParams
 from structs.email.email_template_details import EmailTemplateDetails
@@ -22,9 +20,7 @@ def find_servers_with_shutoff_vms(
 
     # Find VMs that have been in shutoff state for more than 60 days
     server_query = ServerQuery()
-    server_query.where(
-        QueryPresetsGeneric.ANY_IN, ServerProperties.SERVER_STATUS, values=["SHUTOFF"]
-    )
+    server_query.where("any_in", "server_status", values=["SHUTOFF"])
     server_query.run(
         cloud_account,
         as_admin=True,

@@ -1,13 +1,6 @@
 from unittest.mock import patch, call, NonCallableMock
 import pytest
 
-
-from enums.query.props.flavor_properties import FlavorProperties
-from enums.query.props.project_properties import ProjectProperties
-from enums.query.props.server_properties import ServerProperties
-from enums.query.props.user_properties import UserProperties
-from enums.query.query_presets import QueryPresetsGeneric
-from enums.query.sort_order import SortOrder
 from workflows.send_decom_flavor_email import (
     validate,
     find_user_info,
@@ -92,10 +85,10 @@ def test_find_user_info_valid(mock_user_query):
     res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
     mock_user_query.assert_called_once()
     mock_user_query.return_value.select.assert_called_once_with(
-        UserProperties.USER_NAME, UserProperties.USER_EMAIL
+        "user_name", "user_email"
     )
     mock_user_query.return_value.where.assert_called_once_with(
-        QueryPresetsGeneric.EQUAL_TO, UserProperties.USER_ID, value=mock_user_id
+        "equal_to", "user_id", value=mock_user_id
     )
     mock_user_query.return_value.run.assert_called_once_with(
         cloud_account=mock_cloud_account
@@ -118,10 +111,10 @@ def test_find_user_info_invalid(mock_user_query):
     res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
     mock_user_query.assert_called_once()
     mock_user_query.return_value.select.assert_called_once_with(
-        UserProperties.USER_NAME, UserProperties.USER_EMAIL
+        "user_name", "user_email"
     )
     mock_user_query.return_value.where.assert_called_once_with(
-        QueryPresetsGeneric.EQUAL_TO, UserProperties.USER_ID, value=mock_user_id
+        "equal_to", "user_id", value=mock_user_id
     )
     mock_user_query.return_value.run.assert_called_once_with(
         cloud_account=mock_cloud_account
@@ -147,10 +140,10 @@ def test_find_user_info_no_email_address(mock_user_query):
     res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
     mock_user_query.assert_called_once()
     mock_user_query.return_value.select.assert_called_once_with(
-        UserProperties.USER_NAME, UserProperties.USER_EMAIL
+        "user_name", "user_email"
     )
     mock_user_query.return_value.where.assert_called_once_with(
-        QueryPresetsGeneric.EQUAL_TO, UserProperties.USER_ID, value=mock_user_id
+        "equal_to", "user_id", value=mock_user_id
     )
     mock_user_query.return_value.run.assert_called_once_with(
         cloud_account=mock_cloud_account
@@ -176,14 +169,12 @@ def test_find_users_with_decom_flavor_valid(mock_flavor_query):
 
     mock_flavor_query.assert_called_once()
     mock_flavor_query_obj.where.assert_any_call(
-        QueryPresetsGeneric.ANY_IN,
-        FlavorProperties.FLAVOR_NAME,
+        "any_in",
+        "flavor_name",
         values=["flavor1", "flavor2"],
     )
     mock_flavor_query_obj.run.assert_called_once_with("test-cloud-account")
-    mock_flavor_query_obj.sort_by.assert_called_once_with(
-        (FlavorProperties.FLAVOR_ID, SortOrder.ASC)
-    )
+    mock_flavor_query_obj.sort_by.assert_called_once_with(("flavor_id", "asc"))
     mock_flavor_query_obj.to_props.assert_called_once()
 
     mock_flavor_query_obj.then.assert_called_once_with(
@@ -196,17 +187,17 @@ def test_find_users_with_decom_flavor_valid(mock_flavor_query):
         all_projects=False,
     )
     mock_server_query_obj.select.assert_called_once_with(
-        ServerProperties.SERVER_ID,
-        ServerProperties.SERVER_NAME,
-        ServerProperties.ADDRESSES,
+        "server_id",
+        "server_name",
+        "server_addresses",
     )
     mock_server_query_obj.to_props.assert_called_once()
 
     mock_server_query_obj.append_from.assert_called_once_with(
-        "PROJECT_QUERY", "test-cloud-account", [ProjectProperties.PROJECT_NAME]
+        "PROJECT_QUERY", "test-cloud-account", ["project_name"]
     )
 
-    mock_server_query_obj.group_by.assert_called_once_with(ServerProperties.USER_ID)
+    mock_server_query_obj.group_by.assert_called_once_with("user_id")
     assert res == mock_server_query_obj
 
 
@@ -223,14 +214,12 @@ def test_find_users_with_decom_flavor_invalid_flavor(mock_flavor_query):
 
     mock_flavor_query.assert_called_once()
     mock_flavor_query_obj.where.assert_any_call(
-        QueryPresetsGeneric.ANY_IN,
-        FlavorProperties.FLAVOR_NAME,
+        "any_in",
+        "flavor_name",
         values=["invalid-flavor"],
     )
     mock_flavor_query_obj.run.assert_called_once_with("test-cloud-account")
-    mock_flavor_query_obj.sort_by.assert_called_once_with(
-        (FlavorProperties.FLAVOR_ID, SortOrder.ASC)
-    )
+    mock_flavor_query_obj.sort_by.assert_called_once_with(("flavor_id", "asc"))
     mock_flavor_query_obj.to_props.assert_called_once()
 
 
@@ -250,14 +239,12 @@ def test_find_users_with_decom_flavor_no_servers_found(mock_flavor_query):
 
     mock_flavor_query.assert_called_once()
     mock_flavor_query_obj.where.assert_any_call(
-        QueryPresetsGeneric.ANY_IN,
-        FlavorProperties.FLAVOR_NAME,
+        "any_in",
+        "flavor_name",
         values=["flavor1", "flavor2"],
     )
     mock_flavor_query_obj.run.assert_called_once_with("test-cloud-account")
-    mock_flavor_query_obj.sort_by.assert_called_once_with(
-        (FlavorProperties.FLAVOR_ID, SortOrder.ASC)
-    )
+    mock_flavor_query_obj.sort_by.assert_called_once_with(("flavor_id", "asc"))
     mock_flavor_query_obj.to_props.assert_called_once()
 
     mock_server_query_obj.run.assert_called_once_with(
@@ -267,9 +254,9 @@ def test_find_users_with_decom_flavor_no_servers_found(mock_flavor_query):
         all_projects=False,
     )
     mock_server_query_obj.select.assert_called_once_with(
-        ServerProperties.SERVER_ID,
-        ServerProperties.SERVER_NAME,
-        ServerProperties.ADDRESSES,
+        "server_id",
+        "server_name",
+        "server_addresses",
     )
     mock_server_query_obj.to_props.assert_called_once()
 

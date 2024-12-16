@@ -1,8 +1,5 @@
 from unittest.mock import patch
 
-from enums.query.props.hypervisor_properties import HypervisorProperties
-from enums.query.query_presets import QueryPresetsGeneric
-from enums.query.sort_order import SortOrder
 from workflows.find_empty_hypervisors import find_empty_hypervisors
 
 
@@ -21,17 +18,15 @@ def test_with_empty_hvs(mocked_query_factory):
     result = find_empty_hypervisors(cloud_account="test", include_offline=True)
     mocked_query_factory.assert_called_once_with()
 
-    query_obj.select.assert_called_once_with(HypervisorProperties.HYPERVISOR_NAME)
+    query_obj.select.assert_called_once_with("hypervisor_name")
     query_obj.where.assert_called_once_with(
-        QueryPresetsGeneric.EQUAL_TO,
-        HypervisorProperties.HYPERVISOR_VCPUS_USED,
+        "equal_to",
+        "hypervisor_vcpus_used",
         value=0,
     )
     query_obj.run.assert_called_once_with(cloud_account="test")
     query_results = query_obj.run.return_value
-    query_results.sort_by.assert_called_once_with(
-        [HypervisorProperties.HYPERVISOR_NAME, SortOrder.ASC]
-    )
+    query_results.sort_by.assert_called_once_with(["hypervisor_name", "asc"])
     sort_by_chain = query_results.sort_by.return_value
     sort_by_chain.to_props.assert_called_once_with(flatten=True)
 
@@ -48,14 +43,14 @@ def test_with_empty_hvs_excluding_offline(mocked_query_factory):
     find_empty_hypervisors(cloud_account="test", include_offline=False)
 
     mocked_query_factory.assert_called_once_with()
-    query_obj.select.assert_called_once_with(HypervisorProperties.HYPERVISOR_NAME)
+    query_obj.select.assert_called_once_with("hypervisor_name")
     query_obj.where.assert_any_call(
-        QueryPresetsGeneric.EQUAL_TO,
-        HypervisorProperties.HYPERVISOR_VCPUS_USED,
+        "equal_to",
+        "hypervisor_vcpus_used",
         value=0,
     )
     query_obj.where.assert_any_call(
-        QueryPresetsGeneric.EQUAL_TO,
-        HypervisorProperties.HYPERVISOR_STATE,
+        "equal_to",
+        "hypervisor_state",
         value="up",
     )

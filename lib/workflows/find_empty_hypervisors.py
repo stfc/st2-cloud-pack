@@ -1,9 +1,6 @@
 from typing import List
 
-from enums.query.props.hypervisor_properties import HypervisorProperties
-from enums.query.query_presets import QueryPresetsGeneric
-from enums.query.sort_order import SortOrder
-from openstack_query import HypervisorQuery
+from openstackquery import HypervisorQuery
 
 
 def find_empty_hypervisors(cloud_account: str, include_offline: bool) -> List[str]:
@@ -16,23 +13,23 @@ def find_empty_hypervisors(cloud_account: str, include_offline: bool) -> List[st
     """
     hv_query = HypervisorQuery()
     hv_query.where(
-        QueryPresetsGeneric.EQUAL_TO,
-        HypervisorProperties.HYPERVISOR_VCPUS_USED,
+        "equal_to",
+        "hypervisor_vcpus_used",
         value=0,
     )
     if not include_offline:
         # Disabled and "up" are a valid combo, usually
         # when the HV is being drained
         hv_query.where(
-            QueryPresetsGeneric.EQUAL_TO,
-            HypervisorProperties.HYPERVISOR_STATE,
+            "equal_to",
+            "hypervisor_state",
             value="up",
         )
 
-    hv_query.select(HypervisorProperties.HYPERVISOR_NAME)
+    hv_query.select("hypervisor_name")
     results = (
         hv_query.run(cloud_account=cloud_account)
-        .sort_by([HypervisorProperties.HYPERVISOR_NAME, SortOrder.ASC])
+        .sort_by(["hypervisor_name", "asc"])
         .to_props(flatten=True)
     )
     return results["hypervisor_name"]

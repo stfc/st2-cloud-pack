@@ -1,14 +1,8 @@
 from typing import List, Optional, Union
 
-from openstack_query import FlavorQuery, UserQuery
+from openstackquery import FlavorQuery, UserQuery
 
-from enums.query.sort_order import SortOrder
 from enums.cloud_domains import CloudDomains
-from enums.query.query_presets import QueryPresetsGeneric
-from enums.query.props.flavor_properties import FlavorProperties
-from enums.query.props.server_properties import ServerProperties
-from enums.query.props.project_properties import ProjectProperties
-from enums.query.props.user_properties import UserProperties
 
 from structs.email.smtp_account import SMTPAccount
 from structs.email.email_template_details import EmailTemplateDetails
@@ -67,12 +61,12 @@ def find_servers_with_decom_flavors(
 
     flavor_query = FlavorQuery()
     flavor_query.where(
-        QueryPresetsGeneric.ANY_IN,
-        FlavorProperties.FLAVOR_NAME,
+        "any_in",
+        "flavor_name",
         values=flavor_name_list,
     )
     flavor_query.run(cloud_account)
-    flavor_query.sort_by((FlavorProperties.FLAVOR_ID, SortOrder.ASC))
+    flavor_query.sort_by(("flavor_id", "asc"))
 
     if not flavor_query.to_props():
         raise RuntimeError(
@@ -88,9 +82,9 @@ def find_servers_with_decom_flavors(
         all_projects=not from_projects,
     )
     server_query.select(
-        ServerProperties.SERVER_ID,
-        ServerProperties.SERVER_NAME,
-        ServerProperties.ADDRESSES,
+        "server_id",
+        "server_name",
+        "server_addresses",
     )
 
     if not server_query.to_props():
@@ -99,10 +93,8 @@ def find_servers_with_decom_flavors(
             f"{','.join(from_projects) if from_projects else '[all projects]'}"
         )
 
-    server_query.append_from(
-        "PROJECT_QUERY", cloud_account, [ProjectProperties.PROJECT_NAME]
-    )
-    server_query.group_by(ServerProperties.USER_ID)
+    server_query.append_from("PROJECT_QUERY", cloud_account, ["project_name"])
+    server_query.group_by("user_id")
 
     return server_query
 
@@ -160,10 +152,8 @@ def find_user_info(user_id, cloud_account, override_email_address):
     :param override_email_address: email address to return if no email address found via UserQuery
     """
     user_query = UserQuery()
-    user_query.select(UserProperties.USER_NAME, UserProperties.USER_EMAIL)
-    user_query.where(
-        QueryPresetsGeneric.EQUAL_TO, UserProperties.USER_ID, value=user_id
-    )
+    user_query.select("user_name", "user_email")
+    user_query.where("equal_to", "user_id", value=user_id)
     user_query.run(cloud_account=cloud_account)
     res = user_query.to_props(flatten=True)
     if not res or not res["user_email"][0]:

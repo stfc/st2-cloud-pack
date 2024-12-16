@@ -2,10 +2,8 @@ from typing import Optional, Union
 
 from email_api.emailer import Emailer
 from enums.cloud_domains import CloudDomains
-from enums.query.query_presets import QueryPresetsGeneric
-from enums.query.props.hypervisor_properties import HypervisorProperties
 
-from openstack_query import HypervisorQuery
+from openstackquery import HypervisorQuery
 from structs.email.email_params import EmailParams
 from structs.email.email_template_details import EmailTemplateDetails
 from structs.email.smtp_account import SMTPAccount
@@ -18,18 +16,18 @@ def find_down_hypervisors(cloud_account: str):
 
     hypervisor_query_down = HypervisorQuery()
     hypervisor_query_down.where(
-        QueryPresetsGeneric.ANY_IN,
-        HypervisorProperties.HYPERVISOR_STATE,
+        "any_in",
+        "hypervisor_state",
         values=["down"],
     )
     hypervisor_query_down.run(
         cloud_account,
     )
     hypervisor_query_down.select(
-        HypervisorProperties.HYPERVISOR_ID,
-        HypervisorProperties.HYPERVISOR_NAME,
-        HypervisorProperties.HYPERVISOR_STATE,
-        HypervisorProperties.HYPERVISOR_STATUS,
+        "hypervisor_id",
+        "hypervisor_name",
+        "hypervisor_state",
+        "hypervisor_status",
     )
 
     if not hypervisor_query_down.to_props():
@@ -45,18 +43,18 @@ def find_disabled_hypervisors(cloud_account: str):
 
     hypervisor_query_disabled = HypervisorQuery()
     hypervisor_query_disabled.where(
-        QueryPresetsGeneric.ANY_IN,
-        HypervisorProperties.HYPERVISOR_STATUS,
+        "any_in",
+        "hypervisor_status",
         values=["disabled"],
     )
     hypervisor_query_disabled.run(
         cloud_account,
     )
     hypervisor_query_disabled.select(
-        HypervisorProperties.HYPERVISOR_ID,
-        HypervisorProperties.HYPERVISOR_NAME,
-        HypervisorProperties.HYPERVISOR_STATE,
-        HypervisorProperties.HYPERVISOR_STATUS,
+        "hypervisor_id",
+        "hypervisor_name",
+        "hypervisor_state",
+        "hypervisor_status",
     )
 
     if not hypervisor_query_disabled.to_props():

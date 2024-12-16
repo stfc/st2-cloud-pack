@@ -6,39 +6,35 @@ class HypervisorState(Enum):
     Class of states used for automating maintenace of hypervisors
     """
 
-    RUNNING = auto()
-    PENDING_MAINTENANCE = auto()
-    DRAINING = auto()
-    DRAINED = auto()
+    RUNNING = {
+        "uptime": True,
+        "enabled": True,
+        "state": True,
+        "servers": True,
+    }
+    PENDING_MAINTENANCE = {
+        "uptime": False,
+        "enabled": True,
+        "state": True,
+        "servers": True,
+    }
+    DRAINING = {
+        "uptime": False,
+        "enabled": False,
+        "state": True,
+        "servers": True,
+    }
+    DRAINED = {
+        "uptime": False,
+        "enabled": False,
+        "state": True,
+        "servers": False,
+    }
+    UNKNOWN = auto()
 
-    def properties(self):
+    @classmethod
+    def _missing_(cls, value):
         """
-        Return hypervisor state for given variables
+        Return UNKNOWN if state not found in class
         """
-        state_properties = {
-            HypervisorState.RUNNING: {
-                "uptime": True,
-                "enabled": True,
-                "state": True,
-                "servers": True,
-            },
-            HypervisorState.PENDING_MAINTENANCE: {
-                "uptime": False,
-                "enabled": True,
-                "state": True,
-                "servers": True,
-            },
-            HypervisorState.DRAINING: {
-                "uptime": False,
-                "enabled": False,
-                "state": True,
-                "servers": True,
-            },
-            HypervisorState.DRAINED: {
-                "uptime": False,
-                "enabled": False,
-                "state": True,
-                "servers": False,
-            },
-        }
-        return state_properties[self]
+        return cls.UNKNOWN

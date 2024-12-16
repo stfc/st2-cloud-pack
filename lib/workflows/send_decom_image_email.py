@@ -2,7 +2,7 @@ from typing import List, Dict, Optional, Union
 import re
 from datetime import datetime
 from tabulate import tabulate
-from openstack_query import ImageQuery, UserQuery
+from openstackquery import ImageQuery, UserQuery
 
 from enums.cloud_domains import CloudDomains
 from structs.email.smtp_account import SMTPAccount

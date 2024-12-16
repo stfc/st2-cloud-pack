@@ -1,18 +1,14 @@
 from unittest.mock import patch, NonCallableMock, MagicMock
 import pytest
 
-from enums.query.sort_order import SortOrder
 from workflows.search_by_expression import search_by_expression
 
 
-@patch("workflows.search_by_expression.openstack_query")
-@patch("workflows.search_by_expression.QueryPresetsInteger")
+@patch("workflows.search_by_expression.openstackquery")
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
-def test_search_by_expression_minimal(
-    mock_preset_enum, mock_openstack_query, output_type
-):
+def test_search_by_expression_minimal(mock_openstackquery, output_type):
     """
     Runs search_by_expression only providing required values
     """
@@ -20,7 +16,7 @@ def test_search_by_expression_minimal(
     mock_query = MagicMock()
     mock_cloud_account = NonCallableMock()
 
-    mock_openstack_query.MockQuery.return_value = mock_query
+    mock_openstackquery.MockQuery.return_value = mock_query
     params = {
         "cloud_account": mock_cloud_account,
         "query_type": "MockQuery",
@@ -33,7 +29,7 @@ def test_search_by_expression_minimal(
 
     mock_query.select_all.assert_called_once()
     mock_query.where.assert_called_once_with(
-        preset=mock_preset_enum.from_string.return_value,
+        preset=params["search_mode"],
         prop=params["property_to_search_by"],
         value=1,
     )
@@ -51,14 +47,11 @@ def test_search_by_expression_minimal(
 
 
 @patch("workflows.search_by_expression.to_webhook")
-@patch("workflows.search_by_expression.openstack_query")
-@patch("workflows.search_by_expression.QueryPresetsInteger")
+@patch("workflows.search_by_expression.openstackquery")
 @pytest.mark.parametrize(
     "output_type", ["to_html", "to_string", "to_objects", "to_props"]
 )
-def test_search_by_expression_all(
-    mock_preset_enum, mock_openstack_query, mock_to_webhook, output_type
-):
+def test_search_by_expression_all(mock_openstackquery, mock_to_webhook, output_type):
     """
     Runs search_by_expression providing all available params
     """
@@ -66,7 +59,7 @@ def test_search_by_expression_all(
     mock_query = MagicMock()
     mock_cloud_account = NonCallableMock()
 
-    mock_openstack_query.MockQuery.return_value = mock_query
+    mock_openstackquery.MockQuery.return_value = mock_query
     params = {
         "cloud_account": mock_cloud_account,
         "query_type": "MockQuery",
@@ -85,12 +78,12 @@ def test_search_by_expression_all(
 
     mock_query.select.assert_called_once_with(*params["properties_to_select"])
     mock_query.where.assert_called_once_with(
-        preset=mock_preset_enum.from_string.return_value,
+        preset=params["search_mode"],
         prop=params["property_to_search_by"],
         value=1,
     )
     mock_query.sort_by.assert_called_once_with(
-        *[(p, SortOrder.DESC) for p in params["sort_by"]]
+        *[(p, "desc") for p in params["sort_by"]]
     )
     mock_query.group_by.assert_called_once_with(params["group_by"])
     mock_query.run.assert_called_once_with(
