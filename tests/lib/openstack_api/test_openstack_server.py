@@ -108,7 +108,7 @@ class TestServerSnapshot(unittest.TestCase):
             server=mock_server_id,
             name=f"{mock_server_id}-{current_time}",
             wait=True,
-            timeout=300,
+            timeout=3600,
         )
         mock_connection.image.update_image.assert_called_once_with(
             mock_image, owner=mock_project_id
