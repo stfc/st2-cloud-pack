@@ -46,11 +46,11 @@ class HypervisorStateSensor(PollingSensor):
                 name=hypervisor["hypervisor_name"]
             )
 
-            if not prev_state == current_state:
+            if not prev_state == current_state.name:
                 payload = {
                     "hypervisor_name": hypervisor["hypervisor_name"],
                     "previous_state": prev_state,
-                    "current_state": current_state,
+                    "current_state": current_state.name,
                 }
                 self.sensor_service.dispatch(
                     trigger="stackstorm_openstack.hypervisor.state_change",
@@ -58,7 +58,7 @@ class HypervisorStateSensor(PollingSensor):
                 )
 
             self.sensor_service.set_value(
-                name=hypervisor["hypervisor_name"], value=current_state
+                name=hypervisor["hypervisor_name"], value=current_state.name
             )
 
     def cleanup(self):

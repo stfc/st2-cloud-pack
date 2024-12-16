@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch
+from enums.hypervisor_states import HypervisorState
 from sensors.src.hypervisor_state_sensor import HypervisorStateSensor
 
 
@@ -36,7 +37,7 @@ class TestHypervisorStateSensor(unittest.TestCase):
         ]
 
         self.sensor_service.get_value.return_value = "RUNNING"
-        mock_get_hypervisor_state.return_value = "PENDING_MAINTENANCE"
+        mock_get_hypervisor_state.return_value = HypervisorState.PENDING_MAINTENANCE
 
         self.sensor.poll()
 
@@ -49,7 +50,7 @@ class TestHypervisorStateSensor(unittest.TestCase):
         expected_payload = {
             "hypervisor_name": "hv1",
             "previous_state": self.sensor_service.get_value.return_value,
-            "current_state": mock_get_hypervisor_state.return_value,
+            "current_state": mock_get_hypervisor_state.return_value.name,
         }
 
         self.sensor_service.dispatch.assert_called_once_with(
