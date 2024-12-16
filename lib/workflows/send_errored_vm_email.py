@@ -23,7 +23,7 @@ def find_servers_with_errored_vms(
     server_query = ServerQuery()
     if time_variable > 0:
         server_query.where(
-            "olser_than",
+            "older_than",
             "server_last_updated_date",
             days=time_variable,
         )
