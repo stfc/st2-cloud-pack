@@ -53,7 +53,6 @@ There are currently 4 API submodules:
 
 
 4. Openstack Query API - A python library developed by the Cloud Team to make querying Openstack easier.
-   - This is in active development, and we're aiming to move this out of this pack to be a standalone library.
    - See [Openstack Query README.md](https://github.com/stfc/openstack-query-library/blob/main/README.md)
 
 
