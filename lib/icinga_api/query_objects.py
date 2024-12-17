@@ -26,7 +26,7 @@ def query_object(icinga_account: IcingaAccount, icinga_qurey: IcingaQuery) -> in
     res = requests.post(
         url=f"{icinga_account.icinga_endpoint}/v1/objects/{icinga_qurey.object_type.lower()}s",
         auth=basic,
-        verify=False,
+        verify="/var/lib/icinga2/certs/ca.crt",
         headers={"Accept": "application/json", "X-HTTP-Method-Override": "GET"},
         data=json.dumps(payload),
         timeout=300,

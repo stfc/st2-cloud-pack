@@ -53,8 +53,6 @@ parameters:
       - "memory_used"
       - "vcpus"
       - "vcpus_used"
-      - "current_workload"
-      - "running_vms"
     type: string
     required: true
   search_mode:
@@ -73,7 +71,6 @@ parameters:
     type: integer
   properties_to_select:
     default:
-      - "current_workload"
       - "local_disk_free"
       - "local_disk_size"
       - "local_disk_used"
@@ -83,7 +80,6 @@ parameters:
       - "memory_size"
       - "memory_used"
       - "name"
-      - "running_vms"
       - "state"
       - "status"
       - "vcpus"
@@ -92,7 +88,6 @@ parameters:
     type: array
     description: "
     A comma-spaced list of server properties to display for the resulting hypervisors - leave empty for all properties. One of:
-      - 'current_workload'
       - 'local_disk_free'
       - 'local_disk_size'
       - 'local_disk_used'
@@ -102,7 +97,6 @@ parameters:
       - 'memory_size'
       - 'memory_used'
       - 'name'
-      - 'running_vms'
       - 'state'
       - 'status'
       - 'vcpus'
@@ -113,7 +107,6 @@ parameters:
   group_by:
     description: "(Optional) hypervisor property to group unique results by
     One of
-      - 'current_workload'
       - 'local_disk_free'
       - 'local_disk_size'
       - 'local_disk_used'
@@ -123,7 +116,6 @@ parameters:
       - 'memory_size'
       - 'memory_used'
       - 'name'
-      - 'running_vms'
       - 'state'
       - 'status'
       - 'vcpus'
@@ -137,7 +129,6 @@ parameters:
     description: "(Optional) comma-spaced list of hypervisor properties to sort by (by ascending only)
     - multiple of the same property will be ignored.
     Any of:
-      - 'current_workload'
       - 'local_disk_free'
       - 'local_disk_size'
       - 'local_disk_used'
@@ -147,7 +138,6 @@ parameters:
       - 'memory_size'
       - 'memory_used'
       - 'name'
-      - 'running_vms'
       - 'state'
       - 'status'
       - 'vcpus'
