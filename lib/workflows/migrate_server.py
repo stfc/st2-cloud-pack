@@ -1,14 +1,15 @@
 from typing import Optional
 
+import openstackquery
 from openstack.connection import Connection
 from openstack_api.openstack_server import migrate_server, snapshot_server
 
 
 def server_migration(
     conn: Connection,
+    cloud_account: str,
     server_id: str,
     destination_host: Optional[str] = None,
-    live: bool = True,
 ) -> None:
     """Docstring for migrate_server
 
@@ -21,6 +22,30 @@ def server_migration(
     :param live: True to use live migration
     :type live: bool
     """
-    snapshot_server(conn, server_id)
 
-    migrate_server(conn, server_id=server_id, dest_host=destination_host, live=live)
+    # Determine the status of the server
+    query = getattr(openstackquery, "ServerQuery")()
+    query.select("server_status")
+    query.where(
+        preset="any_in",
+        prop="server_id",
+        values=[server_id],
+    )
+    query.run(cloud_account, all_projects=True, as_admin=True)
+    status = query.to_props()[0].get("server_status")
+    if status == "ACTIVE":
+        live_migration = True
+        print(f"live migration: {live_migration}")
+        snapshot_server(conn, server_id)
+        migrate_server(
+            conn, server_id=server_id, dest_host=destination_host, live=live_migration
+        )
+    elif status == "SHUTOFF":
+        live_migration = False
+        print(f"live migration: {live_migration}")
+        snapshot_server(conn, server_id)
+        migrate_server(
+            conn, server_id=server_id, dest_host=destination_host, live=live_migration
+        )
+    else:
+        print("Status not SHUTOFF or ACTIVE - ERROR!")

@@ -26,9 +26,8 @@ parameters:
     type: string
     required: true
     description: ID of server to migrate
-  live:
-    type: boolean
-    required: true
-    default: true
-    description: True to use live migration
+  destination_host:
+    type: string
+    required: false
+    description: "Optional, host to migrate server to"
 runner_type: python-script
