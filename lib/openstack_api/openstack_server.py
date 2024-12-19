@@ -3,12 +3,14 @@ from typing import Optional
 from openstack.connection import Connection
 from openstack.compute.v2.image import Image
 
+from exceptions.migrate_error import MigrateError
 
-def migrate_server(
+
+def snapshot_and_migrate_server(
     conn: Connection,
     server_id: str,
+    server_status: str,
     dest_host: Optional[str] = None,
-    live: bool = True,
 ) -> None:
     """
     Migrate a server to a new host
@@ -17,6 +19,13 @@ def migrate_server(
     :param dest_host: Optional host to migrate to, otherwise choosen by scheduler
     :param live: True for live migration
     """
+    snapshot_server(conn=conn, server_id=server_id)
+    if server_status == "ACTIVE":
+        live = True
+    elif server_status == "SHUTOFF":
+        live = False
+    else:
+        raise MigrateError("The VM is in the incorrect state to be migrated")
     if not live:
         conn.compute.migrate_server(server=server_id, host=dest_host)
     else:
