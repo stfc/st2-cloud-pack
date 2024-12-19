@@ -17,7 +17,7 @@ def search_by_property(
     group_by: Optional[str] = None,
     sort_by: Optional[List[str]] = None,
     webhook: Optional[str] = None,
-    **kwargs
+    **kwargs,
 ):
     """
     method that builds and runs a query to find generic resource with a selected property
@@ -43,6 +43,8 @@ def search_by_property(
     query = getattr(openstackquery, query_type)()
     if not properties_to_select:
         query.select_all()
+    elif webhook:
+        query.select(*properties_to_select, "server_id")
     else:
         query.select(*properties_to_select)
 
@@ -58,9 +60,13 @@ def search_by_property(
         query.group_by(group_by)
 
     query.run(cloud_account, **kwargs)
-
+    payload = query.to_props()
+    payload[0]["cloud_account"] = cloud_account
     if webhook:
-        to_webhook(webhook=webhook, payload=query.to_props())
+        to_webhook(
+            webhook=webhook,
+            payload=payload,
+        )
 
     return {
         "to_html": query.to_html(),
