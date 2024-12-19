@@ -32,7 +32,7 @@ class OpenstackActions(Action):
         # setup openstack connection
         with OpenstackConnection(kwargs["cloud_account"]) as conn:
             kwargs["conn"] = conn
-            del kwargs["cloud_account"]
+            # del kwargs["cloud_account"]
             return action_func(**kwargs)
 
     def parse_configs(self, **kwargs):
