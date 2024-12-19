@@ -11,7 +11,7 @@ def server_migration(
     server_id: str,
     destination_host: Optional[str] = None,
 ) -> None:
-    """Docstring for migrate_server
+    """Docstring for server_migration
 
     :param cloud_account: Cloud account to use for openstack interaction
     :type cloud_account: str
