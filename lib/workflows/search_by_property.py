@@ -44,7 +44,7 @@ def search_by_property(
     if not properties_to_select:
         query.select_all()
     elif webhook:
-        query.select(*properties_to_select, "server_id")
+        query.select(*properties_to_select, "server_id", "server_status")
     else:
         query.select(*properties_to_select)
 
@@ -61,7 +61,6 @@ def search_by_property(
 
     query.run(cloud_account, **kwargs)
     payload = query.to_props()
-    payload[0]["cloud_account"] = cloud_account
     if webhook:
         to_webhook(
             webhook=webhook,
