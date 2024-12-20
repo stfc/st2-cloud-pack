@@ -13,5 +13,4 @@ action:
   ref: "stackstorm_openstack.server.migrate"
   parameters:
     server_id: "{{ trigger.body.server_id }}"
-    cloud_account: "dev"
-    live: true
+    server_status: "{{ trigger.body.server_status }}"

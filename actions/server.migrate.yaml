@@ -7,7 +7,7 @@ parameters:
   timeout:
     default: 5400
   lib_entry_point:
-    default: workflows.migrate_server.server_migration
+    default: openstack_api.openstack_server.snapshot_and_migrate_server
     immutable: true
     type: string
   requires_openstack:
@@ -26,9 +26,16 @@ parameters:
     type: string
     required: true
     description: ID of server to migrate
-  live:
+  server_status:
+    type: string
+    required: true
+    description: Status of the server to migrate
+  dest_host:
+    type: string
+    required: false
+    description: "Optional, host to migrate server to"
+  snapshot:
     type: boolean
     required: true
     default: true
-    description: True to use live migration
 runner_type: python-script
