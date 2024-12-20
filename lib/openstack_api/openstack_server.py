@@ -8,16 +8,18 @@ def snapshot_and_migrate_server(
     conn: Connection,
     server_id: str,
     server_status: str,
+    snapshot: bool,
     dest_host: Optional[str] = None,
 ) -> None:
     """
-    Snapshot a server and then migrate it to a new host
+    Optionally snapshot a server and then migrate it to a new host
     :param conn: Openstack Connection
     :param server_id: Server ID to migrate
     :param server_status: Status of machine to migrate - must be ACTIVE or SHUTOFF
     :param dest_host: Optional host to migrate to, otherwise chosen by scheduler
     """
-    snapshot_server(conn=conn, server_id=server_id)
+    if snapshot:
+        snapshot_server(conn=conn, server_id=server_id)
     if server_status == "ACTIVE":
         live = True
     elif server_status == "SHUTOFF":

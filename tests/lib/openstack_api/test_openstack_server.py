@@ -18,6 +18,7 @@ def test_active_migration(mock_snapshot_server, dest_host):
         server_id=mock_server_id,
         server_status=mock_server_status,
         dest_host=dest_host,
+        snapshot=True,
     )
     mock_snapshot_server.assert_called_once_with(
         conn=mock_connection, server_id=mock_server_id
@@ -42,6 +43,7 @@ def test_shutoff_migration(mock_snapshot_server, dest_host):
         server_id=mock_server_id,
         server_status=mock_server_status,
         dest_host=dest_host,
+        snapshot=True,
     )
     mock_snapshot_server.assert_called_once_with(
         conn=mock_connection, server_id=mock_server_id
@@ -53,7 +55,27 @@ def test_shutoff_migration(mock_snapshot_server, dest_host):
 
 
 @patch("openstack_api.openstack_server.snapshot_server")
+def test_no_snapshot_migration(mock_snapshot_server):
+    """
+    Test migration with no snapshot
+    """
+    mock_connection = MagicMock()
+    mock_server_id = "server1"
+    mock_server_status = "ACTIVE"
+    snapshot_and_migrate_server(
+        conn=mock_connection,
+        server_id=mock_server_id,
+        server_status=mock_server_status,
+        snapshot=False,
+    )
+    mock_snapshot_server.assert_not_called()
+
+
+@patch("openstack_api.openstack_server.snapshot_server")
 def test_migration_fail(mock_snapshot_server):
+    """
+    Test failure of migration when the status is not ACTIVE or SHUTOFF
+    """
     mock_connection = MagicMock()
     mock_server_id = "server1"
     mock_server_status = "TEST"
@@ -65,6 +87,7 @@ def test_migration_fail(mock_snapshot_server):
             conn=mock_connection,
             server_id=mock_server_id,
             server_status=mock_server_status,
+            snapshot=True,
         )
     mock_snapshot_server.assert_called_once_with(
         conn=mock_connection, server_id=mock_server_id
