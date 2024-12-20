@@ -34,4 +34,8 @@ parameters:
     type: string
     required: false
     description: "Optional, host to migrate server to"
+  snapshot:
+    type: boolean
+    required: true
+    default: true
 runner_type: python-script
