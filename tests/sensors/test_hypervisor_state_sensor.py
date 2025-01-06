@@ -6,12 +6,11 @@ from sensors.src.hypervisor_state_sensor import HypervisorStateSensor
 
 @pytest.fixture(name="sensor")
 def state_sensor_fixture():
-    sensor_service = MagicMock()
-    config = {"hypervisor_sensor": {"cloud_account": "dev", "uptime_limit": 180}}
-    poll_interval = 10
-    sensor = HypervisorStateSensor(sensor_service, config, poll_interval)
-    sensor.sensor_service = sensor_service  # So that I dont need two fixtures?
-    return sensor
+    return HypervisorStateSensor(
+        sensor_service=MagicMock(),
+        config={"hypervisor_sensor": {"cloud_account": "dev", "uptime_limit": 180}},
+        poll_interval=10,
+    )
 
 
 @patch("sensors.src.hypervisor_state_sensor.get_hypervisor_state")
@@ -20,7 +19,6 @@ def test_poll(mock_query_hypervisor_state, mock_get_hypervisor_state, sensor):
     """
     Test main function of sensor, polling state of hypervisor state
     """
-    sensor.sensor_service = MagicMock()
     mock_query_hypervisor_state.return_value = [
         {
             "hypervisor_name": "hv1",
