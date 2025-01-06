@@ -20,20 +20,15 @@ def snapshot_and_migrate_server(
     """
     if snapshot:
         snapshot_server(conn=conn, server_id=server_id)
-    if server_status == "ACTIVE":
-        live = True
-    elif server_status == "SHUTOFF":
-        live = False
-    else:
+    if server_status not in ["ACTIVE", "SHUTOFF"]:
         raise ValueError(
             f"Server status: {server_status}. The server must be ACTIVE or SHUTOFF to be migrated"
         )
-    if not live:
-        conn.compute.migrate_server(server=server_id, host=dest_host)
-    else:
-        conn.compute.live_migrate_server(
-            server=server_id, host=dest_host, block_migration=True
-        )
+    if server_status == "SHUTOFF":
+        return conn.compute.migrate_server(server=server_id, host=dest_host)
+    return conn.compute.live_migrate_server(
+        server=server_id, host=dest_host, block_migration=True
+    )
 
 
 def snapshot_server(conn: Connection, server_id: str) -> Image:
