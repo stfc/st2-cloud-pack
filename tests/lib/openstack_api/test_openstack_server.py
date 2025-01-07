@@ -109,7 +109,6 @@ def test_snapshot_server():
     mock_connection.compute.create_server_image.return_value = mock_image
 
     snapshot_server(conn=mock_connection, server_id=mock_server_id)
-
     mock_connection.compute.find_server.assert_called_once_with(
         mock_server_id, all_projects=True
     )
@@ -117,7 +116,7 @@ def test_snapshot_server():
         server=mock_server_id,
         name=f"{mock_server_id}-{current_time}",
         wait=True,
-        timeout=300,
+        timeout=3600,
     )
     mock_connection.image.update_image.assert_called_once_with(
         mock_image, owner=mock_project_id
