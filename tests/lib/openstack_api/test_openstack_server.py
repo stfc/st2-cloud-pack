@@ -89,9 +89,7 @@ def test_migration_fail(mock_snapshot_server):
             server_status=mock_server_status,
             snapshot=True,
         )
-    mock_snapshot_server.assert_called_once_with(
-        conn=mock_connection, server_id=mock_server_id
-    )
+    mock_snapshot_server.assert_not_called()
     mock_connection.compute.live_migrate_server.assert_not_called()
     mock_connection.compute.migrate_server.assert_not_called()
 

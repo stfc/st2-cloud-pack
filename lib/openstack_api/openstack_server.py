@@ -18,12 +18,12 @@ def snapshot_and_migrate_server(
     :param server_status: Status of machine to migrate - must be ACTIVE or SHUTOFF
     :param dest_host: Optional host to migrate to, otherwise chosen by scheduler
     """
-    if snapshot:
-        snapshot_server(conn=conn, server_id=server_id)
     if server_status not in ["ACTIVE", "SHUTOFF"]:
         raise ValueError(
             f"Server status: {server_status}. The server must be ACTIVE or SHUTOFF to be migrated"
         )
+    if snapshot:
+        snapshot_server(conn=conn, server_id=server_id)
     if server_status == "SHUTOFF":
         return conn.compute.migrate_server(server=server_id, host=dest_host)
     return conn.compute.live_migrate_server(
