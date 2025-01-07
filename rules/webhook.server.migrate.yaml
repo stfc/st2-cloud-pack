@@ -9,6 +9,11 @@ trigger:
   parameters:
     url: "migrate-server"
 
+criteria:
+  trigger.body.flavor_id:
+    type: inside
+    pattern: ["l3.nano"]
+
 action:
   ref: "stackstorm_openstack.server.migrate"
   parameters:
