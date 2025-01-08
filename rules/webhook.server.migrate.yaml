@@ -19,3 +19,4 @@ action:
   parameters:
     server_id: "{{ trigger.body.server_id }}"
     server_status: "{{ trigger.body.server_status }}"
+    flavor_id: "{{ trigger.body.flavor_id }}"
