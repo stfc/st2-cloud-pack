@@ -43,8 +43,6 @@ def search_by_property(
     query = getattr(openstackquery, query_type)()
     if not properties_to_select:
         query.select_all()
-    elif webhook == "migrate-server":
-        query.select(*properties_to_select, "server_id", "server_status")
     else:
         query.select(*properties_to_select)
 
@@ -62,7 +60,7 @@ def search_by_property(
     if webhook:
         to_webhook(
             webhook=webhook,
-            payload=query.to_props(),
+            payload=query.select_all().to_props(),
         )
     return {
         "to_html": query.to_html(),
