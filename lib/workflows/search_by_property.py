@@ -56,12 +56,12 @@ def search_by_property(
         query.sort_by(*[(p, "desc") for p in sort_by])
     if group_by:
         query.group_by(group_by)
-
     query.run(cloud_account, **kwargs)
-
     if webhook:
-        to_webhook(webhook=webhook, payload=query.to_props())
-
+        to_webhook(
+            webhook=webhook,
+            payload=query.select_all().to_props(),
+        )
     return {
         "to_html": query.to_html(),
         "to_string": query.to_string(),
