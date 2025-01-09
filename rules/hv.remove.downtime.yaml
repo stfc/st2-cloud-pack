@@ -1,0 +1,23 @@
+---
+name: "hv.remove.downtime"
+pack: "stackstorm_openstack"
+description: "Removes the downtime on a HV once it has successfullly rebooted"
+enabled: true
+
+criteria:
+  trigger.previous_state:
+    type: equals
+    pattern: DRAINED
+  trigger.current_state:
+    type: equals
+    pattern: REBOOTED
+
+trigger:
+  type: "stackstorm_openstack.hypervisor.state_change"
+
+action:
+  ref: "stackstorm_openstack.icinga.remove.downtime"
+  parameters:
+    icinga_account_name: "default"
+    name: "{{ trigger.hypervisor_name }}"
+    object_type: "Host"

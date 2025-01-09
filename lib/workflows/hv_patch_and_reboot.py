@@ -1,6 +1,5 @@
 import datetime
-
-from icinga_api.downtime import schedule_downtime, remove_downtime
+from icinga_api.downtime import schedule_downtime
 from structs.icinga.downtime_details import DowntimeDetails
 from structs.icinga.icinga_account import IcingaAccount
 from structs.ssh.ssh_connection_details import SSHDetails
@@ -37,14 +36,6 @@ def patch_and_reboot(
         duration=end_timestamp - start_timestamp,
     )
     schedule_downtime(icinga_account=icinga_account, details=downtime_details)
-    try:
-        patch_out = ssh_client.run_command_on_host("patch")
-        reboot_out = ssh_client.run_command_on_host("reboot")
-
-    finally:
-        remove_downtime(
-            icinga_account=icinga_account,
-            object_type="Host",
-            object_name=hypervisor_name,
-        )
+    patch_out = ssh_client.run_command_on_host("patch")
+    reboot_out = ssh_client.run_command_on_host("reboot")
     return {"patch_output": patch_out.decode(), "reboot_output": reboot_out.decode()}
