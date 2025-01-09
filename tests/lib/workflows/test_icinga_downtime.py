@@ -2,6 +2,7 @@ from unittest.mock import patch, MagicMock
 from datetime import datetime
 import pytest
 import pytz
+from enums.icinga.icinga_objects import IcingaObject
 from workflows.icinga_downtime import schedule_downtime, remove_downtime
 from structs.icinga.downtime_details import DowntimeDetails
 
@@ -49,7 +50,7 @@ def test_schedule_fixed_downtime(
     )
 
     expected_downtime_details = DowntimeDetails(
-        object_type=object_type,
+        object_type=IcingaObject.HOST,
         object_name=name,
         start_time=expected_start_timestamp,
         end_time=expected_end_timestamp,
@@ -107,7 +108,7 @@ def test_schedule_flexible_downtime(
     )
 
     expected_downtime_details = DowntimeDetails(
-        object_type=object_type,
+        object_type=IcingaObject.HOST,
         object_name=name,
         start_time=expected_start_timestamp,
         end_time=expected_end_timestamp,
@@ -130,5 +131,7 @@ def test_remove_downtime(mock_remove_downtime):
     remove_downtime(icinga_account, object_type, name)
 
     mock_remove_downtime.assert_called_once_with(
-        icinga_account=icinga_account, object_type=object_type, object_name=name
+        icinga_account=icinga_account,
+        object_type=IcingaObject.HOST,
+        object_name=name,
     )

@@ -19,5 +19,5 @@ action:
   ref: "stackstorm_openstack.icinga.remove.downtime"
   parameters:
     icinga_account_name: "default"
-    object_name: "{{ trigger.hypervisor_name }}"
+    name: "{{ trigger.hypervisor_name }}"
     object_type: "Host"
