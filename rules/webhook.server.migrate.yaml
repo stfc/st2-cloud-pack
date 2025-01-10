@@ -11,8 +11,8 @@ trigger:
 
 criteria:
   trigger.body.flavor_id:
-    type: inside
-    pattern: ["l3.nano"]
+    type: regex
+    pattern: (^l3.*)|(^l2.*)
 
 action:
   ref: "stackstorm_openstack.server.migrate"
