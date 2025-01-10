@@ -105,6 +105,7 @@ parameters:
       - "is_enabled"
       - "name"
       - "parent_id"
+      - "null"
   sort_by:
     description: "(Optional) comma-spaced list of project properties to sort by (by ascending only)
     - multiple of the same property will be ignored.
