@@ -10,9 +10,19 @@ trigger:
     url: "migrate-server"
 
 criteria:
-  trigger.body.flavor_id:
+  # Whitelist for groups of flavors
+  # e.g. pattern (^l3.*)|(^l2.*) allows migraion of l3 and l2 flavors
+  trigger.body.flavor_id#1:
     type: regex
     pattern: (^l3.*)|(^l2.*)
+
+  # Blacklist specific flavors from migration
+  # e.g. pattern ["l2.tiny", "l3.large"] will prevent migrations of those flavors
+  # specifically but not all l2 and l3 flavors. Flavors here can still be migrated
+  # manually using the stackstorm_openstack.server.migrate action
+  trigger.body.flavor_id#2:
+    type: ninside
+    pattern: ["l3.micro"]
 
 action:
   ref: "stackstorm_openstack.server.migrate"
