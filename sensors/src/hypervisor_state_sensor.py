@@ -1,4 +1,4 @@
-from openstack_api.openstack_hypervisor import get_hypervisor_state
+from openstack_api.openstack_hypervisor import Hypervisor
 from openstack_query_api.hypervisor_queries import query_hypervisor_state
 from st2reactor.sensor.base import PollingSensor
 
@@ -38,17 +38,16 @@ class HypervisorStateSensor(PollingSensor):
         for hypervisor in data:
             if not isinstance(hypervisor, dict):
                 continue
-            current_state = get_hypervisor_state(
-                hypervisor, uptime_limit=self.uptime_limit
+            hypervisor = Hypervisor().from_dict(hypervisor)
+            current_state = hypervisor.get_hypervisor_state(
+                uptime_limit=self.uptime_limit
             )
 
-            prev_state = self.sensor_service.get_value(
-                name=hypervisor["hypervisor_name"]
-            )
+            prev_state = self.sensor_service.get_value(name=hypervisor.name)
 
             if not prev_state == current_state.name:
                 payload = {
-                    "hypervisor_name": hypervisor["hypervisor_name"],
+                    "hypervisor_name": hypervisor.name,
                     "previous_state": prev_state,
                     "current_state": current_state.name,
                 }
@@ -57,7 +56,7 @@ class HypervisorStateSensor(PollingSensor):
                     payload=payload,
                 )
                 self.sensor_service.set_value(
-                    name=hypervisor["hypervisor_name"], value=current_state.name
+                    name=hypervisor.name, value=current_state.name
                 )
 
     def cleanup(self):
