@@ -13,12 +13,12 @@ def test_active_migration(mock_snapshot_server, dest_host):
     mock_connection = MagicMock()
     mock_server_id = "server1"
     mock_server_status = "ACTIVE"
-    mock_flavor_name = "mock_flavor"
+    mock_flavor_id = "mock_flavor"
     snapshot_and_migrate_server(
         conn=mock_connection,
         server_id=mock_server_id,
         server_status=mock_server_status,
-        flavor_name=mock_flavor_name,
+        flavor_id=mock_flavor_id,
         dest_host=dest_host,
         snapshot=True,
     )
@@ -40,12 +40,12 @@ def test_shutoff_migration(mock_snapshot_server, dest_host):
     mock_connection = MagicMock()
     mock_server_id = "server1"
     mock_server_status = "SHUTOFF"
-    mock_flavor_name = "mock_flavor"
+    mock_flavor_id = "mock_flavor"
     snapshot_and_migrate_server(
         conn=mock_connection,
         server_id=mock_server_id,
         server_status=mock_server_status,
-        flavor_name=mock_flavor_name,
+        flavor_id=mock_flavor_id,
         dest_host=dest_host,
         snapshot=True,
     )
@@ -66,12 +66,12 @@ def test_no_snapshot_migration(mock_snapshot_server):
     mock_connection = MagicMock()
     mock_server_id = "server1"
     mock_server_status = "ACTIVE"
-    mock_flavor_name = "mock_flavor"
+    mock_flavor_id = "mock_flavor"
     snapshot_and_migrate_server(
         conn=mock_connection,
         server_id=mock_server_id,
         server_status=mock_server_status,
-        flavor_name=mock_flavor_name,
+        flavor_id=mock_flavor_id,
         snapshot=False,
     )
     mock_snapshot_server.assert_not_called()
@@ -85,7 +85,7 @@ def test_migration_fail(mock_snapshot_server):
     mock_connection = MagicMock()
     mock_server_id = "server1"
     mock_server_status = "TEST"
-    mock_flavor_name = "mock_flavor"
+    mock_flavor_id = "mock_flavor"
     with pytest.raises(
         ValueError,
         match="Server status: TEST. The server must be ACTIVE or SHUTOFF to be migrated",
@@ -94,7 +94,7 @@ def test_migration_fail(mock_snapshot_server):
             conn=mock_connection,
             server_id=mock_server_id,
             server_status=mock_server_status,
-            flavor_name=mock_flavor_name,
+            flavor_id=mock_flavor_id,
             snapshot=True,
         )
     mock_snapshot_server.assert_not_called()
@@ -135,14 +135,14 @@ def test_block_gpu_migration():
     mock_connection = MagicMock()
     mock_server_id = "server1"
     mock_server_status = "SHUTOFF"
-    mock_flavor_name = "g-a100-80gb-2022.x2"
+    mock_flavor_id = "g-a100-80gb-2022.x2"
 
     with pytest.raises(ValueError):
         snapshot_and_migrate_server(
             conn=mock_connection,
             server_id=mock_server_id,
             server_status=mock_server_status,
-            flavor_name=mock_flavor_name,
+            flavor_id=mock_flavor_id,
             dest_host=None,
             snapshot=True,
         )
