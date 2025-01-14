@@ -34,15 +34,20 @@ class AlertManagerAccount:
         :param alertmanager_account_name: The account name to get from the config
         :raises ValueError: When the pack config does not have alertmanager_accounts defined
         :raises KeyError: When the account does not appear in the given config
-        :return: (Dictionary) alertmanager account names and properties
+        :return: alertmanager account names and properties
+        :rtype: dictionary
         """
         alertmanager_accounts_config = pack_config.get("alertmanager_accounts", None)
 
         if alertmanager_accounts_config is None:
-            raise ValueError("Pack config must contain the 'alertmanager_accounts' field")
+            raise ValueError(
+                "Pack config must contain the 'alertmanager_accounts' field"
+            )
 
         try:
-            key_value = {config["name"]: config for config in alertmanager_accounts_config}
+            key_value = {
+                config["name"]: config for config in alertmanager_accounts_config
+            }
             account_data = key_value[alertmanager_account_name]
         except KeyError as exc:
             raise KeyError(
