@@ -12,6 +12,8 @@ def get_hypervisor_state(hypervisor: Dict, uptime_limit: int) -> HypervisorState
     if not valid_state(hypervisor):
         return HypervisorState.UNKNOWN
 
+    if hypervisor["hypervisor_state"] == "down":
+        return HypervisorState.DOWN
     hv_state = {
         "uptime": hypervisor["hypervisor_uptime_days"] < uptime_limit,
         "enabled": hypervisor["hypervisor_status"] == "enabled",
