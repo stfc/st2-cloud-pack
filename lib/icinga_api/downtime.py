@@ -68,8 +68,8 @@ def remove_downtime(
         raise MissingMandatoryParamError("Missing object name")
 
     payload = {
-        "type": object_type.name.capitalize(),
-        "filter": f'{object_type.name.lower()}.name=="{object_name}"',
+        "type": object_type.capitalize(),
+        "filter": f'{object_type.lower()}.name=="{object_name}"',
         "author": "StackStorm",  # Only remove downtimes created by StackStorm
     }
 

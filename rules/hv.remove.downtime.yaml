@@ -7,7 +7,7 @@ enabled: true
 criteria:
   trigger.previous_state:
     type: equals
-    pattern: DRAINED
+    pattern: DOWN
   trigger.current_state:
     type: equals
     pattern: REBOOTED
@@ -19,5 +19,5 @@ action:
   ref: "stackstorm_openstack.icinga.remove.downtime"
   parameters:
     icinga_account_name: "default"
-    name: "{{ trigger.hypervisor_name }}"
+    object_name: "{{ trigger.hypervisor_name }}"
     object_type: "Host"

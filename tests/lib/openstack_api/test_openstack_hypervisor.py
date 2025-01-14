@@ -1,5 +1,6 @@
 from enums.hypervisor_states import HypervisorState
 from openstack_api.openstack_hypervisor import get_hypervisor_state
+import pytest
 
 
 def test_get_state_running():
@@ -58,68 +59,97 @@ def test_get_state_drained():
     assert state == HypervisorState.DRAINED
 
 
-def test_get_state_unkown_status():
+def test_get_state_rebooted():
     """
-    Test hypervisor state is unknown when missing status
-    """
-    hypervisor = {
-        "hypervisor_uptime_days": 100,
-        "hypervisor_status": None,
-        "hypervisor_state": "up",
-        "hypervisor_server_count": 0,
-    }
-    state = get_hypervisor_state(hypervisor, 60)
-    assert state == HypervisorState.UNKNOWN
-
-
-def test_get_state_unkown_state():
-    """
-    Test hypervisor state is unknown when missing state
+    Test hypervisor state is rebooted for given variables
     """
     hypervisor = {
-        "hypervisor_uptime_days": 100,
-        "hypervisor_status": "enabled",
-        "hypervisor_state": None,
-        "hypervisor_server_count": 0,
-    }
-    state = get_hypervisor_state(hypervisor, 60)
-    assert state == HypervisorState.UNKNOWN
-
-
-def test_get_state_unkown_uptime():
-    """
-    Test hypervisor state is unknown when missing uptime
-    """
-    hypervisor = {
-        "hypervisor_uptime_days": None,
-        "hypervisor_status": "enabled",
-        "hypervisor_state": "up",
-        "hypervisor_server_count": 0,
-    }
-    state = get_hypervisor_state(hypervisor, 60)
-    assert state == HypervisorState.UNKNOWN
-
-
-def test_get_state_unkown_server_count():
-    """
-    Test hypervisor state is unknown when missing server count
-    """
-    hypervisor = {
-        "hypervisor_uptime_days": 100,
-        "hypervisor_status": "enabled",
-        "hypervisor_state": "up",
-        "hypervisor_server_count": None,
-    }
-    state = get_hypervisor_state(hypervisor, 60)
-    assert state == HypervisorState.UNKNOWN
-
-
-def test_get_state_no_matching_state():
-    hypervisor = {
-        "hypervisor_uptime_days": 60,
+        "hypervisor_uptime_days": 0,
         "hypervisor_status": "disabled",
-        "hypervisor_state": "down",
-        "hypervisor_server_count": 10,
+        "hypervisor_state": "up",
+        "hypervisor_server_count": 0,
     }
-    result = get_hypervisor_state(hypervisor, 60)
-    assert result == HypervisorState.UNKNOWN
+    state = get_hypervisor_state(hypervisor, 60)
+    assert state == HypervisorState.REBOOTED
+
+
+def test_get_state_empty():
+    """
+    Test hypervisor state is empty for given variables
+    """
+    hypervisor = {
+        "hypervisor_uptime_days": 40,
+        "hypervisor_status": "enabled",
+        "hypervisor_state": "up",
+        "hypervisor_server_count": 0,
+    }
+    state = get_hypervisor_state(hypervisor, 60)
+    assert state == HypervisorState.EMPTY
+
+
+@pytest.mark.parametrize(
+    "hypervisor",
+    [
+        {
+            "hypervisor_uptime_days": 40,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "down",
+            "hypervisor_server_count": 0,
+        },
+        {
+            "hypervisor_uptime_days": 100,
+            "hypervisor_status": "disabled",
+            "hypervisor_state": "down",
+            "hypervisor_server_count": 0,
+        },
+        {
+            "hypervisor_uptime_days": 40,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "down",
+            "hypervisor_server_count": 2,
+        },
+    ],
+)
+def test_get_state_down(hypervisor):
+    """
+    Test hypervisor state is drained for given variables
+    """
+    state = get_hypervisor_state(hypervisor, 60)
+    assert state == HypervisorState.DOWN
+
+
+@pytest.mark.parametrize(
+    "hypervisor",
+    [
+        {
+            "hypervisor_uptime_days": None,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "down",
+            "hypervisor_server_count": 0,
+        },
+        {
+            "hypervisor_uptime_days": 100,
+            "hypervisor_status": None,
+            "hypervisor_state": "down",
+            "hypervisor_server_count": 0,
+        },
+        {
+            "hypervisor_uptime_days": 40,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": None,
+            "hypervisor_server_count": 2,
+        },
+        {
+            "hypervisor_uptime_days": 40,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": None,
+            "hypervisor_server_count": None,
+        },
+    ],
+)
+def test_get_unkown_status(hypervisor):
+    """
+    Test hypervisor state is unknown when missing parameters
+    """
+    state = get_hypervisor_state(hypervisor, 60)
+    assert state == HypervisorState.UNKNOWN

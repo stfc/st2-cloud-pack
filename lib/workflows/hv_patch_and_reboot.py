@@ -1,4 +1,5 @@
 import datetime
+from enums.icinga.icinga_objects import IcingaObject
 from icinga_api.downtime import schedule_downtime
 from structs.icinga.downtime_details import DowntimeDetails
 from structs.icinga.icinga_account import IcingaAccount
@@ -27,7 +28,7 @@ def patch_and_reboot(
     start_timestamp = int(start_time.timestamp())
     end_timestamp = int(end_time.timestamp())
     downtime_details = DowntimeDetails(
-        object_type="Host",
+        object_type=IcingaObject.HOST,
         object_name=hypervisor_name,
         start_time=start_timestamp,
         end_time=end_timestamp,
