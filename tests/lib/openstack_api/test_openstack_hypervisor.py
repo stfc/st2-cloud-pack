@@ -106,13 +106,13 @@ def test_get_state_empty():
             "hypervisor_uptime_days": 40,
             "hypervisor_status": "enabled",
             "hypervisor_state": "down",
-            "hypervisor_server_count": 2,
+            "hypervisor_server_count": None,
         },
     ],
 )
 def test_get_state_down(hypervisor):
     """
-    Test hypervisor state is down for given variables
+    Test hypervisor state is down for given variables, even missing ones.
     """
     state = get_hypervisor_state(hypervisor, 60)
     assert state == HypervisorState.DOWN
@@ -163,7 +163,7 @@ def test_get_unkown_status(hypervisor):
 
 def test_missing():
     """
-    Test hypervisor state is missing for a missing value in class
+    Test hypervisor state is missing for a missing value in hv_state.
     """
     mock_hv_state = {
         "uptime": True,

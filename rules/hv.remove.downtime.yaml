@@ -6,8 +6,8 @@ enabled: true
 
 criteria:
   trigger.previous_state:
-    type: equals
-    pattern: DOWN
+    type: regex
+    pattern: (DOWN|DRAINED)
   trigger.current_state:
     type: equals
     pattern: REBOOTED
