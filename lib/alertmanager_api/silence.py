@@ -49,11 +49,11 @@ class AlertManagerAPI:
             msg = "Missing silence instance name"
             self.log.critical(msg)
             raise MissingMandatoryParamError(msg)
-        if not silence.start_time:
+        if not silence.start_time_dt:
             msg = "Missing silence start time"
             self.log.critical(msg)
             raise MissingMandatoryParamError(msg)
-        if not silence.end_time:
+        if not silence.end_time_dt:
             msg = "Missing silence end time"
             self.log.critical(msg)
             raise MissingMandatoryParamError(msg)
@@ -74,8 +74,8 @@ class AlertManagerAPI:
                     "isRegex": False,
                 }
             ],
-            "startsAt": silence.start_time,
-            "endsAt": silence.end_time,
+            "startsAt": silence.start_time_str,
+            "endsAt": silence.end_time_str,
             "createdBy": silence.author,
             "comment": silence.comment,
         }
