@@ -30,6 +30,10 @@ parameters:
     type: string
     required: true
     description: Status of the server to migrate
+  flavor_id:
+    type: string
+    required: true
+    description: Flavor of the server to migrate
   dest_host:
     type: string
     required: false

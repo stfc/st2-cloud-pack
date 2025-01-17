@@ -8,6 +8,7 @@ def snapshot_and_migrate_server(
     conn: Connection,
     server_id: str,
     server_status: str,
+    flavor_id: str,
     snapshot: bool,
     dest_host: Optional[str] = None,
 ) -> None:
@@ -16,8 +17,15 @@ def snapshot_and_migrate_server(
     :param conn: Openstack Connection
     :param server_id: Server ID to migrate
     :param server_status: Status of machine to migrate - must be ACTIVE or SHUTOFF
+    :param flavor_name: Server flavor name
     :param dest_host: Optional host to migrate to, otherwise chosen by scheduler
     """
+
+    if flavor_id.startswith("g-"):
+        raise ValueError(
+            f"Attempted to move GPU flavor, {flavor_id}, which is not allowed!"
+        )
+
     if server_status not in ["ACTIVE", "SHUTOFF"]:
         raise ValueError(
             f"Server status: {server_status}. The server must be ACTIVE or SHUTOFF to be migrated"
