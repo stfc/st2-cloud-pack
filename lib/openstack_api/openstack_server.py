@@ -57,3 +57,27 @@ def snapshot_server(conn: Connection, server_id: str) -> Image:
     conn.image.update_image(image, owner=project_id)
 
     return image
+
+
+def build_server(
+    conn: Connection,
+    server_name: str,
+    flavor_name: str,
+    image_name: str,
+    network_name: str,
+    hypervisor_hostname: Optional[str] = None,
+):
+
+    conn.compute_api_version = "2.74"
+
+    flavor = conn.compute.find_flavor(flavor_name)
+    image = conn.image.find_image(image_name)
+    network = conn.network.find_network(network_name)
+
+    conn.compute.create_server(
+        name=server_name,
+        flavor_id=flavor.id,
+        networks=[{"uuid": network.id}],
+        image_id=image.id,
+        hypervisor_hostname=hypervisor_hostname,
+    )
