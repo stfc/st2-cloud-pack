@@ -30,6 +30,19 @@ class HypervisorState(Enum):
         "state": True,
         "servers": False,
     }
+    REBOOTED = {
+        "uptime": True,
+        "enabled": False,
+        "state": True,
+        "servers": False,
+    }
+    EMPTY = {
+        "uptime": True,
+        "enabled": True,
+        "state": True,
+        "servers": False,
+    }
+    DOWN = auto()
     UNKNOWN = auto()
 
     @classmethod

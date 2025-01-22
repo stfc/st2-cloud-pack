@@ -1,5 +1,8 @@
 import datetime
 from unittest.mock import MagicMock, patch
+
+from paramiko import SSHException
+from enums.icinga.icinga_objects import IcingaObject
 from structs.icinga.downtime_details import DowntimeDetails
 from structs.ssh.ssh_connection_details import SSHDetails
 from workflows.hv_patch_and_reboot import patch_and_reboot
@@ -8,9 +11,9 @@ import pytest
 
 @patch("workflows.hv_patch_and_reboot.schedule_downtime")
 @patch("workflows.hv_patch_and_reboot.SSHConnection")
-@patch("workflows.hv_patch_and_reboot.remove_downtime")
 def test_successful_patch_and_reboot(
-    mock_remove_downtime, mock_ssh_conn, mock_schedule_downtime
+    mock_ssh_conn,
+    mock_schedule_downtime,
 ):
     """
     Test successful running of patch and reboot workflow
@@ -35,7 +38,7 @@ def test_successful_patch_and_reboot(
     mock_schedule_downtime.assert_called_once_with(
         icinga_account=icinga_account,
         details=DowntimeDetails(
-            object_type="Host",
+            object_type=IcingaObject.HOST,
             object_name=mock_hypervisor_name,
             start_time=mock_start_timestamp,
             end_time=mock_end_timestamp,
@@ -56,12 +59,6 @@ def test_successful_patch_and_reboot(
     assert result["patch_output"] == "Patch command output"
     assert result["reboot_output"] == "Reboot command output"
 
-    mock_remove_downtime.assert_called_once_with(
-        icinga_account=icinga_account,
-        object_type="Host",
-        object_name=mock_hypervisor_name,
-    )
-
 
 @patch("workflows.hv_patch_and_reboot.schedule_downtime")
 @patch("workflows.hv_patch_and_reboot.SSHConnection")
@@ -78,7 +75,6 @@ def test_failed_schedule_downtime(
     mock_hypervisor_name = "test_host"
     mock_schedule_downtime.side_effect = Exception
 
-    # test that schedule downtime is called once with expected parameters
     with pytest.raises(Exception):
         patch_and_reboot(
             icinga_account,
@@ -99,10 +95,10 @@ def test_failed_schedule_downtime(
     mock_remove_downtime.assert_not_called()
 
 
+@patch("workflows.hv_patch_and_reboot.remove_downtime")
 @patch("workflows.hv_patch_and_reboot.schedule_downtime")
 @patch("workflows.hv_patch_and_reboot.SSHConnection")
-@patch("workflows.hv_patch_and_reboot.remove_downtime")
-def test_failed_ssh(mock_remove_downtime, mock_ssh_conn, mock_schedule_downtime):
+def test_failed_ssh(mock_ssh_conn, mock_schedule_downtime, mock_remove_downtime):
     """
     Test unsuccessful running of patch and reboot workflow - where either ssh command
     fails
@@ -110,7 +106,7 @@ def test_failed_ssh(mock_remove_downtime, mock_ssh_conn, mock_schedule_downtime)
     icinga_account = MagicMock()
     mock_hypervisor_name = "test_host"
     mock_private_key_path = "/home/stackstorm/.ssh/id_rsa"
-    mock_ssh_conn.return_value.run_command_on_host.side_effect = Exception
+    mock_ssh_conn.return_value.run_command_on_host.side_effect = SSHException
 
     with pytest.raises(Exception):
         patch_and_reboot(
@@ -133,7 +129,7 @@ def test_failed_ssh(mock_remove_downtime, mock_ssh_conn, mock_schedule_downtime)
     mock_schedule_downtime.assert_called_once_with(
         icinga_account=icinga_account,
         details=DowntimeDetails(
-            object_type="Host",
+            object_type=IcingaObject.HOST,
             object_name=mock_hypervisor_name,
             start_time=mock_start_timestamp,
             end_time=mock_end_timestamp,
@@ -144,6 +140,6 @@ def test_failed_ssh(mock_remove_downtime, mock_ssh_conn, mock_schedule_downtime)
     )
     mock_remove_downtime.assert_called_once_with(
         icinga_account=icinga_account,
-        object_type="Host",
+        object_type=IcingaObject.HOST,
         object_name=mock_hypervisor_name,
     )
