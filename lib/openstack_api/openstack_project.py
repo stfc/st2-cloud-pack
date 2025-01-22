@@ -18,7 +18,7 @@ def create_project(
     :param project_details: A datastructure containing all the project details
     :return: A clouds project, or None if it was unsuccessful
     """
-    # domain_id can be blank, we will create a project in the default domain
+
     if not project_details.name:
         raise MissingMandatoryParamError("The project name is missing")
     if not project_details.email:
@@ -32,6 +32,11 @@ def create_project(
         "description": project_details.description,
         "is_enabled": project_details.is_enabled,
     }
+
+    # create project in a specific domain if ID given, otherwise default domain
+    if project_details.domain_id:
+        create_project_kwargs["domain_id"] = project_details.domain_id
+
     if project_details.parent_id:
         create_project_kwargs["parent_id"] = project_details.parent_id
 
