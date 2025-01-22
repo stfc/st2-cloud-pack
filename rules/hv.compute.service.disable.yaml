@@ -1,0 +1,24 @@
+---
+name: "hv.compute.service.disable"
+pack: "stackstorm_openstack"
+description: "Triggers the disable action when the hypervisor state changes from "RUNNING" to "PENDING MAINTENANCE"
+enabled: false # Disable
+
+criteria:
+  trigger.previous_state:
+    type: equals
+    pattern: RUNNING
+  trigger.current_state:
+    type: equals
+    pattern: PENDING MAINTENANCE
+
+trigger:
+  type: "stackstorm_openstack.hypervisor.state_change"
+
+action:
+  ref: "stackstorm_openstack.hv.compute.service.disable"
+  parameters:
+    cloud_account: "dev"
+    hypervisor_name: "{{ trigger.hypervisor_name }}"
+    disabled_reason: "Stackstorm Patch Reboot Maintenance"
+
