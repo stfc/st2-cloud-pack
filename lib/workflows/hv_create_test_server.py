@@ -8,23 +8,15 @@ def create_test_server(conn: Connection, hypervisor_name: str, test_all_flavors:
     flavors = get_avaliable_flavors(conn, hypervisor_name)
     images = conn.image.images(status="active")
 
-    if test_all_flavors:
-        for flavor in flavors:
-            server = build_server(
-                conn,
-                "stackstorm-test-server",
-                flavor,
-                "ubuntu-focal-20.04-nogui",
-                "Internal",
-                hypervisor_name,
-            )
-            delete_server(conn, server.id)
-    server = build_server(
-        conn,
-        "stackstorm-test-server",
-        random.choice(flavors),
-        "ubuntu-focal-20.04-nogui",
-        "Internal",
-        hypervisor_name,
-    )
-    delete_server(conn, server.id)
+    if not test_all_flavors:
+        flavors = [random.choice(flavors)]
+    for flavor in flavors:
+        server = build_server(
+            conn,
+            "stackstorm-test-server",
+            flavor,
+            "ubuntu-focal-20.04-nogui",
+            "Internal",
+            hypervisor_name,
+        )
+        delete_server(conn, server.id)
