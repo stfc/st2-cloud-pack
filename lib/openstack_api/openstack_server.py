@@ -67,17 +67,20 @@ def build_server(
     network_name: str,
     hypervisor_hostname: Optional[str] = None,
 ):
-
-    conn.compute_api_version = "2.74"
-
     flavor = conn.compute.find_flavor(flavor_name)
     image = conn.image.find_image(image_name)
     network = conn.network.find_network(network_name)
 
-    conn.compute.create_server(
-        name=server_name,
-        flavor_id=flavor.id,
-        networks=[{"uuid": network.id}],
-        image_id=image.id,
-        hypervisor_hostname=hypervisor_hostname,
+    server = conn.compute.create_server(
+        **{
+            "name": server_name,
+            "imageRef": image.id,
+            "flavorRef": flavor.id,
+            "networks": [{"uuid": network.id}],
+            "hypervisor": hypervisor_hostname,
+        }
+    )
+
+    conn.compute.wait_for_server(
+        server, status="ACTIVE", failures=None, interval=5, wait=300
     )

@@ -1,0 +1,34 @@
+---
+description: Create a new server
+enabled: true
+entry_point: src/openstack_actions.py
+name: hv.create.test.server
+parameters:
+  timeout:
+    default: 5400
+  lib_entry_point:
+    default: workflows.hv_create_test_server.create_test_server
+    immutable: true
+    type: string
+  requires_openstack:
+    default: true
+    immutable: true
+    type: boolean
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  hypervisor_name:
+    type: string
+    required: true
+    description: Name of server
+  test_all_flavors:
+    type: boolean
+    description: Test all avaliable flavors for the hypervisor, otherwise test random flavor
+    default: false
+    required: true
+runner_type: python-script
