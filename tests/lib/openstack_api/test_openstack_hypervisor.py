@@ -17,16 +17,27 @@ def test_get_state_running():
     assert state == HypervisorState.RUNNING
 
 
-def test_get_state_pending_maintenance():
+@pytest.mark.parametrize(
+    "hypervisor",
+    [
+        {
+            "hypervisor_uptime_days": 70,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_server_count": 0,
+        },
+        {
+            "hypervisor_uptime_days": 100,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_server_count": 12,
+        },
+    ],
+)
+def test_get_state_pending_maintenance(hypervisor):
     """
-    Test hypervisor state is pending maintenace for given variables
+    Test hypervisor state is pending maintenace for given variables, even if the hv is empty
     """
-    hypervisor = {
-        "hypervisor_uptime_days": 100,
-        "hypervisor_status": "enabled",
-        "hypervisor_state": "up",
-        "hypervisor_server_count": 5,
-    }
     state = get_hypervisor_state(hypervisor, 60)
     assert state == HypervisorState.PENDING_MAINTENANCE
 

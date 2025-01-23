@@ -12,12 +12,6 @@ class HypervisorState(Enum):
         "state": True,
         "servers": True,
     }
-    PENDING_MAINTENANCE = {
-        "uptime": False,
-        "enabled": True,
-        "state": True,
-        "servers": True,
-    }
     DRAINING = {
         "uptime": False,
         "enabled": False,
@@ -42,6 +36,7 @@ class HypervisorState(Enum):
         "state": True,
         "servers": False,
     }
+    PENDING_MAINTENANCE = auto()
     DOWN = auto()
     UNKNOWN = auto()
 
