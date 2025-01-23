@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional
 from openstack.connection import Connection
 from openstack.compute.v2.image import Image
+from openstack.compute.v2.server import Server
 
 
 def snapshot_and_migrate_server(
@@ -66,7 +67,7 @@ def build_server(
     image_name: str,
     network_name: str,
     hypervisor_hostname: Optional[str] = None,
-):
+) -> Server:
     flavor = conn.compute.find_flavor(flavor_name)
     image = conn.image.find_image(image_name)
     network = conn.network.find_network(network_name)
@@ -84,3 +85,13 @@ def build_server(
     conn.compute.wait_for_server(
         server, status="ACTIVE", failures=None, interval=5, wait=300
     )
+    return server
+
+
+def delete_server(
+    conn: Connection, server_id: str, force: Optional[bool] = False
+) -> None:
+    server = conn.compute.find_server(server_id)
+    conn.compute.delete_server(server, force)
+
+    conn.compute.wait_for_delete(server, interval=5, wait=300)
