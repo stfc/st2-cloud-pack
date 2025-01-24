@@ -47,7 +47,7 @@ def create_jasmin_external_project(
     project_immutable: Optional[bool] = None,
     parent_id: Optional[str] = None,
     admin_user_list: Optional[List[str]] = None,
-    jasmin_user_list: Optional[List[str]] = None,
+    jasmin_user_list: List[str] = None,
 ):
     """
     create an external project
@@ -64,13 +64,11 @@ def create_jasmin_external_project(
     :param project_immutable: (Optional) A boolean representing if project is immutable (True) or not (False)
     :param parent_id: (Optional) A string for parent project
     :param admin_user_list: (Optional) A list of strings to add as admins to the project
-    :param jasmin_user_list: (Optional) A list of strings to add as regular users (jasmin domain)
+    :param jasmin_user_list: A list of strings to add as regular users (jasmin domain)
     """
+
     if not admin_user_list:
         admin_user_list = []
-
-    if not jasmin_user_list:
-        jasmin_user_list = []
 
     project = create_project(
         conn,
@@ -97,7 +95,7 @@ def create_jasmin_external_project(
             has_external_router=False,
         ),
     )
-
+    # TODO Work out networking object creation
     router = create_router(
         conn,
         RouterDetails(
@@ -108,7 +106,7 @@ def create_jasmin_external_project(
             is_distributed=False,
         ),
     )
-
+    # TODO Work out networking object creation
     subnet = create_subnet(
         conn,
         network_identifier=network["id"],
@@ -116,14 +114,14 @@ def create_jasmin_external_project(
         subnet_description="",
         dhcp_enabled=True,
     )
-
+    # TODO Work out networking object creation
     add_interface_to_router(
         conn,
         project_identifier=project["id"],
         router_identifier=router["id"],
         subnet_identifier=subnet["id"],
     )
-
+    # TODO Work out networking object creation
     # wait for default security group
     refresh_security_groups(conn, project["id"])
 
@@ -135,7 +133,7 @@ def create_jasmin_external_project(
             num_security_group_rules=number_of_security_group_rules,
         ),
     )
-
+    # TODO Work out networking object creation
     # create default security group rules
     create_external_security_group_rules(
         conn, project_identifier=project["id"], security_group_identifier="default"
