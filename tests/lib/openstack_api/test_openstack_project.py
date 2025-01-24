@@ -82,6 +82,7 @@ def test_create_project_successful_no_domain_id():
     )
     assert res == mock_conn.identity.create_project.return_value
 
+
 def test_create_project_successful_no_parent_id_and_not_immutable():
     """
     Tests that create project works
@@ -100,7 +101,11 @@ def test_create_project_successful_no_parent_id_and_not_immutable():
     res = create_project(mock_conn, mock_project_details)
 
     mock_conn.identity.create_project.assert_called_once_with(
-        name="foo", description="bar", domain_id="buzz", is_enabled=True, tags=["test@test.com"]
+        name="foo",
+        description="bar",
+        domain_id="buzz",
+        is_enabled=True,
+        tags=["test@test.com"],
     )
     assert res == mock_conn.identity.create_project.return_value
 
