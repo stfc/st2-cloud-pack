@@ -17,6 +17,7 @@ def test_default_serialization(domain):
     """
     assert UserDomains.from_string(domain) is UserDomains.DEFAULT
 
+
 @pytest.mark.parametrize("domain", ["jasmin", "JaSmIn", "JASMIN"])
 def test_jasmin_serialization(domain):
     """
