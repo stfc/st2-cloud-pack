@@ -1,7 +1,7 @@
 ---
-name: "hv.remove.downtime"
+name: "hv.post.reboot"
 pack: "stackstorm_openstack"
-description: "Removes the downtime on a HV once it has successfullly rebooted"
+description: "Removes the scheduled downtime, removes the alertmanager silence and enables the hv in openstack when the hv is back up."
 enabled: true
 
 criteria:
@@ -16,8 +16,7 @@ trigger:
   type: "stackstorm_openstack.hypervisor.state_change"
 
 action:
-  ref: "stackstorm_openstack.icinga.remove.downtime"
+  ref: "stackstorm_openstack.hv.post.reboot"
   parameters:
     icinga_account_name: "default"
     name: "{{ trigger.hypervisor_name }}"
-    object_type: "Host"

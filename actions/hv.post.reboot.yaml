@@ -1,0 +1,20 @@
+---
+description: Post reboot action
+enabled: true
+entry_point: src/openstack_actions.py
+name: hv.post.reboot
+parameters:
+  name:
+    type: string
+    description: Name of host in Icinga
+    required: true
+  lib_entry_point:
+    type: string
+    default: workflows.hv_post_reboot.post_reboot
+    immutable: true
+  icinga_account_name:
+    type: string
+    description: "Name of Icinga Account to use. Must be configured in in the pack settings."
+    required: true
+    default: "default"
+runner_type: python-script
