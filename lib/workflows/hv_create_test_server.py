@@ -1,12 +1,12 @@
 import random
 
 from openstack.connection import Connection
-from openstack_api.openstack_hypervisor import get_avaliable_flavors
+from openstack_api.openstack_hypervisor import get_available_flavors
 from openstack_api.openstack_server import build_server, delete_server
 
 
 def create_test_server(conn: Connection, hypervisor_name: str, test_all_flavors: bool):
-    flavors = get_avaliable_flavors(conn, hypervisor_name)
+    flavors = get_available_flavors(conn, hypervisor_name)
 
     if not test_all_flavors:
         flavors = [random.choice(flavors)]

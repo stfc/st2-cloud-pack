@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 from enums.hypervisor_states import HypervisorState
 from openstack_api.openstack_hypervisor import (
-    get_avaliable_flavors,
+    get_available_flavors,
     get_hypervisor_state,
 )
 import pytest
@@ -212,7 +212,7 @@ def test_avaliable_flavors():
     mock_conn.compute.aggregates.return_value = [mock_aggregate_1, mock_aggregate_2]
     mock_conn.compute.flavors.return_value = [mock_flavor_1, mock_flavor_2]
 
-    res = get_avaliable_flavors(mock_conn, "hvxyz.nubes.rl.ac.uk")
+    res = get_available_flavors(mock_conn, "hvxyz.nubes.rl.ac.uk")
 
     mock_conn.compute.aggregates.assert_called_once()
 

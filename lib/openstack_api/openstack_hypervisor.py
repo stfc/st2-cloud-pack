@@ -50,7 +50,7 @@ def valid_state(state) -> bool:
     return True
 
 
-def get_avaliable_flavors(conn: Connection, hypervisor_name: str):
+def get_available_flavors(conn: Connection, hypervisor_name: str):
     available_flavors = []
     for agg in conn.compute.aggregates():
         hosttype = agg.metadata.get("hosttype")
