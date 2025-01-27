@@ -2,7 +2,7 @@
 name: "hv.post.reboot"
 pack: "stackstorm_openstack"
 description: "Removes the scheduled downtime, removes the alertmanager silence and enables the hv in openstack when the hv is back up."
-enabled: true
+enabled: false
 
 criteria:
   trigger.previous_state:
@@ -20,3 +20,4 @@ action:
   parameters:
     icinga_account_name: "default"
     name: "{{ trigger.hypervisor_name }}"
+    cloud_account: "dev"

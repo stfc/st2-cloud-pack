@@ -17,4 +17,12 @@ parameters:
     description: "Name of Icinga Account to use. Must be configured in in the pack settings."
     required: true
     default: "default"
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
 runner_type: python-script
