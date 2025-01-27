@@ -55,7 +55,7 @@ def test_create_jasmin_external_project(
     mock_conn = MagicMock()
     project_name = "Test Project"
     project_email = "test@example.com"
-    domain_id = "test123"
+    domain = "test-domain"
     project_description = "Test Description"
     network_name = "External Network"
     subnet_name = "External Subnet"
@@ -72,7 +72,7 @@ def test_create_jasmin_external_project(
         mock_conn,
         project_name,
         project_email,
-        domain_id,
+        domain,
         project_description,
         network_name,
         subnet_name,
@@ -91,7 +91,7 @@ def test_create_jasmin_external_project(
         ProjectDetails(
             name=project_name,
             email=project_email,
-            domain_id=domain_id,
+            domain=domain,
             description=project_description,
             immutable=project_immutable,
             parent_id=parent_id,
@@ -256,7 +256,7 @@ def test_create_jasmin_external_project_no_admin_users(
     mock_conn = MagicMock()
     project_name = "Test Project"
     project_email = "test@example.com"
-    domain_id = "test123"
+    domain = "test-domain"
     project_description = "Test Description"
     network_name = "External Network"
     subnet_name = "External Subnet"
@@ -273,7 +273,7 @@ def test_create_jasmin_external_project_no_admin_users(
         mock_conn,
         project_name,
         project_email,
-        domain_id,
+        domain,
         project_description,
         network_name,
         subnet_name,
@@ -292,7 +292,7 @@ def test_create_jasmin_external_project_no_admin_users(
         ProjectDetails(
             name=project_name,
             email=project_email,
-            domain_id=domain_id,
+            domain=domain,
             description=project_description,
             immutable=project_immutable,
             parent_id=parent_id,

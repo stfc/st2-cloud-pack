@@ -45,6 +45,20 @@ def test_create_project_invalid_email_throws():
         create_project(mock_conn, mock_project_details)
 
 
+def test_create_project_domain_missing_throws():
+    """
+    Tests calling the API wrapper without a domain will throw
+    """
+    mock_project_details = MagicMock()
+    mock_project_details.name = "foo"
+    mock_project_details.email = "test@test.com"
+    mock_project_details.domain = None
+
+    mock_conn = MagicMock()
+    with pytest.raises(ValueError):
+        create_project(mock_conn, mock_project_details)
+
+
 def test_create_project_forwards_error():
     """
     Tests that create_project re-throws ConflictException error
@@ -60,14 +74,34 @@ def test_create_project_forwards_error():
         create_project(mock_conn, mock_project_details)
 
 
-def test_create_project_successful_no_domain_id():
+def test_get_domain_called():
+    """
+    Tests that get_domain is called when creating a project
+    """
+
+    mock_project_details = MagicMock()
+    mock_project_details.name = "foo"
+    mock_project_details.description = "bar"
+    mock_project_details.domain = "test-domain"
+    mock_project_details.is_enabled = True
+    mock_project_details.email = "test@test.com"
+    mock_project_details.parent_id = None
+    mock_project_details.immutable = False
+
+    mock_conn = MagicMock()
+
+    create_project(mock_conn, mock_project_details)
+    mock_conn.identity.get_domain.assert_called_once_with("test-domain")
+
+
+def test_create_project_successful():
     """
     Tests that create project works without a domain id
     """
     mock_project_details = MagicMock()
     mock_project_details.name = "foo"
     mock_project_details.description = "bar"
-    mock_project_details.domain_id = None
+    mock_project_details.domain = "test-domain"
     mock_project_details.is_enabled = True
     mock_project_details.email = "test@test.com"
     mock_project_details.parent_id = None
@@ -77,8 +111,17 @@ def test_create_project_successful_no_domain_id():
 
     res = create_project(mock_conn, mock_project_details)
 
+    mock_conn.identity.get_domain.assert_called_once_with("test-domain")
+
+    domain_details = mock_conn.identity.get_domain(mock_project_details.domain)
+    domain_id = domain_details.id
+
     mock_conn.identity.create_project.assert_called_once_with(
-        name="foo", description="bar", is_enabled=True, tags=["test@test.com"]
+        name="foo",
+        description="bar",
+        is_enabled=True,
+        domain_id=domain_id,
+        tags=["test@test.com"],
     )
     assert res == mock_conn.identity.create_project.return_value
 
@@ -90,7 +133,7 @@ def test_create_project_successful_no_parent_id_and_not_immutable():
     mock_project_details = MagicMock()
     mock_project_details.name = "foo"
     mock_project_details.description = "bar"
-    mock_project_details.domain_id = "buzz"
+    mock_project_details.domain = "buzz"
     mock_project_details.is_enabled = True
     mock_project_details.email = "test@test.com"
     mock_project_details.parent_id = None
@@ -100,10 +143,15 @@ def test_create_project_successful_no_parent_id_and_not_immutable():
 
     res = create_project(mock_conn, mock_project_details)
 
+    mock_conn.identity.get_domain.assert_called_once_with("buzz")
+
+    domain_details = mock_conn.identity.get_domain(mock_project_details.domain)
+    domain_id = domain_details.id
+
     mock_conn.identity.create_project.assert_called_once_with(
         name="foo",
         description="bar",
-        domain_id="buzz",
+        domain_id=domain_id,
         is_enabled=True,
         tags=["test@test.com"],
     )
@@ -118,7 +166,7 @@ def test_create_project_successful_with_parent_id_and_immutable():
     mock_project_details = MagicMock()
     mock_project_details.name = "foo"
     mock_project_details.description = "bar"
-    mock_project_details.domain_id = "buzz"
+    mock_project_details.domain = "buzz"
     mock_project_details.is_enabled = True
     mock_project_details.email = "test@test.com"
     mock_project_details.parent_id = "baz"
@@ -128,10 +176,15 @@ def test_create_project_successful_with_parent_id_and_immutable():
 
     res = create_project(mock_conn, mock_project_details)
 
+    mock_conn.identity.get_domain.assert_called_once_with("buzz")
+
+    domain_details = mock_conn.identity.get_domain(mock_project_details.domain)
+    domain_id = domain_details.id
+
     mock_conn.identity.create_project.assert_called_once_with(
         name="foo",
         description="bar",
-        domain_id="buzz",
+        domain_id=domain_id,
         is_enabled=True,
         parent_id="baz",
         tags=["test@test.com", "immutable"],
