@@ -37,7 +37,7 @@ def create_jasmin_external_project(
     conn: Connection,
     project_name: str,
     project_email: str,
-    domain_id: str,
+    domain: str,
     project_description: str,
     network_name: str,
     subnet_name: str,
@@ -54,7 +54,7 @@ def create_jasmin_external_project(
     :param conn: Openstack connection object
     :param project_name: A string for project name
     :param project_email: A string for email associated with the project
-    :param domain_id: Domain to create project in
+    :param domain: Domain to create project in
     :param project_description: A string for project description
     :param network_name: A string for external network name
     :param subnet_name: A string for external subnet name
@@ -75,7 +75,7 @@ def create_jasmin_external_project(
         ProjectDetails(
             name=project_name,
             email=project_email,
-            domain_id=domain_id,
+            domain=domain,
             description=project_description,
             immutable=project_immutable,
             parent_id=parent_id,
