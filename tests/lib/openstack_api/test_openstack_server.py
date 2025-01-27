@@ -137,6 +137,9 @@ def test_snapshot_server():
 
 
 def test_block_gpu_migration():
+    """
+    Test migration of gpu flavor raises error
+    """
     mock_connection = MagicMock()
     mock_server_id = "server1"
     mock_server_status = "SHUTOFF"
@@ -154,6 +157,9 @@ def test_block_gpu_migration():
 
 
 def test_build_server():
+    """
+    Test build server on a given hypervisor
+    """
     mock_conn = MagicMock()
 
     mock_conn.compute.find_flavor.return_value = MagicMock()
@@ -193,6 +199,9 @@ def test_build_server():
 
 
 def test_delete_server():
+    """
+    Test deleting server
+    """
     mock_conn = MagicMock()
 
     mock_server = MagicMock()
@@ -209,6 +218,9 @@ def test_delete_server():
 
 
 def test_force_delete_server():
+    """
+    Test force deleting a server
+    """
     mock_conn = MagicMock()
 
     mock_server = MagicMock()

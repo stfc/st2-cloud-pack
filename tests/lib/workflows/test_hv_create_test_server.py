@@ -10,6 +10,9 @@ from workflows.hv_create_test_server import create_test_server
 def test_create_single_test_server(
     mock_get_available_flavors, mock_random, mock_build_server, mock_delete_server
 ):
+    """
+    Test build single server on a hypervisor
+    """
     mock_conn = MagicMock()
 
     mock_flavors = ["flavor1", "flavor2", "flavor3"]
@@ -42,6 +45,9 @@ def test_create_single_test_server(
 def test_create_test_server_all_flavors(
     mock_get_available_flavors, mock_build_server, mock_delete_server
 ):
+    """
+    Test build all possible flavors on a hypervisor
+    """
     mock_conn = MagicMock()
     mock_flavors = ["flavor1", "flavor2", "flavor3"]
     mock_get_available_flavors.return_value = mock_flavors

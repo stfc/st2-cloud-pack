@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 from enums.hypervisor_states import HypervisorState
 from openstack.connection import Connection
@@ -50,7 +50,16 @@ def valid_state(state) -> bool:
     return True
 
 
-def get_available_flavors(conn: Connection, hypervisor_name: str):
+def get_available_flavors(conn: Connection, hypervisor_name: str) -> List[str]:
+    """
+    Returns names of flavors which can be built on a given hypervisor
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param hypervisor_name: Hostname of a hypervisor
+    :type hypervisor_name: str
+    :return: List of flavor names
+    :rtype: list[str]
+    """
     available_flavors = []
     for agg in conn.compute.aggregates():
         hosttype = agg.metadata.get("hosttype")
