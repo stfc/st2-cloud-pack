@@ -1,9 +1,8 @@
 from typing import List, Optional
 from openstack.connection import Connection
 
-import workflows
-import workflows.create_external_project
-import workflows.create_internal_project
+from workflows.create_external_project import create_external_project
+from workflows.create_internal_project import create_internal_project
 
 
 def create_project(
@@ -15,13 +14,13 @@ def create_project(
     networking_type: str,
     number_of_floating_ips: int = 1,
     number_of_security_group_rules: int = 200,
-    project_immutable: Optional[bool] = None,
+    project_immutable: Optional[bool] = False,
     parent_id: Optional[str] = None,
     admin_user_list: Optional[List[str]] = None,
     user_list: Optional[List[str]] = None,
 ):
     return (
-        workflows.create_external_project.create_external_project(
+        create_external_project(
             conn=conn,
             project_name=f"{project_name}-{project_domain}",
             project_email=project_email,
@@ -37,9 +36,9 @@ def create_project(
             stfc_user_list=user_list,
         )
         if networking_type == "external"
-        else workflows.create_internal_project.create_internal_project(
+        else create_internal_project(
             conn=conn,
-            project_name=f"{project_name}_{project_domain}",
+            project_name=f"{project_name}-{project_domain}",
             project_email=project_email,
             project_description=project_description,
             project_immutable=project_immutable,
