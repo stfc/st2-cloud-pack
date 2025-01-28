@@ -88,25 +88,23 @@ class AlertManagerAPI:
                 json=payload,
                 timeout=10,
             )
-            if response.status_code != 200:
-                msg = (
-                    "Failed to create silence. "
-                    f"Response status code: {response.status_code} "
-                    f"Response text: {response.text}"
-                )
-                self.log.error(msg)
-                raise RequestException(msg, response=response)
+            response.raise_for_status()
             silence_id = response.json()["silenceID"]
             silence.silence_id = silence_id
             return silence
-
-        except RequestException as req_ex:
+        except requests.HTTPError as req_ex:
             msg = f"Failed to create silence in Alertmanager: {req_ex} "
             if req_ex.response is not None:
                 msg += (
+                    "Failed to create silence. "
                     f"Response status code: {req_ex.response.status_code} "
                     f"Response text: {req_ex.response.text}"
                 )
+            self.log.critical(msg)
+            raise req_ex
+        except Exception as req_ex:
+            # to capture any other Exception that is not HTTPError
+            msg = f"Failed to create silence in Alertmanager: {req_ex} "
             self.log.critical(msg)
             raise req_ex
 
@@ -132,32 +130,31 @@ class AlertManagerAPI:
                 auth=self.auth,
                 timeout=10,
             )
-            if response.status_code != 200:
-                msg = (
+            response.raise_for_status()
+        except requests.HTTPError as req_ex:
+            msg = f"Failed to delete silence in Alertmanager: {req_ex} "
+            if req_ex.response is not None:
+                msg += (
                     f"Failed to delete silence with ID {silence.silence_id}. "
                     f"Response status code: {response.status_code} "
                     f"Response text: {response.text}"
                 )
-                self.log.critical(msg)
-                raise RequestException(msg, response=response)
-        except RequestException as req_ex:
-            msg = f"Failed to delete silence in Alertmanager: {req_ex} "
-            if req_ex.response is not None:
-                msg += (
-                    f"Response status code: {req_ex.response.status_code} "
-                    f"Response text: {req_ex.response.text}"
-                )
+            self.log.critical(msg)
+            raise req_ex
+        except Exception as req_ex:
+            # to capture any other Exception that is not HTTPError
+            msg = f"Failed to create silence in Alertmanager: {req_ex} "
             self.log.critical(msg)
             raise req_ex
 
-    def remove_silences(self, silence_l):
+    def remove_silences(self, silence_instances):
         """
         Removes a list of previously scheduled silences in alertmanager
 
-        :param silence_l: a list of silence instances
+        :param silence_instances: a list of silence instances
         :type silence: SilenceDetailsHandler
         """
-        for silence in silence_l:
+        for silence in silence_instances:
             self.remove_silence(silence)
 
     def get_silences(self):

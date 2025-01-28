@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, patch
 from datetime import datetime
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from requests.exceptions import RequestException
+from requests import HTTPError
 import pytest
 from alertmanager_api.silence_details import SilenceDetails
 from alertmanager_api.silence import AlertManagerAPI
@@ -154,10 +155,10 @@ def test_schedule_silence_sucess(mock_post):
 
 
 @patch("alertmanager_api.silence.requests.post")
-def test_schedule_silence_exception_is_raised_status_code_not_200(mock_post):
+def test_schedule_silence_exception_is_raised_rc_is_not_200(mock_post):
     """
     use case: the call to requests to schedule a silence
-              returned a RC different than 200
+              raised an exception itself
     """
     alertmanager_account = MagicMock()
     class_instance = AlertManagerAPI(  #  pylint: disable=redefined-outer-name
@@ -168,14 +169,12 @@ def test_schedule_silence_exception_is_raised_status_code_not_200(mock_post):
     silence = SilenceDetails("hostname", date_start, date_end, "author", "comment")
     mock_response = MagicMock()
     mock_response.status_code = 201
-    mock_response.text = "rc is 201"
+    mock_response.raise_for_status.side_effect = HTTPError()
     mock_post.return_value = mock_response
-    try:
+    with pytest.raises(HTTPError):
         class_instance.schedule_silence(silence)
-    except RequestException as req_ex:
-        assert "Failed to create silence. " in str(req_ex)
-        assert "Response status code: 201" in str(req_ex)
-        assert "Response text: rc is 201" in str(req_ex)
+    mock_post.assert_called_once()
+    mock_response.raise_for_status.assert_called_once()
 
 
 @patch("alertmanager_api.silence.requests.post")
@@ -192,7 +191,5 @@ def test_schedule_silence_exception_is_raised_on_failure(mock_post):
     date_end = datetime(2025, 1, 1, 10, 0, 0)
     silence = SilenceDetails("hostname", date_start, date_end, "author", "comment")
     mock_post.side_effect = RequestException("An error occurred")
-    try:
+    with pytest.raises(RequestException, match="An error occurred"):
         class_instance.schedule_silence(silence)
-    except RequestException as req_ex:
-        assert "An error occurred" in str(req_ex)

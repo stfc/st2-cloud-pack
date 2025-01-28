@@ -142,7 +142,7 @@ class SilenceDetailsHandler(list):
                             "isEqual": true,
                             "isRegex": false,
                             "name": "instance",
-                            "value": "hv375.nubes.rl.ac.uk"
+                            "value": "hv123.matrix.net"
                         }
                     ],
                     "startsAt": "2025-01-16T10:50:00.000Z"
@@ -161,7 +161,7 @@ class SilenceDetailsHandler(list):
                             "isEqual": true,
                             "isRegex": false,
                             "name": "instance",
-                            "value": "hv375.nubes.rl.ac.uk"
+                            "value": "hv123.matrix.net"
                         }
                     ],
                     "startsAt": "2025-01-16T10:50:00.000Z"
