@@ -1,5 +1,5 @@
 ---
-description: Create a new server
+description: Build a test server on a given hypervisor, can optionally test all possible flavors avaliable to the hypervisor
 enabled: true
 entry_point: src/openstack_actions.py
 name: hv.create.test.server
