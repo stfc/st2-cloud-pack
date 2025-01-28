@@ -1,10 +1,13 @@
 from openstack.connection import Connection
-from alertmanager_api.silence import AlertManagerAPI
+
+# from alertmanager_api.silence import AlertManagerAPI
 
 from enums.icinga.icinga_objects import IcingaObject
-from structs.alertmanager.alertmanager_account import AlertManagerAccount
+
+# from structs.alertmanager.alertmanager_account import AlertManagerAccount
 from structs.icinga.icinga_account import IcingaAccount
-from hv_service_actions import hv_service_enable
+from workflows.hv_service_actions import hv_service_enable
+from workflows.hv_create_test_server import create_test_server
 from icinga_api import downtime
 
 
@@ -29,6 +32,6 @@ def post_reboot(icinga_account: IcingaAccount, name: str, conn=Connection):
     # silences = alert_manager.get_silences().get_by_name(name)
     # alert_manager.remove_silences(silences)
     # test vm creation
-
+    create_test_server(conn=conn, hypervisor_name=name, test_all_flavors=False)
     # enable in openstack
     hv_service_enable(conn=conn, hypervisor_name=name, service_binary="nova-compute")
