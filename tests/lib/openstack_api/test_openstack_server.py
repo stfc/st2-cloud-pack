@@ -1,7 +1,12 @@
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 import pytest
-from openstack_api.openstack_server import snapshot_and_migrate_server, snapshot_server
+from openstack_api.openstack_server import (
+    build_server,
+    delete_server,
+    snapshot_and_migrate_server,
+    snapshot_server,
+)
 
 
 @pytest.mark.parametrize("dest_host", [None, "hv01"])
@@ -132,6 +137,9 @@ def test_snapshot_server():
 
 
 def test_block_gpu_migration():
+    """
+    Test migration of gpu flavor raises error
+    """
     mock_connection = MagicMock()
     mock_server_id = "server1"
     mock_server_status = "SHUTOFF"
@@ -146,3 +154,83 @@ def test_block_gpu_migration():
             dest_host=None,
             snapshot=True,
         )
+
+
+def test_build_server():
+    """
+    Test build server on a given hypervisor
+    """
+    mock_conn = MagicMock()
+
+    mock_conn.compute.find_flavor.return_value = MagicMock()
+    mock_conn.image.find_image.return_value = MagicMock()
+    mock_conn.network.find_network.return_value = MagicMock()
+
+    mock_server = MagicMock()
+    mock_conn.compute.create_server.return_value = mock_server
+
+    res = build_server(
+        mock_conn,
+        "test-server",
+        "test-flavor",
+        "test-image",
+        "test-network",
+        "hvxyz.nubes.rl.ac.uk",
+    )
+
+    mock_conn.compute.find_flavor.assert_called_once_with("test-flavor")
+    mock_conn.image.find_image.assert_called_once_with("test-image")
+    mock_conn.network.find_network.assert_called_once_with("test-network")
+
+    mock_conn.compute.create_server.assert_called_once_with(
+        **{
+            "name": "test-server",
+            "imageRef": mock_conn.image.find_image.return_value.id,
+            "flavorRef": mock_conn.compute.find_flavor.return_value.id,
+            "networks": [{"uuid": mock_conn.network.find_network.return_value.id}],
+            "hypervisor": "hvxyz.nubes.rl.ac.uk",
+        }
+    )
+    mock_conn.compute.wait_for_server.assert_called_once_with(
+        mock_server, status="ACTIVE", failures=None, interval=5, wait=300
+    )
+
+    assert res == mock_server
+
+
+def test_delete_server():
+    """
+    Test deleting server
+    """
+    mock_conn = MagicMock()
+
+    mock_server = MagicMock()
+
+    mock_conn.compute.find_server.return_value = mock_server
+
+    delete_server(mock_conn, "test-server-id", force=False)
+
+    mock_conn.compute.find_server.assert_called_once_with("test-server-id")
+    mock_conn.compute.delete_server.assert_called_once_with(mock_server, False)
+    mock_conn.compute.wait_for_delete.assert_called_once_with(
+        mock_server, interval=5, wait=300
+    )
+
+
+def test_force_delete_server():
+    """
+    Test force deleting a server
+    """
+    mock_conn = MagicMock()
+
+    mock_server = MagicMock()
+
+    mock_conn.compute.find_server.return_value = mock_server
+
+    delete_server(mock_conn, "test-server-id", force=True)
+
+    mock_conn.compute.find_server.assert_called_once_with("test-server-id")
+    mock_conn.compute.delete_server.assert_called_once_with(mock_server, True)
+    mock_conn.compute.wait_for_delete.assert_called_once_with(
+        mock_server, interval=5, wait=300
+    )

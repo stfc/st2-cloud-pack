@@ -1,5 +1,7 @@
-from typing import Dict
+from typing import Dict, List
+
 from enums.hypervisor_states import HypervisorState
+from openstack.connection import Connection
 
 
 def get_hypervisor_state(hypervisor: Dict, uptime_limit: int) -> HypervisorState:
@@ -46,3 +48,30 @@ def valid_state(state) -> bool:
     if not isinstance(hypervisor_server_count, int) or hypervisor_server_count < 0:
         return False
     return True
+
+
+def get_available_flavors(conn: Connection, hypervisor_name: str) -> List[str]:
+    """
+    Returns names of flavors which can be built on a given hypervisor
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param hypervisor_name: Hostname of a hypervisor
+    :type hypervisor_name: str
+    :return: List of flavor names
+    :rtype: list[str]
+    """
+    available_flavors = []
+    for agg in conn.compute.aggregates():
+        hosttype = agg.metadata.get("hosttype")
+        local_storage_type = agg.metadata.get("local-storage-type")
+
+        if hypervisor_name in agg.hosts:
+            for flavor in conn.compute.flavors(
+                extra_specs={
+                    "aggregate_instance_extra_specs:hosttype": hosttype,
+                    "aggregate_instance_extra_specs:local-storage-type": local_storage_type,
+                }
+            ):
+                available_flavors.append(flavor.name)
+
+    return available_flavors
