@@ -25,4 +25,8 @@ parameters:
     enum:
       - "dev"
       - "prod"
+  requires_openstack:
+    default: true
+    immutable: true
+    type: boolean
 runner_type: python-script
