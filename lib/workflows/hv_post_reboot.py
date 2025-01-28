@@ -22,12 +22,12 @@ def post_reboot(icinga_account: IcingaAccount, name: str, conn=Connection):
     )
 
     # get silence to be removed and remove the alertmanager silence
-    alertmanager_account = AlertManagerAccount(
-        username="stackstorm", password="password", alertmanager_endpoint="endpoint"
-    )
-    alert_manager = AlertManagerAPI(alertmanager_account)
-    silences = alert_manager.get_silences().get_by_name(name)
-    alert_manager.remove_silences(silences)
+    # alertmanager_account = AlertManagerAccount(
+    #     username="stackstorm", password="password", alertmanager_endpoint="endpoint"
+    # )
+    # alert_manager = AlertManagerAPI(alertmanager_account)
+    # silences = alert_manager.get_silences().get_by_name(name)
+    # alert_manager.remove_silences(silences)
     # test vm creation
 
     # enable in openstack
