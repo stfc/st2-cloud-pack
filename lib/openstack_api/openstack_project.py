@@ -26,7 +26,7 @@ def create_project(
     email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
     if not re.match(email_regex, project_details.email):
         raise ValueError("The project contact email is invalid")
-    if not project_details.domain:
+    if not project_details.project_domain:
         raise MissingMandatoryParamError("The domain for the project is missing")
 
     create_project_kwargs = {
@@ -36,7 +36,7 @@ def create_project(
     }
 
     # get domain id for the domain to use
-    domain_details = conn.identity.get_domain(project_details.domain)
+    domain_details = conn.identity.get_domain(project_details.project_domain)
 
     create_project_kwargs["domain_id"] = domain_details.id
 
