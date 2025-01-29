@@ -9,16 +9,15 @@ from structs.ssh.ssh_connection_details import SSHDetails
 from workflows.hv_patch_and_reboot import patch_and_reboot
 import pytest
 
+
 # pylint:disable=too-many-locals
-@patch("workflows.hv_patch_and_reboot.AlertManagerAccount")
 @patch("workflows.hv_patch_and_reboot.AlertManagerAPI")
 @patch("workflows.hv_patch_and_reboot.schedule_downtime")
 @patch("workflows.hv_patch_and_reboot.SSHConnection")
 def test_successful_patch_and_reboot(
     mock_ssh_conn,
     mock_schedule_downtime,
-    mock_alert_manager_api,
-    mock_alert_manager_account,
+    mock_alertmanager_api,
 ):
     """
     Test successful running of patch and reboot workflow
@@ -36,14 +35,14 @@ def test_successful_patch_and_reboot(
     mock_start_timestamp = int(mock_start_time.timestamp())
     mock_end_timestamp = int(mock_end_time.timestamp())
 
-    mock_alert_manager = MagicMock()
-    mock_alert_manager_account_instance = MagicMock()
-    mock_alert_manager_account.return_value = mock_alert_manager_account_instance
-    mock_alert_manager_api.return_value = mock_alert_manager
+    mock_alertmanager = MagicMock()
+    mock_alertmanager_api.return_value = mock_alertmanager
     mock_scheduled_silence = MagicMock()
-    mock_alert_manager.schedule_silence.return_value = mock_scheduled_silence
+    mock_alertmanager.schedule_silence.return_value = mock_scheduled_silence
+    alertmanager_account = MagicMock()
 
     result = patch_and_reboot(
+        alertmanager_account,
         icinga_account,
         hypervisor_name=mock_hypervisor_name,
         private_key_path=mock_private_key_path,
@@ -62,12 +61,9 @@ def test_successful_patch_and_reboot(
         ),
     )
 
-    mock_alert_manager_account.assert_called_once_with(
-        username="stackstorm", password="password", alertmanager_endpoint="endpoint"
-    )
-    mock_alert_manager_api.assert_called_once_with(mock_alert_manager_account_instance)
-    mock_alert_manager.schedule_silence.assert_called_once()
-    called_args = mock_alert_manager.schedule_silence.call_args[0][0]
+    mock_alertmanager_api.assert_called_once_with(alertmanager_account)
+    mock_alertmanager.schedule_silence.assert_called_once()
+    called_args = mock_alertmanager.schedule_silence.call_args[0][0]
     assert called_args.instance_name == mock_hypervisor_name
     assert called_args.comment == "Stackstorm HV maintenance"
     assert called_args.author == "stackstorm"
@@ -85,7 +81,6 @@ def test_successful_patch_and_reboot(
     assert result["reboot_output"] == "Reboot command output"
 
 
-@patch("workflows.hv_patch_and_reboot.AlertManagerAccount")
 @patch("workflows.hv_patch_and_reboot.AlertManagerAPI")
 @patch("workflows.hv_patch_and_reboot.schedule_downtime")
 @patch("workflows.hv_patch_and_reboot.SSHConnection")
@@ -94,8 +89,7 @@ def test_failed_schedule_downtime(
     mock_remove_downtime,
     mock_ssh_conn,
     mock_schedule_downtime,
-    mock_alert_manager_api,
-    mock_alert_manager_account,
+    mock_alertmanager_api,
 ):
     """
     Test unsuccessful running of patch and reboot workflow - where the schedule
@@ -106,13 +100,15 @@ def test_failed_schedule_downtime(
     mock_hypervisor_name = "test_host"
     mock_schedule_downtime.side_effect = Exception
 
-    mock_alert_manager = MagicMock()
-    mock_alert_manager_account_instance = MagicMock()
-    mock_alert_manager_account.return_value = mock_alert_manager_account_instance
-    mock_alert_manager_api.return_value = mock_alert_manager
+    mock_alertmanager = MagicMock()
+    mock_alertmanager_api.return_value = mock_alertmanager
+    mock_scheduled_silence = MagicMock()
+    mock_alertmanager.schedule_silence.return_value = mock_scheduled_silence
+    alertmanager_account = MagicMock()
 
     with pytest.raises(Exception):
         patch_and_reboot(
+            alertmanager_account,
             icinga_account,
             hypervisor_name=mock_hypervisor_name,
             private_key_path=mock_private_key_path,
@@ -126,15 +122,14 @@ def test_failed_schedule_downtime(
             private_key_path=mock_private_key_path,
         )
     )
-    mock_alert_manager_account.assert_not_called()
-    mock_alert_manager_api.assert_not_called()
-    mock_alert_manager.schedule_silence.assert_not_called()
+
+    mock_alertmanager_api.assert_not_called()
+    mock_alertmanager.schedule_silence.assert_not_called()
 
     mock_ssh_conn.return_value.run_command_on_host.assert_not_called()
     mock_remove_downtime.assert_not_called()
 
 
-@patch("workflows.hv_patch_and_reboot.AlertManagerAccount")
 @patch("workflows.hv_patch_and_reboot.AlertManagerAPI")
 @patch("workflows.hv_patch_and_reboot.remove_downtime")
 @patch("workflows.hv_patch_and_reboot.schedule_downtime")
@@ -143,8 +138,7 @@ def test_failed_ssh(
     mock_ssh_conn,
     mock_schedule_downtime,
     mock_remove_downtime,
-    mock_alert_manager_api,
-    mock_alert_manager_account,
+    mock_alertmanager_api,
 ):
     """
     Test unsuccessful running of patch and reboot workflow - where either ssh command
@@ -155,15 +149,15 @@ def test_failed_ssh(
     mock_private_key_path = "/home/stackstorm/.ssh/id_rsa"
     mock_ssh_conn.return_value.run_command_on_host.side_effect = SSHException
 
-    mock_alert_manager = MagicMock()
-    mock_alert_manager_account_instance = MagicMock()
-    mock_alert_manager_account.return_value = mock_alert_manager_account_instance
-    mock_alert_manager_api.return_value = mock_alert_manager
+    mock_alertmanager = MagicMock()
+    mock_alertmanager_api.return_value = mock_alertmanager
     mock_scheduled_silence = MagicMock()
-    mock_alert_manager.schedule_silence.return_value = mock_scheduled_silence
+    mock_alertmanager.schedule_silence.return_value = mock_scheduled_silence
+    alertmanager_account = MagicMock()
 
     with pytest.raises(Exception):
         patch_and_reboot(
+            alertmanager_account,
             icinga_account,
             hypervisor_name=mock_hypervisor_name,
             private_key_path=mock_private_key_path,
@@ -192,12 +186,10 @@ def test_failed_ssh(
             duration=mock_end_timestamp - mock_start_timestamp,
         ),
     )
-    mock_alert_manager_account.assert_called_once_with(
-        username="stackstorm", password="password", alertmanager_endpoint="endpoint"
-    )
-    mock_alert_manager_api.assert_called_once_with(mock_alert_manager_account_instance)
-    mock_alert_manager.schedule_silence.assert_called_once()
-    called_args = mock_alert_manager.schedule_silence.call_args[0][0]
+
+    mock_alertmanager_api.assert_called_once_with(alertmanager_account)
+    mock_alertmanager.schedule_silence.assert_called_once()
+    called_args = mock_alertmanager.schedule_silence.call_args[0][0]
     assert called_args.instance_name == mock_hypervisor_name
     assert called_args.comment == "Stackstorm HV maintenance"
     assert called_args.author == "stackstorm"
@@ -208,4 +200,4 @@ def test_failed_ssh(
         object_name=mock_hypervisor_name,
     )
 
-    mock_alert_manager.remove_silence.assert_called_once_with(mock_scheduled_silence)
+    mock_alertmanager.remove_silence.assert_called_once_with(mock_scheduled_silence)

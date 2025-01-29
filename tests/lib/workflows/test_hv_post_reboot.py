@@ -5,7 +5,6 @@ from enums.icinga.icinga_objects import IcingaObject
 from workflows.hv_post_reboot import post_reboot
 
 
-@patch("workflows.hv_post_reboot.AlertManagerAccount")
 @patch("workflows.hv_post_reboot.AlertManagerAPI")
 @patch("workflows.hv_post_reboot.hv_service_enable")
 @patch("workflows.hv_post_reboot.create_test_server")
@@ -14,8 +13,7 @@ def test_successful_post_reboot(
     mock_remove_downtime,
     mock_create_test_server,
     mock_hv_service_enable,
-    mock_alert_manager_api,
-    mock_alert_manager_account,
+    mock_alertmanager_api,
 ):
     """
     Test successfull running of the post reboot workflow.
@@ -23,30 +21,31 @@ def test_successful_post_reboot(
     mock_icinga_account = MagicMock()
     mock_hv_name = "hvxyz"
     mock_conn = MagicMock()
-    mock_alert_manager = MagicMock()
-    mock_alert_manager_account_instance = MagicMock()
-    mock_alert_manager_account.return_value = mock_alert_manager_account_instance
-    mock_alert_manager_api.return_value = mock_alert_manager
-    mock_silences = MagicMock()
-    mock_alert_manager.get_silences.return_value.get_by_name.return_value = (
-        mock_silences
-    )
 
-    post_reboot(icinga_account=mock_icinga_account, name=mock_hv_name, conn=mock_conn)
+    mock_alertmanager = MagicMock()
+    mock_alertmanager_api.return_value = mock_alertmanager
+    alertmanager_account = MagicMock()
+    mock_silences = MagicMock()
+    mock_alertmanager.get_silences.return_value.get_by_name.return_value = mock_silences
+
+    post_reboot(
+        alertmanager_account,
+        icinga_account=mock_icinga_account,
+        name=mock_hv_name,
+        conn=mock_conn,
+    )
 
     mock_remove_downtime.assert_called_once_with(
         icinga_account=mock_icinga_account,
         object_type=IcingaObject.HOST,
         object_name=mock_hv_name,
     )
-    mock_alert_manager_account.assert_called_once_with(
-        username="stackstorm", password="password", alertmanager_endpoint="endpoint"
-    )
-    mock_alert_manager_api.assert_called_once_with(mock_alert_manager_account_instance)
-    mock_alert_manager.get_silences.return_value.get_by_name.assert_called_once_with(
+
+    mock_alertmanager_api.assert_called_once_with(alertmanager_account)
+    mock_alertmanager.get_silences.return_value.get_by_name.assert_called_once_with(
         mock_hv_name
     )
-    mock_alert_manager.remove_silences.assert_called_once_with(mock_silences)
+    mock_alertmanager.remove_silences.assert_called_once_with(mock_silences)
     mock_create_test_server.assert_called_once_with(
         conn=mock_conn, hypervisor_name=mock_hv_name, test_all_flavors=False
     )

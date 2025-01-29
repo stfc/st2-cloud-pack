@@ -12,8 +12,10 @@ from structs.icinga.icinga_account import IcingaAccount
 from structs.ssh.ssh_connection_details import SSHDetails
 from ssh_api.exec_command import SSHConnection
 
+
 # pylint:disable=too-many-locals
 def patch_and_reboot(
+    alertmanager_account: AlertManagerAccount,
     icinga_account: IcingaAccount,
     hypervisor_name: str,
     private_key_path: str,
@@ -43,10 +45,7 @@ def patch_and_reboot(
         duration=end_timestamp - start_timestamp,
     )
     schedule_downtime(icinga_account=icinga_account, details=downtime_details)
-    alertmanager_account = AlertManagerAccount(
-        username="stackstorm", password="password", alertmanager_endpoint="endpoint"
-    )
-    alert_manager = AlertManagerAPI(alertmanager_account)
+    alertmanager = AlertManagerAPI(alertmanager_account)
     silence_details = SilenceDetails(
         instance_name=hypervisor_name,
         start_time_dt=start_time,
@@ -54,7 +53,7 @@ def patch_and_reboot(
         author="stackstorm",
         comment="Stackstorm HV maintenance",
     )
-    scheduled_silence = alert_manager.schedule_silence(silence_details)
+    scheduled_silence = alertmanager.schedule_silence(silence_details)
 
     try:
         patch_out = ssh_client.run_command_on_host("patch")
@@ -69,5 +68,5 @@ def patch_and_reboot(
             object_type=IcingaObject.HOST,
             object_name=hypervisor_name,
         )
-        alert_manager.remove_silence(scheduled_silence)
+        alertmanager.remove_silence(scheduled_silence)
         raise exc

@@ -2,6 +2,7 @@ from importlib import import_module
 from st2common.runners.base_action import Action
 
 from openstack_api.openstack_connection import OpenstackConnection
+from structs.alertmanager.alertmanager_account import AlertManagerAccount
 from structs.email.smtp_account import SMTPAccount
 from structs.icinga.icinga_account import IcingaAccount
 from structs.jira.jira_account import JiraAccount
@@ -58,4 +59,9 @@ class OpenstackActions(Action):
                 self.config, kwargs["icinga_account_name"]
             )
             del kwargs["icinga_account_name"]
+        if "alertmanager_account_name" in kwargs:
+            kwargs["alertmanager_account"] = AlertManagerAccount.from_pack_config(
+                self.config, kwargs["alertmanager_account_name"]
+            )
+            del kwargs["alertmanager_account_name"]
         return kwargs

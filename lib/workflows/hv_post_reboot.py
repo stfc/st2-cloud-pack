@@ -11,7 +11,12 @@ from workflows.hv_create_test_server import create_test_server
 from icinga_api import downtime
 
 
-def post_reboot(icinga_account: IcingaAccount, name: str, conn=Connection):
+def post_reboot(
+    alertmanager_account: AlertManagerAccount,
+    icinga_account: IcingaAccount,
+    name: str,
+    conn=Connection,
+):
     """
     Action to run after a successful reboot
     :param icinga_account: Icinga account to use
@@ -24,12 +29,9 @@ def post_reboot(icinga_account: IcingaAccount, name: str, conn=Connection):
         object_name=name,
     )
     # get silence to be removed and remove all the alertmanager silences on that host.
-    alertmanager_account = AlertManagerAccount(
-        username="stackstorm", password="password", alertmanager_endpoint="endpoint"
-    )
-    alert_manager = AlertManagerAPI(alertmanager_account)
-    silences = alert_manager.get_silences().get_by_name(name)
-    alert_manager.remove_silences(silences)
+    alertmanager = AlertManagerAPI(alertmanager_account)
+    silences = alertmanager.get_silences().get_by_name(name)
+    alertmanager.remove_silences(silences)
     # test vm creation
     create_test_server(conn=conn, hypervisor_name=name, test_all_flavors=False)
     # enable in openstack
