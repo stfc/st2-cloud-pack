@@ -10,7 +10,7 @@ criteria:
     pattern: RUNNING
   trigger.current_state:
     type: equals
-    pattern: PENDING MAINTENANCE
+    pattern: PENDING_MAINTENANCE
 
 trigger:
   type: "stackstorm_openstack.hypervisor.state_change"
