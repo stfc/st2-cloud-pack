@@ -69,7 +69,7 @@ class AlertManagerAPI:
         payload = {
             "matchers": [
                 {
-                    "name": "instance_name",
+                    "name": "instance",
                     "value": silence.instance_name,
                     "isRegex": False,
                 }
