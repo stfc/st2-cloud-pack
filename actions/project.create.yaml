@@ -45,15 +45,15 @@ parameters:
     type: boolean
   parent_id:
     default: ""
-    description: Set the ID of the parent Domain/project. Leave as blank and it will use the "Default Domain"
+    description: Set the ID of the parent project.
     type: string
   admin_user_list:
-    required: false
+    required: true
     default: []
     type: array
     description: List of Users (IDs or Names) to give administrator access
   user_list:
-    required: false
+    required: true
     default: []
     type: array
     description: List of Users (IDs or Names) to give local user access
