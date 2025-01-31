@@ -5,7 +5,7 @@ from structs.role_details import RoleDetails
 from workflows.role_actions import (
     role_add,
     role_remove,
-    role_assign_group,
+    assign_group_to_project,
     add_user_to_group,
 )
 
@@ -55,7 +55,7 @@ def test_role_assign_group(mock_api_assign_group_role_to_project):
     mock_role_identifier = "user"
     mock_group_name = "group-name"
 
-    status = role_assign_group(
+    status = assign_group_to_project(
         mock_conn,
         mock_project_identifier,
         mock_role_identifier,
