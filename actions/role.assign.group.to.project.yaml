@@ -1,0 +1,36 @@
+---
+description: Add a pre-created group to a given project
+enabled: true
+entry_point: src/openstack_actions.py
+name: role.add.user.project
+parameters:
+  lib_entry_point:
+    default: workflows.role_actions.project_assign_group
+    immutable: true
+    type: string
+  requires_openstack:
+    default: true
+    immutable: true
+    type: boolean
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  project_identifier:
+    description: Project to add the group to
+    required: true
+    type: string
+  role_identifier:
+    description: Role to add use with group members
+    required: true
+    type: string
+    default: "user"
+  group_name:
+    description: Group to add to a project
+    type: string
+    required: true
+runner_type: python-script
