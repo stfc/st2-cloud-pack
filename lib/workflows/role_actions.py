@@ -32,7 +32,7 @@ def role_add(
     return True  # the above method always returns None
 
 
-def role_assign_group(
+def assign_group_to_project(
     conn: Connection,
     project_identifier: str,
     role_identifier: str,

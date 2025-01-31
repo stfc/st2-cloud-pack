@@ -2,10 +2,10 @@
 description: Add a pre-created group to a given project
 enabled: true
 entry_point: src/openstack_actions.py
-name: role.add.user.project
+name: role.assign.group.to.project
 parameters:
   lib_entry_point:
-    default: workflows.role_actions.project_assign_group
+    default: workflows.role_actions.assign_group_to_project
     immutable: true
     type: string
   requires_openstack:
