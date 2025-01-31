@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
 import pytest
 
 from enums.user_domains import UserDomains
@@ -6,6 +6,7 @@ from openstack_api.openstack_roles import (
     assign_role_to_user,
     remove_role_from_user,
     assign_group_role_to_project,
+    add_user_to_group,
 )
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from structs.role_details import RoleDetails
@@ -106,6 +107,9 @@ def test_assign_roles_successful_single_user():
 
 
 def test_assign_group_role_to_project_successful():
+    """
+    Tests that a group can be assigned to a project successfully
+    """
     mock_conn = MagicMock()
     assign_group_role_to_project(mock_conn, "project", "role", "group")
 
@@ -119,6 +123,36 @@ def test_assign_group_role_to_project_successful():
         project=mock_conn.identity.find_project.return_value,
         group=mock_conn.identity.find_group.return_value,
         role=mock_conn.identity.find_role.return_value,
+    )
+
+
+def test_add_user_to_group():
+    """
+    Tests that a user can be added to an existing group
+    """
+    mock_conn = MagicMock()
+    add_user_to_group(mock_conn, "user", "user_domain", "group", "group_domain")
+
+    mock_conn.identity.find_domain.assert_has_calls(
+        [
+            call("user_domain", ignore_missing=False),
+            call("group_domain", ignore_missing=False),
+        ]
+    )
+    mock_conn.identity.find_user.assert_called_once_with(
+        "user",
+        domain_id=mock_conn.identity.find_domain.return_value.id,
+        ignore_missing=False,
+    )
+    mock_conn.identity.find_group.assert_called_once_with(
+        "group",
+        domain_id=mock_conn.identity.find_domain.return_value.id,
+        ignore_missing=False,
+    )
+
+    mock_conn.identity.add_user_to_group.assert_called_once_with(
+        user=mock_conn.identity.find_user.return_value,
+        group=mock_conn.identity.find_group.return_value,
     )
 
 

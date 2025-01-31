@@ -2,7 +2,12 @@ from unittest.mock import patch, MagicMock
 
 from enums.user_domains import UserDomains
 from structs.role_details import RoleDetails
-from workflows.role_actions import role_add, role_remove, role_assign_group
+from workflows.role_actions import (
+    role_add,
+    role_remove,
+    role_assign_group,
+    add_user_to_group,
+)
 
 
 @patch("workflows.role_actions.openstack_roles.assign_role_to_user")
@@ -40,14 +45,11 @@ def test_role_add(mock_api_assign_role_to_user):
     assert status
 
 
-@patch("workflows.role_actions.assign_group_role_to_project")
+@patch("workflows.role_actions.openstack_roles.assign_group_role_to_project")
 def test_role_assign_group(mock_api_assign_group_role_to_project):
     """
-    Tests that role_add function forwards on request to openstack API role_add function
-    and returns the correct status (True)
+    Tests that role_add function forwards on request to openstack API to assign a user to a group
     """
-
-    # setup input values
     mock_conn = MagicMock()
     mock_project_identifier = "project-id"
     mock_role_identifier = "user"
@@ -65,6 +67,36 @@ def test_role_assign_group(mock_api_assign_group_role_to_project):
         project=mock_project_identifier,
         role=mock_role_identifier,
         group=mock_group_name,
+    )
+
+    assert status
+
+
+@patch("workflows.role_actions.openstack_roles.add_user_to_group")
+def test_role_add_user_to_group(mock_api_add_user_to_group):
+    """
+    Tests that role_add function forwards on request to add a user to the group
+    """
+    mock_conn = MagicMock()
+    mock_user_identifier = "user-name"
+    mock_user_domain = "user-domain"
+    mock_group_name = "group-name"
+    mock_group_domain = "group-domain"
+
+    status = add_user_to_group(
+        mock_conn,
+        mock_user_identifier,
+        mock_user_domain,
+        mock_group_name,
+        mock_group_domain,
+    )
+
+    mock_api_add_user_to_group.assert_called_once_with(
+        mock_conn,
+        user_identifier=mock_user_identifier,
+        user_domain=mock_user_domain,
+        group_name=mock_group_name,
+        group_domain=mock_group_domain,
     )
 
     assert status
