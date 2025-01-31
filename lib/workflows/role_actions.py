@@ -1,8 +1,9 @@
 from openstack.connection import Connection
 
 from enums.user_domains import UserDomains
-from structs.role_details import RoleDetails
 from openstack_api import openstack_roles
+from openstack_api.openstack_roles import assign_group_role_to_project
+from structs.role_details import RoleDetails
 
 
 def role_add(
@@ -29,6 +30,27 @@ def role_add(
     )
     openstack_roles.assign_role_to_user(conn, details=details)
     return True  # the above method always returns None
+
+
+def role_assign_group(
+    conn: Connection,
+    project_identifier: str,
+    role_identifier: str,
+    group_name: str,
+) -> bool:
+    """
+    Assigns a pre-created group to map the specified role to members of that
+    group into a project.
+    :param conn: Openstack connection object
+    :param project_identifier: Name or ID of the project to assign to
+    :param role_identifier: Name or ID of the role to assign
+    :param group_name: Name of the group to assign the user to
+    :return: True always
+    """
+    assign_group_role_to_project(
+        conn, project=project_identifier, role=role_identifier, group=group_name
+    )
+    return True
 
 
 def role_remove(

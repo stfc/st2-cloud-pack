@@ -2,7 +2,11 @@ from unittest.mock import MagicMock
 import pytest
 
 from enums.user_domains import UserDomains
-from openstack_api.openstack_roles import assign_role_to_user, remove_role_from_user
+from openstack_api.openstack_roles import (
+    assign_role_to_user,
+    remove_role_from_user,
+    assign_group_role_to_project,
+)
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from structs.role_details import RoleDetails
 
@@ -72,7 +76,7 @@ def test_assign_roles_throws_missing_role(missing_param_test):
     mock_conn.identity.assign_project_role_to_user.assert_not_called()
 
 
-def test_assign_roles_successful():
+def test_assign_roles_successful_single_user():
     """
     Tests that assignment is successful
     """
@@ -97,6 +101,23 @@ def test_assign_roles_successful():
     mock_conn.identity.assign_project_role_to_user.assert_called_once_with(
         project=mock_conn.identity.find_project.return_value,
         user=mock_conn.identity.find_user.return_value,
+        role=mock_conn.identity.find_role.return_value,
+    )
+
+
+def test_assign_group_role_to_project_successful():
+    mock_conn = MagicMock()
+    assign_group_role_to_project(mock_conn, "project", "role", "group")
+
+    mock_conn.identity.find_project.assert_called_once_with(
+        "project", ignore_missing=False
+    )
+    mock_conn.identity.find_role.assert_called_once_with("role", ignore_missing=False)
+    mock_conn.identity.find_group.assert_called_once_with("group", ignore_missing=False)
+
+    mock_conn.identity.assign_project_role_to_group(
+        project=mock_conn.identity.find_project.return_value,
+        group=mock_conn.identity.find_group.return_value,
         role=mock_conn.identity.find_role.return_value,
     )
 

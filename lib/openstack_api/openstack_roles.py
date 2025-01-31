@@ -9,6 +9,24 @@ from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from structs.role_details import RoleDetails
 
 
+def assign_group_role_to_project(conn: Connection, project, role, group) -> None:
+    """
+    Assigns a given role to the specified group
+    :param conn: openstack connection object
+    :param project: The project name or ID to assign the role to
+    :param role: The role name or ID to assign
+    :param group: The group name or ID to assign the role to
+    """
+    # This is run rarely in comparison to most actions, as it
+    # likely gets ran once or twice per new project
+    # Assume the user has already checked the group exists and has stripped it
+    role = conn.identity.find_role(role, ignore_missing=False)
+    project = conn.identity.find_project(project, ignore_missing=False)
+    group = conn.identity.find_group(group, ignore_missing=False)
+
+    conn.identity.assign_project_role_to_group(project=project, group=group, role=role)
+
+
 def assign_role_to_user(conn: Connection, details: RoleDetails) -> None:
     """
     Assigns a given role to the specified user
