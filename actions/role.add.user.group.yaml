@@ -26,11 +26,11 @@ parameters:
     description: User to add to (Name or ID)
     type: string
     required: true
-  user_domain:
-    description: Authentication realm to search
+  domain:
+    description: Authentication domain to search, this much match between group and user
     type: string
     required: true
-    default: stfc
+    default: default
     enum:
       - default
       - stfc
@@ -39,13 +39,4 @@ parameters:
     description: Group to add the user to
     type: string
     required: true
-  group_domain:
-    description: Domain to search for the group
-    type: string
-    required: true
-    default: stfc
-    enum:
-      - default
-      - stfc
-      - jasmin
 runner_type: python-script

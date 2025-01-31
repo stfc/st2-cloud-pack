@@ -40,25 +40,22 @@ def assign_role_to_user(conn: Connection, details: RoleDetails) -> None:
 def add_user_to_group(
     conn: Connection,
     user_identifier: str,
-    user_domain: str,
+    domain: str,
     group_name: str,
-    group_domain: str,
 ) -> None:
     """
     Assigns a user to an existing group
     :param conn: Openstack connection object
     :param user_identifier: Name or ID of the user to assign to the group
-    :param user_domain: The domain the user is associated with
+    :param domain: The domain the user and group is associated with
     :param group_name: Name of the group to assign the user to
-    :param group_domain: The domain the group is associated with
     """
-    user_domain = conn.identity.find_domain(user_domain, ignore_missing=False)
-    group_domain = conn.identity.find_domain(group_domain, ignore_missing=False)
+    found_domain = conn.identity.find_domain(domain, ignore_missing=False)
     user = conn.identity.find_user(
-        user_identifier, domain_id=user_domain.id, ignore_missing=False
+        user_identifier, domain_id=found_domain.id, ignore_missing=False
     )
     group = conn.identity.find_group(
-        group_name, domain_id=group_domain.id, ignore_missing=False
+        group_name, domain_id=found_domain.id, ignore_missing=False
     )
     conn.identity.add_user_to_group(user=user, group=group)
 
