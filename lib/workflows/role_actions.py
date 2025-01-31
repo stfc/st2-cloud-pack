@@ -56,25 +56,22 @@ def role_assign_group(
 def add_user_to_group(
     conn: Connection,
     user_identifier: str,
-    user_domain: str,
+    domain: str,
     group_name: str,
-    group_domain: str,
 ) -> bool:
     """
     Assigns a user to an existing group
     :param conn: Openstack connection object
     :param user_identifier: Name or ID of the user to assign to the group
-    :param user_domain: The domain the user is associated with
+    :param domain: The domain the user and group is associated with
     :param group_name: Name of the group to assign the user to
-    :param group_domain: The domain the group is associated with
     :return: True always
     """
     openstack_roles.add_user_to_group(
         conn,
         user_identifier=user_identifier,
-        user_domain=user_domain,
+        domain=domain,
         group_name=group_name,
-        group_domain=group_domain,
     )
     return True
 

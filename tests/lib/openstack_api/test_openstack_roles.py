@@ -131,13 +131,10 @@ def test_add_user_to_group():
     Tests that a user can be added to an existing group
     """
     mock_conn = MagicMock()
-    add_user_to_group(mock_conn, "user", "user_domain", "group", "group_domain")
+    add_user_to_group(mock_conn, "user", "domain", "group")
 
-    mock_conn.identity.find_domain.assert_has_calls(
-        [
-            call("user_domain", ignore_missing=False),
-            call("group_domain", ignore_missing=False),
-        ]
+    mock_conn.identity.find_domain.assert_called_once_with(
+        "domain", ignore_missing=False
     )
     mock_conn.identity.find_user.assert_called_once_with(
         "user",

@@ -79,24 +79,21 @@ def test_role_add_user_to_group(mock_api_add_user_to_group):
     """
     mock_conn = MagicMock()
     mock_user_identifier = "user-name"
-    mock_user_domain = "user-domain"
+    mock_domain = "domain"
     mock_group_name = "group-name"
-    mock_group_domain = "group-domain"
 
     status = add_user_to_group(
         mock_conn,
         mock_user_identifier,
-        mock_user_domain,
+        mock_domain,
         mock_group_name,
-        mock_group_domain,
     )
 
     mock_api_add_user_to_group.assert_called_once_with(
         mock_conn,
         user_identifier=mock_user_identifier,
-        user_domain=mock_user_domain,
+        domain=mock_domain,
         group_name=mock_group_name,
-        group_domain=mock_group_domain,
     )
 
     assert status
