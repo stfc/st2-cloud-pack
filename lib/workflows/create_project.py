@@ -19,10 +19,14 @@ def create_project(
     admin_user_list: Optional[List[str]] = None,
     user_list: Optional[List[str]] = None,
 ):
+    if project_domain != "default":
+        raise RuntimeError(
+            "domain support is work in progress, please use default domain",
+        )
     return (
         create_external_project(
             conn=conn,
-            project_name=f"{project_name}-{project_domain}",
+            project_name=f"{project_name}",
             project_email=project_email,
             project_description=project_description,
             network_name=f"{project_name}-network",
@@ -38,7 +42,7 @@ def create_project(
         if networking_type == "external"
         else create_internal_project(
             conn=conn,
-            project_name=f"{project_name}-{project_domain}",
+            project_name=f"{project_name}",
             project_email=project_email,
             project_description=project_description,
             project_immutable=project_immutable,
