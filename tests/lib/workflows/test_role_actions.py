@@ -45,7 +45,7 @@ def test_role_add(mock_api_assign_role_to_user):
     assert status
 
 
-@patch("workflows.role_actions.openstack_roles.assign_group_role_to_project")
+@patch("workflows.role_actions.assign_group_role_to_project")
 def test_role_assign_group(mock_api_assign_group_role_to_project):
     """
     Tests that role_add function forwards on request to openstack API to assign a user to a group
