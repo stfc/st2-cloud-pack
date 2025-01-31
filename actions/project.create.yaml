@@ -69,7 +69,7 @@ parameters:
     required: true
     type: integer
     default: 1
-    description: Number of Floating Ips to allocate to the project - and is also the quota
+    description: Number of Floating IPs to allocate to the project - and is also the quota
   number_of_security_group_rules:
     required: true
     type: integer
