@@ -56,7 +56,7 @@ examples of atomic Actions are shown below (not an exhaustive list):
 | project.create             | Action to create a new openstack project (not-configured)                       |
 | project.show               | Action to find and list an Openstack Project's properties given it's Name or ID |
 | quota.set                  | Action to set project quota                                                     |
-| role.add                   | Action to add user role to a project                                            |
+| role.add.user.project           | Action to add user role to a project                                            |
 | router.add.interface       | Action to add interface to a router                                             |
 | router.create              | Action to create a Openstack router                                             |
 | security.group.create      | Action to create new security group for a project                               |

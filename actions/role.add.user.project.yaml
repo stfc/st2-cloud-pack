@@ -1,8 +1,8 @@
 ---
-description: Add User Role to Project
+description: Add User directly to a project
 enabled: true
 entry_point: src/openstack_actions.py
-name: role.add
+name: role.add.user.project
 parameters:
   lib_entry_point:
     default: workflows.role_actions.role_add
