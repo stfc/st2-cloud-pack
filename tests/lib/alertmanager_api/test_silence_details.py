@@ -60,7 +60,7 @@ def test_add_from_json_with_string():
 "createdBy": "admin",\
 "comment": "Testing.",\
 "status": {"state": "active"},\
-"matchers": [{"name": "instance", "value": "hv123.matrix.net"}]}]'
+"matchers": [{"name": "env", "value": "prod"}, {"name": "instance", "value": "hv123.matrix.net"}]}]'
     expected_output = json.loads(json_input)  # Expected parsed list
 
     handler = SilenceDetailsHandler()
@@ -83,7 +83,7 @@ def test_add_from_json_with_string():
         assert silence_obj.author == expected_silence["createdBy"]
         assert silence_obj.comment == expected_silence["comment"]
         assert silence_obj.status == expected_silence["status"]["state"]
-        assert silence_obj.instance_name == expected_silence["matchers"][0]["value"]
+        assert silence_obj.instance_name == "hv123.matrix.net"
 
 
 def test_add_from_json_with_list():
@@ -97,7 +97,10 @@ def test_add_from_json_with_list():
             "createdBy": "admin",
             "comment": "Testing.",
             "status": {"state": "pending"},
-            "matchers": [{"name": "instance", "value": "hv123.matrix.net"}],
+            "matchers": [
+                {"name": "env", "value": "prod"},
+                {"name": "instance", "value": "hv123.matrix.net"},
+            ],
         }
     ]
 
