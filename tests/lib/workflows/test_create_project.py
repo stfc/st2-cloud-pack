@@ -37,7 +37,7 @@ def test_project_create_internal_project(mock_create_internal_project):
 @patch("workflows.create_project.create_external_project")
 def test_project_create_external_project(mock_create_external_project):
     """
-    Test project creation with internal network
+    Test project creation with external network
     """
     mock_conn = MagicMock()
     mock_project = "mock_project"
@@ -78,7 +78,29 @@ def test_project_create_raise_not_default_domain():
     mock_domain = "not_default"
     mock_network = "external"
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(NotImplementedError):
+        create_project(
+            mock_conn,
+            mock_project,
+            mock_email,
+            mock_description,
+            mock_domain,
+            mock_network,
+        )
+
+
+def test_project_create_raise_unknow_network_type():
+    """
+    Test project creation with unknown network type
+    """
+    mock_conn = MagicMock()
+    mock_project = "mock_project"
+    mock_email = "email@example.com"
+    mock_description = "mock_description"
+    mock_domain = "default"
+    mock_network = "not_a_network"
+
+    with pytest.raises(NotImplementedError):
         create_project(
             mock_conn,
             mock_project,

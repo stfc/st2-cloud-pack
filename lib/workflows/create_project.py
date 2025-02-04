@@ -19,11 +19,24 @@ def create_project(
     admin_user_list: Optional[List[str]] = None,
     user_list: Optional[List[str]] = None,
 ):
+
     if project_domain != "default":
-        raise RuntimeError(
+        raise NotImplementedError(
             "domain support is work in progress, please use default domain",
         )
-    return (
+
+    if networking_type == "internal":
+        create_internal_project(
+            conn=conn,
+            project_name=f"{project_name}",
+            project_email=project_email,
+            project_description=project_description,
+            project_immutable=project_immutable,
+            parent_id=parent_id,
+            admin_user_list=admin_user_list,
+            stfc_user_list=user_list,
+        )
+    elif networking_type == "external":
         create_external_project(
             conn=conn,
             project_name=f"{project_name}",
@@ -39,15 +52,5 @@ def create_project(
             admin_user_list=admin_user_list,
             stfc_user_list=user_list,
         )
-        if networking_type == "external"
-        else create_internal_project(
-            conn=conn,
-            project_name=f"{project_name}",
-            project_email=project_email,
-            project_description=project_description,
-            project_immutable=project_immutable,
-            parent_id=parent_id,
-            admin_user_list=admin_user_list,
-            stfc_user_list=user_list,
-        )
-    )
+    else:
+        raise NotImplementedError(f"Unknown networking type {networking_type}")
