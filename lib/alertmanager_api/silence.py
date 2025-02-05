@@ -167,10 +167,21 @@ class AlertManagerAPI:
         try:
             api_url = f"{self.api_endpoint}/api/v2/silences"
             response = requests.get(api_url, auth=self.auth, timeout=10)
+            response.raise_for_status()
             silences = response.json()
             handler = SilenceDetailsHandler()
             handler.add_from_json(silences)
             return handler
+        except requests.HTTPError as req_ex:
+            msg = f"Failed to get silences from Alertmanager: {req_ex} "
+            if req_ex.response is not None:
+                msg += (
+                    f"Failed to get silences. "
+                    f"Response status code: {response.status_code} "
+                    f"Response text: {response.text}"
+                )
+            self.log.critical(msg)
+            raise req_ex
         except RequestException as req_ex:
             msg = f"Failed to get silences from Alertmanager: {req_ex} "
             if req_ex.response is not None:
@@ -178,5 +189,10 @@ class AlertManagerAPI:
                     f"Response status code: {req_ex.response.status_code} "
                     f"Response text: {req_ex.response.text}"
                 )
+            self.log.critical(msg)
+            raise req_ex
+        except Exception as req_ex:
+            # to capture any other Exception that is not HTTPError
+            msg = f"Failed to get silences from Alertmanager: {req_ex} "
             self.log.critical(msg)
             raise req_ex
