@@ -2,7 +2,7 @@ from unittest.mock import patch, NonCallableMock, MagicMock
 from importlib import import_module
 import pytest
 
-from actions.src.openstack_actions import OpenstackActions
+from src.openstack_actions import OpenstackActions
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase
 
 
