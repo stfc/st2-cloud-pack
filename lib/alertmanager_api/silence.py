@@ -37,7 +37,7 @@ class AlertManagerAPI:
         :raises MissingMandatoryParamError:
             if any of the required attributes are missing
             in the silence object:
-            instance_name
+            hostname
             start time
             end time
             author
@@ -45,8 +45,8 @@ class AlertManagerAPI:
         :raises requests.exceptions.RequestException:
             when the request to the AlertManager failed
         """
-        if not silence.instance_name:
-            msg = "Missing silence instance name"
+        if not silence.hostname:
+            msg = "Missing silence hostname"
             self.log.critical(msg)
             raise MissingMandatoryParamError(msg)
         if not silence.start_time_dt:
@@ -69,8 +69,8 @@ class AlertManagerAPI:
         payload = {
             "matchers": [
                 {
-                    "name": "instance",
-                    "value": silence.instance_name,
+                    "name": "hostname",
+                    "value": silence.hostname,
                     "isRegex": False,
                 }
             ],

@@ -5,7 +5,7 @@ from datetime import datetime
 class SilenceDetails:  # pylint: disable=too-few-public-methods
     def __init__(
         self,
-        instance_name=None,
+        hostname=None,
         start_time_dt=None,
         end_time_dt=None,
         author=None,
@@ -25,8 +25,8 @@ class SilenceDetails:  # pylint: disable=too-few-public-methods
             naive_datetime = datetime.strptime(datetime_string, datetime_format)
             utc_datetime = naive_datetime.replace(tzinfo=timezone.utc)
 
-        :param instance_name: name of the server
-        :type instance_name: str
+        :param hostname: name of the server
+        :type hostname: str
         :param start_time_dt: start time of the silence event
         :type start_time_dt: datetime
         :param end_time_dt: end time of the silence event
@@ -47,7 +47,7 @@ class SilenceDetails:  # pylint: disable=too-few-public-methods
             raise TypeError("start_time_dt must be of type datetime.")
         if end_time_dt is not None and not isinstance(end_time_dt, datetime):
             raise TypeError("end_time_dt must be of type datetime.")
-        self.instance_name = instance_name
+        self.hostname = hostname
         self.start_time_dt = start_time_dt
         self.end_time_dt = end_time_dt
         self.author = author
@@ -141,7 +141,7 @@ class SilenceDetailsHandler(list):
                         {
                             "isEqual": true,
                             "isRegex": false,
-                            "name": "instance",
+                            "name": "hostname",
                             "value": "hv123.matrix.net"
                         }
                     ],
@@ -160,7 +160,7 @@ class SilenceDetailsHandler(list):
                         {
                             "isEqual": true,
                             "isRegex": false,
-                            "name": "instance",
+                            "name": "hostname",
                             "value": "hv123.matrix.net"
                         }
                     ],
@@ -196,16 +196,16 @@ class SilenceDetailsHandler(list):
             # Set the comment
             comment = json_doc["comment"]
 
-            # Extract the instance name from the matchers list (look for a 'name' == 'instance')
+            # Extract the hostname name from the matchers list (look for a 'name' == 'hostname')
             for matcher in json_doc.get("matchers", []):
-                if matcher["name"] == "instance":
-                    instance_name = matcher["value"]
+                if matcher["name"] == "hostname":
+                    hostname = matcher["value"]
                     break
 
             status = json_doc["status"]["state"]
 
             new_silence_detail = SilenceDetails(
-                instance_name,
+                hostname,
                 start_time_dt,
                 end_time_dt,
                 author,
@@ -248,18 +248,18 @@ class SilenceDetailsHandler(list):
                 silencedetailshandler.append(silence)
         return silencedetailshandler
 
-    def get_by_name(self, instance_name):
+    def get_by_name(self, hostname):
         """
         filter this list and keep only the
-        silence events for a given instance_name
+        silence events for a given hostname
 
-        :param instance_name: HyperVisor name
-        :type instance _name: str
+        :param hostname: HyperVisor name
+        :type hostname: str
         :return: a new list of silence events
         :rtype: SilenceDetailsHandler
         """
         silencedetailshandler = SilenceDetailsHandler()
         for silence in iter(self):
-            if silence.instance_name == instance_name:
+            if silence.hostname == hostname:
                 silencedetailshandler.append(silence)
         return silencedetailshandler
