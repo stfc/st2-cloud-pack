@@ -1,5 +1,5 @@
-import pytest
 from datetime import timedelta, datetime
+import pytest
 from structs.alertmanager.silence_details import SilenceDetails
 
 

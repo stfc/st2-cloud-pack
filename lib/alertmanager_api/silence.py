@@ -1,9 +1,9 @@
+from typing import List, Dict
 import logging
-import requests
 import json
 from datetime import datetime
 
-from typing import List, Dict
+import requests
 from structs.alertmanager.alertmanager_account import AlertManagerAccount
 from structs.alertmanager.silence_details import SilenceDetails
 
@@ -40,9 +40,10 @@ def schedule_silence(
         response.raise_for_status()
     except requests.HTTPError as req_ex:
         logger.critical(
-            f"Failed to create silence in Alertmanager: {req_ex}"
-            f"Response status code: {req_ex.response.status_code if req_ex.response else 'null'} "
-            f"Response text: {req_ex.response.text if req_ex.response else 'null'}"
+            "Failed to create silence in Alertmanager: %s\n\tResponse status code: %s\n\tResponse text: %s",
+            req_ex,
+            req_ex.response.status_code if req_ex.response else "null",
+            req_ex.response.text if req_ex.response else "null",
         )
         raise req_ex
     return response.json()["silenceID"]
@@ -68,9 +69,10 @@ def remove_silence(alertmanager_account: AlertManagerAccount, silence_id: str) -
         response.raise_for_status()
     except requests.HTTPError as req_ex:
         logger.critical(
-            f"Failed to create silence in Alertmanager: {req_ex}"
-            f"Response status code: {req_ex.response.status_code if req_ex.response else 'null'} "
-            f"Response text: {req_ex.response.text if req_ex.response else 'null'}"
+            "Failed to create silence in Alertmanager: %s\n\tResponse status code: %s\n\tResponse text: %s",
+            req_ex,
+            req_ex.response.status_code if req_ex.response else "null",
+            req_ex.response.text if req_ex.response else "null",
         )
         raise req_ex
 
@@ -84,8 +86,8 @@ def remove_silences(
         :param silence_ids: a list of silence ids
         :type silence_ids: List of strings
     """
-    for id in silence_ids:
-        remove_silence(alertmanager_account, id)
+    for silence_id in silence_ids:
+        remove_silence(alertmanager_account, silence_id)
 
 
 def get_silences(alertmanager_account: AlertManagerAccount) -> Dict:
@@ -106,9 +108,10 @@ def get_silences(alertmanager_account: AlertManagerAccount) -> Dict:
         response.raise_for_status()
     except requests.HTTPError as req_ex:
         logger.critical(
-            f"Failed to create silence in Alertmanager: {req_ex}"
-            f"Response status code: {req_ex.response.status_code if req_ex.response else 'null'} "
-            f"Response text: {req_ex.response.text if req_ex.response else 'null'}"
+            "Failed to create silence in Alertmanager: %s\n\tResponse status code: %s\n\tResponse text: %s",
+            req_ex,
+            req_ex.response.status_code if req_ex.response else "null",
+            req_ex.response.text if req_ex.response else "null",
         )
         raise req_ex
 

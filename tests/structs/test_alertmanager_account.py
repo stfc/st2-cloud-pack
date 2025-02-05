@@ -76,7 +76,7 @@ def test_from_pack_config_invalid_pack():
         AlertManagerAccount.from_pack_config({}, "config1")
 
 
-def test_auth_property(mock_alertmanager_account):
+def test_auth_property():
     account = AlertManagerAccount(
         username="user1", password="some-pass", alertmanager_endpoint="foo"
     )

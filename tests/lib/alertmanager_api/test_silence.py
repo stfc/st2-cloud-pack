@@ -1,7 +1,7 @@
-from unittest.mock import MagicMock, patch, NonCallableMock
+from unittest.mock import MagicMock, patch
 from datetime import datetime
-import pytest
 import json
+import pytest
 import requests
 from structs.alertmanager.silence_details import SilenceDetails
 from alertmanager_api.silence import (

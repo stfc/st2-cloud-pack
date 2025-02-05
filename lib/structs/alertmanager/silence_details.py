@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass
 class SilenceDetails:
     """
