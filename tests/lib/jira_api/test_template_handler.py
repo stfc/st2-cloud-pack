@@ -6,8 +6,8 @@ from yaml import YAMLError
 
 from jinja2.exceptions import TemplateError, TemplateNotFound
 from exceptions.jira_template_error import JiraTemplateError
-from jira_api.template_handler import TemplateHandler
 from structs.jira.jira_template_details import JiraTemplateDetails
+from jira_api.template_handler import TemplateHandler
 
 # pylint:disable=protected-access
 
