@@ -3,7 +3,18 @@ import pytest
 from structs.alertmanager.silence_details import SilenceDetails
 
 
-def test_duration_calc():
+@pytest.mark.parametrize(
+    "days,hours,minutes,expected_end_time_str,expected_time_delta",
+    [
+        (1, 1, 10, "2025-02-06T15:10:00Z", timedelta(days=1, seconds=4200)),
+        (2, 0, 0, "2025-02-07T14:00:00Z", timedelta(days=2, seconds=0)),
+        (0, 2, 0, "2025-02-05T16:00:00Z", timedelta(days=0, seconds=7200)),
+        (0, 0, 20, "2025-02-05T14:20:00Z", timedelta(days=0, seconds=1200)),
+    ],
+)
+def test_duration_calc(
+    days, hours, minutes, expected_end_time_str, expected_time_delta
+):
     """test that SilenceDetails works when providing duration instead of end_time_dt"""
     res = SilenceDetails(
         matchers=["matcher1"],
@@ -11,14 +22,13 @@ def test_duration_calc():
         comment="comment",
         start_time_dt=datetime(2025, 2, 5, 14, 00, 00, 486496),
         end_time_dt=None,
-        duration_days=1,
-        duration_hours=1,
-        duration_minutes=10,
+        duration_days=days,
+        duration_hours=hours,
+        duration_minutes=minutes,
     )
     assert res.start_time_str == "2025-02-05T14:00:00Z"
-    # 1 day, 1 hour, 10 minutes from start time
-    assert res.end_time_str == "2025-02-06T15:10:00Z"
-    assert res.duration == timedelta(days=1, seconds=4200)
+    assert res.end_time_str == expected_end_time_str
+    assert res.duration == expected_time_delta
 
 
 def test_fail_end_time_older_than_start():

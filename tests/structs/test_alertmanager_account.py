@@ -44,7 +44,7 @@ def test_from_dict():
         assert val == getattr(res, key)
 
 
-def test_from_pack_config_valid(mock_alertmanager_account, mock_pack_config):
+def test_am_from_pack_config_valid(mock_alertmanager_account, mock_pack_config):
     """
     Tests that from_pack_config() static method works properly
     this method should build a AlertManager dataclass from a valid
@@ -58,7 +58,7 @@ def test_from_pack_config_valid(mock_alertmanager_account, mock_pack_config):
         assert val == getattr(res, key)
 
 
-def test_from_pack_config_invalid_name(mock_pack_config):
+def test_am_from_pack_config_invalid_name(mock_pack_config):
     """
     Tests that from_pack_config() method works properly - when given an invalid alertmanager_account_name
     should raise an error if pack config does not contain entry matching alertmanager_account_name
@@ -67,7 +67,7 @@ def test_from_pack_config_invalid_name(mock_pack_config):
         AlertManagerAccount.from_pack_config(mock_pack_config, "invalid-config")
 
 
-def test_from_pack_config_invalid_pack():
+def test_am_from_pack_config_invalid_pack():
     """
     Tests that from_pack_config() method works properly - when given an invalid pack_config
     should raise an error if pack config could not be found
@@ -76,7 +76,7 @@ def test_from_pack_config_invalid_pack():
         AlertManagerAccount.from_pack_config({}, "config1")
 
 
-def test_auth_property():
+def test_am_auth_property():
     account = AlertManagerAccount(
         username="user1", password="some-pass", alertmanager_endpoint="foo"
     )
