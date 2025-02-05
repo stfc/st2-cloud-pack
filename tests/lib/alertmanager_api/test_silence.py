@@ -31,7 +31,7 @@ def silence_details(
 ):  #  pylint: disable=redefined-outer-name
     """Base fixture for SilenceDetails."""
     return SilenceDetails(
-        instance_name="name",
+        hostname="name",
         start_time_dt=start_time_dt,
         end_time_dt=end_time_dt,
         comment="comment",
@@ -42,7 +42,7 @@ def silence_details(
 @pytest.mark.parametrize(
     "missing_attr, expected_message",
     [
-        ("instance_name", "Missing silence instance name"),
+        ("hostname", "Missing silence hostname"),
         ("start_time_dt", "Missing silence start time"),
         ("end_time_dt", "Missing silence end time"),
         ("author", "Missing silence author"),

@@ -14,7 +14,7 @@ from alertmanager_api.silence_details import SilenceDetails, SilenceDetailsHandl
 def test_invalid_datetime_fields(attr, value, expected_message):
     """Test that SilenceDetails raises a TypeError for invalid datetime fields."""
     kwargs = {
-        "instance_name": "name",
+        "hostname": "name",
         "start_time_dt": datetime(2025, 1, 1, 10, 0, 0),
         "end_time_dt": datetime(2025, 1, 1, 10, 0, 0),
         "author": "author",
@@ -60,7 +60,7 @@ def test_add_from_json_with_string():
 "createdBy": "admin",\
 "comment": "Testing.",\
 "status": {"state": "active"},\
-"matchers": [{"name": "env", "value": "prod"}, {"name": "instance", "value": "hv123.matrix.net"}]}]'
+"matchers": [{"name": "env", "value": "prod"}, {"name": "hostname", "value": "hv123.matrix.net"}]}]'
     expected_output = json.loads(json_input)  # Expected parsed list
 
     handler = SilenceDetailsHandler()
@@ -83,7 +83,7 @@ def test_add_from_json_with_string():
         assert silence_obj.author == expected_silence["createdBy"]
         assert silence_obj.comment == expected_silence["comment"]
         assert silence_obj.status == expected_silence["status"]["state"]
-        assert silence_obj.instance_name == "hv123.matrix.net"
+        assert silence_obj.hostname == "hv123.matrix.net"
 
 
 def test_add_from_json_with_list():
@@ -99,7 +99,7 @@ def test_add_from_json_with_list():
             "status": {"state": "pending"},
             "matchers": [
                 {"name": "env", "value": "prod"},
-                {"name": "instance", "value": "hv123.matrix.net"},
+                {"name": "hostname", "value": "hv123.matrix.net"},
             ],
         }
     ]
@@ -178,7 +178,7 @@ def test_filtered_silences(property_name, active_ids):
     ],
 )
 def test_get_by_name(search_name, expected_ids):
-    """Test that get_by_name correctly filters silences based on instance_name."""
+    """Test that get_by_name correctly filters silences based on hostname."""
 
     # Create SilenceDetails instances with different instance names
     silence1 = SilenceDetails(
