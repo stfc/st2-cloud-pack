@@ -1,32 +1,6 @@
-import jira
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
-from structs.jira.jira_account import JiraAccount
 from structs.jira.jira_issue_details import IssueDetails
-
-
-class JiraConnection:
-    """
-    Wrapper for Jira connection
-    """
-
-    def __init__(self, account: JiraAccount):
-        self.conn = None
-        self.endpoint = account.atlassian_endpoint
-        self.token = account.api_token
-        self.username = account.username
-
-    def __enter__(self):
-        self.conn = jira.client.JIRA(
-            server=self.endpoint,
-            basic_auth=(
-                self.username,
-                self.token,
-            ),
-        )
-        return self.conn
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.conn.close()
+from jira_api.connection import JiraConnection
 
 
 def create_jira_task(account, issue_details: IssueDetails) -> str:
