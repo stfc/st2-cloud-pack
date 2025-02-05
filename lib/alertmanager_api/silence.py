@@ -1,198 +1,199 @@
 import logging
 import requests
-from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
-from requests.auth import HTTPBasicAuth
-from requests.exceptions import RequestException
-from alertmanager_api.silence_details import SilenceDetailsHandler
+import json
+from datetime import datetime
+
+from typing import List, Dict
+from structs.alertmanager.alertmanager_account import AlertManagerAccount
+from structs.alertmanager.silence_details import SilenceDetails
+
+logger = logging.getLogger("AlertManagerAPI")
 
 
-class AlertManagerAPI:
+def schedule_silence(
+    alertmanager_account: AlertManagerAccount, silence_details: SilenceDetails
+) -> str:
     """
-    class implementing an interface to the Kayobe's alertmanager
-    functionalities:
-        * create a silence
-        * remove an existing silence
+    Schedules a silence in alertmanager
+        :param alertmanager_account: dataclass for holding alertmanager connection specs
+        :param silence_details: object with the specs to create a silence
+        :return: ID of new silence created in Alertmanager
+        :raises requests.exceptions.RequestException:
+            when the request to the AlertManager failed
     """
-
-    def __init__(self, alertmanager_account):
-        """
-        :param alertmanager_account: object with credentials
-        :type alertmanager_account: AlertManagerAccount
-        """
-        self.log = logging.getLogger("AlertManagerAPI")
-        self.alertmanager_account = alertmanager_account
-        self.auth = HTTPBasicAuth(
-            alertmanager_account.username, alertmanager_account.password
+    payload = {
+        "matchers": silence_details.matchers,
+        "startsAt": silence_details.start_time_str,
+        "endsAt": silence_details.end_time_str,
+        "createdBy": silence_details.author,
+        "comment": silence_details.comment,
+    }
+    api_url = f"{alertmanager_account.alertmanager_endpoint}/api/v2/silences"
+    try:
+        response = requests.post(
+            api_url,
+            auth=alertmanager_account.auth,
+            headers={"Accept": "application/json"},
+            json=payload,
+            timeout=10,
         )
-        self.api_endpoint = alertmanager_account.alertmanager_endpoint
+        response.raise_for_status()
+    except requests.HTTPError as req_ex:
+        logger.critical(
+            f"Failed to create silence in Alertmanager: {req_ex}"
+            f"Response status code: {req_ex.response.status_code if req_ex.response else 'null'} "
+            f"Response text: {req_ex.response.text if req_ex.response else 'null'}"
+        )
+        raise req_ex
+    return response.json()["silenceID"]
 
-    def schedule_silence(self, silence):
-        """
-        Schedules a silence in alertmanager
 
-        :param silence: object with the specs to create a silence
-        :type silence: SilenceDetails
-        :return: a new silence object, including the silence_id
-        :rtype: SilenceDetails
-        :raises MissingMandatoryParamError:
-            if any of the required attributes are missing
-            in the silence object:
-            instance_name
-            start time
-            end time
-            author
-            comment
+def remove_silence(alertmanager_account: AlertManagerAccount, silence_id: str) -> None:
+    """
+    Removes a previously scheduled silence in alertmanager
+        :param alertmanager_account: dataclass for holding alertmanager connection specs
+        :param silence_id: ID of silence to remove
         :raises requests.exceptions.RequestException:
             when the request to the AlertManager failed
-        """
-        if not silence.instance_name:
-            msg = "Missing silence instance name"
-            self.log.critical(msg)
-            raise MissingMandatoryParamError(msg)
-        if not silence.start_time_dt:
-            msg = "Missing silence start time"
-            self.log.critical(msg)
-            raise MissingMandatoryParamError(msg)
-        if not silence.end_time_dt:
-            msg = "Missing silence end time"
-            self.log.critical(msg)
-            raise MissingMandatoryParamError(msg)
-        if not silence.author:
-            msg = "Missing silence author"
-            self.log.critical(msg)
-            raise MissingMandatoryParamError(msg)
-        if not silence.comment:
-            msg = "Missing silence comment"
-            self.log.critical(msg)
-            raise MissingMandatoryParamError(msg)
+    """
+    api_url = (
+        f"{alertmanager_account.alertmanager_endpoint}/api/v2/silence/{silence_id}"
+    )
+    try:
+        response = requests.delete(
+            api_url,
+            auth=alertmanager_account.auth,
+            timeout=10,
+        )
+        response.raise_for_status()
+    except requests.HTTPError as req_ex:
+        logger.critical(
+            f"Failed to create silence in Alertmanager: {req_ex}"
+            f"Response status code: {req_ex.response.status_code if req_ex.response else 'null'} "
+            f"Response text: {req_ex.response.text if req_ex.response else 'null'}"
+        )
+        raise req_ex
 
-        payload = {
-            "matchers": [
-                {
-                    "name": "instance",
-                    "value": silence.instance_name,
-                    "isRegex": False,
-                }
-            ],
-            "startsAt": silence.start_time_str,
-            "endsAt": silence.end_time_str,
-            "createdBy": silence.author,
-            "comment": silence.comment,
+
+def remove_silences(
+    alertmanager_account: AlertManagerAccount, silence_ids: List[str]
+) -> None:
+    """
+    Removes a list of previously scheduled silences in alertmanager
+        :param alertmanager_account: dataclass for holding alertmanager connection specs
+        :param silence_ids: a list of silence ids
+        :type silence_ids: List of strings
+    """
+    for id in silence_ids:
+        remove_silence(alertmanager_account, id)
+
+
+def get_silences(alertmanager_account: AlertManagerAccount) -> Dict:
+    """
+    get all silence events recorded in AlertManager
+    :param alertmanager_account: dataclass for holding alertmanager connection specs
+    :return: the dictionary of Silence events currently recorded in AlertManager:
+        {
+            id: {
+                "state":"<active>/<pending>/<expired>,
+                "details":SilenceDetails()
+            }
         }
-        try:
-            api_url = f"{self.api_endpoint}/api/v2/silences"
-            response = requests.post(
-                api_url,
-                auth=self.auth,
-                headers={"Accept": "application/json"},
-                json=payload,
-                timeout=10,
-            )
-            response.raise_for_status()
-            silence_id = response.json()["silenceID"]
-            silence.silence_id = silence_id
-            return silence
-        except requests.HTTPError as req_ex:
-            msg = f"Failed to create silence in Alertmanager: {req_ex} "
-            if req_ex.response is not None:
-                msg += (
-                    "Failed to create silence. "
-                    f"Response status code: {req_ex.response.status_code} "
-                    f"Response text: {req_ex.response.text}"
-                )
-            self.log.critical(msg)
-            raise req_ex
-        except Exception as req_ex:
-            # to capture any other Exception that is not HTTPError
-            msg = f"Failed to create silence in Alertmanager: {req_ex} "
-            self.log.critical(msg)
-            raise req_ex
+    """
+    try:
+        api_url = f"{alertmanager_account.alertmanager_endpoint}/api/v2/silences"
+        response = requests.get(api_url, auth=alertmanager_account.auth, timeout=10)
+        response.raise_for_status()
+    except requests.HTTPError as req_ex:
+        logger.critical(
+            f"Failed to create silence in Alertmanager: {req_ex}"
+            f"Response status code: {req_ex.response.status_code if req_ex.response else 'null'} "
+            f"Response text: {req_ex.response.text if req_ex.response else 'null'}"
+        )
+        raise req_ex
 
-    def remove_silence(self, silence):
-        """
-        Removes a previously scheduled silence in alertmanager
+    silences = {}
+    for silence in json.loads(response.json()):
+        # Create SilenceDetails instance
+        silence_details = SilenceDetails(
+            # Convert ISO format strings to datetime objects
+            start_time_dt=datetime.fromisoformat(
+                silence["startsAt"].replace("Z", "+00:00")
+            ),
+            end_time_dt=datetime.fromisoformat(
+                silence["endsAt"].replace("Z", "+00:00")
+            ),
+            author=silence["createdBy"],
+            comment=silence["comment"],
+            matchers=silence["matchers"],
+        )
 
-        :param silence: object including the silence_id to be removed
-        :type silence: SilenceDetails
-        :raises MissingMandatoryParamError: when the silence_id is missing
-        :raises requests.exceptions.RequestException:
-            when the request to the AlertManager failed
-        """
-        if not silence.silence_id:
-            msg = "Missing silence silence_id"
-            self.log.critical(msg)
-            raise MissingMandatoryParamError(msg)
+        # Add to dictionary with ID as key
+        silences[silence["id"]] = {
+            "details": silence_details,
+            "state": silence["status"]["state"],
+        }
+    return silences
 
-        try:
-            api_url = f"{self.api_endpoint}/api/v2/silence/{silence.silence_id}"
-            response = requests.delete(
-                api_url,
-                auth=self.auth,
-                timeout=10,
-            )
-            response.raise_for_status()
-        except requests.HTTPError as req_ex:
-            msg = f"Failed to delete silence in Alertmanager: {req_ex} "
-            if req_ex.response is not None:
-                msg += (
-                    f"Failed to delete silence with ID {silence.silence_id}. "
-                    f"Response status code: {response.status_code} "
-                    f"Response text: {response.text}"
-                )
-            self.log.critical(msg)
-            raise req_ex
-        except Exception as req_ex:
-            # to capture any other Exception that is not HTTPError
-            msg = f"Failed to create silence in Alertmanager: {req_ex} "
-            self.log.critical(msg)
-            raise req_ex
 
-    def remove_silences(self, silence_instances):
-        """
-        Removes a list of previously scheduled silences in alertmanager
+def get_active_silences(alertmanager_account: AlertManagerAccount):
+    """
+    get active silence events, where:
+    - the silence has started but has not finished yet
+    :param alertmanager_account: dataclass for holding alertmanager connection specs
+    :return: the dictionary of Silence events currently recorded in AlertManager:
+        {
+            id: {
+                "state":"<active>/<pending>/<expired>,
+                "details":SilenceDetails()
+            }
+        }
+    """
+    return {
+        k: v
+        for k, v in get_silences(alertmanager_account).items()
+        if v["state"] == "active"
+    }
 
-        :param silence_instances: a list of silence instances
-        :type silence: SilenceDetailsHandler
-        """
-        for silence in silence_instances:
-            self.remove_silence(silence)
 
-    def get_silences(self):
-        """
-        download all silence events recorded in AlertManager
+def get_valid_silences(alertmanager_account: AlertManagerAccount):
+    """
+    get valid silence events, where:
+    - the silence has not started yet
+    - the silence has started but has not finished yet
+    :param alertmanager_account: dataclass for holding alertmanager connection specs
+    :return: the dictionary of Silence events currently recorded in AlertManager:
+        {
+            id: {
+                "state":"<active>/<pending>/<expired>,
+                "details":SilenceDetails()
+            }
+        }
+    """
+    return {
+        k: v
+        for k, v in get_silences(alertmanager_account).items()
+        if v["state"] in ["active", "pending"]
+    }
 
-        :return: the list of Silence events currently recorded in AlertManager
-        :rtype: SilenceDetailsHandler
-        """
-        try:
-            api_url = f"{self.api_endpoint}/api/v2/silences"
-            response = requests.get(api_url, auth=self.auth, timeout=10)
-            response.raise_for_status()
-            silences = response.json()
-            handler = SilenceDetailsHandler()
-            handler.add_from_json(silences)
-            return handler
-        except requests.HTTPError as req_ex:
-            msg = f"Failed to get silences from Alertmanager: {req_ex} "
-            if req_ex.response is not None:
-                msg += (
-                    f"Failed to get silences. "
-                    f"Response status code: {response.status_code} "
-                    f"Response text: {response.text}"
-                )
-            self.log.critical(msg)
-            raise req_ex
-        except RequestException as req_ex:
-            msg = f"Failed to get silences from Alertmanager: {req_ex} "
-            if req_ex.response is not None:
-                msg += (
-                    f"Response status code: {req_ex.response.status_code} "
-                    f"Response text: {req_ex.response.text}"
-                )
-            self.log.critical(msg)
-            raise req_ex
-        except Exception as req_ex:
-            # to capture any other Exception that is not HTTPError
-            msg = f"Failed to get silences from Alertmanager: {req_ex} "
-            self.log.critical(msg)
-            raise req_ex
+
+def get_hv_silences(alertmanager_account: AlertManagerAccount, hostname: str):
+    """
+    get silences pertaining to a hv, where:
+    - the silence has a "matcher" where the "name" is "instance" and the "value" matches the given hostname
+    :param hostname: hypervisor hostname to get silences for
+    :param alertmanager_account: dataclass for holding alertmanager connection specs
+    :return: the dictionary of Silence events currently recorded in AlertManager:
+        {
+            id: {
+                "state":"<active>/<pending>/<expired>,
+                "details":SilenceDetails()
+            }
+        }
+    """
+    hv_silences = {}
+    for silence_id, silence_details in get_silences(alertmanager_account).items():
+        for matcher in silence_details["details"].matchers:
+            if matcher["name"] == "instance" and matcher["value"] == hostname:
+                hv_silences[silence_id] = silence_details
+    return hv_silences

@@ -1,5 +1,6 @@
 from dataclasses import dataclass, fields
 from typing import Dict
+from requests.auth import HTTPBasicAuth
 
 
 @dataclass
@@ -14,6 +15,10 @@ class AlertManagerAccount:
     username: str
     password: str
     alertmanager_endpoint: str
+
+    @property
+    def auth(self):
+        return HTTPBasicAuth(self.username, self.password)
 
     @staticmethod
     def from_dict(dictionary: Dict):
