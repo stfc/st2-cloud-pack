@@ -3,7 +3,6 @@ name: "hv.patch.reboot"
 pack: "stackstorm_openstack"
 description: "Starts the patch reboot action when the hypervisor is drained"
 enabled: true
-
 criteria:
   trigger.previous_state:
     type: equals
@@ -11,13 +10,12 @@ criteria:
   trigger.current_state:
     type: equals
     pattern: DRAINED
-
 trigger:
   type: "stackstorm_openstack.hypervisor.state_change"
-
 action:
   ref: "stackstorm_openstack.hv.patch.reboot"
   parameters:
+    alertmanager_account_name: "default"
     icinga_account_name: "default"
     hypervisor_name: "{{ trigger.hypervisor_name }}"
     private_key_path: "/home/stanley/.ssh/id_rsa"
