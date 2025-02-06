@@ -188,7 +188,8 @@ def test_build_server():
             "imageRef": mock_conn.image.find_image.return_value.id,
             "flavorRef": mock_conn.compute.find_flavor.return_value.id,
             "networks": [{"uuid": mock_conn.network.find_network.return_value.id}],
-            "hypervisor": "hvxyz.nubes.rl.ac.uk",
+            "host": "hvxyz.nubes.rl.ac.uk",
+            "openstack_api_version": "2.74",
         }
     )
     mock_conn.compute.wait_for_server.assert_called_once_with(
