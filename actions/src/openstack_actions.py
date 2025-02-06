@@ -2,6 +2,7 @@ from importlib import import_module
 from st2common.runners.base_action import Action
 
 from openstack_api.openstack_connection import OpenstackConnection
+from structs.alertmanager.alertmanager_account import AlertManagerAccount
 from structs.email.smtp_account import SMTPAccount
 from structs.icinga.icinga_account import IcingaAccount
 from structs.jira.jira_account import JiraAccount
@@ -18,17 +19,14 @@ class OpenstackActions(Action):
         module, fn_name = lib_entry_point.rsplit(".", 1)
         action_module = import_module(module)
         action_func = getattr(action_module, fn_name)
-
         self.logger.info("Action Received - %s", lib_entry_point)
         self.logger.debug(
             "with Parameters: %s",
             "\n".join([f"{key}: {val}" for key, val in kwargs.items()]),
         )
-
         kwargs = self.parse_configs(**kwargs)
         if not requires_openstack:
             return action_func(**kwargs)
-
         # setup openstack connection
         with OpenstackConnection(kwargs["cloud_account"]) as conn:
             kwargs["conn"] = conn
@@ -58,4 +56,9 @@ class OpenstackActions(Action):
                 self.config, kwargs["icinga_account_name"]
             )
             del kwargs["icinga_account_name"]
+        if "alertmanager_account_name" in kwargs:
+            kwargs["alertmanager_account"] = AlertManagerAccount.from_pack_config(
+                self.config, kwargs["alertmanager_account_name"]
+            )
+            del kwargs["alertmanager_account_name"]
         return kwargs
