@@ -227,7 +227,7 @@ def test_create_jasmin_external_project(
 @patch("workflows.create_jasmin_external_project.create_network_rbac")
 @patch("workflows.create_jasmin_external_project.allocate_floating_ips")
 @patch("workflows.create_jasmin_external_project.assign_role_to_user")
-def test_create_jasmin_external_project_no_admin_users(
+def test_create_jasmin_external_project_no_users(
     mock_assign_role_to_user,
     mock_allocate_floating_ips,
     mock_create_network_rbac,
@@ -266,7 +266,7 @@ def test_create_jasmin_external_project_no_admin_users(
     project_immutable = True
     parent_id = "parent-id"
     admin_user_list = None
-    jasmin_user_list = ["user1", "user2"]
+    jasmin_user_list = None
 
     # Call the function
     create_jasmin_external_project(
@@ -370,26 +370,5 @@ def test_create_jasmin_external_project_no_admin_users(
         number_to_create=number_of_floating_ips,
     )
 
-    # Assert that roles were assigned to the jasmin users
-    mock_assign_role_to_user.assert_any_call(
-        mock_conn,
-        RoleDetails(
-            user_identifier="user1",
-            user_domain=UserDomains.JASMIN,
-            project_identifier="project-id",
-            role_identifier="user",
-        ),
-    )
-    mock_assign_role_to_user.assert_any_call(
-        mock_conn,
-        RoleDetails(
-            user_identifier="user2",
-            user_domain=UserDomains.JASMIN,
-            project_identifier="project-id",
-            role_identifier="user",
-        ),
-    )
-
-    # Verify assign_role_to_user was called two times
-    # (zero for admin, two for jasmin users)
-    assert mock_assign_role_to_user.call_count == 2
+    # Verify assign_role_to_user was called 0 times
+    assert mock_assign_role_to_user.call_count == 0

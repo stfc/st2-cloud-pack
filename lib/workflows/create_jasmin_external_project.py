@@ -47,7 +47,7 @@ def create_jasmin_external_project(
     project_immutable: Optional[bool] = None,
     parent_id: Optional[str] = None,
     admin_user_list: Optional[List[str]] = None,
-    jasmin_user_list: List[str] = None,
+    jasmin_user_list: Optional[List[str]] = None,
 ):
     """
     create an external project
@@ -70,6 +70,9 @@ def create_jasmin_external_project(
     if not admin_user_list:
         admin_user_list = []
 
+    if not jasmin_user_list:
+        jasmin_user_list = []
+
     project = create_project(
         conn,
         ProjectDetails(
@@ -83,7 +86,6 @@ def create_jasmin_external_project(
         ),
     )
 
-    # TODO Work out networking object creation
     network = create_network(
         conn,
         NetworkDetails(
@@ -95,7 +97,7 @@ def create_jasmin_external_project(
             has_external_router=False,
         ),
     )
-    # TODO Work out networking object creation
+
     router = create_router(
         conn,
         RouterDetails(
@@ -106,7 +108,7 @@ def create_jasmin_external_project(
             is_distributed=False,
         ),
     )
-    # TODO Work out networking object creation
+
     subnet = create_subnet(
         conn,
         network_identifier=network["id"],
@@ -114,14 +116,14 @@ def create_jasmin_external_project(
         subnet_description="",
         dhcp_enabled=True,
     )
-    # TODO Work out networking object creation
+
     add_interface_to_router(
         conn,
         project_identifier=project["id"],
         router_identifier=router["id"],
         subnet_identifier=subnet["id"],
     )
-    # TODO Work out networking object creation
+    # TODO Check default security groups
     # wait for default security group
     refresh_security_groups(conn, project["id"])
 
@@ -133,7 +135,7 @@ def create_jasmin_external_project(
             num_security_group_rules=number_of_security_group_rules,
         ),
     )
-    # TODO Work out networking object creation
+    # TODO Add security group rules
     # create default security group rules
     create_external_security_group_rules(
         conn, project_identifier=project["id"], security_group_identifier="default"
@@ -157,6 +159,7 @@ def create_jasmin_external_project(
         number_to_create=number_of_floating_ips,
     )
 
+    # TODO Separate out adding users to projects as a separate action?
     for admin_user in admin_user_list:
         assign_role_to_user(
             conn,
@@ -178,3 +181,4 @@ def create_jasmin_external_project(
                 role_identifier="user",
             ),
         )
+
