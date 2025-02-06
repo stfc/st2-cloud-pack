@@ -113,6 +113,22 @@ class TestOpenstackActions(OpenstackActionTestBase):
         )
         assert res == {"jira_account": mock_jira_account.from_pack_config.return_value}
 
+    @patch("src.openstack_actions.AlertManagerAccount")
+    def test_parse_configs_with_alertmanager_account(self, mock_alertmanager_account):
+        """
+        tests that parse_configs parses alertmanager_account_name properly if provided
+        """
+        mock_alertmanager_account_name = NonCallableMock()
+        res = self.action.parse_configs(
+            {"alertmanager_account_name": mock_alertmanager_account_name}
+        )
+        mock_alertmanager_account.from_pack_config.assert_called_once_with(
+            self.config, mock_alertmanager_account_name
+        )
+        assert res == {
+            "alertmanager_account": mock_alertmanager_account.from_pack_config.return_value
+        }
+
     def test_parse_configs_with_no_accounts(self):
         """
         tests that parse_configs doesn't do anything if no stackstorm config names given
