@@ -1,0 +1,9 @@
+name: migrate.server.retry
+description: Retry server migrate on fail
+enabled: true
+resource_ref: stackstorm_openstack.server.migrate
+policy_type: action.retry
+parameters:
+  retry_on: failure
+  delay: 120
+  max_retry_count: 3
