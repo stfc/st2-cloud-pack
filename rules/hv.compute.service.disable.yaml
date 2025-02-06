@@ -10,6 +10,9 @@ criteria:
   trigger.current_state:
     type: equals
     pattern: PENDING_MAINTENANCE
+  trigger.hypervisor_name:
+    type: inside
+    pattern: ["hv700.nubes.rl.ac.uk"]
 
 trigger:
   type: "stackstorm_openstack.hypervisor.state_change"
