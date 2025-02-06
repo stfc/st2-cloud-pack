@@ -197,6 +197,10 @@ def get_hv_silences(alertmanager_account: AlertManagerAccount, hostname: str):
     hv_silences = {}
     for silence_id, silence_details in get_silences(alertmanager_account).items():
         for matcher in silence_details["details"].matchers:
+            # PrometheusTargetMissing alert has the instance field to catch.
             if matcher["name"] == "instance" and matcher["value"] == hostname:
+                hv_silences[silence_id] = silence_details
+            # openstackServiceDown alert has the hostname field to catch.
+            elif matcher["name"] == "hostname" and matcher["value"] == hostname:
                 hv_silences[silence_id] = silence_details
     return hv_silences

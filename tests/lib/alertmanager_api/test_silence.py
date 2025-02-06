@@ -38,6 +38,30 @@ def mock_get_silence_out_fixture():
                 ],
                 "startsAt": "2025-01-16T10:50:00.781Z",
             },
+            # an expired silence for hv123 - with matcher "name=hostname"
+            {
+                "id": "boz",
+                "status": {"state": "expired"},
+                "updatedAt": "2025-01-02T10:00:00.002Z",
+                "comment": "old",
+                "createdBy": "admin2",
+                "endsAt": "2025-01-02T10:00:00.002Z",
+                "matchers": [
+                    {
+                        "isEqual": True,
+                        "isRegex": False,
+                        "name": "other",
+                        "value": "foo",
+                    },
+                    {
+                        "isEqual": True,
+                        "isRegex": False,
+                        "name": "hostname",
+                        "value": "hv123.matrix.net",
+                    },
+                ],
+                "startsAt": "2025-01-01T10:00:00.002Z",
+            },
             # an expired silence for hv123
             {
                 "id": "baz",
@@ -240,8 +264,8 @@ def test_get_silences_success(mock_get, mock_get_silence_out):
     res = get_silences(mock_alertmanager_account)
     mock_get.assert_called_once()
 
-    # should get 4 outputs for the 4 mock silences set in mock_get_silence_out fixture
-    assert len(res) == 4
+    # should get 5 outputs for the 5 mock silences set in mock_get_silence_out fixture
+    assert len(res) == 5
 
 
 @patch("alertmanager_api.silence.requests.get")
@@ -313,6 +337,6 @@ def test_get_hv_silences(mock_get, mock_get_silence_out):
     mock_get.return_value = mock_response
     res = get_hv_silences(mock_alertmanager_account, hostname)
 
-    # should get 2 (1 active + 1 expired) silences as set in mock_get_silence_out fixture
+    # should get 2 (1 active + 2 expired) silences as set in mock_get_silence_out fixture
     mock_get.assert_called_once()
-    assert len(res) == 2
+    assert len(res) == 3
