@@ -49,12 +49,12 @@ parameters:
     description: Set the ID of the parent project.
     type: string
   admin_user_list:
-    required: true
+    required: false
     default: []
     type: array
     description: List of Users (IDs or Names) to give administrator access
   user_list:
-    required: true
+    required: false
     default: []
     type: array
     description: List of Users (IDs or Names) to give local user access
