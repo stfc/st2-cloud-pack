@@ -32,6 +32,12 @@ def mock_get_silence_out_fixture():
                     {
                         "isEqual": True,
                         "isRegex": False,
+                        "name": "alertname",
+                        "value": "InstanceDown",
+                    },
+                    {
+                        "isEqual": True,
+                        "isRegex": False,
                         "name": "instance",
                         "value": "hv123.matrix.net",
                     },
@@ -52,6 +58,12 @@ def mock_get_silence_out_fixture():
                         "isRegex": False,
                         "name": "other",
                         "value": "foo",
+                    },
+                    {
+                        "isEqual": True,
+                        "isRegex": False,
+                        "name": "alertname",
+                        "value": "OpenStackServiceDown",
                     },
                     {
                         "isEqual": True,
@@ -80,7 +92,73 @@ def mock_get_silence_out_fixture():
                     {
                         "isEqual": True,
                         "isRegex": False,
+                        "name": "alertname",
+                        "value": "PrometheusTargetMissing",
+                    },
+                    {
+                        "isEqual": True,
+                        "isRegex": False,
                         "name": "instance",
+                        "value": "hv123.matrix.net",
+                    },
+                ],
+                "startsAt": "2025-01-01T10:00:00.002Z",
+            },
+            # an active silence for hv123 but wrong alertname
+            {
+                "id": "bil",
+                "status": {"state": "active"},
+                "updatedAt": "2025-01-02T10:00:00.002Z",
+                "comment": "old",
+                "createdBy": "admin2",
+                "endsAt": "2025-01-02T10:00:00.002Z",
+                "matchers": [
+                    {
+                        "isEqual": True,
+                        "isRegex": False,
+                        "name": "other",
+                        "value": "foo",
+                    },
+                    {
+                        "isEqual": True,
+                        "isRegex": False,
+                        "name": "alertname",
+                        "value": "anotheralert",
+                    },
+                    {
+                        "isEqual": True,
+                        "isRegex": False,
+                        "name": "instance",
+                        "value": "hv123.matrix.net",
+                    },
+                ],
+                "startsAt": "2025-01-01T10:00:00.002Z",
+            },
+            # an active silence for hv123 but InstanceDown has no accompanying "instance" matcher
+            {
+                "id": "bol",
+                "status": {"state": "active"},
+                "updatedAt": "2025-01-02T10:00:00.002Z",
+                "comment": "old",
+                "createdBy": "admin2",
+                "endsAt": "2025-01-02T10:00:00.002Z",
+                "matchers": [
+                    {
+                        "isEqual": True,
+                        "isRegex": False,
+                        "name": "other",
+                        "value": "foo",
+                    },
+                    {
+                        "isEqual": True,
+                        "isRegex": False,
+                        "name": "alertname",
+                        "value": "InstanceDown",
+                    },
+                    {
+                        "isEqual": True,
+                        "isRegex": False,
+                        "name": "hostname",  # not instance
                         "value": "hv123.matrix.net",
                     },
                 ],
@@ -264,8 +342,8 @@ def test_get_silences_success(mock_get, mock_get_silence_out):
     res = get_silences(mock_alertmanager_account)
     mock_get.assert_called_once()
 
-    # should get 5 outputs for the 5 mock silences set in mock_get_silence_out fixture
-    assert len(res) == 5
+    # should get 7 outputs for the 7 mock silences set in mock_get_silence_out fixture
+    assert len(res) == 7
 
 
 @patch("alertmanager_api.silence.requests.get")
@@ -301,9 +379,9 @@ def test_get_active_silences(mock_get, mock_get_silence_out):
     mock_get.return_value = mock_response
     res = get_active_silences(mock_alertmanager_account)
 
-    # should get 2 active silences as set in mock_get_silence_out fixture
+    # should get 4 active silences as set in mock_get_silence_out fixture
     mock_get.assert_called_once()
-    assert len(res) == 2
+    assert len(res) == 4
 
 
 @patch("alertmanager_api.silence.requests.get")
@@ -318,9 +396,9 @@ def test_get_valid_silences(mock_get, mock_get_silence_out):
     mock_get.return_value = mock_response
     res = get_valid_silences(mock_alertmanager_account)
 
-    # should get 3 (2 active + 1 pending) silences as set in mock_get_silence_out fixture
+    # should get 5 (4 active + 1 pending) silences as set in mock_get_silence_out fixture
     mock_get.assert_called_once()
-    assert len(res) == 3
+    assert len(res) == 5
 
 
 @patch("alertmanager_api.silence.requests.get")
@@ -338,5 +416,6 @@ def test_get_hv_silences(mock_get, mock_get_silence_out):
     res = get_hv_silences(mock_alertmanager_account, hostname)
 
     # should get 2 (1 active + 2 expired) silences as set in mock_get_silence_out fixture
+    # should ignore 2 active but misconfigured alerts
     mock_get.assert_called_once()
     assert len(res) == 3

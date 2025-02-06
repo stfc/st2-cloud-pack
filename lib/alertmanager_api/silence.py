@@ -195,12 +195,28 @@ def get_hv_silences(alertmanager_account: AlertManagerAccount, hostname: str):
         }
     """
     hv_silences = {}
-    for silence_id, silence_details in get_silences(alertmanager_account).items():
-        for matcher in silence_details["details"].matchers:
-            # PrometheusTargetMissing alert has the instance field to catch.
-            if matcher["name"] == "instance" and matcher["value"] == hostname:
-                hv_silences[silence_id] = silence_details
-            # openstackServiceDown alert has the hostname field to catch.
-            elif matcher["name"] == "hostname" and matcher["value"] == hostname:
-                hv_silences[silence_id] = silence_details
+    # format of a set of:
+    # [("name1", "value1"), ("name2", "value2")] - must match these 2 matchers (logical AND)
+    # [("name3", "value3"), ("name4", "value4")] - OR this other set of matchers
+    hv_matcher_conditions = [
+        [("alertname", "InstanceDown"), ("instance", hostname)],
+        [("alertname", "PrometheusTargetMissing"), ("instance", hostname)],
+        [("alertname", "OpenStackServiceDown"), ("hostname", hostname)],
+    ]
+
+    def check_matchers(matchers):
+        return any(
+            all(
+                any(
+                    matcher["name"] == name and matcher["value"] == value
+                    for matcher in matchers
+                )
+                for name, value in condition_set
+            )
+            for condition_set in hv_matcher_conditions
+        )
+
+    for silence_id, silence_values in get_silences(alertmanager_account).items():
+        if check_matchers(silence_values["details"].matchers):
+            hv_silences[silence_id] = silence_values
     return hv_silences
