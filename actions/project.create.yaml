@@ -65,6 +65,7 @@ parameters:
     enum:
       - internal
       - external
+      - jasmin
   number_of_floating_ips:
     required: true
     type: integer

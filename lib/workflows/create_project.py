@@ -36,7 +36,7 @@ def create_project(
             admin_user_list=admin_user_list,
             stfc_user_list=user_list,
         )
-    elif networking_type == "external":
+    elif networking_type in ("external", "jasmin"):
         create_external_project(
             conn=conn,
             project_name=f"{project_name}",
