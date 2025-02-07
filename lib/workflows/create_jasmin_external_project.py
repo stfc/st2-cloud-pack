@@ -72,6 +72,7 @@ def create_jasmin_external_project(
     if not jasmin_user_list:
         jasmin_user_list = []
 
+    # TODO Add project domain in future PR
     project = create_project(
         conn,
         ProjectDetails(
@@ -102,7 +103,7 @@ def create_jasmin_external_project(
             router_name=router_name,
             router_description="",
             project_identifier=project["id"],
-            external_gateway="External",
+            external_gateway="JASMIN External Cloud Network",
             is_distributed=False,
         ),
     )
@@ -133,7 +134,7 @@ def create_jasmin_external_project(
             num_security_group_rules=number_of_security_group_rules,
         ),
     )
-    # TODO Add security group rules
+    # TODO Update security group rules?
     # create default security group rules
     create_external_security_group_rules(
         conn, project_identifier=project["id"], security_group_identifier="default"
@@ -152,12 +153,11 @@ def create_jasmin_external_project(
 
     allocate_floating_ips(
         conn,
-        network_identifier="External",
+        network_identifier="JASMIN External Cloud Network",
         project_identifier=project["id"],
         number_to_create=number_of_floating_ips,
     )
 
-    # TODO Separate out adding users to projects as a separate action?
     for admin_user in admin_user_list:
         assign_role_to_user(
             conn,
