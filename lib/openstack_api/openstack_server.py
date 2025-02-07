@@ -96,7 +96,8 @@ def build_server(
             "imageRef": image.id,
             "flavorRef": flavor.id,
             "networks": [{"uuid": network.id}],
-            "hypervisor": hypervisor_hostname,
+            "host": hypervisor_hostname,
+            "openstack_api_version": "2.74",
         }
     )
 
