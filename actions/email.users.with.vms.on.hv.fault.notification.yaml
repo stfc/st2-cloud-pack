@@ -66,7 +66,7 @@ parameters:
     type: string
     description: "Set an email address to override where to send the emails generated"
     required: true
-    default: false
+    default: "cloud-support@stfc.ac.uk"
   cc_cloud_support:
     type: boolean
     description: "Flag if set, will cc in cloud-support@stfc.ac.uk automatically"
