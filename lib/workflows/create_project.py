@@ -19,6 +19,34 @@ def create_project(
     admin_user_list: Optional[List[str]] = None,
     user_list: Optional[List[str]] = None,
 ):
+    """
+    Create openstack project
+
+    :param conn: Openstack Connection
+    :type conn: Connection
+    :param project_name: Project name
+    :type project_name: str
+    :param project_email: Contact email for project
+    :type project_email: str
+    :param project_description: Project Description
+    :type project_description: str
+    :param project_domain: Project domain
+    :type project_domain: str
+    :param networking_type: Project networking type, e.g. Internal, External
+    :type networking_type: str
+    :param number_of_floating_ips: Floating IP quota for project
+    :type number_of_floating_ips: int
+    :param number_of_security_group_rules: Security Group quota for project
+    :type number_of_security_group_rules: int
+    :param project_immutable: Project is immutable or not
+    :type project_immutable: bool
+    :param parent_id: Project parent ID
+    :type parent_id: str
+    :param admin_user_list: List of project admin users
+    :type admin_user_list: List[str]
+    :param user_list: List of project users
+    :type user_list: List[str]
+    """
 
     if project_domain != "default":
         raise NotImplementedError(
