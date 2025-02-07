@@ -56,9 +56,9 @@ def test_create_jasmin_external_project(
     project_name = "Test Project"
     project_email = "test@example.com"
     project_description = "Test Description"
-    network_name = "External Network"
-    subnet_name = "External Subnet"
-    router_name = "External Router"
+    network_name = "JASMIN Network"
+    subnet_name = "JASMIN Subnet"
+    router_name = "JASMIN Router"
     number_of_floating_ips = 2
     number_of_security_group_rules = 200
     project_immutable = True
@@ -114,7 +114,7 @@ def test_create_jasmin_external_project(
             router_name=router_name,
             router_description="",
             project_identifier="project-id",
-            external_gateway="External",
+            external_gateway="JASMIN External Cloud Network",
             is_distributed=False,
         ),
     )
@@ -161,7 +161,7 @@ def test_create_jasmin_external_project(
     )
     mock_allocate_floating_ips.assert_called_once_with(
         mock_conn,
-        network_identifier="External",
+        network_identifier="JASMIN External Cloud Network",
         project_identifier="project-id",
         number_to_create=number_of_floating_ips,
     )
@@ -255,9 +255,9 @@ def test_create_jasmin_external_project_no_users(
     project_email = "test@example.com"
     #    project_domain = "test-domain"
     project_description = "Test Description"
-    network_name = "External Network"
-    subnet_name = "External Subnet"
-    router_name = "External Router"
+    network_name = "JASMIN Network"
+    subnet_name = "JASMIN Subnet"
+    router_name = "JASMIN Router"
     number_of_floating_ips = 2
     number_of_security_group_rules = 200
     project_immutable = True
@@ -313,7 +313,7 @@ def test_create_jasmin_external_project_no_users(
             router_name=router_name,
             router_description="",
             project_identifier="project-id",
-            external_gateway="External",
+            external_gateway="JASMIN External Cloud Network",
             is_distributed=False,
         ),
     )
@@ -360,7 +360,7 @@ def test_create_jasmin_external_project_no_users(
     )
     mock_allocate_floating_ips.assert_called_once_with(
         mock_conn,
-        network_identifier="External",
+        network_identifier="JASMIN External Cloud Network",
         project_identifier="project-id",
         number_to_create=number_of_floating_ips,
     )
