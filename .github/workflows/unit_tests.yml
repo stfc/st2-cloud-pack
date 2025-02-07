@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         # 3.9+ is not currently supported due to https://github.com/freach/udatetime/issues/32
-        python-version: ["3.8", "3.9"]
+        python-version: ["3.9"]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
@@ -27,12 +27,14 @@ jobs:
           sudo apt-get install -y --no-install-recommends libsasl2-dev python3-dev libldap2-dev libssl-dev
 
       - name: Run Tests
+        # TODO: run codecov on actions/sensors tests
         run: cd $GITHUB_WORKSPACE && ./run_tests.sh
 
       - name: Run pytest with codecov
         run: |
          pip install -r requirements.txt
-         pytest tests/enums tests/lib --cov=lib --cov=tests/enums --cov=tests/lib --cov-report xml:coverage.xml
+         pytest --cov=./ $(find tests -maxdepth 1 -mindepth 1 -type d ! -name "actions" ! -name "sensors") --cov-report xml:coverage.xml
+
 
       - name: Submit Coverage
         uses: codecov/codecov-action@v5
