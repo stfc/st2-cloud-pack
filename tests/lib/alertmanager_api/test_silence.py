@@ -3,6 +3,8 @@ from datetime import datetime
 import json
 import pytest
 import requests
+
+from structs.alertmanager.alert_matcher_details import AlertMatcherDetails
 from structs.alertmanager.silence_details import SilenceDetails
 from alertmanager_api.silence import (
     schedule_silence,
@@ -27,22 +29,11 @@ def mock_get_silence_out_fixture():
                 "comment": "Testing.",
                 "createdBy": "admin",
                 "endsAt": "2025-01-16T10:51:00.000Z",
-                "matchers": [
-                    {"isEqual": True, "isRegex": False, "name": "env", "value": "prod"},
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "alertname",
-                        "value": "InstanceDown",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "instance",
-                        "value": "hv123.matrix.net",
-                    },
-                ],
                 "startsAt": "2025-01-16T10:50:00.781Z",
+                "matchers": [
+                    AlertMatcherDetails(name="alertname", value="InstanceDown"),
+                    AlertMatcherDetails(name="instance", value="hv123.matrix.net"),
+                ],
             },
             # an expired silence for hv123 - with matcher "name=hostname"
             {
@@ -52,27 +43,12 @@ def mock_get_silence_out_fixture():
                 "comment": "old",
                 "createdBy": "admin2",
                 "endsAt": "2025-01-02T10:00:00.002Z",
-                "matchers": [
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "other",
-                        "value": "foo",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "alertname",
-                        "value": "OpenStackServiceDown",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "hostname",
-                        "value": "hv123.matrix.net",
-                    },
-                ],
                 "startsAt": "2025-01-01T10:00:00.002Z",
+                "matchers": [
+                    AlertMatcherDetails(name="other", value="foo"),
+                    AlertMatcherDetails(name="alertname", value="OpenStackServiceDown"),
+                    AlertMatcherDetails(name="hostname", value="hv123.matrix.net"),
+                ],
             },
             # an expired silence for hv123
             {
@@ -82,27 +58,14 @@ def mock_get_silence_out_fixture():
                 "comment": "old",
                 "createdBy": "admin2",
                 "endsAt": "2025-01-02T10:00:00.002Z",
-                "matchers": [
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "other",
-                        "value": "foo",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "alertname",
-                        "value": "PrometheusTargetMissing",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "instance",
-                        "value": "hv123.matrix.net",
-                    },
-                ],
                 "startsAt": "2025-01-01T10:00:00.002Z",
+                "matchers": [
+                    AlertMatcherDetails(name="other", value="foo"),
+                    AlertMatcherDetails(
+                        name="alertname", value="PrometheusTargetMissing"
+                    ),
+                    AlertMatcherDetails(name="instance", value="hv123.matrix.net"),
+                ],
             },
             # an active silence for hv123 but wrong alertname
             {
@@ -112,27 +75,12 @@ def mock_get_silence_out_fixture():
                 "comment": "old",
                 "createdBy": "admin2",
                 "endsAt": "2025-01-02T10:00:00.002Z",
-                "matchers": [
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "other",
-                        "value": "foo",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "alertname",
-                        "value": "anotheralert",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "instance",
-                        "value": "hv123.matrix.net",
-                    },
-                ],
                 "startsAt": "2025-01-01T10:00:00.002Z",
+                "matchers": [
+                    AlertMatcherDetails(name="other", value="foo"),
+                    AlertMatcherDetails(name="alertname", value="anotheralert"),
+                    AlertMatcherDetails(name="instance", value="hv123.matrix.net"),
+                ],
             },
             # an active silence for hv123 but InstanceDown has no accompanying "instance" matcher
             {
@@ -142,27 +90,14 @@ def mock_get_silence_out_fixture():
                 "comment": "old",
                 "createdBy": "admin2",
                 "endsAt": "2025-01-02T10:00:00.002Z",
-                "matchers": [
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "other",
-                        "value": "foo",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "alertname",
-                        "value": "InstanceDown",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "hostname",  # not instance
-                        "value": "hv123.matrix.net",
-                    },
-                ],
                 "startsAt": "2025-01-01T10:00:00.002Z",
+                "matchers": [
+                    AlertMatcherDetails(name="other", value="foo"),
+                    AlertMatcherDetails(name="alertname", value="InstanceDown"),
+                    AlertMatcherDetails(
+                        name="hostname", value="hv123.matrix.net"
+                    ),  # name not instance
+                ],
             },
             # An active silence for hv234
             {
@@ -172,16 +107,11 @@ def mock_get_silence_out_fixture():
                 "comment": "Testing.",
                 "createdBy": "admin",
                 "endsAt": "2025-01-16T10:51:00.279Z",
-                "matchers": [
-                    {"isEqual": True, "isRegex": False, "name": "env", "value": "dev"},
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "instance",
-                        "value": "hv234.matrix.net",
-                    },
-                ],
                 "startsAt": "2025-01-16T10:50:00.782Z",
+                "matchers": [
+                    AlertMatcherDetails(name="env", value="dev"),
+                    AlertMatcherDetails(name="instance", value="hv234.matrix.net"),
+                ],
             },
             # A pending silence that doesn't pertain to hvs
             {
@@ -191,21 +121,11 @@ def mock_get_silence_out_fixture():
                 "comment": "pending create",
                 "createdBy": "admin2",
                 "endsAt": "2025-01-30T12:20:52.212Z",
-                "matchers": [
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "cluster",
-                        "value": "management",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "severity",
-                        "value": "warning",
-                    },
-                ],
                 "startsAt": "2025-01-30T10:21:56.632Z",
+                "matchers": [
+                    AlertMatcherDetails(name="cluster", value="management"),
+                    AlertMatcherDetails(name="severity", value="warning"),
+                ],
             },
         ]
     )
@@ -216,7 +136,10 @@ def mock_silence_details_fixture():
     date_start = datetime(2025, 1, 1, 10, 0, 0)
     date_end = datetime(2025, 1, 2, 10, 0, 0)
     return SilenceDetails(
-        matchers=["matcher1", "matcher2"],
+        matchers=[
+            AlertMatcherDetails(name="matcher1", value="foo"),
+            AlertMatcherDetails(name="matcher2", value="bar"),
+        ],
         author="author",
         comment="comment",
         start_time_dt=date_start,

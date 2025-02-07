@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import Optional
+
+from structs.alertmanager.alert_matcher_details import AlertMatcherDetails
 
 
 # pylint: disable=too-many-instance-attributes
@@ -8,14 +10,33 @@ from typing import List, Optional
 class SilenceDetails:
     """
     Class for scheduling an Alertmanager Silence.
+    :param matchers: a list of AlertMatcherDetails objects
+    :type matchers: list
+    :param author: name to assign to silence
+    :type author: string
+    :param comment: comment of why silence was added
+    :type comment: string
+    :param end_time_dt: (Optional) end time for silence - datetime object (UTC).
+        Must provide this or automatically calculated from duration_days, duration_hours
+        and duration_minutes if duration_days/hours/minutes provided,
+        calculated end_time will overwrite this one
+    :type end_time_dt: datetime, optional
+    :param start_time_dt: (Optional) start time for silence - datetime object (UTC).
+        If not given, will default to datetime.now()
+    :type start_time_dt: datetime, optional
+    :param duration_days: (Optional) duration of silence in days from start time
+    :type duration_days: integer, optional
+    :param duration_hours: (Optional) duration of silence in hours from start time
+    :type duration_hours: integer, optional
+    :param duration_minutes: (Optional) duration of silence in minutes from start time
+    :type duration_minutes: integer, optional
 
-    The values for start and end times are datetime objects in UTC.
-    Duration can be specified in days, hours, or minutes which will
-    automatically calculate the end_time_dt from start_time_dt.
+    :raises TypeError: when start_time_dt or end_time_dt are not datetime
+    :raises ValueError: when neither end_time_dt nor any duration parameters given
+    :raises ValueError: when given end_time_dt is not after start_time_dt
     """
 
-    # TODO: make a matchers dataclass to make adding silences easier
-    matchers: List
+    matchers: list[AlertMatcherDetails]
     author: str = None
     comment: str = None
     start_time_dt: Optional[datetime] = field(default_factory=datetime.now)
@@ -69,3 +90,8 @@ class SilenceDetails:
     def duration(self) -> timedelta:
         """Calculate the total duration of the silence."""
         return self.end_time_dt - self.start_time_dt
+
+    @property
+    def matchers_raw(self) -> list[dict]:
+        """get matchers as list of dictionaries rather than list of dataclasses"""
+        return [matcher.to_dict() for matcher in self.matchers]

@@ -1,5 +1,7 @@
 from datetime import timedelta, datetime
 import pytest
+
+from structs.alertmanager.alert_matcher_details import AlertMatcherDetails
 from structs.alertmanager.silence_details import SilenceDetails
 
 
@@ -17,7 +19,7 @@ def test_duration_calc(
 ):
     """test that SilenceDetails works when providing duration instead of end_time_dt"""
     res = SilenceDetails(
-        matchers=["matcher1"],
+        matchers=[AlertMatcherDetails(name="matcher1", value="foo")],
         author="author",
         comment="comment",
         start_time_dt=datetime(2025, 2, 5, 14, 00, 00, 486496),
@@ -31,11 +33,27 @@ def test_duration_calc(
     assert res.duration == expected_time_delta
 
 
+def test_matchers_raw():
+    """test that matchers_raw provides dictionary of matcher info"""
+    res = SilenceDetails(
+        matchers=[AlertMatcherDetails(name="matcher1", value="foo")],
+        author="author",
+        comment="comment",
+        start_time_dt=datetime(2025, 2, 5, 14, 00, 00, 486496),
+        end_time_dt=datetime(2025, 2, 6, 14, 00, 00, 486496),
+    )
+    assert len(res.matchers_raw) == 1
+    assert res.matchers_raw[0]["name"] == "matcher1"
+    assert res.matchers_raw[0]["value"] == "foo"
+    assert res.matchers_raw[0]["isEqual"] is True
+    assert res.matchers_raw[0]["isRegex"] is False
+
+
 def test_fail_end_time_older_than_start():
     """test that SilenceDetails fails when end time is older than start time"""
     with pytest.raises(ValueError):
         SilenceDetails(
-            matchers=["matcher1"],
+            matchers=[AlertMatcherDetails(name="matcher1", value="foo")],
             author="author",
             comment="comment",
             start_time_dt=datetime(2025, 2, 5, 14, 00, 00, 486496),
@@ -48,7 +66,7 @@ def test_fail_if_not_datetime():
     """test that SilenceDetails fails when end_time or start_time is not datetime"""
     with pytest.raises(TypeError):
         SilenceDetails(
-            matchers=["matcher1"],
+            matchers=[AlertMatcherDetails(name="matcher1", value="foo")],
             author="author",
             comment="comment",
             start_time_dt="foo",
@@ -56,7 +74,7 @@ def test_fail_if_not_datetime():
         )
     with pytest.raises(TypeError):
         SilenceDetails(
-            matchers=["matcher1"],
+            matchers=[AlertMatcherDetails(name="matcher1", value="foo")],
             author="author",
             comment="comment",
             # start time not given
@@ -71,7 +89,7 @@ def test_fail_if_duration_and_end_time_not_given():
     """
     with pytest.raises(ValueError):
         SilenceDetails(
-            matchers=["matcher1"],
+            matchers=[AlertMatcherDetails(name="matcher1", value="foo")],
             author="author",
             comment="comment",
             start_time_dt=datetime(2024, 2, 5, 14, 00, 00, 486496),

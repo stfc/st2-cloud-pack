@@ -1,9 +1,10 @@
-from typing import List, Dict
 import logging
 import json
 from datetime import datetime
 
 import requests
+
+from structs.alertmanager.alert_matcher_details import AlertMatcherDetails
 from structs.alertmanager.alertmanager_account import AlertManagerAccount
 from structs.alertmanager.silence_details import SilenceDetails
 
@@ -16,13 +17,16 @@ def schedule_silence(
     """
     Schedules a silence in alertmanager
         :param alertmanager_account: dataclass for holding alertmanager connection specs
+        :type: AlertManagerAccount dataclass object:
         :param silence_details: object with the specs to create a silence
+        :type: SilenceDetails dataclass object
         :return: ID of new silence created in Alertmanager
-        :raises requests.exceptions.RequestException:
+        :rtype: string
+        :raises requests.RequestException or requests.HTTPError:
             when the request to the AlertManager failed
     """
     payload = {
-        "matchers": silence_details.matchers,
+        "matchers": silence_details.matchers_raw,
         "startsAt": silence_details.start_time_str,
         "endsAt": silence_details.end_time_str,
         "createdBy": silence_details.author,
@@ -38,7 +42,7 @@ def schedule_silence(
             timeout=10,
         )
         response.raise_for_status()
-    except requests.HTTPError as req_ex:
+    except (requests.HTTPError, requests.RequestException) as req_ex:
         logger.critical(
             "Failed to create silence in Alertmanager: %s\n\tResponse status code: %s\n\tResponse text: %s",
             req_ex,
@@ -53,8 +57,11 @@ def remove_silence(alertmanager_account: AlertManagerAccount, silence_id: str) -
     """
     Removes a previously scheduled silence in alertmanager
         :param alertmanager_account: dataclass for holding alertmanager connection specs
+        :type alertmanager_account: AlertManagerAccount dataclass object
         :param silence_id: ID of silence to remove
-        :raises requests.exceptions.RequestException:
+        :type silence_id: string
+        :return: None
+        :raises requests.RequestException or requests.HTTPError:
             when the request to the AlertManager failed
     """
     api_url = (
@@ -67,7 +74,7 @@ def remove_silence(alertmanager_account: AlertManagerAccount, silence_id: str) -
             timeout=10,
         )
         response.raise_for_status()
-    except requests.HTTPError as req_ex:
+    except (requests.HTTPError, requests.RequestException) as req_ex:
         logger.critical(
             "Failed to create silence in Alertmanager: %s\n\tResponse status code: %s\n\tResponse text: %s",
             req_ex,
@@ -78,22 +85,25 @@ def remove_silence(alertmanager_account: AlertManagerAccount, silence_id: str) -
 
 
 def remove_silences(
-    alertmanager_account: AlertManagerAccount, silence_ids: List[str]
+    alertmanager_account: AlertManagerAccount, silence_ids: list[str]
 ) -> None:
     """
     Removes a list of previously scheduled silences in alertmanager
         :param alertmanager_account: dataclass for holding alertmanager connection specs
+        :type alertmanager_account: AlertManagerAccount datclass object
         :param silence_ids: a list of silence ids
         :type silence_ids: List of strings
+        :return: None
     """
     for silence_id in silence_ids:
         remove_silence(alertmanager_account, silence_id)
 
 
-def get_silences(alertmanager_account: AlertManagerAccount) -> Dict:
+def get_silences(alertmanager_account: AlertManagerAccount) -> dict:
     """
     get all silence events recorded in AlertManager
     :param alertmanager_account: dataclass for holding alertmanager connection specs
+    :type alertmanager_account: AlertManagerAccount datclass object
     :return: the dictionary of Silence events currently recorded in AlertManager:
         {
             id: {
@@ -101,12 +111,15 @@ def get_silences(alertmanager_account: AlertManagerAccount) -> Dict:
                 "details":SilenceDetails()
             }
         }
+    :rtype: dict
+    :raises requests.RequestException or requests.HTTPError:
+        when the request to the AlertManager failed
     """
     try:
         api_url = f"{alertmanager_account.alertmanager_endpoint}/api/v2/silences"
         response = requests.get(api_url, auth=alertmanager_account.auth, timeout=10)
         response.raise_for_status()
-    except requests.HTTPError as req_ex:
+    except (requests.HTTPError, requests.RequestException) as req_ex:
         logger.critical(
             "Failed to create silence in Alertmanager: %s\n\tResponse status code: %s\n\tResponse text: %s",
             req_ex,
@@ -128,7 +141,10 @@ def get_silences(alertmanager_account: AlertManagerAccount) -> Dict:
             ),
             author=silence["createdBy"],
             comment=silence["comment"],
-            matchers=silence["matchers"],
+            matchers=[
+                AlertMatcherDetails.from_dict(matcher)
+                for matcher in silence["matchers"]
+            ],
         )
 
         # Add to dictionary with ID as key
@@ -139,11 +155,12 @@ def get_silences(alertmanager_account: AlertManagerAccount) -> Dict:
     return silences
 
 
-def get_active_silences(alertmanager_account: AlertManagerAccount):
+def get_active_silences(alertmanager_account: AlertManagerAccount) -> dict:
     """
     get active silence events, where:
     - the silence has started but has not finished yet
     :param alertmanager_account: dataclass for holding alertmanager connection specs
+    :type alertmanager_account: AlertManagerAccount datclass object
     :return: the dictionary of Silence events currently recorded in AlertManager:
         {
             id: {
@@ -151,6 +168,7 @@ def get_active_silences(alertmanager_account: AlertManagerAccount):
                 "details":SilenceDetails()
             }
         }
+    :rtype: dict
     """
     return {
         k: v
@@ -159,12 +177,13 @@ def get_active_silences(alertmanager_account: AlertManagerAccount):
     }
 
 
-def get_valid_silences(alertmanager_account: AlertManagerAccount):
+def get_valid_silences(alertmanager_account: AlertManagerAccount) -> dict:
     """
     get valid silence events, where:
     - the silence has not started yet
     - the silence has started but has not finished yet
     :param alertmanager_account: dataclass for holding alertmanager connection specs
+    :type alertmanager_account: AlertManagerAccount datclass object
     :return: the dictionary of Silence events currently recorded in AlertManager:
         {
             id: {
@@ -172,6 +191,7 @@ def get_valid_silences(alertmanager_account: AlertManagerAccount):
                 "details":SilenceDetails()
             }
         }
+    :rtype: dict
     """
     return {
         k: v
@@ -184,8 +204,10 @@ def get_hv_silences(alertmanager_account: AlertManagerAccount, hostname: str):
     """
     get silences pertaining to a hv, where:
     - the silence has a "matcher" where the "name" is "instance" and the "value" matches the given hostname
-    :param hostname: hypervisor hostname to get silences for
     :param alertmanager_account: dataclass for holding alertmanager connection specs
+    :type alertmanager_account: AlertManagerAccount datclass object
+    :param hostname: hypervisor hostname to get silences for
+    :type hostname: string
     :return: the dictionary of Silence events currently recorded in AlertManager:
         {
             id: {
@@ -193,6 +215,7 @@ def get_hv_silences(alertmanager_account: AlertManagerAccount, hostname: str):
                 "details":SilenceDetails()
             }
         }
+    :rtype: dict
     """
     hv_silences = {}
     # format of a set of:
@@ -204,11 +227,18 @@ def get_hv_silences(alertmanager_account: AlertManagerAccount, hostname: str):
         [("alertname", "OpenStackServiceDown"), ("hostname", hostname)],
     ]
 
-    def check_matchers(matchers):
+    def check_matchers(matchers: AlertMatcherDetails) -> bool:
+        """
+        check alert matchers against a set of conditions to see if they are ones pertaining to HVs
+        :param matchers: list of AlertMatcherDetails objects
+        :type matchers: list
+        :return: True - alert matchers are HV related, False - they are not
+        :rtype: boolean
+        """
         return any(
             all(
                 any(
-                    matcher["name"] == name and matcher["value"] == value
+                    matcher.name == name and matcher.value == value
                     for matcher in matchers
                 )
                 for name, value in condition_set
