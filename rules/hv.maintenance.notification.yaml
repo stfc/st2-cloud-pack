@@ -20,7 +20,5 @@ action:
   parameters:
     hypervisor_name: "{{ trigger.hypervisor_name }}"
     cloud_account: "dev"
-    use_override: False
     send_email: false
-    override_email_address: None
     webhook: "migrate-server"

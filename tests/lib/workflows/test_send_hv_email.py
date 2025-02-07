@@ -136,9 +136,8 @@ def test_find_servers_on_hv_to_webhook(mock_server_query, mock_to_webhook):
     mock_server_query_obj.select.assert_called_once_with("id", "name", "addresses")
 
     mock_to_webhook.assert_called_once_with(
-        webhook="test", payload=mock_server_query_obj.to_props.return_value
+        webhook="test", payload=mock_server_query_obj.select_all().to_props.return_value
     )
-    assert mock_server_query_obj.to_props.call_count == 2
 
     mock_server_query_obj.append_from.assert_called_once_with(
         "PROJECT_QUERY", "test-cloud-account", ["name"]

@@ -45,7 +45,7 @@ def find_servers_on_hv(
         )
 
     if webhook:
-        to_webhook(webhook=webhook, payload=server_query.to_props())
+        to_webhook(webhook=webhook, payload=server_query.select_all().to_props())
 
     server_query.append_from("PROJECT_QUERY", cloud_account, ["name"])
     server_query.group_by("user_id")
