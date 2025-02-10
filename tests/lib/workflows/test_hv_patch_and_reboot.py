@@ -188,19 +188,25 @@ def test_failed_ssh(
             duration=mock_end_timestamp - mock_start_timestamp,
         ),
     )
-    mock_silence_details = SilenceDetails(
-        matchers=(
-            AlertMatcherDetails(name="instance", value="test_host"),
-            AlertMatcherDetails(name="hostname", value="test_host"),
-        ),
+    mock_silence_details_instance = SilenceDetails(
+        matchers=AlertMatcherDetails(name="instance", value="test_host"),
         start_time_dt=datetime.datetime.utcnow(),
         duration_hours=6,
         author="stackstorm",
         comment="Stackstorm HV maintenance",
     )
-
-    mock_schedule_silence.assert_called_once_with(
-        alertmanager_account, mock_silence_details
+    mock_silence_details_hostname = SilenceDetails(
+        matchers=AlertMatcherDetails(name="hostname", value="test_host"),
+        start_time_dt=datetime.datetime.utcnow(),
+        duration_hours=6,
+        author="stackstorm",
+        comment="Stackstorm HV maintenance",
+    )
+    mock_schedule_silence.assert_has_calls(
+        [
+            call(alertmanager_account, mock_silence_details_instance),
+            call(alertmanager_account, mock_silence_details_hostname),
+        ]
     )
 
     mock_remove_downtime.assert_called_once_with(
@@ -208,4 +214,9 @@ def test_failed_ssh(
         object_type=IcingaObject.HOST,
         object_name=mock_hypervisor_name,
     )
-    mock_remove_silence.assert_called_once_with(alertmanager_account, mock_silence_id)
+    mock_remove_silence.assert_has_calls(
+        [
+            call(alertmanager_account, mock_silence_id),
+            call(alertmanager_account, mock_silence_id),
+        ]
+    )
