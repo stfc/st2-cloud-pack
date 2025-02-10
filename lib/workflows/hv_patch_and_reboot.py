@@ -47,16 +47,27 @@ def patch_and_reboot(
     )
     schedule_downtime(icinga_account=icinga_account, details=downtime_details)
     matcher_instance = AlertMatcherDetails(name="instance", value=hypervisor_name)
-    matcher_hostname = AlertMatcherDetails(name="hostname", value=hypervisor_name)
-    silence_details = SilenceDetails(
-        matchers=(matcher_instance, matcher_hostname),
+    silence_details_instance = SilenceDetails(
+        matchers=matcher_instance,
         author="stackstorm",
         comment="Stackstorm HV maintenance",
         start_time_dt=datetime.datetime.utcnow(),
         duration_hours=6,
     )
-    scheduled_silence_id = schedule_silence(alertmanager_account, silence_details)
-
+    scheduled_silence_id_instance = schedule_silence(
+        alertmanager_account, silence_details_instance
+    )
+    matcher_hostname = AlertMatcherDetails(name="hostname", value=hypervisor_name)
+    silence_details_hostname = SilenceDetails(
+        matchers=matcher_hostname,
+        author="stackstorm",
+        comment="Stackstorm HV maintenance",
+        start_time_dt=datetime.datetime.utcnow(),
+        duration_hours=6,
+    )
+    scheduled_silence_id_hostname = schedule_silence(
+        alertmanager_account, silence_details_hostname
+    )
     try:
         patch_out = ssh_client.run_command_on_host("patch")
         reboot_out = ssh_client.run_command_on_host("reboot")
@@ -70,5 +81,6 @@ def patch_and_reboot(
             object_type=IcingaObject.HOST,
             object_name=hypervisor_name,
         )
-        remove_silence(alertmanager_account, scheduled_silence_id)
+        remove_silence(alertmanager_account, scheduled_silence_id_instance)
+        remove_silence(alertmanager_account, scheduled_silence_id_hostname)
         raise exc

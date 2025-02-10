@@ -1,5 +1,5 @@
 import datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, call
 from paramiko import SSHException
 
 from enums.icinga.icinga_objects import IcingaObject
@@ -57,18 +57,25 @@ def test_successful_patch_and_reboot(
             duration=mock_end_timestamp - mock_start_timestamp,
         ),
     )
-    mock_silence_details = SilenceDetails(
-        matchers=(
-            AlertMatcherDetails(name="instance", value="test_host"),
-            AlertMatcherDetails(name="hostname", value="test_host"),
-        ),
+    mock_silence_details_instance = SilenceDetails(
+        matchers=AlertMatcherDetails(name="instance", value="test_host"),
         start_time_dt=datetime.datetime.utcnow(),
         duration_hours=6,
         author="stackstorm",
         comment="Stackstorm HV maintenance",
     )
-    mock_schedule_silence.assert_called_once_with(
-        alertmanager_account, mock_silence_details
+    mock_silence_details_hostname = SilenceDetails(
+        matchers=AlertMatcherDetails(name="hostname", value="test_host"),
+        start_time_dt=datetime.datetime.utcnow(),
+        duration_hours=6,
+        author="stackstorm",
+        comment="Stackstorm HV maintenance",
+    )
+    mock_schedule_silence.assert_has_calls(
+        [
+            call(alertmanager_account, mock_silence_details_instance),
+            call(alertmanager_account, mock_silence_details_hostname),
+        ]
     )
     mock_ssh_conn.assert_called_once_with(
         SSHDetails(
