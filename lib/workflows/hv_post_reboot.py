@@ -1,6 +1,6 @@
 from openstack.connection import Connection
 
-from alertmanager_api.silence import AlertManagerAPI
+from alertmanager_api.silence import get_hv_silences, remove_silence
 
 from enums.icinga.icinga_objects import IcingaObject
 
@@ -29,9 +29,9 @@ def post_reboot(
         object_name=name,
     )
     # get silence to be removed and remove all the alertmanager silences on that host.
-    alertmanager = AlertManagerAPI(alertmanager_account)
-    silences = alertmanager.get_silences().get_by_name(name)
-    alertmanager.remove_silences(silences)
+    silences = get_hv_silences(alertmanager_account, name)
+    for silence_id in silences:
+        remove_silence(alertmanager_account, silence_id)
     # test vm creation
     create_test_server(conn=conn, hypervisor_name=name, test_all_flavors=False)
     # enable in openstack

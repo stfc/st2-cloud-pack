@@ -1,12 +1,13 @@
 import datetime
 
-from alertmanager_api.silence import AlertManagerAPI
-from alertmanager_api.silence_details import SilenceDetails
+from alertmanager_api.silence import remove_silence, schedule_silence
 
 from paramiko import SSHException
 from enums.icinga.icinga_objects import IcingaObject
 from icinga_api.downtime import schedule_downtime, remove_downtime
+from structs.alertmanager.alert_matcher_details import AlertMatcherDetails
 from structs.alertmanager.alertmanager_account import AlertManagerAccount
+from structs.alertmanager.silence_details import SilenceDetails
 from structs.icinga.downtime_details import DowntimeDetails
 from structs.icinga.icinga_account import IcingaAccount
 from structs.ssh.ssh_connection_details import SSHDetails
@@ -45,15 +46,16 @@ def patch_and_reboot(
         duration=end_timestamp - start_timestamp,
     )
     schedule_downtime(icinga_account=icinga_account, details=downtime_details)
-    alertmanager = AlertManagerAPI(alertmanager_account)
+    matcher_instance = AlertMatcherDetails(name="instance", value=hypervisor_name)
+    matcher_hostname = AlertMatcherDetails(name="hostname", value=hypervisor_name)
     silence_details = SilenceDetails(
-        instance_name=hypervisor_name,
-        start_time_dt=start_time,
-        end_time_dt=end_time,
+        matchers=(matcher_instance, matcher_hostname),
         author="stackstorm",
         comment="Stackstorm HV maintenance",
+        start_time_dt=datetime.datetime.utcnow(),
+        duration_hours=6,
     )
-    scheduled_silence = alertmanager.schedule_silence(silence_details)
+    scheduled_silence_id = schedule_silence(alertmanager_account, silence_details)
 
     try:
         patch_out = ssh_client.run_command_on_host("patch")
@@ -68,5 +70,5 @@ def patch_and_reboot(
             object_type=IcingaObject.HOST,
             object_name=hypervisor_name,
         )
-        alertmanager.remove_silence(scheduled_silence)
+        remove_silence(alertmanager_account, scheduled_silence_id)
         raise exc
