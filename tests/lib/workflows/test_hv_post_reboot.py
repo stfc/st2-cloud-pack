@@ -41,15 +41,14 @@ def test_successful_post_reboot(
         object_type=IcingaObject.HOST,
         object_name=mock_hv_name,
     )
-
-    mock_get_hv_silences.assert_called_once_with(alertmanager_account, mock_hv_name)
-    mock_remove_silence.assert_has_calls(
-        [call(alertmanager_account, "id1"), call(alertmanager_account, "id2")],
-        any_order=True,
-    )
     mock_create_test_server.assert_called_once_with(
         conn=mock_conn, hypervisor_name=mock_hv_name, test_all_flavors=False
     )
     mock_hv_service_enable.assert_called_once_with(
         conn=mock_conn, hypervisor_name=mock_hv_name, service_binary="nova-compute"
+    )
+    mock_get_hv_silences.assert_called_once_with(alertmanager_account, mock_hv_name)
+    mock_remove_silence.assert_has_calls(
+        [call(alertmanager_account, "id1"), call(alertmanager_account, "id2")],
+        any_order=True,
     )
