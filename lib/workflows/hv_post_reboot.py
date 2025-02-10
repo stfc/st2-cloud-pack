@@ -14,7 +14,7 @@ from icinga_api import downtime
 def post_reboot(
     alertmanager_account: AlertManagerAccount,
     icinga_account: IcingaAccount,
-    name: str,
+    hypervisor_hostname: str,
     conn=Connection,
 ):
     """
@@ -26,13 +26,17 @@ def post_reboot(
     downtime.remove_downtime(
         icinga_account=icinga_account,
         object_type=IcingaObject.HOST,
-        object_name=name,
+        object_name=hypervisor_hostname,
     )
     # get silence to be removed and remove all the alertmanager silences on that host.
-    silences = get_hv_silences(alertmanager_account, name)
+    silences = get_hv_silences(alertmanager_account, hypervisor_hostname)
     for silence_id in silences:
         remove_silence(alertmanager_account, silence_id)
     # test vm creation
-    create_test_server(conn=conn, hypervisor_name=name, test_all_flavors=False)
+    create_test_server(
+        conn=conn, hypervisor_name=hypervisor_hostname, test_all_flavors=False
+    )
     # enable in openstack
-    hv_service_enable(conn=conn, hypervisor_name=name, service_binary="nova-compute")
+    hv_service_enable(
+        conn=conn, hypervisor_name=hypervisor_hostname, service_binary="nova-compute"
+    )

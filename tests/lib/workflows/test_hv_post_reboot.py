@@ -33,7 +33,7 @@ def test_successful_post_reboot(
     post_reboot(
         alertmanager_account,
         icinga_account=mock_icinga_account,
-        name=mock_hv_name,
+        hypervisor_hostname=mock_hv_name,
         conn=mock_conn,
     )
     mock_remove_downtime.assert_called_once_with(
