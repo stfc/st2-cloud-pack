@@ -18,3 +18,4 @@ nose
 parameterized
 pytest
 pytest-cov
+pytest-freezegun
