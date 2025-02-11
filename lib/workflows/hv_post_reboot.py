@@ -20,7 +20,7 @@ def post_reboot(
     """
     Action to run after a successful reboot
     :param icinga_account: Icinga account to use
-    :param name: Name of host in icinga
+    :param hypervisor_hostname: Hostname of hypervisor to run action against
     """
     # Remove downtime
     downtime.remove_downtime(
