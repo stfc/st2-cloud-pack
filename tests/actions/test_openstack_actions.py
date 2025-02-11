@@ -21,6 +21,7 @@ class TestOpenstackActions(OpenstackActionTestBase):
     Unit tests for actions that use workflow modules
     """
 
+    config = {}
     action_cls = OpenstackActions
     # pylint: disable=invalid-name
 
@@ -94,7 +95,7 @@ class TestOpenstackActions(OpenstackActionTestBase):
         tests that parse_configs parses smtp_account_name properly if provided
         """
         mock_smtp_account_name = NonCallableMock()
-        res = self.action.parse_configs({"smtp_account_name": mock_smtp_account_name})
+        res = self.action.parse_configs(**{"smtp_account_name": mock_smtp_account_name})
         mock_smtp_account.from_pack_config.assert_called_once_with(
             self.config, mock_smtp_account_name
         )
@@ -106,16 +107,20 @@ class TestOpenstackActions(OpenstackActionTestBase):
         tests that parse_configs parses jira_account_name properly if provided
         """
         mock_jira_account_name = NonCallableMock()
-        res = self.action.parse_configs({"jira_account_name": mock_jira_account_name})
+        res = self.action.parse_configs(
+            **{"atlassian_account_name": mock_jira_account_name}
+        )
         mock_jira_account.from_pack_config.assert_called_once_with(
             self.config, mock_jira_account_name
         )
-        assert res == {"jira_account": mock_jira_account.from_pack_config.return_value}
+        assert res == {
+            "atlassian_account": mock_jira_account.from_pack_config.return_value
+        }
 
     def test_parse_configs_with_no_accounts(self):
         """
         tests that parse_configs doesn't do anything if no stackstorm config names given
         """
         mock_kwargs = {"arg1": "val1", "arg2": "val2"}
-        res = self.action.parse_configs(mock_kwargs)
+        res = self.action.parse_configs(**mock_kwargs)
         assert res == mock_kwargs
