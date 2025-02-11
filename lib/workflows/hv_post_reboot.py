@@ -22,7 +22,6 @@ def post_reboot(
     :param icinga_account: Icinga account to use
     :param hypervisor_hostname: Hostname of hypervisor to run action against
     """
-    # Remove downtime
     downtime.remove_downtime(
         icinga_account=icinga_account,
         object_type=IcingaObject.HOST,

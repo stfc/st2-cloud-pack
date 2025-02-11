@@ -120,7 +120,7 @@ class TestOpenstackActions(OpenstackActionTestBase):
         """
         mock_alertmanager_account_name = NonCallableMock()
         res = self.action.parse_configs(
-            {"alertmanager_account_name": mock_alertmanager_account_name}
+            **{"alertmanager_account_name": mock_alertmanager_account_name}
         )
         mock_alertmanager_account.from_pack_config.assert_called_once_with(
             self.config, mock_alertmanager_account_name
