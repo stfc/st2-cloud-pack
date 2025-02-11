@@ -41,9 +41,9 @@ parameters:
     type: string
     description: "comma-spaced email addresses to send email to"
     required: true
-  atlassian_account_name:
+  jira_account_name:
     type: string
-    description: "Name of Atlassian Account to use. Must be configured in in the pack settings."
+    description: "Name of jira Account to use. Must be configured in in the pack settings."
     required: true
     default: "default"
 runner_type: python-script

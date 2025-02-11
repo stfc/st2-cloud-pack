@@ -8,7 +8,7 @@ def test_create_test_issue():
     """
     Test creating a test Task in Jira workflow
     """
-    mock_atlassian_account = MagicMock()
+    mock_jira_account = MagicMock()
 
     mock_project_id = "JIRA"
     mock_issue_type = "Task"
@@ -19,7 +19,7 @@ def test_create_test_issue():
 
     with patch("workflows.create_test_issue.create_jira_task") as mock_create_jira_task:
         create_test_issue(
-            atlassian_account=mock_atlassian_account,
+            jira_account=mock_jira_account,
             project_id=mock_project_id,
             issue_type=mock_issue_type,
             summary=mock_summary,
@@ -28,7 +28,7 @@ def test_create_test_issue():
             epic_id=mock_epic_id,
         )
         mock_create_jira_task.assert_called_once_with(
-            account=mock_atlassian_account,
+            account=mock_jira_account,
             issue_details=IssueDetails(
                 issue_type="Task",
                 project_id="JIRA",

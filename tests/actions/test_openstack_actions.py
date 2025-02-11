@@ -107,15 +107,11 @@ class TestOpenstackActions(OpenstackActionTestBase):
         tests that parse_configs parses jira_account_name properly if provided
         """
         mock_jira_account_name = NonCallableMock()
-        res = self.action.parse_configs(
-            **{"atlassian_account_name": mock_jira_account_name}
-        )
+        res = self.action.parse_configs(**{"jira_account_name": mock_jira_account_name})
         mock_jira_account.from_pack_config.assert_called_once_with(
             self.config, mock_jira_account_name
         )
-        assert res == {
-            "atlassian_account": mock_jira_account.from_pack_config.return_value
-        }
+        assert res == {"jira_account": mock_jira_account.from_pack_config.return_value}
 
     def test_parse_configs_with_no_accounts(self):
         """
