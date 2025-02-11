@@ -37,7 +37,7 @@ parameters:
     required: true
   components:
     type: array
-    description: "An array of the components to select"
+    description: "An array of dictionaries of the components to select, e.g [{'name': 'Dev Ops'}]"
     required: true
     default: [{"name": "Dev Ops"}]
     immutable: true
