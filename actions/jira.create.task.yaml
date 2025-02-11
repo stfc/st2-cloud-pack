@@ -12,10 +12,14 @@ parameters:
     type: string
   project_id:
     type: string
-    description: "comma-spaced email addresses to send email to"
+    description: "The ID or key of the JIRA project"
     required: true
   issue_type:
-    description: The clouds.yaml account to use whilst performing this action
+    description: "
+    The type of issue, select from
+    - 'Task'
+    - 'Epic'
+    - 'Bug'"
     required: true
     type: string
     default: "Task"
@@ -25,21 +29,21 @@ parameters:
       - "Bug"
   summary:
     type: string
-    description: "comma-spaced email addresses to send email to"
+    description: "An issue summary"
     required: true
   description:
     type: string
-    description: "comma-spaced email addresses to send email to"
+    description: "A description of the issue"
     required: true
   components:
     type: array
-    description: "comma-spaced email addresses to send email to"
+    description: "An array of the components to select"
     required: true
     default: [{"name": "Dev Ops"}]
     immutable: true
   epic_id:
     type: string
-    description: "comma-spaced email addresses to send email to"
+    description: "The epic ID "
     required: true
   jira_account_name:
     type: string
