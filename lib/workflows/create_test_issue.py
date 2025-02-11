@@ -6,7 +6,7 @@ from structs.jira.jira_account import JiraAccount
 
 # pylint: disable=too-many-arguments
 def create_test_issue(
-    atlassian_account: JiraAccount,
+    jira_account: JiraAccount,
     project_id: str,
     issue_type: str,
     summary: str,
@@ -23,4 +23,4 @@ def create_test_issue(
         epic_id=epic_id,
     )
 
-    create_jira_task(account=atlassian_account, issue_details=issue_details)
+    create_jira_task(account=jira_account, issue_details=issue_details)

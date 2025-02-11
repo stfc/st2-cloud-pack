@@ -45,12 +45,12 @@ class OpenstackActions(Action):
             )
             del kwargs["smtp_account_name"]
 
-        # get token and username from stackstorm config under name atlassian_account_name
-        if "atlassian_account_name" in kwargs:
-            kwargs["atlassian_account"] = JiraAccount.from_pack_config(
-                self.config, kwargs["atlassian_account_name"]
+        # get token and username from stackstorm config under name jira_account_name
+        if "jira_account_name" in kwargs:
+            kwargs["jira_account"] = JiraAccount.from_pack_config(
+                self.config, kwargs["jira_account_name"]
             )
-            del kwargs["atlassian_account_name"]
+            del kwargs["jira_account_name"]
 
         # get password and username from stackstorm config under name icinga_account_name
         if "icinga_account_name" in kwargs:
