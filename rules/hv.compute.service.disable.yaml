@@ -3,14 +3,13 @@ name: "hv.compute.service.disable"
 pack: "stackstorm_openstack"
 description: "Triggers the disable action when the hypervisor state changes from 'RUNNING' to 'PENDING MAINTENANCE'"
 enabled: false # Disable
-
 criteria:
   trigger.previous_state:
     type: equals
     pattern: RUNNING
   trigger.current_state:
     type: equals
-    pattern: PENDING MAINTENANCE
+    pattern: PENDING_MAINTENANCE
 
 trigger:
   type: "stackstorm_openstack.hypervisor.state_change"

@@ -16,6 +16,12 @@ icinga_accounts:
     password:
     icinga_endpoint:
 
+alertmanager_accounts:
+  - name: "default"
+    username:
+    password:
+    alertmanager_endpoint:
+
 smtp_accounts:
   - name: "default"
     password:

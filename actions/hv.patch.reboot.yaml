@@ -21,4 +21,9 @@ parameters:
     description: Private key to authenticate with
     required: true
     type: string
+  alertmanager_account_name:
+    type: string
+    description: Name of Alertmanager Account to use. Must be configured in the pack settings.
+    required: true
+    default: "default"
 runner_type: python-script
