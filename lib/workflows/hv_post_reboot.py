@@ -21,6 +21,8 @@ def post_reboot(
     Action to run after a successful reboot
     :param icinga_account: Icinga account to use
     :param hypervisor_hostname: Hostname of hypervisor to run action against
+    :param alertmanager_account: Alertmanager Account to use
+    :param conn: Openstack Connection
     """
     downtime.remove_downtime(
         icinga_account=icinga_account,

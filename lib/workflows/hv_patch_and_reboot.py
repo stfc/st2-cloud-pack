@@ -24,8 +24,10 @@ def patch_and_reboot(
     """
     Takes the selected hypervisor, schedules a downtime on it starting immediately then runs
     the patch and reboot scripts on the machine, before ending the downtime.
-    icinga_account: IcingaAccount: The icinga account object to use to schedule and remove the downtimes
-    hypervisor_name: the name of the hypervisor - should also be the host name on icinga
+    :param alertmanager_account: Alertmanager Account to use
+    :param icinga_account: IcingaAccount: The icinga account object to use to schedule and remove the downtimes
+    :param hypervisor_name: the name of the hypervisor - should also be the host name on icinga
+    :param private_key_path: Path to the stackstorm key
     return: Dict[str] a dictionary containing the remote commands output
     """
     connection_details = SSHDetails(
