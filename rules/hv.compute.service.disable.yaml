@@ -12,7 +12,7 @@ criteria:
     pattern: PENDING_MAINTENANCE
   trigger.hypervisor_name:
     type: inside
-    pattern: ["hv700.nubes.rl.ac.uk", "hv742.nubes.rl.ac.uk"]
+    pattern: ["hv700.nubes.rl.ac.uk", "hv742.nubes.rl.ac.uk", "hv741.nubes.rl.ac.uk"]
 
 trigger:
   type: "stackstorm_openstack.hypervisor.state_change"
