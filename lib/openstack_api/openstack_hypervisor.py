@@ -58,7 +58,7 @@ def get_available_flavors(conn: Connection, hypervisor_name: str) -> List[str]:
     :param hypervisor_name: Hostname of a hypervisor
     :type hypervisor_name: str
     :return: List of flavor names
-    :rtype: list[str]
+    :rtype: List[str]
     """
     available_flavors = []
     for agg in conn.compute.aggregates():

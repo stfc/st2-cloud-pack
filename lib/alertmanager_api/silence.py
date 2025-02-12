@@ -1,6 +1,7 @@
 import logging
 import json
 from datetime import datetime
+from typing import List
 
 import requests
 
@@ -85,7 +86,7 @@ def remove_silence(alertmanager_account: AlertManagerAccount, silence_id: str) -
 
 
 def remove_silences(
-    alertmanager_account: AlertManagerAccount, silence_ids: list[str]
+    alertmanager_account: AlertManagerAccount, silence_ids: List[str]
 ) -> None:
     """
     Removes a list of previously scheduled silences in alertmanager
