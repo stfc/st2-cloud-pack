@@ -16,7 +16,7 @@ def get_hypervisor_state(hypervisor: Dict, uptime_limit: int) -> HypervisorState
     if not valid_state(hypervisor):
         return HypervisorState.UNKNOWN
     if (
-        hypervisor["hypervisor_uptime_days"] > uptime_limit
+        hypervisor["hypervisor_uptime_days"] >= uptime_limit
         and hypervisor["hypervisor_status"] == "enabled"
     ):
         return HypervisorState.PENDING_MAINTENANCE
@@ -36,7 +36,7 @@ def valid_state(state) -> bool:
     :param state: Dictionary containing hypervisor state
     :return: True for valid state
     """
-    if not isinstance(state["hypervisor_uptime_days"], int):
+    if not isinstance(state["hypervisor_uptime_days"], float):
         return False
     hypervisor_status = state["hypervisor_status"]
     if hypervisor_status not in ["enabled", "disabled"]:
