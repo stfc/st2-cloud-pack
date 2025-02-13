@@ -245,7 +245,9 @@ def get_hv_silences(alertmanager_account: AlertManagerAccount, hostname: str):
             for condition_set in hv_matcher_conditions
         )
 
+    print(get_silences(alertmanager_account).items())
     for silence_id, silence_values in get_silences(alertmanager_account).items():
         if check_matchers(silence_values["details"].matchers):
             hv_silences[silence_id] = silence_values
+            print(hv_silences[silence_id])
     return hv_silences
