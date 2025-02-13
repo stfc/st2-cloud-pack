@@ -29,11 +29,11 @@ def post_reboot(
         object_type=IcingaObject.HOST,
         object_name=hypervisor_hostname,
     )
-    create_test_server(
-        conn=conn, hypervisor_name=hypervisor_hostname, test_all_flavors=False
-    )
     hv_service_enable(
         conn=conn, hypervisor_name=hypervisor_hostname, service_binary="nova-compute"
+    )
+    create_test_server(
+        conn=conn, hypervisor_name=hypervisor_hostname, test_all_flavors=False
     )
     silences = get_hv_silences(alertmanager_account, hypervisor_hostname)
     for silence_id in silences:
