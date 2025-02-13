@@ -130,7 +130,7 @@ def get_silences(alertmanager_account: AlertManagerAccount) -> dict:
         raise req_ex
 
     silences = {}
-    for silence in json.loads(response.json()):
+    for silence in response.json():
         # Create SilenceDetails instance
         silence_details = SilenceDetails(
             # Convert ISO format strings to datetime objects
@@ -223,12 +223,11 @@ def get_hv_silences(alertmanager_account: AlertManagerAccount, hostname: str):
     # [("name1", "value1"), ("name2", "value2")] - must match these 2 matchers (logical AND)
     # [("name3", "value3"), ("name4", "value4")] - OR this other set of matchers
     hv_matcher_conditions = [
-        [("alertname", "InstanceDown"), ("instance", hostname)],
-        [("alertname", "PrometheusTargetMissing"), ("instance", hostname)],
-        [("alertname", "OpenStackServiceDown"), ("hostname", hostname)],
+        [("instance", hostname)],
+        [("hostname", hostname)],
     ]
 
-    def check_matchers(matchers: AlertMatcherDetails) -> bool:
+    def check_matchers(matchers: List[AlertMatcherDetails]) -> bool:
         """
         check alert matchers against a set of conditions to see if they are ones pertaining to HVs
         :param matchers: list of AlertMatcherDetails objects
