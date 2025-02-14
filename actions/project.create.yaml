@@ -1,11 +1,11 @@
 ---
-description: Create external project
+description: Create openstack project
 enabled: true
 entry_point: src/openstack_actions.py
-name: project.create.external
+name: project.create
 parameters:
   lib_entry_point:
-    default: workflows.create_external_project.create_external_project
+    default: workflows.create_project.create_project
     immutable: true
     type: string
   requires_openstack:
@@ -20,6 +20,14 @@ parameters:
     enum:
       - "dev"
       - "prod"
+  project_domain:
+    description: Domain to create project in
+    type: string
+    default: default
+    enum:
+      - stfc
+      - jasmin
+      - default
   project_name:
     required: true
     type: string
@@ -38,35 +46,31 @@ parameters:
     type: boolean
   parent_id:
     default: ""
-    description: Set the ID of the parent Domain/project. Leave as blank and it will use the "Default Domain"
+    description: Set the ID of the parent project.
     type: string
   admin_user_list:
     required: false
     default: []
     type: array
     description: List of Users (IDs or Names) to give administrator access
-  stfc_user_list:
+  user_list:
     required: false
     default: []
     type: array
-    description: List of Users (stfc domain) (IDs or Names) to give local user access
-  network_name:
-    required: true
+    description: List of Users (IDs or Names) to give local user access
+  networking_type:
+    description: Type of networking, internal or external
     type: string
-    description: Network to create for Project
-  subnet_name:
-    required: true
-    type: string
-    description: Subnet Name to create for Project
-  router_name:
-    required: true
-    type: string
-    description: Router Name to create for Project
+    default: internal
+    enum:
+      - internal
+      - external
+      - jasmin
   number_of_floating_ips:
     required: true
     type: integer
     default: 1
-    description: Number of Floating Ips to allocate to the project - and is also the quota
+    description: Number of Floating IPs to allocate to the project - and is also the quota
   number_of_security_group_rules:
     required: true
     type: integer
