@@ -17,7 +17,23 @@ from structs.alertmanager.silence_details import SilenceDetails
 def test_duration_calc(
     days, hours, minutes, expected_end_time_str, expected_time_delta
 ):
-    """test that SilenceDetails works when providing duration instead of end_time_dt"""
+    """
+    test that SilenceDetails works when providing duration instead of end_time_dt
+    Ensures that SilenceDetails correctly calculates end_time_dt based
+    on the provided duration (duration_days, duration_hours, duration_minutes).
+    Confirms that the calculated duration matches expectations.
+
+    This test uses pytest.mark.parametrize,
+    which allows us to run the same test with multiple sets of inputs.
+    For each case:
+        1. creates a SilenceDetails object with
+           start_time_dt = "2025-02-05T14:00:00Z"
+        2. uses the provided days, hours, and minutes to calculate end_time_dt
+        3. checks:
+            - start_time_str still is "2025-02-05T14:00:00Z"
+            - end_time_str is the expected value
+            - duration is the expect value
+    """
     res = SilenceDetails(
         matchers=[AlertMatcherDetails(name="matcher1", value="foo")],
         author="author",
@@ -50,7 +66,13 @@ def test_matchers_raw():
 
 
 def test_fail_end_time_older_than_start():
-    """test that SilenceDetails fails when end time is older than start time"""
+    """
+    test that SilenceDetails fails when end time is before than start time
+    tries to create a SilenceDetails object with:
+        - start time = "2025-02-05T14:00:00Z"
+        - a value of end time 1 year earlier
+    and ensures an Excpetion is raised
+    """
     with pytest.raises(ValueError):
         SilenceDetails(
             matchers=[AlertMatcherDetails(name="matcher1", value="foo")],
@@ -63,7 +85,13 @@ def test_fail_end_time_older_than_start():
 
 
 def test_fail_if_not_datetime():
-    """test that SilenceDetails fails when end_time or start_time is not datetime"""
+    """
+    test that SilenceDetails fails when end_time or start_time is not datetime
+    It ensures an Exception is raised when one of them is not valid.
+    Cases:
+        - first case: end time is valid but start time is not
+        - second case: start time is valid but end time is not
+    """
     with pytest.raises(TypeError):
         SilenceDetails(
             matchers=[AlertMatcherDetails(name="matcher1", value="foo")],
@@ -86,6 +114,13 @@ def test_fail_if_not_datetime():
 def test_fail_if_duration_and_end_time_not_given():
     """
     test that SilenceDetails fails if neither end_time or duration are provided
+
+    It ensures an Exception is raised when a SilenceDetails object is created
+    without any of the following parameters:
+        - end time
+        - duration (days)
+        - duration (hours)
+        - duration (minutes)
     """
     with pytest.raises(ValueError):
         SilenceDetails(

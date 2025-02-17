@@ -19,6 +19,17 @@ from alertmanager_api.silence import (
 
 @pytest.fixture(name="mock_get_silence_out")
 def mock_get_silence_out_fixture():
+    """
+    This fixture returns a JSON string containing a list of mock silence events.
+    It simulates API responses from Alertmanager.
+    The list contains different types of silences:
+        - Active silences
+        - Expired silences
+        - Silences with incorrect configurationsi
+          (e.g., missing "instance" field)
+        - Silences for different hostnames
+        - Pending silence events
+    """
     return json.dumps(
         [
             # An active silence for hv123
@@ -215,6 +226,14 @@ def mock_get_silence_out_fixture():
 
 @pytest.fixture(name="mock_silence_details")
 def mock_silence_details_fixture():
+    """
+    Creates a SilenceDetails object with mock data:
+        - start time: 2025-01-01 10:00:00
+        - end time: 2025-01-02 10:00:00
+        - author
+        - comment
+        - matchers
+    """
     date_start = datetime(2025, 1, 1, 10, 0, 0)
     date_end = datetime(2025, 1, 2, 10, 0, 0)
     return SilenceDetails(
