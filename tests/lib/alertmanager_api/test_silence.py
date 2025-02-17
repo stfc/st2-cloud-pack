@@ -25,7 +25,7 @@ def mock_get_silence_out_fixture():
     The list contains different types of silences:
         - Active silences
         - Expired silences
-        - Silences with incorrect configurationsi
+        - Silences with incorrect configurations
           (e.g., missing "instance" field)
         - Silences for different hostnames
         - Pending silence events
