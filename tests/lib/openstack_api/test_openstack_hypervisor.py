@@ -3,6 +3,7 @@ from enums.hypervisor_states import HypervisorState
 from openstack_api.openstack_hypervisor import (
     get_available_flavors,
     get_hypervisor_state,
+    valid_state,
 )
 import pytest
 
@@ -227,3 +228,54 @@ def test_avaliable_flavors():
     mock_conn.compute.flavors.assert_called_once()
 
     assert res == [mock_flavor_1.name, mock_flavor_2.name]
+
+
+@pytest.mark.parametrize(
+    "hypervisor",
+    [
+        {
+            "hypervisor_uptime_days": 40,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "down",
+            "hypervisor_server_count": 0,
+        },
+        {
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "notallowed",
+            "hypervisor_state": "down",
+            "hypervisor_server_count": 0,
+        },
+        {
+            "hypervisor_uptime_days": 40.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "middle",
+            "hypervisor_server_count": None,
+        },
+        {
+            "hypervisor_uptime_days": 40.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_server_count": 2.0,
+        },
+    ],
+)
+def test_valid_state_false(hypervisor):
+    """
+    Test valid_state is false for invalid states
+    """
+    valid = valid_state(hypervisor)
+    assert valid is False
+
+
+def test_valid_state_true():
+    """
+    Test valid_state is true for valid state
+    """
+    hypervisor = {
+        "hypervisor_uptime_days": 40.0,
+        "hypervisor_status": "enabled",
+        "hypervisor_state": "up",
+        "hypervisor_server_count": 2,
+    }
+    valid = valid_state(hypervisor)
+    assert valid is True
