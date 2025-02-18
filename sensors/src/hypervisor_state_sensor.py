@@ -25,6 +25,9 @@ class HypervisorStateSensor(PollingSensor):
             "cloud_account", "dev"
         )
         self.uptime_limit = self.config["hypervisor_sensor"].get("uptime_limit", 180)
+        self.state_expire_after = self.config["hypervisor_sensor"].get(
+            "state_expire_after", 1209600  # 2 weeks in seconds
+        )
 
     def setup(self):
         pass
@@ -57,7 +60,9 @@ class HypervisorStateSensor(PollingSensor):
                     payload=payload,
                 )
                 self.sensor_service.set_value(
-                    name=hypervisor["hypervisor_name"], value=current_state.name
+                    name=hypervisor["hypervisor_name"],
+                    value=current_state.name,
+                    ttl=self.state_expire_after,
                 )
 
     def cleanup(self):

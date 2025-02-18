@@ -138,3 +138,6 @@ hypervisor_sensor:
     uptime_limit:
       type: "number"
       description: "Number of uptime days before marking hypervisor for maintenance"
+    state_expire_after:
+      type: "integer"
+      description: "Number of seconds before forcefully deleting previous state to update hypervisors stuck in a state"

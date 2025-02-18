@@ -36,3 +36,4 @@ attachment_datastore_ttl: 1800
 hypervisor_sensor:
   cloud_account:
   uptime_limit:
+  state_expire_after:

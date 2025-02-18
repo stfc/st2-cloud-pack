@@ -6,8 +6,8 @@ enabled: true
 
 criteria:
   trigger.previous_state:
-    type: equals
-    pattern: PENDING_MAINTENANCE
+    type: inside
+    pattern: [null, PENDING_MAINTENANCE]
   trigger.current_state:
     type: equals
     pattern: DRAINING
