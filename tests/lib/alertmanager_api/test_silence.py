@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock, patch
 from datetime import datetime
-import json
 import pytest
 import requests
 
@@ -30,198 +29,196 @@ def mock_get_silence_out_fixture():
         - Silences for different hostnames
         - Pending silence events
     """
-    return json.dumps(
-        [
-            # An active silence for hv123
-            {
-                "id": "foo",
-                "status": {"state": "active"},
-                "updatedAt": "2025-01-16T07:31:31.257Z",
-                "comment": "Testing.",
-                "createdBy": "admin",
-                "endsAt": "2025-01-16T10:51:00.000Z",
-                "matchers": [
-                    {"isEqual": True, "isRegex": False, "name": "env", "value": "prod"},
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "alertname",
-                        "value": "InstanceDown",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "instance",
-                        "value": "hv123.matrix.net",
-                    },
-                ],
-                "startsAt": "2025-01-16T10:50:00.781Z",
-            },
-            # an expired silence for hv123 - with matcher "name=hostname"
-            {
-                "id": "boz",
-                "status": {"state": "expired"},
-                "updatedAt": "2025-01-02T10:00:00.002Z",
-                "comment": "old",
-                "createdBy": "admin2",
-                "endsAt": "2025-01-02T10:00:00.002Z",
-                "matchers": [
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "other",
-                        "value": "foo",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "alertname",
-                        "value": "OpenStackServiceDown",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "hostname",
-                        "value": "hv123.matrix.net",
-                    },
-                ],
-                "startsAt": "2025-01-01T10:00:00.002Z",
-            },
-            # an expired silence for hv123
-            {
-                "id": "baz",
-                "status": {"state": "expired"},
-                "updatedAt": "2025-01-02T10:00:00.002Z",
-                "comment": "old",
-                "createdBy": "admin2",
-                "endsAt": "2025-01-02T10:00:00.002Z",
-                "matchers": [
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "other",
-                        "value": "foo",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "alertname",
-                        "value": "PrometheusTargetMissing",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "instance",
-                        "value": "hv123.matrix.net",
-                    },
-                ],
-                "startsAt": "2025-01-01T10:00:00.002Z",
-            },
-            # an active silence for hv123 but wrong alertname
-            {
-                "id": "bil",
-                "status": {"state": "active"},
-                "updatedAt": "2025-01-02T10:00:00.002Z",
-                "comment": "old",
-                "createdBy": "admin2",
-                "endsAt": "2025-01-02T10:00:00.002Z",
-                "matchers": [
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "other",
-                        "value": "foo",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "alertname",
-                        "value": "anotheralert",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "instance",
-                        "value": "hv123.matrix.net",
-                    },
-                ],
-                "startsAt": "2025-01-01T10:00:00.002Z",
-            },
-            # an active silence for hv123 but InstanceDown has no accompanying "instance" matcher
-            {
-                "id": "bol",
-                "status": {"state": "active"},
-                "updatedAt": "2025-01-02T10:00:00.002Z",
-                "comment": "old",
-                "createdBy": "admin2",
-                "endsAt": "2025-01-02T10:00:00.002Z",
-                "matchers": [
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "other",
-                        "value": "foo",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "alertname",
-                        "value": "InstanceDown",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "hostname",  # not instance
-                        "value": "hv123.matrix.net",
-                    },
-                ],
-                "startsAt": "2025-01-01T10:00:00.002Z",
-            },
-            # An active silence for hv234
-            {
-                "id": "bar",
-                "status": {"state": "active"},
-                "updatedAt": "2025-01-16T07:32:25.792Z",
-                "comment": "Testing.",
-                "createdBy": "admin",
-                "endsAt": "2025-01-16T10:51:00.279Z",
-                "matchers": [
-                    {"isEqual": True, "isRegex": False, "name": "env", "value": "dev"},
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "instance",
-                        "value": "hv234.matrix.net",
-                    },
-                ],
-                "startsAt": "2025-01-16T10:50:00.782Z",
-            },
-            # A pending silence that doesn't pertain to hvs
-            {
-                "id": "biz",
-                "status": {"state": "pending"},
-                "updatedAt": "2025-01-30T10:21:56.632Z",
-                "comment": "pending create",
-                "createdBy": "admin2",
-                "endsAt": "2025-01-30T12:20:52.212Z",
-                "matchers": [
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "cluster",
-                        "value": "management",
-                    },
-                    {
-                        "isEqual": True,
-                        "isRegex": False,
-                        "name": "severity",
-                        "value": "warning",
-                    },
-                ],
-                "startsAt": "2025-01-30T10:21:56.632Z",
-            },
-        ]
-    )
+    return [
+        # An active silence for hv123
+        {
+            "id": "foo",
+            "status": {"state": "active"},
+            "updatedAt": "2025-01-16T07:31:31.257Z",
+            "comment": "Testing.",
+            "createdBy": "admin",
+            "endsAt": "2025-01-16T10:51:00.000Z",
+            "matchers": [
+                {"isEqual": True, "isRegex": False, "name": "env", "value": "prod"},
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "alertname",
+                    "value": "InstanceDown",
+                },
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "instance",
+                    "value": "hv123.matrix.net",
+                },
+            ],
+            "startsAt": "2025-01-16T10:50:00.781Z",
+        },
+        # an expired silence for hv123 - with matcher "name=hostname"
+        {
+            "id": "boz",
+            "status": {"state": "expired"},
+            "updatedAt": "2025-01-02T10:00:00.002Z",
+            "comment": "old",
+            "createdBy": "admin2",
+            "endsAt": "2025-01-02T10:00:00.002Z",
+            "matchers": [
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "other",
+                    "value": "foo",
+                },
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "alertname",
+                    "value": "OpenStackServiceDown",
+                },
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "hostname",
+                    "value": "hv123.matrix.net",
+                },
+            ],
+            "startsAt": "2025-01-01T10:00:00.002Z",
+        },
+        # an expired silence for hv123
+        {
+            "id": "baz",
+            "status": {"state": "expired"},
+            "updatedAt": "2025-01-02T10:00:00.002Z",
+            "comment": "old",
+            "createdBy": "admin2",
+            "endsAt": "2025-01-02T10:00:00.002Z",
+            "matchers": [
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "other",
+                    "value": "foo",
+                },
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "alertname",
+                    "value": "PrometheusTargetMissing",
+                },
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "instance",
+                    "value": "hv123.matrix.net",
+                },
+            ],
+            "startsAt": "2025-01-01T10:00:00.002Z",
+        },
+        # an active silence for hv123 but wrong alertname
+        {
+            "id": "bil",
+            "status": {"state": "active"},
+            "updatedAt": "2025-01-02T10:00:00.002Z",
+            "comment": "old",
+            "createdBy": "admin2",
+            "endsAt": "2025-01-02T10:00:00.002Z",
+            "matchers": [
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "other",
+                    "value": "foo",
+                },
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "alertname",
+                    "value": "anotheralert",
+                },
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "instance",
+                    "value": "hv123.matrix.net",
+                },
+            ],
+            "startsAt": "2025-01-01T10:00:00.002Z",
+        },
+        # an active silence for hv123 but InstanceDown has no accompanying "instance" matcher
+        {
+            "id": "bol",
+            "status": {"state": "active"},
+            "updatedAt": "2025-01-02T10:00:00.002Z",
+            "comment": "old",
+            "createdBy": "admin2",
+            "endsAt": "2025-01-02T10:00:00.002Z",
+            "matchers": [
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "other",
+                    "value": "foo",
+                },
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "alertname",
+                    "value": "InstanceDown",
+                },
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "hostname",  # not instance
+                    "value": "hv123.matrix.net",
+                },
+            ],
+            "startsAt": "2025-01-01T10:00:00.002Z",
+        },
+        # An active silence for hv234
+        {
+            "id": "bar",
+            "status": {"state": "active"},
+            "updatedAt": "2025-01-16T07:32:25.792Z",
+            "comment": "Testing.",
+            "createdBy": "admin",
+            "endsAt": "2025-01-16T10:51:00.279Z",
+            "matchers": [
+                {"isEqual": True, "isRegex": False, "name": "env", "value": "dev"},
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "instance",
+                    "value": "hv234.matrix.net",
+                },
+            ],
+            "startsAt": "2025-01-16T10:50:00.782Z",
+        },
+        # A pending silence that doesn't pertain to hvs
+        {
+            "id": "biz",
+            "status": {"state": "pending"},
+            "updatedAt": "2025-01-30T10:21:56.632Z",
+            "comment": "pending create",
+            "createdBy": "admin2",
+            "endsAt": "2025-01-30T12:20:52.212Z",
+            "matchers": [
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "cluster",
+                    "value": "management",
+                },
+                {
+                    "isEqual": True,
+                    "isRegex": False,
+                    "name": "severity",
+                    "value": "warning",
+                },
+            ],
+            "startsAt": "2025-01-30T10:21:56.632Z",
+        },
+    ]
 
 
 @pytest.fixture(name="mock_silence_details")
@@ -439,7 +436,6 @@ def test_get_hv_silences(mock_get, mock_get_silence_out):
     mock_get.return_value = mock_response
     res = get_hv_silences(mock_alertmanager_account, hostname)
 
-    # should get 2 (1 active + 2 expired) silences as set in mock_get_silence_out fixture
-    # should ignore 2 active but misconfigured alerts
+    # should get 5 alerts which include hostname and instance
     mock_get.assert_called_once()
-    assert len(res) == 3
+    assert len(res) == 5
