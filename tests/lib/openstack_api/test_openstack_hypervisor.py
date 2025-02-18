@@ -12,7 +12,7 @@ def test_get_state_running():
     Test hypervisor state is running for given variables
     """
     hypervisor = {
-        "hypervisor_uptime_days": 7,
+        "hypervisor_uptime_days": 7.0,
         "hypervisor_status": "enabled",
         "hypervisor_state": "up",
         "hypervisor_server_count": 5,
@@ -25,13 +25,13 @@ def test_get_state_running():
     "hypervisor",
     [
         {
-            "hypervisor_uptime_days": 70,
+            "hypervisor_uptime_days": 70.0,
             "hypervisor_status": "enabled",
             "hypervisor_state": "up",
             "hypervisor_server_count": 0,
         },
         {
-            "hypervisor_uptime_days": 100,
+            "hypervisor_uptime_days": 100.0,
             "hypervisor_status": "enabled",
             "hypervisor_state": "up",
             "hypervisor_server_count": 12,
@@ -51,7 +51,7 @@ def test_get_state_draining():
     Test hypervisor state is draining for given variables
     """
     hypervisor = {
-        "hypervisor_uptime_days": 100,
+        "hypervisor_uptime_days": 100.3,
         "hypervisor_status": "disabled",
         "hypervisor_state": "up",
         "hypervisor_server_count": 5,
@@ -65,7 +65,7 @@ def test_get_state_drained():
     Test hypervisor state is drained for given variables
     """
     hypervisor = {
-        "hypervisor_uptime_days": 100,
+        "hypervisor_uptime_days": 100.1,
         "hypervisor_status": "disabled",
         "hypervisor_state": "up",
         "hypervisor_server_count": 0,
@@ -79,7 +79,7 @@ def test_get_state_rebooted():
     Test hypervisor state is rebooted for given variables
     """
     hypervisor = {
-        "hypervisor_uptime_days": 0,
+        "hypervisor_uptime_days": 0.1,
         "hypervisor_status": "disabled",
         "hypervisor_state": "up",
         "hypervisor_server_count": 0,
@@ -93,7 +93,7 @@ def test_get_state_empty():
     Test hypervisor state is empty for given variables
     """
     hypervisor = {
-        "hypervisor_uptime_days": 40,
+        "hypervisor_uptime_days": 40.0,
         "hypervisor_status": "enabled",
         "hypervisor_state": "up",
         "hypervisor_server_count": 0,
