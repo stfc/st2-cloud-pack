@@ -3,6 +3,8 @@ from typing import Optional
 from openstack.connection import Connection
 from openstack.compute.v2.image import Image
 from openstack.compute.v2.server import Server
+from openstack.exceptions import ResourceTimeout
+from openstack.exceptions import ResourceFailure
 
 
 def snapshot_and_migrate_server(
@@ -67,6 +69,7 @@ def build_server(
     image_name: str,
     network_name: str,
     hypervisor_hostname: Optional[str] = None,
+    delete_on_failure: Optional[bool] = False,
 ) -> Server:
     """
     Builds a server, with option to specify a hypervisor
@@ -100,10 +103,14 @@ def build_server(
             "openstack_api_version": "2.74",
         }
     )
-
-    conn.compute.wait_for_server(
-        server, status="ACTIVE", failures=None, interval=5, wait=300
-    )
+    try:
+        conn.compute.wait_for_server(
+            server, status="ACTIVE", failures=None, interval=5, wait=300
+        )
+    except (ResourceTimeout, ResourceFailure) as e:
+        if delete_on_failure:
+            conn.compute.delete_server(server, force=True)
+        raise e
     return server
 
 

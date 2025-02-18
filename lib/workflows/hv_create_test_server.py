@@ -6,7 +6,10 @@ from openstack_api.openstack_server import build_server, delete_server
 
 
 def create_test_server(
-    conn: Connection, hypervisor_name: str, test_all_flavors: bool
+    conn: Connection,
+    hypervisor_name: str,
+    test_all_flavors: bool,
+    delete_on_failure: bool,
 ) -> None:
     """
     Create a test server on a hypervisor, option to test all possible flavors avaliable to the hypervisor
@@ -32,5 +35,6 @@ def create_test_server(
             "ubuntu-focal-20.04-nogui",
             "Internal",
             hypervisor_name,
+            delete_on_failure,
         )
         delete_server(conn, server.id)

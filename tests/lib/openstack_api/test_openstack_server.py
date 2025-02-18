@@ -1,5 +1,6 @@
 from datetime import datetime
 from unittest.mock import MagicMock, patch
+from openstack.exceptions import ResourceFailure
 import pytest
 from openstack_api.openstack_server import (
     build_server,
@@ -176,6 +177,7 @@ def test_build_server():
         "test-image",
         "test-network",
         "hvxyz.nubes.rl.ac.uk",
+        False,
     )
 
     mock_conn.compute.find_flavor.assert_called_once_with("test-flavor")
@@ -197,6 +199,98 @@ def test_build_server():
     )
 
     assert res == mock_server
+
+
+def test_build_server_delete_on_failure():
+    """
+    Test build server with delete on failure set to True
+    """
+    mock_conn = MagicMock()
+
+    mock_conn.compute.find_flavor.return_value = MagicMock()
+    mock_conn.image.find_image.return_value = MagicMock()
+    mock_conn.network.find_network.return_value = MagicMock()
+
+    mock_server = MagicMock()
+    mock_conn.compute.create_server.return_value = mock_server
+
+    mock_conn.compute.wait_for_server.side_effect = ResourceFailure("Failure")
+
+    with pytest.raises(ResourceFailure):
+        build_server(
+            mock_conn,
+            "test-server",
+            "test-flavor",
+            "test-image",
+            "test-network",
+            "hvxyz.nubes.rl.ac.uk",
+            delete_on_failure=True,
+        )
+
+    mock_conn.compute.find_flavor.assert_called_once_with("test-flavor")
+    mock_conn.image.find_image.assert_called_once_with("test-image")
+    mock_conn.network.find_network.assert_called_once_with("test-network")
+
+    mock_conn.compute.create_server.assert_called_once_with(
+        **{
+            "name": "test-server",
+            "imageRef": mock_conn.image.find_image.return_value.id,
+            "flavorRef": mock_conn.compute.find_flavor.return_value.id,
+            "networks": [{"uuid": mock_conn.network.find_network.return_value.id}],
+            "host": "hvxyz.nubes.rl.ac.uk",
+            "openstack_api_version": "2.74",
+        }
+    )
+    mock_conn.compute.wait_for_server.assert_called_once_with(
+        mock_server, status="ACTIVE", failures=None, interval=5, wait=300
+    )
+    mock_conn.compute.delete_server.assert_called_once_with(mock_server, force=True)
+
+
+def test_build_server_delete_on_failure_false():
+    """
+    Test build server with delete on failure set to False
+    """
+    mock_conn = MagicMock()
+
+    mock_conn.compute.find_flavor.return_value = MagicMock()
+    mock_conn.image.find_image.return_value = MagicMock()
+    mock_conn.network.find_network.return_value = MagicMock()
+
+    mock_server = MagicMock()
+    mock_conn.compute.create_server.return_value = mock_server
+
+    mock_conn.compute.wait_for_server.side_effect = ResourceFailure("Failure")
+
+    with pytest.raises(ResourceFailure):
+        build_server(
+            mock_conn,
+            "test-server",
+            "test-flavor",
+            "test-image",
+            "test-network",
+            "hvxyz.nubes.rl.ac.uk",
+            delete_on_failure=False,
+        )
+
+    mock_conn.compute.find_flavor.assert_called_once_with("test-flavor")
+    mock_conn.image.find_image.assert_called_once_with("test-image")
+    mock_conn.network.find_network.assert_called_once_with("test-network")
+
+    mock_conn.compute.create_server.assert_called_once_with(
+        **{
+            "name": "test-server",
+            "imageRef": mock_conn.image.find_image.return_value.id,
+            "flavorRef": mock_conn.compute.find_flavor.return_value.id,
+            "networks": [{"uuid": mock_conn.network.find_network.return_value.id}],
+            "host": "hvxyz.nubes.rl.ac.uk",
+            "openstack_api_version": "2.74",
+        }
+    )
+    mock_conn.compute.wait_for_server.assert_called_once_with(
+        mock_server, status="ACTIVE", failures=None, interval=5, wait=300
+    )
+    mock_conn.compute.delete_server.assert_not_called()
 
 
 def test_delete_server():

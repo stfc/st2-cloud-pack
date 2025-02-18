@@ -1,14 +1,20 @@
 from unittest.mock import MagicMock, patch
+import pytest
 
 from workflows.hv_create_test_server import create_test_server
 
 
+@pytest.mark.parametrize("delete_error_server", [True, False])
 @patch("workflows.hv_create_test_server.delete_server")
 @patch("workflows.hv_create_test_server.build_server")
 @patch("workflows.hv_create_test_server.random")
 @patch("workflows.hv_create_test_server.get_available_flavors")
 def test_create_single_test_server(
-    mock_get_available_flavors, mock_random, mock_build_server, mock_delete_server
+    mock_get_available_flavors,
+    mock_random,
+    mock_build_server,
+    mock_delete_server,
+    delete_error_server,
 ):
     """
     Test build single server on a hypervisor
@@ -23,7 +29,7 @@ def test_create_single_test_server(
     mock_server = MagicMock()
     mock_build_server.return_value = mock_server
 
-    create_test_server(mock_conn, "hvxyz.nubes.rl.ac.uk", False)
+    create_test_server(mock_conn, "hvxyz.nubes.rl.ac.uk", False, delete_error_server)
 
     mock_get_available_flavors.assert_called_once_with(
         mock_conn, "hvxyz.nubes.rl.ac.uk"
@@ -35,6 +41,7 @@ def test_create_single_test_server(
         "ubuntu-focal-20.04-nogui",
         "Internal",
         "hvxyz.nubes.rl.ac.uk",
+        delete_error_server,
     )
     mock_delete_server.assert_called_once_with(mock_conn, mock_server.id)
 
@@ -55,7 +62,7 @@ def test_create_test_server_all_flavors(
     mock_server = MagicMock()
     mock_build_server.return_value = mock_server
 
-    create_test_server(mock_conn, "hvxyz.nubes.rl.ac.uk", True)
+    create_test_server(mock_conn, "hvxyz.nubes.rl.ac.uk", True, True)
 
     mock_get_available_flavors.assert_called_once_with(
         mock_conn, "hvxyz.nubes.rl.ac.uk"
@@ -69,5 +76,6 @@ def test_create_test_server_all_flavors(
             "ubuntu-focal-20.04-nogui",
             "Internal",
             "hvxyz.nubes.rl.ac.uk",
+            True,
         )
         mock_delete_server.assert_any_call(mock_conn, mock_server.id)

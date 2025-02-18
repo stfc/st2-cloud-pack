@@ -31,4 +31,9 @@ parameters:
     description: Test all avaliable flavors for the hypervisor, otherwise test random flavor
     default: false
     required: true
+  delete_on_failure:
+    type: boolean
+    description: Delete servers that errored during creation
+    default: true
+    required: true
 runner_type: python-script
