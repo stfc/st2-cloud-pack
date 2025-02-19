@@ -51,5 +51,5 @@ def test_poll(mock_query_hypervisor_state, mock_get_hypervisor_state, sensor):
         payload=expected_payload,
     )
     sensor.sensor_service.set_value.assert_called_once_with(
-        name="hv1", value="PENDING_MAINTENANCE"
+        name="hv1", value="PENDING_MAINTENANCE", ttl=1209600
     )
