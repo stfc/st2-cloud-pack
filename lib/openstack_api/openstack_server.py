@@ -33,16 +33,15 @@ def snapshot_and_migrate_server(
         )
     if snapshot:
         snapshot_server(conn=conn, server_id=server_id)
+    server = conn.compute.get_server(server_id)
     if server_status == "SHUTOFF":
         conn.compute.migrate_server(server=server_id, host=dest_host)
-        server = conn.compute.get_server(server_id)
         conn.compute.wait_for_server(server, status="VERIFY_RESIZE")
         conn.compute.confirm_server_resize(server_id)
         return conn.compute.wait_for_server(server, status="SHUTOFF")
     conn.compute.live_migrate_server(
         server=server_id, host=dest_host, block_migration=True
     )
-    server = conn.compute.get_server(server_id)
     return conn.compute.wait_for_server(server, status="ACTIVE")
 
 
