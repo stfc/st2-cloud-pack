@@ -36,6 +36,5 @@ def post_reboot(
         conn=conn, hypervisor_name=hypervisor_hostname, test_all_flavors=False
     )
     silences = get_hv_silences(alertmanager_account, hypervisor_hostname)
-    print(silences)
     for silence_id in silences:
         remove_silence(alertmanager_account, silence_id)
