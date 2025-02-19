@@ -3,6 +3,7 @@ from enums.hypervisor_states import HypervisorState
 from openstack_api.openstack_hypervisor import (
     get_available_flavors,
     get_hypervisor_state,
+    valid_state,
 )
 import pytest
 
@@ -12,7 +13,7 @@ def test_get_state_running():
     Test hypervisor state is running for given variables
     """
     hypervisor = {
-        "hypervisor_uptime_days": 7,
+        "hypervisor_uptime_days": 7.0,
         "hypervisor_status": "enabled",
         "hypervisor_state": "up",
         "hypervisor_server_count": 5,
@@ -25,13 +26,13 @@ def test_get_state_running():
     "hypervisor",
     [
         {
-            "hypervisor_uptime_days": 70,
+            "hypervisor_uptime_days": 70.0,
             "hypervisor_status": "enabled",
             "hypervisor_state": "up",
             "hypervisor_server_count": 0,
         },
         {
-            "hypervisor_uptime_days": 100,
+            "hypervisor_uptime_days": 100.0,
             "hypervisor_status": "enabled",
             "hypervisor_state": "up",
             "hypervisor_server_count": 12,
@@ -51,7 +52,7 @@ def test_get_state_draining():
     Test hypervisor state is draining for given variables
     """
     hypervisor = {
-        "hypervisor_uptime_days": 100,
+        "hypervisor_uptime_days": 100.3,
         "hypervisor_status": "disabled",
         "hypervisor_state": "up",
         "hypervisor_server_count": 5,
@@ -65,7 +66,7 @@ def test_get_state_drained():
     Test hypervisor state is drained for given variables
     """
     hypervisor = {
-        "hypervisor_uptime_days": 100,
+        "hypervisor_uptime_days": 100.1,
         "hypervisor_status": "disabled",
         "hypervisor_state": "up",
         "hypervisor_server_count": 0,
@@ -79,7 +80,7 @@ def test_get_state_rebooted():
     Test hypervisor state is rebooted for given variables
     """
     hypervisor = {
-        "hypervisor_uptime_days": 0,
+        "hypervisor_uptime_days": 0.1,
         "hypervisor_status": "disabled",
         "hypervisor_state": "up",
         "hypervisor_server_count": 0,
@@ -93,7 +94,7 @@ def test_get_state_empty():
     Test hypervisor state is empty for given variables
     """
     hypervisor = {
-        "hypervisor_uptime_days": 40,
+        "hypervisor_uptime_days": 40.0,
         "hypervisor_status": "enabled",
         "hypervisor_state": "up",
         "hypervisor_server_count": 0,
@@ -227,3 +228,54 @@ def test_avaliable_flavors():
     mock_conn.compute.flavors.assert_called_once()
 
     assert res == [mock_flavor_1.name, mock_flavor_2.name]
+
+
+@pytest.mark.parametrize(
+    "hypervisor",
+    [
+        {
+            "hypervisor_uptime_days": 40,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "down",
+            "hypervisor_server_count": 0,
+        },
+        {
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "notallowed",
+            "hypervisor_state": "down",
+            "hypervisor_server_count": 0,
+        },
+        {
+            "hypervisor_uptime_days": 40.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "middle",
+            "hypervisor_server_count": None,
+        },
+        {
+            "hypervisor_uptime_days": 40.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_server_count": 2.0,
+        },
+    ],
+)
+def test_valid_state_false(hypervisor):
+    """
+    Test valid_state is false for invalid states
+    """
+    valid = valid_state(hypervisor)
+    assert valid is False
+
+
+def test_valid_state_true():
+    """
+    Test valid_state is true for valid state
+    """
+    hypervisor = {
+        "hypervisor_uptime_days": 40.0,
+        "hypervisor_status": "enabled",
+        "hypervisor_state": "up",
+        "hypervisor_server_count": 2,
+    }
+    valid = valid_state(hypervisor)
+    assert valid is True

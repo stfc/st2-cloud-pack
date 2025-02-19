@@ -22,7 +22,7 @@ criteria:
   # manually using the stackstorm_openstack.server.migrate action
   trigger.body.flavor_id#2:
     type: ninside
-    pattern: ["l3.micro"]
+    pattern: ["m1.tiny"]
 
 action:
   ref: "stackstorm_openstack.server.migrate"

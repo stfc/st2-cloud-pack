@@ -50,7 +50,7 @@ def patch_and_reboot(
     schedule_downtime(icinga_account=icinga_account, details=downtime_details)
     matcher_instance = AlertMatcherDetails(name="instance", value=hypervisor_name)
     silence_details_instance = SilenceDetails(
-        matchers=matcher_instance,
+        matchers=[matcher_instance],
         author="stackstorm",
         comment="Stackstorm HV maintenance",
         start_time_dt=datetime.datetime.utcnow(),
@@ -61,7 +61,7 @@ def patch_and_reboot(
     )
     matcher_hostname = AlertMatcherDetails(name="hostname", value=hypervisor_name)
     silence_details_hostname = SilenceDetails(
-        matchers=matcher_hostname,
+        matchers=[matcher_hostname],
         author="stackstorm",
         comment="Stackstorm HV maintenance",
         start_time_dt=datetime.datetime.utcnow(),

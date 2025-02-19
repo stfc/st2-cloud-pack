@@ -93,9 +93,11 @@ def test_failed_post_reboot(
         object_type=IcingaObject.HOST,
         object_name=mock_hv_name,
     )
+    mock_hv_service_enable.assert_called_once_with(
+        conn=mock_conn, hypervisor_name=mock_hv_name, service_binary="nova-compute"
+    )
     mock_create_test_server.assert_called_once_with(
         conn=mock_conn, hypervisor_name=mock_hv_name, test_all_flavors=False
     )
-    mock_hv_service_enable.assert_not_called()
     mock_get_hv_silences.assert_not_called()
     mock_remove_silence.assert_not_called()

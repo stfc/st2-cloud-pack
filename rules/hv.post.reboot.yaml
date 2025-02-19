@@ -19,5 +19,5 @@ action:
   parameters:
     alertmanager_account_name: "default"
     icinga_account_name: "default"
-    name: "{{ trigger.hypervisor_name }}"
+    hypervisor_hostname: "{{ trigger.hypervisor_name }}"
     cloud_account: "dev"

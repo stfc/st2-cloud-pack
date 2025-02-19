@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import List, Optional
 
 from structs.alertmanager.alert_matcher_details import AlertMatcherDetails
 
@@ -36,7 +36,7 @@ class SilenceDetails:
     :raises ValueError: when given end_time_dt is not after start_time_dt
     """
 
-    matchers: list[AlertMatcherDetails]
+    matchers: List[AlertMatcherDetails]
     author: str = None
     comment: str = None
     start_time_dt: Optional[datetime] = field(default_factory=datetime.now)
@@ -92,6 +92,6 @@ class SilenceDetails:
         return self.end_time_dt - self.start_time_dt
 
     @property
-    def matchers_raw(self) -> list[dict]:
+    def matchers_raw(self) -> List[dict]:
         """get matchers as list of dictionaries rather than list of dataclasses"""
         return [matcher.to_dict() for matcher in self.matchers]

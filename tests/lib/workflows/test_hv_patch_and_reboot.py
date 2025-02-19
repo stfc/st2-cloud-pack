@@ -58,14 +58,14 @@ def test_successful_patch_and_reboot(
         ),
     )
     mock_silence_details_instance = SilenceDetails(
-        matchers=AlertMatcherDetails(name="instance", value="test_host"),
+        matchers=[AlertMatcherDetails(name="instance", value="test_host")],
         start_time_dt=datetime.datetime.utcnow(),
         duration_hours=6,
         author="stackstorm",
         comment="Stackstorm HV maintenance",
     )
     mock_silence_details_hostname = SilenceDetails(
-        matchers=AlertMatcherDetails(name="hostname", value="test_host"),
+        matchers=[AlertMatcherDetails(name="hostname", value="test_host")],
         start_time_dt=datetime.datetime.utcnow(),
         duration_hours=6,
         author="stackstorm",
@@ -189,14 +189,14 @@ def test_failed_ssh(
         ),
     )
     mock_silence_details_instance = SilenceDetails(
-        matchers=AlertMatcherDetails(name="instance", value="test_host"),
+        matchers=[AlertMatcherDetails(name="instance", value="test_host")],
         start_time_dt=datetime.datetime.utcnow(),
         duration_hours=6,
         author="stackstorm",
         comment="Stackstorm HV maintenance",
     )
     mock_silence_details_hostname = SilenceDetails(
-        matchers=AlertMatcherDetails(name="hostname", value="test_host"),
+        matchers=[AlertMatcherDetails(name="hostname", value="test_host")],
         start_time_dt=datetime.datetime.utcnow(),
         duration_hours=6,
         author="stackstorm",
