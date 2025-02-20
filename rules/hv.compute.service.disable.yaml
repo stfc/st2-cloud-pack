@@ -2,7 +2,7 @@
 name: "hv.compute.service.disable"
 pack: "stackstorm_openstack"
 description: "Triggers the disable action when the hypervisor state changes from 'RUNNING' to 'PENDING MAINTENANCE'"
-enabled: false # Disable
+enabled: true
 criteria:
   trigger.previous_state:
     type: equals
@@ -10,6 +10,15 @@ criteria:
   trigger.current_state:
     type: equals
     pattern: PENDING_MAINTENANCE
+  trigger.hypervisor_name:
+    type: inside
+    pattern:
+      - "hv742.nubes.rl.ac.uk"
+      - "hv741.nubes.rl.ac.uk"
+      - "hv713.nubes.rl.ac.uk"
+      - "hv740.nubes.rl.ac.uk"
+      - "hv686.nubes.rl.ac.uk"
+      - "hv646.nubes.rl.ac.uk"
 
 trigger:
   type: "stackstorm_openstack.hypervisor.state_change"
