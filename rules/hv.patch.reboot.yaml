@@ -5,8 +5,8 @@ description: "Starts the patch reboot action when the hypervisor is drained"
 enabled: true
 criteria:
   trigger.previous_state:
-    type: equals
-    pattern: DRAINING
+    type: inside
+    pattern: ["DRAINING", "PENDING_MAINTENANCE"]
   trigger.current_state:
     type: equals
     pattern: DRAINED
