@@ -5,8 +5,8 @@ description: "Triggers the disable action when the hypervisor state changes from
 enabled: true
 criteria:
   trigger.previous_state:
-    type: equals
-    pattern: RUNNING
+    type: inside
+    pattern: ["RUNNING", "EMPTY"]
   trigger.current_state:
     type: equals
     pattern: PENDING_MAINTENANCE
