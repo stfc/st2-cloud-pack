@@ -8,6 +8,16 @@ def quota_set(
     project_identifier: str,
     num_floating_ips: int,
     num_security_group_rules: int,
+    cores: int,
+    gigabytes: int,
+    key_pairs: int,
+    instances: int,
+    properties: int,
+    ram: int,
+    secgroups: int,
+    snapshots: int,
+    volumes: int,
+    volume_type: str,
 ) -> bool:
     """
     Set a project's quota
@@ -19,6 +29,6 @@ def quota_set(
     """
     openstack_quota.set_quota(
         conn,
-        QuotaDetails(project_identifier, num_floating_ips, num_security_group_rules),
+        QuotaDetails(project_identifier, num_floating_ips, num_security_group_rules, cores, gigabytes, key_pairs, instances, properties, ram, secgroups, snapshots, volumes, volume_type),
     )
     return True
