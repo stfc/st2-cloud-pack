@@ -1,3 +1,4 @@
+import select
 import paramiko
 from paramiko.ssh_exception import SSHException
 
@@ -34,17 +35,43 @@ class SSHConnection:
         """
         self.client.close()
 
-    def run_command_on_host(self, command: str) -> bytes:
+    def run_command_on_host(self, command: str):
         """
         Run command on a host
         :param command: Command to run over SSH
         :return: Output bytes
         """
         with self as client:
-            _stdin, stdout, stderr = client.exec_command(command=command)
+            stdin, stdout, stderr = client.exec_command(command=command)
 
-            err = stderr.read().decode()
-            if err:
-                raise SSHException(err)
+            channel = stdout.channel
+            stdin.close()
+            channel.shutdown_write()
+            while (
+                not channel.closed
+                or channel.recv_ready()
+                or channel.recv_stderr_ready()
+            ):
+                if channel.recv_ready():
+                    output = channel.recv(1024).decode("utf-8")
+                    print(output, end="")
+                if channel.recv_stderr_ready():
+                    output = channel.recv_stderr(1024).decode("utf-8")
+                    print(output, end="")
 
-            return stdout.read()
+                if (
+                    stdout.channel.exit_status_ready()
+                    and not stderr.channel.recv_stderr_ready()
+                    and not stdout.channel.recv_ready()
+                ):
+                    stdout.channel.shutdown_read()
+                    stdout.channel.close()
+                    break
+
+            stdout.close()
+            stderr.close()
+
+            if stdout.channel.recv_exit_status() != 0:
+                raise SSHException()
+
+            return
