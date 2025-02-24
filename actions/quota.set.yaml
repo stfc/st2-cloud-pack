@@ -34,4 +34,48 @@ parameters:
     default: 0
     type: integer
     required: false
+  cores:
+      description: New value for the cores quota
+      type: integer
+  fixed_ips:
+      description: New value for the fixed-ips quota
+      type: integer
+  gigabytes:
+      description: New value for the gigabytes quota
+      type: integer
+  injected_file_size:
+      description: New value for the injected-file-size quota
+      type: integer
+  injected_files:
+      description: New value for the injected-files quota
+      type: integer
+  injected_path_size:
+      description: New value for the injected-path-size quota
+      type: integer
+  instances:
+      description: New value for the instances quota
+      type: integer
+  key_pairs:
+      description: New value for the key-pairs quota
+      type: integer
+  properties:
+      description: New value for the properties quota
+      type: integer
+  ram:
+      description: New value for the ram quota
+      type: integer
+  secgroup_rules:
+      description: New value for the secgroup-rules quota
+      type: integer
+  secgroups:
+      description: New value for the secgroups quota
+      type: integer
+  snapshots:
+      description: New value for the snapshots quota
+      type: integer
+  volume_type:
+      description: Set quotas for a specific <volume-type>
+      type: string
+  volumes:
+      description: New value for the volumes quota
 runner_type: python-script
