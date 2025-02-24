@@ -6,7 +6,7 @@ name: hv.post.reboot
 parameters:
   hypervisor_hostname:
     type: string
-    description: Hostname of hypervisor to run action against 
+    description: Hostname of hypervisor to run action against
     required: true
   lib_entry_point:
     type: string
