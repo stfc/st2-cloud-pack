@@ -5,10 +5,10 @@ description: "Handles JIRA issues requesting OpenStack project creation."
 enabled: true
 
 trigger:
-  type: "stackstorm_openstack.jira.request_new_project"
+  type: "jira.request_new_project"
 
 action:
-  ref: "stackstorm_openstack.project.create"
+  ref: "stackstorm_openstack.jira.request_new_project"
   parameters:
     project_name : "{{ trigger.project_name }}"
     users : "{{ trigger.users }}"

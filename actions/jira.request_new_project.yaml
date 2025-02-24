@@ -1,0 +1,76 @@
+---
+description: Create new Project in OpenStack
+enabled: true
+entry_point: src/openstack_actions.py
+name: jira.request_new_project
+parameters:
+  lib_entry_point:
+    type: string
+    default: workflows.jira_openstack_request_new_project.request_new_project
+    immutable: true
+  requires_openstack:
+    default: true
+    immutable: true
+    type: boolean
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  jira_account_name:
+    type: string
+    description: Name of JIRA Account to use. Must be configured in the pack settings.
+    required: true
+    default: "default"
+  project_name:
+    type: string
+    description: foo
+    required: true
+    default: "default"
+  users:
+    type: string
+    description: foo
+    required: true
+    default: "default"
+  cpus:
+    type: string
+    description: foo
+    required: true
+    default: "default"
+  memory:
+    type: string
+    description: foo
+    required: true
+    default: "default"
+  shared_storage:
+    type: string
+    description: foo
+    required: true
+    default: "default"
+  object_storage:
+    type: string
+    description: foo
+    required: true
+    default: "default"
+  gpus:
+    type: string
+    description: foo
+    required: true
+    default: "default"
+  contact_email:
+    type: string
+    description: foo
+    required: true
+    default: "default"
+  tos_agreement:
+    type: string
+    description: foo
+    required: true
+    default: "default"
+runner_type: python-script
+
+
+
