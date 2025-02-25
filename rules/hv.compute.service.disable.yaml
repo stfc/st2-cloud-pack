@@ -20,6 +20,8 @@ criteria:
       - "hv700.nubes.rl.ac.uk"
       - "hv686.nubes.rl.ac.uk"
       - "hv646.nubes.rl.ac.uk"
+      - "hv584.nubes.rl.ac.uk"
+      - "hv567.nubes.rl.ac.uk"
 
 trigger:
   type: "stackstorm_openstack.hypervisor.state_change"
