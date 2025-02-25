@@ -6,13 +6,12 @@ from structs.quota_details import QuotaDetails
 def quota_set(
     conn: Connection,
     project_identifier: str,
-    num_floating_ips: int,
-    num_security_group_rules: int,
+    floating_ips: int,
+    secgroup_rules: int,
     cores: int,
     gigabytes: int,
-    key_pairs: int,
     instances: int,
-    properties: int,
+    backups: int,
     ram: int,
     secgroups: int,
     snapshots: int,
@@ -29,6 +28,16 @@ def quota_set(
     """
     openstack_quota.set_quota(
         conn,
-        QuotaDetails(project_identifier, num_floating_ips, num_security_group_rules, cores, gigabytes, key_pairs, instances, properties, ram, secgroups, snapshots, volumes, volume_type),
+        QuotaDetails(project_identifier, 
+                     floating_ips, 
+                     secgroup_rules, 
+                     cores, 
+                     gigabytes,
+                     instances, 
+                     backups, 
+                     ram, 
+                     secgroups, 
+                     snapshots, 
+                     volumes),
     )
     return True

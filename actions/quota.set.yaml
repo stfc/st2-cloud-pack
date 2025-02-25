@@ -24,18 +24,18 @@ parameters:
     description: Project (Name or ID)
     required: true
     type: string
-  num_floating_ips:
+  floating_ips:
     description: "The maximum amount of floating IPs a project can use. 0 means no change."
     default: 0
     type: integer
     required: false
-  num_security_group_rules:
+  secgroup_rules:
     description: "The maximum amount of security group rules you can create. 0 means no change."
     default: 0
     type: integer
     required: false
   cores:
-      description: New value for the cores quota
+      description: New value for the cores quota.
       type: integer
   gigabytes:
       description: New value for the gigabytes quota
@@ -43,14 +43,11 @@ parameters:
   instances:
       description: New value for the instances quota
       type: integer
-  key_pairs:
-      description: New value for the key-pairs quota
-      type: integer
-  properties:
-      description: New value for the properties quota
+  backups:
+      description: New value for the backups quota
       type: integer
   ram:
-      description: New value for the ram quota
+      description: New value for the ram quota (This is in MB)
       type: integer
   secgroups:
       description: New value for the secgroups quota
@@ -58,9 +55,7 @@ parameters:
   snapshots:
       description: New value for the snapshots quota
       type: integer
-  volume_type:
-      description: Set quotas for a specific <volume-type>
-      type: string
   volumes:
       description: New value for the volumes quota
+      type: integer
 runner_type: python-script

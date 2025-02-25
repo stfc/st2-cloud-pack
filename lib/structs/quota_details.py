@@ -5,5 +5,13 @@ from dataclasses import dataclass
 class QuotaDetails:
     project_identifier: str
 
-    num_floating_ips: int
-    num_security_group_rules: int
+    floating_ips: int
+    secgroup_rules: int
+    cores: int
+    gigabytes: int
+    instances: int
+    backups: int
+    ram: int
+    secgroups: int
+    snapshots: int
+    volumes: int
