@@ -1,4 +1,6 @@
+from typing import Optional
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
+from structs.jira.jira_account import JiraAccount
 from structs.jira.jira_issue_details import IssueDetails
 from jira_api.connection import JiraConnection
 
@@ -36,3 +38,24 @@ def create_jira_task(account, issue_details: IssueDetails) -> str:
 
         conn.add_issues_to_epic(epic_id=issue_details.epic_id, issue_keys=task.key)
         return task.id
+
+
+def add_comment(
+    account: JiraAccount, issue_key: str, text: str, internal: Optional[bool] = True
+):
+    """
+    Add a comment to an existing JIRA Issue.
+
+    :param account: credentials to create a connection with the JIRA server
+    :type account: JiraAccount
+    :param issue_key: the unique key to identify the Issue to update
+    :type issue_key: str
+    :param text: the content of the comment being added to the JIRA issue
+    :type text: str
+    :param internal: boolean to decide if the comment is internal or a reply to the user
+    :type internal: bool
+    """
+    if not text:
+        raise ValueError("Comment text cannot be empty")
+    with JiraConnection(account) as conn:
+        conn.add_comment(issue_key, text, internal)
