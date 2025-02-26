@@ -48,7 +48,7 @@ class SSHConnection:
             stdout.channel.shutdown_write()
 
             channel = stdout.channel
-            while not channel.closed or channel.recv_ready():
+            while (not channel.closed) or channel.recv_ready():
                 if channel.recv_ready():
                     output = channel.recv(1024).decode("utf-8")
                     print(output, end="")

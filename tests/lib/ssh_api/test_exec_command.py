@@ -52,8 +52,8 @@ def test_run_command_on_host(mock_rsa_key, mock_ssh_client):
     mock_stdin = MagicMock()
 
     mock_stdout.channel.recv_exit_status.return_value = 0
-    mock_stdout.channel.recv_ready.side_effect = [True, False, True, False]
-    mock_stdout.channel.exit_status_ready.side_effect = [False, False, False, True]
+    mock_stdout.channel.recv_ready.side_effect = [True, True, True, False, False]
+    mock_stdout.channel.exit_status_ready.side_effect = [False, True]
     mock_stdout.channel.recv.return_value = b"output"
 
     mock_client_instance.exec_command.return_value = (
@@ -67,7 +67,7 @@ def test_run_command_on_host(mock_rsa_key, mock_ssh_client):
 
     mock_client_instance.exec_command.assert_called_once_with(command="ls")
 
-    mock_stdout.shutdown_read.assert_called_once()
+    mock_stdout.channel.shutdown_read.assert_called_once()
 
     mock_stdout.close.assert_called_once()
     mock_stderr.close.assert_called_once()
@@ -93,7 +93,7 @@ def test_run_command_on_host_failure(mock_rsa_key, mock_ssh_client):
     mock_stdin = MagicMock()
 
     mock_stdout.channel.recv_exit_status.return_value = 1
-    mock_stdout.channel.recv_ready.side_effect = [True, False, True, False]
+    mock_stdout.channel.recv_ready.side_effect = [True, False, False]
     mock_stdout.channel.exit_status_ready.side_effect = [False, False, False, True]
     mock_stdout.channel.recv.return_value = b"output"
 
