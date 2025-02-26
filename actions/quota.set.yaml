@@ -29,7 +29,7 @@ parameters:
     default: 0
     type: integer
     required: false
-  secgroup_rules:
+  security_group_rules:
     description: "The maximum amount of security group rules you can create. 0 means no change."
     default: 0
     type: integer
@@ -49,7 +49,7 @@ parameters:
   ram:
       description: New value for the ram quota (This is in MB)
       type: integer
-  secgroups:
+  security_groups:
       description: New value for the secgroups quota
       type: integer
   snapshots:
