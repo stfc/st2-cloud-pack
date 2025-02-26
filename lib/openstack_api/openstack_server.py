@@ -115,7 +115,7 @@ def build_server(
     except (ResourceTimeout, ResourceFailure) as e:
         if delete_on_failure:
             conn.compute.delete_server(server, force=True)
-        raise e
+        raise ResourceFailure(server.fault) from e
     return server
 
 
