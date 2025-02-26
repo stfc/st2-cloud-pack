@@ -15,6 +15,4 @@ def ssh_remote_command(host: str, username: str, private_key_path: str, command:
         host=host, username=username, private_key_path=private_key_path
     )
     ssh_client = SSHConnection(connection_details)
-    output = ssh_client.run_command_on_host(command)
-
-    return output
+    ssh_client.run_command_on_host(command)

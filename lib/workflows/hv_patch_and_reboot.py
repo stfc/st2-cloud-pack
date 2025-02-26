@@ -20,7 +20,7 @@ def patch_and_reboot(
     icinga_account: IcingaAccount,
     hypervisor_name: str,
     private_key_path: str,
-) -> dict:
+) -> None:
     """
     Takes the selected hypervisor, schedules a downtime on it starting immediately then runs
     the patch and reboot scripts on the machine, before ending the downtime.
@@ -28,7 +28,7 @@ def patch_and_reboot(
     :param icinga_account: IcingaAccount: The icinga account object to use to schedule and remove the downtimes
     :param hypervisor_name: the name of the hypervisor - should also be the host name on icinga
     :param private_key_path: Path to the stackstorm key
-    return: Dict[str] a dictionary containing the remote commands output
+    return: None
     """
     connection_details = SSHDetails(
         host=hypervisor_name, username="stackstorm", private_key_path=private_key_path
@@ -71,12 +71,8 @@ def patch_and_reboot(
         alertmanager_account, silence_details_hostname
     )
     try:
-        patch_out = ssh_client.run_command_on_host("patch")
-        reboot_out = ssh_client.run_command_on_host("reboot")
-        return {
-            "patch_output": patch_out.decode(),
-            "reboot_output": reboot_out.decode(),
-        }
+        ssh_client.run_command_on_host("patch")
+        ssh_client.run_command_on_host("reboot")
     except SSHException as exc:
         remove_downtime(
             icinga_account=icinga_account,

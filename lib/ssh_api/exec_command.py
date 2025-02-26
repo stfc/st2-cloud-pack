@@ -36,7 +36,7 @@ class SSHConnection:
 
     def run_command_on_host(self, command: str):
         """
-        Run command on a host
+        Run command on a host with live output
         :param command: Command to run over SSH
         :return: None
         """
@@ -49,6 +49,7 @@ class SSHConnection:
 
             channel = stdout.channel
             while (not channel.closed) or channel.recv_ready():
+                # Print out any command output
                 if channel.recv_ready():
                     output = channel.recv(1024).decode("utf-8")
                     print(output, end="")

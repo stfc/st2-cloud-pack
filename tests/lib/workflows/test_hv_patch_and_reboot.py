@@ -25,10 +25,6 @@ def test_successful_patch_and_reboot(
     Test successful running of patch and reboot workflow
     """
     icinga_account = MagicMock()
-    mock_ssh_conn.return_value.run_command_on_host.side_effect = [
-        str.encode("Patch command output"),
-        str.encode("Reboot command output"),
-    ]
     mock_hypervisor_name = "test_host"
     comment = f"starting downtime to patch and reboot host: {mock_hypervisor_name}"
     mock_private_key_path = "/home/stackstorm/.ssh/id_rsa"
@@ -39,7 +35,7 @@ def test_successful_patch_and_reboot(
     mock_silence_id = "mock ID"
     mock_schedule_silence.return_value = mock_silence_id
     alertmanager_account = MagicMock()
-    result = patch_and_reboot(
+    patch_and_reboot(
         alertmanager_account,
         icinga_account,
         hypervisor_name=mock_hypervisor_name,
@@ -86,8 +82,6 @@ def test_successful_patch_and_reboot(
     )
     mock_ssh_conn.return_value.run_command_on_host.assert_any_call("patch")
     mock_ssh_conn.return_value.run_command_on_host.assert_any_call("reboot")
-    assert result["patch_output"] == "Patch command output"
-    assert result["reboot_output"] == "Reboot command output"
 
 
 @patch("workflows.hv_patch_and_reboot.schedule_silence")
