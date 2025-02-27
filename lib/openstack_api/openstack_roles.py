@@ -9,6 +9,24 @@ from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from structs.role_details import RoleDetails
 
 
+def assign_group_role_to_project(conn: Connection, project, role, group) -> None:
+    """
+    Assigns a given role to the specified group
+    :param conn: openstack connection object
+    :param project: The project name or ID to assign the role to
+    :param role: The role name or ID to assign
+    :param group: The group name or ID to assign the role to
+    """
+    # This is run rarely in comparison to most actions, as it
+    # likely gets ran once or twice per new project
+    # Assume the user has already checked the group exists and has stripped it
+    role = conn.identity.find_role(role, ignore_missing=False)
+    project = conn.identity.find_project(project, ignore_missing=False)
+    group = conn.identity.find_group(group, ignore_missing=False)
+
+    conn.identity.assign_project_role_to_group(project=project, group=group, role=role)
+
+
 def assign_role_to_user(conn: Connection, details: RoleDetails) -> None:
     """
     Assigns a given role to the specified user
@@ -17,6 +35,29 @@ def assign_role_to_user(conn: Connection, details: RoleDetails) -> None:
     """
     user, project, role = _find_role_details(conn, details)
     conn.identity.assign_project_role_to_user(project=project, user=user, role=role)
+
+
+def add_user_to_group(
+    conn: Connection,
+    user_identifier: str,
+    domain: str,
+    group_name: str,
+) -> None:
+    """
+    Assigns a user to an existing group
+    :param conn: Openstack connection object
+    :param user_identifier: Name or ID of the user to assign to the group
+    :param domain: The domain the user and group is associated with
+    :param group_name: Name of the group to assign the user to
+    """
+    found_domain = conn.identity.find_domain(domain, ignore_missing=False)
+    user = conn.identity.find_user(
+        user_identifier, domain_id=found_domain.id, ignore_missing=False
+    )
+    group = conn.identity.find_group(
+        group_name, domain_id=found_domain.id, ignore_missing=False
+    )
+    conn.identity.add_user_to_group(user=user, group=group)
 
 
 def remove_role_from_user(conn: Connection, details: RoleDetails) -> None:
