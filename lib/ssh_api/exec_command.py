@@ -34,17 +34,33 @@ class SSHConnection:
         """
         self.client.close()
 
-    def run_command_on_host(self, command: str) -> bytes:
+    def run_command_on_host(self, command: str):
         """
-        Run command on a host
+        Run command on a host with live output
         :param command: Command to run over SSH
-        :return: Output bytes
+        :return: None
         """
         with self as client:
-            _stdin, stdout, stderr = client.exec_command(command=command)
+            stdin, stdout, stderr = client.exec_command(command=command)
 
-            err = stderr.read().decode()
-            if err:
-                raise SSHException(err)
+            stdin.close()
+            stdout.channel.set_combine_stderr(True)
+            stdout.channel.shutdown_write()
 
-            return stdout.read()
+            channel = stdout.channel
+            while (not channel.closed) or channel.recv_ready():
+                # Print out any command output
+                if channel.recv_ready():
+                    output = channel.recv(1024).decode("utf-8")
+                    print(output, end="")
+
+                if channel.exit_status_ready() and not channel.recv_ready():
+                    channel.shutdown_read()
+                    stdout.close()
+                    stderr.close()
+                    break
+
+            if stdout.channel.recv_exit_status() != 0:
+                raise SSHException()
+
+            return
