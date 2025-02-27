@@ -75,6 +75,8 @@ def wait_for_image_status(conn: Connection, image, status, interval=5, timeout=6
     :param interval:How long to wait between checks
     :param timeout: Timeout of the function
     """
+    if image.status == status:
+        return image
     start_time = time.time()
     while time.time() - start_time < timeout:
         image = conn.image.get_image(image.id)
