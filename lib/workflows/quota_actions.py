@@ -22,13 +22,13 @@ def quota_set(
     :param conn: Openstack connection object
     :param project_identifier: Name or ID of the Openstack Project
     :param floating_ips: The max number of floating IPs (or 0 to skip)
-    :param secgroup_rules: The max number of rules (or 0 to skip)
+    :param security_group_rules: The max number of rules (or 0 to skip)
     :param cores: The max number of cores (or 0 to skip)
     :param gigabytes: The max number of gigabytes (or 0 to skip)
     :param instances: The max number of instances (or 0 to skip)
     :param backups: The max number of backups (or 0 to skip)
     :param ram: The max amount of ram in MB (or 0 to skip)
-    :param secgroups: The max number of security groups (or 0 to skip)
+    :param security_groups: The max number of security groups (or 0 to skip)
     :param snapshots: The max number of snapshots (or 0 to skip)
     :param volumes: The max number of volumes (or 0 to skip)
     :return: status
