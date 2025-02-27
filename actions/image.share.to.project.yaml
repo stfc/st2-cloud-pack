@@ -22,10 +22,12 @@ parameters:
     enum:
       - "dev"
       - "prod"
-  project_id:
+  project_identifier:
+    description: "The name or ID of the project to share the image to"
     required: true
     type: string
-  image_id:
+  image_identifier:
+    description: "Name or ID of image to share"
     required: true
     type: string
 runner_type: python-script
