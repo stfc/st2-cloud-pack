@@ -1,10 +1,10 @@
 from datetime import datetime
+import time
 from typing import Optional
 from openstack.connection import Connection
 from openstack.compute.v2.image import Image
 from openstack.compute.v2.server import Server
-from openstack.exceptions import ResourceTimeout
-from openstack.exceptions import ResourceFailure
+from openstack.exceptions import ResourceFailure, ResourceTimeout
 
 
 def snapshot_and_migrate_server(
@@ -23,12 +23,10 @@ def snapshot_and_migrate_server(
     :param flavor_name: Server flavor name
     :param dest_host: Optional host to migrate to, otherwise chosen by scheduler
     """
-
     if flavor_id.startswith("g-"):
         raise ValueError(
             f"Attempted to move GPU flavor, {flavor_id}, which is not allowed!"
         )
-
     if server_status not in ["ACTIVE", "SHUTOFF"]:
         raise ValueError(
             f"Server status: {server_status}. The server must be ACTIVE or SHUTOFF to be migrated"
@@ -40,11 +38,12 @@ def snapshot_and_migrate_server(
         conn.compute.migrate_server(server=server_id, host=dest_host)
         conn.compute.wait_for_server(server, status="VERIFY_RESIZE")
         conn.compute.confirm_server_resize(server_id)
-        return conn.compute.wait_for_server(server, status="SHUTOFF")
-    conn.compute.live_migrate_server(
-        server=server_id, host=dest_host, block_migration=True
-    )
-    return conn.compute.wait_for_server(server, status="ACTIVE")
+        wait_for_migration_status(conn, server_id, "confirmed")
+    if server_status == "ACTIVE":
+        conn.compute.live_migrate_server(
+            server=server_id, host=dest_host, block_migration=True
+        )
+        wait_for_migration_status(conn, server_id, "completed")
 
 
 def snapshot_server(conn: Connection, server_id: str) -> Image:
@@ -60,11 +59,53 @@ def snapshot_server(conn: Connection, server_id: str) -> Image:
     image = conn.compute.create_server_image(
         server=server_id, name=f"{server_id}-{current_time}", wait=True, timeout=3600
     )
-
+    wait_for_image_status(conn, image, "active")
     # Make VM's project image owner
     conn.image.update_image(image, owner=project_id)
 
     return image
+
+
+def wait_for_image_status(conn: Connection, image, status, interval=5, timeout=600):
+    """
+    Waits for the status of the image to be the selected status
+    :param conn: Openstack connection
+    :param image: The Image object
+    :param status: The status of the image that is required
+    :param interval:How long to wait between checks
+    :param timeout: Timeout of the function
+    """
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        image = conn.image.get_image(image.id)
+        if image.status == status:
+            return image
+        if image.status == "error":
+            raise ResourceFailure(f"Image {image.name} failed to upload.")
+        time.sleep(interval)
+    raise ResourceTimeout(f"Timeout waiting for image {image.name} to become {status}.")
+
+
+def wait_for_migration_status(
+    conn: Connection, server_id, status, interval=5, timeout=600
+):
+    """
+    Waits for the status of the migration to be the selected status
+    :param conn: Openstack connection
+    :param server_id: The ID of the server where the migrations are from
+    :param status: The status of the migration that is required
+    :param interval:How long to wait between checks
+    :param timeout: Timeout of the function
+    """
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        migration = next(conn.compute.migrations(instance_uuid=server_id))
+        if migration.status == status:
+            return migration
+        if migration.status in ["error", "failed"]:
+            raise ResourceFailure(migration)
+        time.sleep(interval)
+    raise ResourceTimeout(f"Timeout waiting for migration to become {status}.")
 
 
 def build_server(
