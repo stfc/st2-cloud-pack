@@ -8,26 +8,14 @@ parameters:
     type: string
     description: Hostname of the hypervisor, e.g. hvxyz.nubes.rl.ac.uk
     required: true
-  start_time:
-    type: string
-    description: "Start Date and time (UK Time) in the format: %d/%m/%y %H:%M:%S"
-    required: true
-  end_time:
-    type: string
-    description: "End Date and time (UK Time) in the format: %d/%m/%y %H:%M:%S"
-    required: true
-  duration:
+  duration_hours:
     type: integer
-    description: Duration of flexible downtime in seconds, not needed for fixed downtime
+    description: Duration of flexible downtime in hours, CANNOT be a decimal
     required: false
   comment:
     type: string
     description: Downtime reason
     required: true
-  is_fixed:
-    type: boolean
-    description: If true, the downtime is fixed otherwise flexible
-    default: true
   lib_entry_point:
     type: string
     default: workflows.hypervisor_downtime.schedule_hypervisor_downtime
