@@ -21,11 +21,23 @@ def set_quota(conn: Connection, details: QuotaDetails):
         details.project_identifier, ignore_missing=False
     ).id
 
-    # Create dictionary from QuotaDetails object to pass as kwargs
-    quotas_dict = dataclasses.asdict(details)
-    quotas_dict.pop("project_identifier")
+    # Create dictionaries to pass to each quota call
+    compute_quotas = {'cores': details.cores, 'ram': details.ram, 'instances': details.instances}
+    network_quotas = {
+        'floating_ips': details.floating_ips,
+        'security_groups': details.security_groups,
+        'security_group_rules': details.security_group_rules,
 
-    conn.set_compute_quotas(project_id, **quotas_dict)
+    }
+    volume_quotas = {
+        'volumes': details.volumes,
+        'snapshots': details.snapshots,
+        'gigabytes': details.gigabytes
+    }
+
+    conn.set_compute_quotas(project_id, **compute_quotas)
+    conn.set_network_quotas(project_id, **network_quotas)
+    conn.set_volume_quotas(project_id, **volume_quotas)
 
 
 def show_quota(conn: Connection, project_id: str):
