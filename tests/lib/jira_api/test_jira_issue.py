@@ -2,7 +2,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
-from jira_api.jira_issue import create_jira_task, add_comment
+from exceptions.jira import MismatchedState, ForbiddenTransition
+from jira_api.jira_issue import create_jira_task, add_comment, change_state
 
 
 def test_create_jira_task_project_id_throws():
@@ -135,3 +136,64 @@ def test_add_comment_empty_text():
 
     with pytest.raises(ValueError):  # Assuming an empty comment should raise an error
         add_comment(mock_account, "ISSUE-123", "")
+
+
+def test_change_state_success():
+    """
+    Tests that change_state transitions an issue successfully
+    """
+    with patch("jira.client.JIRA") as mock_conn:
+        mock_account = MagicMock()
+        mock_conn = mock_conn.return_value
+
+        mock_issue = MagicMock()
+        mock_issue.fields.status.name = "Open"
+        mock_conn.issue.return_value = mock_issue
+        mock_conn.transitions.return_value = [
+            {"id": "21", "to": {"name": "In Progress"}},
+            {"id": "31", "to": {"name": "Closed"}},
+        ]
+
+        # Call the function
+        change_state(mock_account, "ISSUE-123", "In Progress")
+
+        # Assertions
+        mock_conn.issue.assert_called_once_with("ISSUE-123")
+        mock_conn.transitions.assert_called_once_with("ISSUE-123")
+        mock_conn.transition_issue.assert_called_once_with("ISSUE-123", "21")
+
+
+def test_change_state_invalid_from_state():
+    """
+    Tests that change_state raises MismatchedState if issue is not in the expected from_state
+    """
+    with patch("jira.client.JIRA") as mock_conn:
+        mock_account = MagicMock()
+        mock_conn = mock_conn.return_value
+
+        mock_issue = MagicMock()
+        mock_issue.fields.status.name = "To Do"
+        mock_conn.issue.return_value = mock_issue
+
+        with pytest.raises(MismatchedState):
+            change_state(mock_account, "ISSUE-123", "In Progress", from_state="Open")
+
+
+def test_change_state_forbidden_transition():
+    """
+    Tests that change_state raises ForbiddenTransition if no valid transition is found
+    """
+    with patch("jira.client.JIRA") as mock_conn:
+        mock_account = MagicMock()
+        mock_conn = mock_conn.return_value
+
+        mock_issue = MagicMock()
+        mock_issue.fields.status.name = "Open"
+        mock_conn.issue.return_value = mock_issue
+        mock_conn.transitions.return_value = [
+            {"id": "21", "to": {"name": "Done"}},
+            {"id": "31", "to": {"name": "Closed"}},
+        ]
+
+        with pytest.raises(ForbiddenTransition):
+            change_state(mock_account, "ISSUE-123", "In Progress")
