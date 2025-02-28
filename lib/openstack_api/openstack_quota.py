@@ -1,10 +1,7 @@
-import dataclasses
-
 from openstack.connection import Connection
 
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from structs.quota_details import QuotaDetails
-from dataclasses import dataclass
 
 
 # pylint: disable=too-few-public-methods
@@ -35,9 +32,17 @@ def set_quota(conn: Connection, details: QuotaDetails):
         'gigabytes': details.gigabytes
     }
 
-    conn.set_compute_quotas(project_id, **compute_quotas)
-    conn.set_network_quotas(project_id, **network_quotas)
-    conn.set_volume_quotas(project_id, **volume_quotas)
+    for quota in [compute_quotas, network_quotas, volume_quotas]:
+        for key, value in list(quota.items()):
+            if value == 0:
+                quota.pop(key)
+
+    if len(compute_quotas) > 0:
+        conn.set_compute_quotas(project_id, **compute_quotas)
+    if len(network_quotas) > 0:
+        conn.set_network_quotas(project_id, **network_quotas)
+    if len(volume_quotas) > 0:
+        conn.set_volume_quotas(project_id, **volume_quotas)
 
 
 def show_quota(conn: Connection, project_id: str):

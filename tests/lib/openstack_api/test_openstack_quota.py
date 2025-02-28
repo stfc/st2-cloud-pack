@@ -1,4 +1,3 @@
-import dataclasses
 from unittest.mock import MagicMock, call
 import pytest
 
@@ -32,7 +31,7 @@ def test_set_quota_cores():
     set_quota(mock_conn, mock_details)
     mock_conn.identity.find_project.assert_called_once_with("foo", ignore_missing=False)
     mock_conn.set_compute_quotas.assert_called_once_with(
-        mock_conn.identity.find_project.return_value.id, cores=1, instances=0, ram=0
+        mock_conn.identity.find_project.return_value.id, cores=1
     )
 
 
@@ -48,7 +47,7 @@ def test_set_quota_security_group_rules():
     set_quota(mock_conn, mock_details)
     mock_conn.identity.find_project.assert_called_once_with("foo", ignore_missing=False)
     mock_conn.set_network_quotas.assert_called_once_with(
-        mock_conn.identity.find_project.return_value.id, floating_ips=0, security_group_rules=1, security_groups=0
+        mock_conn.identity.find_project.return_value.id, security_group_rules=1
     )
 
 

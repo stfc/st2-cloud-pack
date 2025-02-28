@@ -36,26 +36,34 @@ parameters:
     required: false
   cores:
       description: New value for the cores quota. 0 means no change
+      default: 0
       type: integer
   gigabytes:
       description: New value for the gigabytes quota. 0 means no change
+      default: 0
       type: integer
   instances:
       description: New value for the instances quota. 0 means no change
+      default: 0
       type: integer
   backups:
       description: New value for the backups quota. 0 means no change
+      default: 0
       type: integer
   ram:
       description: New value for the ram quota (This is in MB). 0 means no change
+      default: 0
       type: integer
   security_groups:
       description: New value for the security groups quota. 0 means no change
+      default: 0
       type: integer
   snapshots:
       description: New value for the snapshots quota. 0 means no change
+      default: 0
       type: integer
   volumes:
       description: New value for the volumes quota. 0 means no change
+      default: 0
       type: integer
 runner_type: python-script
