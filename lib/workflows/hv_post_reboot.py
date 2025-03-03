@@ -33,7 +33,10 @@ def post_reboot(
         conn=conn, hypervisor_name=hypervisor_hostname, service_binary="nova-compute"
     )
     create_test_server(
-        conn=conn, hypervisor_name=hypervisor_hostname, test_all_flavors=False
+        conn=conn,
+        hypervisor_name=hypervisor_hostname,
+        test_all_flavors=False,
+        delete_on_failure=True,
     )
     silences = get_hv_silences(alertmanager_account, hypervisor_hostname)
     for silence_id in silences:
