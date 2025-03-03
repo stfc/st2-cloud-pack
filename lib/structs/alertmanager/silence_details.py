@@ -72,8 +72,8 @@ class SilenceDetails:
         if self.end_time_dt is None:
             raise ValueError("Either end_time_dt or duration must be provided")
 
-        # Ensure end_time_dt is after start_time_dt
-        if self.end_time_dt <= self.start_time_dt:
+        # Ensure duration is not negative
+        if self.duration < timedelta(0):
             raise ValueError("end_time_dt must be after start_time_dt")
 
     @property
