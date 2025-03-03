@@ -11,19 +11,12 @@ criteria:
     type: equals
     pattern: PENDING_MAINTENANCE
   trigger.hypervisor_name:
-    type: inside
+    type: ninside
     pattern:
-      - "hv742.nubes.rl.ac.uk"
-      - "hv741.nubes.rl.ac.uk"
-      - "hv713.nubes.rl.ac.uk"
-      - "hv740.nubes.rl.ac.uk"
-      # - "hv700.nubes.rl.ac.uk"
-      - "hv686.nubes.rl.ac.uk"
-      - "hv646.nubes.rl.ac.uk"
-      # - "hv584.nubes.rl.ac.uk"
-      - "hv567.nubes.rl.ac.uk"
-      - "hv519.nubes.rl.ac.uk"
-      - "hv500.nubes.rl.ac.uk"
+      - "hv700.nubes.rl.ac.uk"
+      - "hv584.nubes.rl.ac.uk"
+      - "hv411.nubes.rl.ac.uk"
+      - "hv545.nubes.rl.ac.uk"
 
 trigger:
   type: "stackstorm_openstack.hypervisor.state_change"
