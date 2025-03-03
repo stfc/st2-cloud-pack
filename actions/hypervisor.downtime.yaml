@@ -10,8 +10,8 @@ parameters:
     required: true
   duration_hours:
     type: integer
-    description: Duration of flexible downtime in hours, CANNOT be a decimal
-    required: false
+    description: Duration of downtime in hours, CANNOT be a decimal
+    required: true
   comment:
     type: string
     description: Downtime reason
