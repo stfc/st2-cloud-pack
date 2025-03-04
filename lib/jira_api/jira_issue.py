@@ -1,9 +1,63 @@
-from typing import Optional
+from typing import Optional, List
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from exceptions.jira import MismatchedState, ForbiddenTransition
 from structs.jira.jira_account import JiraAccount
 from structs.jira.jira_issue_details import IssueDetails
 from jira_api.connection import JiraConnection
+
+
+def search_issues(
+    account: JiraAccount,
+    project_name: str,
+    requirements_list: Optional[List[str]] = None,
+):
+    """
+    Search the list of Issues in a given project that meet
+    all requirements.
+
+    :param account: credentials to create a connection with the JIRA server
+    :type account: JiraAccount
+    :param project_name: name of the JIRA project
+    :type project_name: str
+    :param requirements: potential constraints for the query. For example
+        the status of the issues or the value of some field
+    :type requirements: list
+
+    :return: the list of found Issues
+    :rtype: list
+
+    :Example:
+        .. code-block:: python
+            search_issues(
+                account,
+                "PROJECT_1",
+                [
+                    "statusCategory in ('To Do', 'In Progress')",
+                ]
+            )
+            search_issues(
+                account,
+                "PROJECT_2",
+                [
+                    "statusCategory in ('To Do')",
+                    "assignee = currentUser()",
+                ]
+            )
+            search_issues(
+                account,
+                "PROJECT_3",
+                [
+                    "statusCategory in ('To Do', 'In Progress')",
+                    "'Request Type' = 'New Project'",
+                ]
+            )
+    """
+    jql = f"project = {project_name}"
+    if requirements_list is not None:
+        for req in requirements_list:
+            jql += " AND " + req
+    with JiraConnection(account) as conn:
+        return conn.search_issues(jql)
 
 
 def create_jira_task(account, issue_details: IssueDetails) -> str:
