@@ -3,7 +3,68 @@ import pytest
 
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from exceptions.jira import MismatchedState, ForbiddenTransition
-from jira_api.jira_issue import create_jira_task, add_comment, change_state
+from jira_api.jira_issue import (
+    search_issues,
+    create_jira_task,
+    add_comment,
+    change_state,
+)
+
+
+def test_search_issues_no_requirements():
+    """
+    Tests search_issues with no additional requirements
+    """
+    with patch("jira.client.JIRA") as mock_conn:
+        mock_account = MagicMock()
+        mock_conn = mock_conn.return_value
+        mock_conn.search_issues.return_value = ["ISSUE-1", "ISSUE-2"]
+
+        # Call the function
+        result = search_issues(mock_account, "TEST_PROJECT")
+
+        # Assertions
+        mock_conn.search_issues.assert_called_once_with("project = TEST_PROJECT")
+        assert result == ["ISSUE-1", "ISSUE-2"]
+
+
+def test_search_issues_with_requirements():
+    """
+    Tests search_issues with multiple requirements
+    """
+    with patch("jira.client.JIRA") as mock_conn:
+        mock_account = MagicMock()
+        mock_conn = mock_conn.return_value
+        mock_conn.search_issues.return_value = ["ISSUE-3", "ISSUE-4"]
+
+        # Call the function
+        result = search_issues(
+            mock_account, "TEST_PROJECT", ["status = Open", "assignee = currentUser()"]
+        )
+
+        # Assertions
+        jql = "project = TEST_PROJECT AND status = Open AND assignee = currentUser()"
+        mock_conn.search_issues.assert_called_once_with(jql)
+        assert result == ["ISSUE-3", "ISSUE-4"]
+
+
+def test_search_issues_empty_results():
+    """
+    Tests search_issues when no issues are found
+    """
+    with patch("jira.client.JIRA") as mock_conn:
+        mock_account = MagicMock()
+        mock_conn = mock_conn.return_value
+        mock_conn.search_issues.return_value = []
+
+        # Call the function
+        result = search_issues(mock_account, "TEST_PROJECT", ["status = Done"])
+
+        # Assertions
+        mock_conn.search_issues.assert_called_once_with(
+            "project = TEST_PROJECT AND status = Done"
+        )
+        assert result == []
 
 
 def test_create_jira_task_project_id_throws():
