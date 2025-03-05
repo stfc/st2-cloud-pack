@@ -52,7 +52,7 @@ def patch_and_reboot(
     silence_details_instance = SilenceDetails(
         matchers=[matcher_instance],
         author="stackstorm",
-        comment="Stackstorm HV maintenance",
+        comment="Stackstorm: HV Patching",
         start_time_dt=datetime.datetime.utcnow(),
         duration_hours=6,
     )
@@ -63,7 +63,7 @@ def patch_and_reboot(
     silence_details_hostname = SilenceDetails(
         matchers=[matcher_hostname],
         author="stackstorm",
-        comment="Stackstorm HV maintenance",
+        comment="Stackstorm: HV Patching",
         start_time_dt=datetime.datetime.utcnow(),
         duration_hours=6,
     )
