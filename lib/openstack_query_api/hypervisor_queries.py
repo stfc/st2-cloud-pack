@@ -17,6 +17,7 @@ def query_hypervisor_state(cloud_account: str):
         "hypervisor_state",
         "hypervisor_status",
         "hypervisor_uptime_days",
+        "disabled_reason",
     )
 
     state_query.run(cloud_account=cloud_account, all_projects=True, as_admin=True)

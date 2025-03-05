@@ -17,6 +17,7 @@ def test_get_state_running():
         "hypervisor_status": "enabled",
         "hypervisor_state": "up",
         "hypervisor_server_count": 5,
+        "hypervisor_disabled_reason": None,
     }
     state = get_hypervisor_state(hypervisor, 60)
     assert state == HypervisorState.RUNNING
@@ -30,12 +31,14 @@ def test_get_state_running():
             "hypervisor_status": "enabled",
             "hypervisor_state": "up",
             "hypervisor_server_count": 0,
+            "hypervisor_disabled_reason": None,
         },
         {
             "hypervisor_uptime_days": 100.0,
             "hypervisor_status": "enabled",
             "hypervisor_state": "up",
             "hypervisor_server_count": 12,
+            "hypervisor_disabled_reason": None,
         },
     ],
 )
@@ -47,6 +50,21 @@ def test_get_state_pending_maintenance(hypervisor):
     assert state == HypervisorState.PENDING_MAINTENANCE
 
 
+def test_get_state_disabled():
+    """
+    Test hypervisor state is draining for given variables
+    """
+    hypervisor = {
+        "hypervisor_uptime_days": 100.3,
+        "hypervisor_status": "disabled",
+        "hypervisor_state": "up",
+        "hypervisor_server_count": 5,
+        "hypervisor_disabled_reason": "HV Broken - AB",
+    }
+    state = get_hypervisor_state(hypervisor, 60)
+    assert state == HypervisorState.DISABLED
+
+
 def test_get_state_draining():
     """
     Test hypervisor state is draining for given variables
@@ -56,6 +74,7 @@ def test_get_state_draining():
         "hypervisor_status": "disabled",
         "hypervisor_state": "up",
         "hypervisor_server_count": 5,
+        "hypervisor_disabled_reason": "Stackstorm: Disabled for Maintenance",
     }
     state = get_hypervisor_state(hypervisor, 60)
     assert state == HypervisorState.DRAINING
@@ -70,6 +89,7 @@ def test_get_state_drained():
         "hypervisor_status": "disabled",
         "hypervisor_state": "up",
         "hypervisor_server_count": 0,
+        "hypervisor_disabled_reason": "Stackstorm: Disabled for Maintenance",
     }
     state = get_hypervisor_state(hypervisor, 60)
     assert state == HypervisorState.DRAINED
@@ -84,6 +104,7 @@ def test_get_state_rebooted():
         "hypervisor_status": "disabled",
         "hypervisor_state": "up",
         "hypervisor_server_count": 0,
+        "hypervisor_disabled_reason": "Stackstorm: Disabled for Maintenance",
     }
     state = get_hypervisor_state(hypervisor, 60)
     assert state == HypervisorState.REBOOTED
@@ -98,6 +119,7 @@ def test_get_state_empty():
         "hypervisor_status": "enabled",
         "hypervisor_state": "up",
         "hypervisor_server_count": 0,
+        "hypervisor_disabled_reason": None,
     }
     state = get_hypervisor_state(hypervisor, 60)
     assert state == HypervisorState.EMPTY
@@ -142,30 +164,35 @@ def test_get_state_down(hypervisor):
             "hypervisor_status": "enabled",
             "hypervisor_state": "up",
             "hypervisor_server_count": 0,
+            "hypervisor_disabled_reason": None,
         },
         {
             "hypervisor_uptime_days": 100,
             "hypervisor_status": None,
             "hypervisor_state": "up",
             "hypervisor_server_count": 0,
+            "hypervisor_disabled_reason": None,
         },
         {
             "hypervisor_uptime_days": 40,
             "hypervisor_status": "enabled",
             "hypervisor_state": None,
             "hypervisor_server_count": 2,
+            "hypervisor_disabled_reason": None,
         },
         {
             "hypervisor_uptime_days": 40,
             "hypervisor_status": "enabled",
             "hypervisor_state": "up",
             "hypervisor_server_count": None,
+            "hypervisor_disabled_reason": None,
         },
         {
             "hypervisor_uptime_days": 5,
             "hypervisor_status": "enabled",
             "hypervisor_state": "up",
             "hypervisor_server_count": -2,
+            "hypervisor_disabled_reason": None,
         },
     ],
 )

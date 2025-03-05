@@ -58,14 +58,14 @@ def test_successful_patch_and_reboot(
         start_time_dt=datetime.datetime.utcnow(),
         duration_hours=6,
         author="stackstorm",
-        comment="Stackstorm HV maintenance",
+        comment="Stackstorm: HV Patching",
     )
     mock_silence_details_hostname = SilenceDetails(
         matchers=[AlertMatcherDetails(name="hostname", value="test_host")],
         start_time_dt=datetime.datetime.utcnow(),
         duration_hours=6,
         author="stackstorm",
-        comment="Stackstorm HV maintenance",
+        comment="Stackstorm: HV Patching",
     )
     mock_schedule_silence.assert_has_calls(
         [
@@ -187,14 +187,14 @@ def test_failed_ssh(
         start_time_dt=datetime.datetime.utcnow(),
         duration_hours=6,
         author="stackstorm",
-        comment="Stackstorm HV maintenance",
+        comment="Stackstorm: HV Patching",
     )
     mock_silence_details_hostname = SilenceDetails(
         matchers=[AlertMatcherDetails(name="hostname", value="test_host")],
         start_time_dt=datetime.datetime.utcnow(),
         duration_hours=6,
         author="stackstorm",
-        comment="Stackstorm HV maintenance",
+        comment="Stackstorm: HV Patching",
     )
     mock_schedule_silence.assert_has_calls(
         [
