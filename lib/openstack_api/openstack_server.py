@@ -57,7 +57,10 @@ def snapshot_server(conn: Connection, server_id: str) -> Image:
 
     project_id = conn.compute.find_server(server_id, all_projects=True).project_id
     image = conn.compute.create_server_image(
-        server=server_id, name=f"{server_id}-{current_time}", wait=True, timeout=3600
+        server=server_id,
+        name=f"st2-{server_id}-{current_time}",
+        wait=True,
+        timeout=3600,
     )
     wait_for_image_status(conn, image, "active")
     # Make VM's project image owner

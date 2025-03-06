@@ -191,7 +191,7 @@ def test_snapshot_server(mock_wait_for_image_status):
     )
     mock_connection.compute.create_server_image.assert_called_once_with(
         server=mock_server_id,
-        name=f"{mock_server_id}-{current_time}",
+        name=f"st2-{mock_server_id}-{current_time}",
         wait=True,
         timeout=3600,
     )
