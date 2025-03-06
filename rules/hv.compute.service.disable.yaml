@@ -13,8 +13,6 @@ criteria:
   trigger.hypervisor_name:
     type: ninside
     pattern:
-      - "hv700.nubes.rl.ac.uk"
-      - "hv584.nubes.rl.ac.uk"
       - "hv411.nubes.rl.ac.uk"
       - "hv545.nubes.rl.ac.uk"
 
