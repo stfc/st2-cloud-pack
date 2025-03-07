@@ -1,0 +1,24 @@
+---
+name: "hv.delete.snapshot.images"
+pack: "stackstorm_openstack"
+description: "Removes snapshots of a VM after set time period following server migration"
+enabled: true
+
+trigger:
+  type: "core.st2.generic.actiontrigger"
+
+criteria:
+  trigger.payload.action_name:
+    type: "equals"
+    pattern: "stackstorm_openstack.server.migrate"
+
+  trigger.payload.status:
+    type: "equals"
+    pattern: "succeeded"
+
+  trigger.payload.start_timestamp:
+    type: timediff_gt
+    pattern: 600
+
+action:
+  ref: "core.noop"
