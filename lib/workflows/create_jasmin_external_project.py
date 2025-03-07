@@ -49,7 +49,10 @@ def create_jasmin_external_project(
     jasmin_user_list: Optional[List[str]] = None,
 ):
     """
-    create an external project
+    Create an external project for Jasmin tenants. This is a copy of
+    create_external_project as a starting point to make changes for their specific
+    requirements. This gives us certainty we're not affecting our existing code.
+    In the future we will consolidate the common parts of the two...
     :param conn: Openstack connection object
     :param project_name: A string for project name
     :param project_email: A string for email associated with the project
@@ -66,11 +69,8 @@ def create_jasmin_external_project(
     :param jasmin_user_list: A list of strings to add as regular users (jasmin domain)
     """
 
-    if not admin_user_list:
-        admin_user_list = []
-
-    if not jasmin_user_list:
-        jasmin_user_list = []
+    admin_user_list = admin_user_list or []
+    jasmin_user_list = jasmin_user_list or []
 
     # TODO Add project domain in future PR
     project = create_project(
@@ -122,7 +122,6 @@ def create_jasmin_external_project(
         router_identifier=router["id"],
         subnet_identifier=subnet["id"],
     )
-    # TODO Check default security groups
     # wait for default security group
     refresh_security_groups(conn, project["id"])
 
@@ -134,7 +133,6 @@ def create_jasmin_external_project(
             num_security_group_rules=number_of_security_group_rules,
         ),
     )
-    # TODO Update security group rules?
     # create default security group rules
     create_external_security_group_rules(
         conn, project_identifier=project["id"], security_group_identifier="default"
