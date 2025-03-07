@@ -8,7 +8,7 @@ class ProjectDetails:
     name: str
     email: str
     description: str = ""
-    # project_domain: str = None
+    project_domain: str = None
     is_enabled: Optional[bool] = None
     openstack_id: Optional[str] = None
     immutable: Optional[bool] = None
