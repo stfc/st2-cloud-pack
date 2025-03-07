@@ -126,6 +126,35 @@ icinga_accounts:
         secret: false
         default: ""
 
+alertmanager_accounts:
+  type: "array"
+  required: true
+  description: Alertmanager account
+  items:
+    type: "object"
+    required: true
+    properties:
+      name:
+        description: "Name of the alertmanager account"
+        type: "string"
+        secret: false
+        required: true
+      username:
+        type: "string"
+        description: "Username for alertmanager"
+        required: true
+      password:
+        type: "string"
+        description: "Password for alertmanager"
+        required: true
+        secret: true
+      alertmanager_endpoint:
+        type: "string"
+        description: "alertmanager endpoint"
+        required: true
+        secret: false
+        default: ""
+
 hypervisor_sensor:
   description: "Hypervisor sensor specific settings."
   type: "object"
