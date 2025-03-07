@@ -11,250 +11,156 @@ from jira_api.jira_issue import (
 )
 
 
-def test_search_issues_no_requirements():
-    """
-    Tests search_issues with no additional requirements
-    """
+@pytest.fixture(name="mock_jira")
+def mock_jira_client():
     with patch("jira.client.JIRA") as mock_conn:
-        mock_account = MagicMock()
-        mock_conn = mock_conn.return_value
-        mock_conn.search_issues.return_value = ["ISSUE-1", "ISSUE-2"]
-
-        # Call the function
-        result = search_issues(mock_account, "TEST_PROJECT")
-
-        # Assertions
-        mock_conn.search_issues.assert_called_once_with("project = TEST_PROJECT")
-        assert result == ["ISSUE-1", "ISSUE-2"]
+        # we use yield instead of return due the lifecycle of the fixture
+        # when a fixture returns a value, the function exits immediately
+        # after returning, and pytest has no opportunity to perform cleanup
+        # However, when a fixture yields, the test using the fixture runs
+        # after the yield statement, and once the test is done,
+        # pytest resumes execution of the fixture (after the yield statement),
+        # allowing it to clean up resources properly
+        yield mock_conn.return_value
 
 
-def test_search_issues_with_requirements():
-    """
-    Tests search_issues with multiple requirements
-    """
-    with patch("jira.client.JIRA") as mock_conn:
-        mock_account = MagicMock()
-        mock_conn = mock_conn.return_value
-        mock_conn.search_issues.return_value = ["ISSUE-3", "ISSUE-4"]
-
-        # Call the function
-        result = search_issues(
-            mock_account, "TEST_PROJECT", ["status = Open", "assignee = currentUser()"]
-        )
-
-        # Assertions
-        jql = "project = TEST_PROJECT AND status = Open AND assignee = currentUser()"
-        mock_conn.search_issues.assert_called_once_with(jql)
-        assert result == ["ISSUE-3", "ISSUE-4"]
+@pytest.fixture(name="mock_account")
+def mock_jira_account():
+    return MagicMock()
 
 
-def test_search_issues_empty_results():
-    """
-    Tests search_issues when no issues are found
-    """
-    with patch("jira.client.JIRA") as mock_conn:
-        mock_account = MagicMock()
-        mock_conn = mock_conn.return_value
-        mock_conn.search_issues.return_value = []
-
-        # Call the function
-        result = search_issues(mock_account, "TEST_PROJECT", ["status = Done"])
-
-        # Assertions
-        mock_conn.search_issues.assert_called_once_with(
-            "project = TEST_PROJECT AND status = Done"
-        )
-        assert result == []
+@pytest.fixture(name="mock_issue_details")
+def mock_jira_issue_details():
+    issue = MagicMock()
+    issue.project_id = "foo"
+    issue.summary = "bar"
+    issue.description = "baz"
+    issue.epic_id = None  # Default value
+    return issue
 
 
-def test_create_jira_task_project_id_throws():
-    """
-    Tests exception is raised when missing project id
-    """
-    mock_issue_details = MagicMock()
-    mock_issue_details.project_id = ""
-    mock_issue_details.summary = "foo"
-    mock_issue_details.description = "bar"
+@pytest.mark.parametrize(
+    "requirements, expected_issues, expected_query",
+    [
+        (None, ["ISSUE-1", "ISSUE-2"], "project = TEST_PROJECT"),
+        (
+            ["status = Open", "assignee = currentUser()"],
+            ["ISSUE-1", "ISSUE-2"],
+            "project = TEST_PROJECT AND status = Open AND assignee = currentUser()",
+        ),
+        (["status = Done"], [], "project = TEST_PROJECT AND status = Done"),
+    ],
+)
+def test_search_issues(
+    mock_jira, mock_account, requirements, expected_issues, expected_query
+):
+    """Tests search_issues with various requirements"""
+    mock_jira.search_issues.return_value = expected_issues
+    result = search_issues(mock_account, "TEST_PROJECT", requirements)
+    mock_jira.search_issues.assert_called_once_with(expected_query)
+    assert result == expected_issues
 
-    mock_account = MagicMock()
+
+@pytest.mark.parametrize(
+    "missing_field",
+    ["project_id", "summary", "description"],
+)
+def test_create_jira_task_missing_fields_throws(
+    mock_account, mock_issue_details, missing_field
+):
+    """Tests exception when missing required fields in create_jira_task"""
+    setattr(mock_issue_details, missing_field, "")
     with pytest.raises(MissingMandatoryParamError):
         create_jira_task(mock_account, mock_issue_details)
 
 
-def test_create_jira_task_summary_throws():
-    """
-    Tests exception is raised when missing summary
-    """
-    mock_issue_details = MagicMock()
-    mock_issue_details.project_id = "foo"
-    mock_issue_details.summary = ""
-    mock_issue_details.description = "bar"
+@pytest.mark.parametrize("epic_id, should_call_epic", [(None, False), ("EPIC-1", True)])
+def test_create_jira_task(
+    mock_jira, mock_account, mock_issue_details, epic_id, should_call_epic
+):
+    """Tests task creation with and without an epic"""
+    mock_issue_details.epic_id = epic_id
+    mock_jira.create_issue.return_value = MagicMock(id="123")
 
-    mock_account = MagicMock()
-    with pytest.raises(MissingMandatoryParamError):
-        create_jira_task(mock_account, mock_issue_details)
+    task_id = create_jira_task(mock_account, mock_issue_details)
 
-
-def test_create_jira_task_description_throws():
-    """
-    Tests exception is raised when missing description
-    """
-    mock_issue_details = MagicMock()
-    mock_issue_details.project_id = "foo"
-    mock_issue_details.summary = "bar"
-    mock_issue_details.description = ""
-
-    mock_account = MagicMock()
-    with pytest.raises(MissingMandatoryParamError):
-        create_jira_task(mock_account, mock_issue_details)
+    assert task_id == "123"
+    mock_jira.create_issue.assert_called_once()
+    if should_call_epic:
+        mock_jira.add_issues_to_epic.assert_called_once()
+    else:
+        mock_jira.add_issues_to_epic.assert_not_called()
 
 
-def test_create_jira_task_without_epic_success():
-    """
-    Tests a task is created without providing an epic
-    """
-    with patch("jira.client.JIRA") as mock_conn:
-        mock_account = MagicMock()
-
-        mock_conn = mock_conn.return_value
-        mock_conn.create_issue.return_value = MagicMock(id="123")
-
-        # Create a mock IssueDetails object
-        issue_details = MagicMock()
-        issue_details.epic_id = None
-
-        # Call the function
-        task_id = create_jira_task(mock_account, issue_details)
-
-        # Assertions
-        assert task_id == "123"
-        mock_conn.create_issue.assert_called_once()
+@pytest.mark.parametrize(
+    "comment, is_internal",
+    [("This is a test comment", True), ("Public comment", False)],
+)
+def test_add_comment(mock_jira, mock_account, comment, is_internal):
+    """Tests add_comment with different internal flag values"""
+    add_comment(mock_account, "ISSUE-123", comment, internal=is_internal)
+    mock_jira.add_comment.assert_called_once_with("ISSUE-123", comment, is_internal)
 
 
-def test_create_jira_task_with_epic_success():
-    """
-    Tests a task is created when providing an epic
-    """
-    with patch("jira.client.JIRA") as mock_conn:
-        mock_account = MagicMock()
-
-        mock_conn = mock_conn.return_value
-        mock_conn.create_issue.return_value = MagicMock(id="123")
-
-        # Create a mock IssueDetails object
-        issue_details = MagicMock()
-
-        # Call the function
-        task_id = create_jira_task(mock_account, issue_details)
-
-        # Assertions
-        assert task_id == "123"
-        mock_conn.create_issue.assert_called_once()
-        mock_conn.add_issues_to_epic.assert_called_once()
-
-
-def test_add_comment_calls_jira():
-    """
-    Tests that add_comment correctly calls the JIRA API
-    """
-    with patch("jira.client.JIRA") as mock_conn:
-        mock_account = MagicMock()
-
-        mock_conn = mock_conn.return_value
-
-        # Call the function
-        add_comment(mock_account, "ISSUE-123", "This is a test comment", internal=True)
-
-        # Assertions
-        mock_conn.add_comment.assert_called_once_with(
-            "ISSUE-123", "This is a test comment", True
-        )
-
-
-def test_add_comment_with_internal_false():
-    """
-    Tests that add_comment correctly calls the JIRA API with internal=False
-    """
-    with patch("jira.client.JIRA") as mock_conn:
-        mock_account = MagicMock()
-
-        mock_conn = mock_conn.return_value
-
-        # Call the function
-        add_comment(mock_account, "ISSUE-123", "Public comment", internal=False)
-
-        # Assertions
-        mock_conn.add_comment.assert_called_once_with(
-            "ISSUE-123", "Public comment", False
-        )
-
-
-def test_add_comment_empty_text():
-    """
-    Tests that add_comment raises an error when text is empty
-    """
-    mock_account = MagicMock()
-
-    with pytest.raises(ValueError):  # Assuming an empty comment should raise an error
+def test_add_comment_empty_text(mock_account):
+    """Tests add_comment raises ValueError when text is empty"""
+    with pytest.raises(ValueError):
         add_comment(mock_account, "ISSUE-123", "")
 
 
-def test_change_state_success():
+@pytest.mark.parametrize(
+    "current_state, target_state, transitions, expected_exception",
+    [
+        (
+            "Open",
+            "In Progress",
+            [
+                {"id": "21", "to": {"name": "In Progress"}},
+                {"id": "31", "to": {"name": "Closed"}},
+            ],
+            None,
+        ),
+        ("To Do", "In Progress", [], MismatchedState),
+        (
+            "Open",
+            "In Progress",
+            [
+                {"id": "21", "to": {"name": "Done"}},
+                {"id": "31", "to": {"name": "Closed"}},
+            ],
+            ForbiddenTransition,
+        ),
+    ],
+)
+def test_change_state(
+    mock_jira,
+    mock_account,
+    current_state,
+    target_state,
+    transitions,
+    expected_exception,
+):
     """
-    Tests that change_state transitions an issue successfully
+    Tests change_state under different conditions
+
+    Parameters:
+    - current_state (str): The initial state of the issue before transition.
+    - target_state (str): The desired state to transition to.
+    - transitions (list[dict]): A list of possible transitions, each represented as
+      a dictionary containing an 'id' and a 'to' field specifying the target state.
+    - expected_exception (Exception or None): The expected exception if the transition
+      is invalid, or None if the transition should succeed.`
     """
-    with patch("jira.client.JIRA") as mock_conn:
-        mock_account = MagicMock()
-        mock_conn = mock_conn.return_value
+    mock_issue = MagicMock()
+    mock_issue.fields.status.name = current_state
+    mock_jira.issue.return_value = mock_issue
+    mock_jira.transitions.return_value = transitions
 
-        mock_issue = MagicMock()
-        mock_issue.fields.status.name = "Open"
-        mock_conn.issue.return_value = mock_issue
-        mock_conn.transitions.return_value = [
-            {"id": "21", "to": {"name": "In Progress"}},
-            {"id": "31", "to": {"name": "Closed"}},
-        ]
-
-        # Call the function
-        change_state(mock_account, "ISSUE-123", "In Progress")
-
-        # Assertions
-        mock_conn.issue.assert_called_once_with("ISSUE-123")
-        mock_conn.transitions.assert_called_once_with("ISSUE-123")
-        mock_conn.transition_issue.assert_called_once_with("ISSUE-123", "21")
-
-
-def test_change_state_invalid_from_state():
-    """
-    Tests that change_state raises MismatchedState if issue is not in the expected from_state
-    """
-    with patch("jira.client.JIRA") as mock_conn:
-        mock_account = MagicMock()
-        mock_conn = mock_conn.return_value
-
-        mock_issue = MagicMock()
-        mock_issue.fields.status.name = "To Do"
-        mock_conn.issue.return_value = mock_issue
-
-        with pytest.raises(MismatchedState):
-            change_state(mock_account, "ISSUE-123", "In Progress", from_state="Open")
-
-
-def test_change_state_forbidden_transition():
-    """
-    Tests that change_state raises ForbiddenTransition if no valid transition is found
-    """
-    with patch("jira.client.JIRA") as mock_conn:
-        mock_account = MagicMock()
-        mock_conn = mock_conn.return_value
-
-        mock_issue = MagicMock()
-        mock_issue.fields.status.name = "Open"
-        mock_conn.issue.return_value = mock_issue
-        mock_conn.transitions.return_value = [
-            {"id": "21", "to": {"name": "Done"}},
-            {"id": "31", "to": {"name": "Closed"}},
-        ]
-
-        with pytest.raises(ForbiddenTransition):
-            change_state(mock_account, "ISSUE-123", "In Progress")
+    if expected_exception:
+        with pytest.raises(expected_exception):
+            change_state(mock_account, "ISSUE-123", target_state, from_state="Open")
+    else:
+        change_state(mock_account, "ISSUE-123", target_state)
+        mock_jira.issue.assert_called_once_with("ISSUE-123")
+        mock_jira.transitions.assert_called_once_with("ISSUE-123")
+        mock_jira.transition_issue.assert_called_once_with("ISSUE-123", "21")
