@@ -14,26 +14,24 @@ class NewProjectRequestIssue(IssueBase):  # pylint: disable=too-few-public-metho
         ][0]
         answers = proforma_form.value.state.answers
 
-        properties["project_name"] = getattr(answers, "1").text
-        properties["users"] = getattr(answers, "4").adf.content[0].content[0].text
-        properties["cpus"] = int(getattr(answers, "6").text)
-        properties["memory"] = int(getattr(answers, "7").text)
-        properties["shared_storage"] = int(getattr(answers, "9").text)
-        properties["object_storage"] = getattr(answers, "10").text
+        properties["project_name"] = getattr(answers, "3").text
+        properties["users"] = getattr(answers, "29").adf.content[0].content[0].text
+        properties["cpus"] = int(getattr(answers, "32").text)
+        properties["vms"] = int(getattr(answers, "45").text)
+        properties["memory"] = int(getattr(answers, "33").text)
+        properties["shared_storage"] = int(getattr(answers, "34").text)
+        properties["object_storage"] = getattr(answers, "35").text
+        properties["block_storage"] = getattr(answers, "44").text
         properties["gpus"] = getattr(answers, "11").adf.content[0].content[0].text
-        properties["contact_email"] = getattr(answers, "12").text
-        properties["tos_agreement"] = getattr(answers, "12").text
-        properties["project_name"] = getattr(answers, "13").text
+        properties["contact_email"] = getattr(answers, "25").text
+        properties["reporting_fed_id"] = getattr(answers, "42").text
 
-        if getattr(answers, "5").choices[0] == "1":
+        if getattr(answers, "31").choices[0] == "1":
             properties["externally_accessible"] = True
-        elif getattr(answers, "5").choices[0] == "2":
-            properties["externally_accessible"] = False
         else:
-            self.reply(
-                "Choice made for external networking is not correct. Please check this.",
-                True,
-            )
-            raise RuntimeError("Some error.")
+            properties["externally_accessible"] = False
+
+        # This can only be true otherwise the form cannot be submitted
+        properties["tos_agreement"] = True
 
         return properties
