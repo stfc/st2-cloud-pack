@@ -13,7 +13,6 @@ class IssueBase(ABC):
 ###        self.id = issue.id
 ###        self.conn = conn
 ###        self.issue = issue
-###        self.approved = self.get_approval()
 
     def __init__(
         self, conn: jira.client.JIRA, issue_key: str
@@ -29,6 +28,3 @@ class IssueBase(ABC):
 ###    def properties(self):
 ###        properties_dict = self._create_properties()
 ###        return properties_dict
-
-###    def get_approval(self) -> bool:
-###        """Extract the approval status."""
