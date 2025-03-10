@@ -69,9 +69,16 @@ class JiraIssueSensor(PollingSensor):
         if issue.approved:
             trigger_data = {} # dictionary with data for the rules
             trigger_data['issue_key'] = issue.key
-            trigger_data.update(issue.properties)
-            # we add all customer responses from the JIRA Issue's form
+            # we add customer responses from the JIRA Issue's form
             # as part of the data for the trigger
+            trigger_data["project_name"] = issue.properties["project_name"]
+            trigger_data["users"] = issue.properties["users"]
+            trigger_data["cpus"] = issue.properties["cpus"]
+            trigger_data["memory"] = issue.properties["memory"]
+            trigger_data["shared_storage"] = issue.properties["shared_storage"]
+            trigger_data["object_storage"] = issue.properties["object_storage"]
+            trigger_data["gpus"] = issue.properties["gpus"]
+            trigger_data["contact_email"] = issue.properties["contact_email"]
             self.sensor_service.dispatch(trigger=trigger_name, payload=trigger_data)
 
     def cleanup(self):

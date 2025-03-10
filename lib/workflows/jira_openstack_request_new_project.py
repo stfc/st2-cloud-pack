@@ -7,6 +7,7 @@ from openstack.connection import Connection
 
 def request_new_project(
         jira_account: JiraAccount,
+        issue_key,
         project_name: str,
         users,
         cpus,
@@ -15,7 +16,6 @@ def request_new_project(
         object_storage,
         gpus,
         contact_email,
-        tos_agreement,
     ):
     """
     Implement the workflow to create a new Project in OpenStack

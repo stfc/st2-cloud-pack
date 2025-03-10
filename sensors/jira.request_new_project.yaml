@@ -10,6 +10,9 @@ trigger_types:
     payload_schema:
       type: "object"
       properties:
+        issue_key:
+          type: "string"
+          description: "unique ID to identify the JIRA Issue triggering this automation"
         project_name:
           type: "string"
           description: "foo"
@@ -32,8 +35,5 @@ trigger_types:
           type: "string"
           description: "foo"
         contact_email:
-          type: "string"
-          description: "foo"
-        tos_agreement:
           type: "string"
           description: "foo"

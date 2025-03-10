@@ -10,6 +10,7 @@ trigger:
 action:
   ref: "stackstorm_openstack.jira.request_new_project"
   parameters:
+    issue_key : "{{ trigger.issue_key }}"
     project_name : "{{ trigger.project_name }}"
     users : "{{ trigger.users }}"
     cpus : "{{ trigger.cpus }}"
@@ -18,5 +19,3 @@ action:
     object_storage : "{{ trigger.object_storage }}"
     gpus : "{{ trigger.gpus }}"
     contact_email : "{{ trigger.contact_email }}"
-    tos_agreement : "{{ trigger.tos_agreement }}"
-
