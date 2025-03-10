@@ -25,52 +25,53 @@ parameters:
     description: Name of JIRA Account to use. Must be configured in the pack settings.
     required: true
     default: "default"
-  project_name:
+  issue_key:
     type: string
-    description: foo
+    description: The unique ID to identify each JIRA Issue
     required: true
-    default: "default"
-  users:
-    type: string
-    description: foo
-    required: true
-    default: "default"
-  cpus:
-    type: string
-    description: foo
-    required: true
-    default: "default"
-  memory:
-    type: string
-    description: foo
-    required: true
-    default: "default"
-  shared_storage:
-    type: string
-    description: foo
-    required: true
-    default: "default"
-  object_storage:
-    type: string
-    description: foo
-    required: true
-    default: "default"
-  gpus:
-    type: string
-    description: foo
-    required: true
-    default: "default"
-  contact_email:
-    type: string
-    description: foo
-    required: true
-    default: "default"
-  tos_agreement:
-    type: string
-    description: foo
-    required: true
-    default: "default"
+####  project_name:
+####    type: string
+####    description: foo
+####    required: true
+####    default: "default"
+####  users:
+####    type: string
+####    description: foo
+####    required: true
+####    default: "default"
+####  cpus:
+####    type: string
+####    description: foo
+####    required: true
+####    default: "default"
+####  memory:
+####    type: string
+####    description: foo
+####    required: true
+####    default: "default"
+####  shared_storage:
+####    type: string
+####    description: foo
+####    required: true
+####    default: "default"
+####  object_storage:
+####    type: string
+####    description: foo
+####    required: true
+####    default: "default"
+####  gpus:
+####    type: string
+####    description: foo
+####    required: true
+####    default: "default"
+####  contact_email:
+####    type: string
+####    description: foo
+####    required: true
+####    default: "default"
+####  tos_agreement:
+####    type: string
+####    description: foo
+####    required: true
+####    default: "default"
 runner_type: python-script
-
-
-

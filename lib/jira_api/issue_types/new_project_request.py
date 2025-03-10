@@ -9,7 +9,7 @@ class NewProjectRequestIssue(IssueBase):  # pylint: disable=too-few-public-metho
         properties = {}
         proforma_form = [
             prop
-            for prop in self.conn.issue_properties(self.issue)
+            for prop in self.conn.issue_properties(self.issue_key)
             if prop.key == "proforma.forms.i1"
         ][0]
         answers = proforma_form.value.state.answers

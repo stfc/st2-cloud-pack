@@ -13,27 +13,27 @@ trigger_types:
         issue_key:
           type: "string"
           description: "unique ID to identify the JIRA Issue triggering this automation"
-        project_name:
-          type: "string"
-          description: "foo"
-        users:
-          type: "string"
-          description: "foo"
-        cpus:
-          type: "string"
-          description: "foo"
-        memory:
-          type: "string"
-          description: "foo"
-        shared_storage:
-          type: "string"
-          description: "foo"
-        object_storage:
-          type: "string"
-          description: "foo"
-        gpus:
-          type: "string"
-          description: "foo"
-        contact_email:
-          type: "string"
-          description: "foo"
+###        project_name:
+###          type: "string"
+###          description: "foo"
+###        users:
+###          type: "string"
+###          description: "foo"
+###        cpus:
+###          type: "string"
+###          description: "foo"
+###        memory:
+###          type: "string"
+###          description: "foo"
+###        shared_storage:
+###          type: "string"
+###          description: "foo"
+###        object_storage:
+###          type: "string"
+###          description: "foo"
+###        gpus:
+###          type: "string"
+###          description: "foo"
+###        contact_email:
+###          type: "string"
+###          description: "foo"

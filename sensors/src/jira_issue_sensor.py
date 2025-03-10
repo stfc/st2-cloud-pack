@@ -45,7 +45,7 @@ class JiraIssueSensor(PollingSensor):
         for request_type in request_type_list:
             request_type_label = request_type.lower().replace(' ', '_')
             requirements_list = [
-                'statusCategory in ("To Do")',
+                'statusCategory in ("Ready For Automation")',
                 '"Request Type" = "{request_type}"',
             ]
             issues_list = search_issues(
@@ -55,31 +55,33 @@ class JiraIssueSensor(PollingSensor):
             )
             for issue in issues_list:
                 # e.g. "Request New Project" -> "request_new_project"
-                st2_jira_issue = JiraIssue(self.jira_client, issue, request_type_label)
-                self.process_issue(st2_jira_issue)
+                ###st2_jira_issue = JiraIssue(self.jira_client, issue, request_type_label)
+                ###self.process_issue(st2_jira_issue)
+                trigger_name = f'jira.{request_type_label}'
+                self.sensor_service.dispatch(trigger=trigger_name, payload={'issue_key':issue.key})
 
-    def process_issue(self, issue):
-        """
-        process an individual JIRA ticket
 
-        :param issue: an individual JIRA ticket
-        :type issue: jira.Issue
-        """
-        trigger_name = f'jira.{issue.request_type}'
-        if issue.approved:
-            trigger_data = {} # dictionary with data for the rules
-            trigger_data['issue_key'] = issue.key
-            # we add customer responses from the JIRA Issue's form
-            # as part of the data for the trigger
-            trigger_data["project_name"] = issue.properties["project_name"]
-            trigger_data["users"] = issue.properties["users"]
-            trigger_data["cpus"] = issue.properties["cpus"]
-            trigger_data["memory"] = issue.properties["memory"]
-            trigger_data["shared_storage"] = issue.properties["shared_storage"]
-            trigger_data["object_storage"] = issue.properties["object_storage"]
-            trigger_data["gpus"] = issue.properties["gpus"]
-            trigger_data["contact_email"] = issue.properties["contact_email"]
-            self.sensor_service.dispatch(trigger=trigger_name, payload=trigger_data)
+###    def process_issue(self, issue):
+###        """
+###        process an individual JIRA ticket
+###        :param issue: an individual JIRA ticket
+###        :type issue: jira.Issue
+###        """
+###        trigger_name = f'jira.{issue.request_type}'
+###        if issue.approved:
+###            trigger_data = {} # dictionary with data for the rules
+###            trigger_data['issue_key'] = issue.key
+###            # we add customer responses from the JIRA Issue's form
+###            # as part of the data for the trigger
+###            trigger_data["project_name"] = issue.properties["project_name"]
+###            trigger_data["users"] = issue.properties["users"]
+###            trigger_data["cpus"] = issue.properties["cpus"]
+###            trigger_data["memory"] = issue.properties["memory"]
+###            trigger_data["shared_storage"] = issue.properties["shared_storage"]
+###            trigger_data["object_storage"] = issue.properties["object_storage"]
+###            trigger_data["gpus"] = issue.properties["gpus"]
+###            trigger_data["contact_email"] = issue.properties["contact_email"]
+###            self.sensor_service.dispatch(trigger=trigger_name, payload=trigger_data)
 
     def cleanup(self):
         """
