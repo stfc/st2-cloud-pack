@@ -25,10 +25,10 @@ class IssueBase(ABC):
     def _create_properties(self) -> Dict:
         """Extract specific properties from the proforma form to use to action the issue."""
 
-    @property
-    def properties(self):
-        properties_dict = self._create_properties()
-        return properties_dict
+###    @property
+###    def properties(self):
+###        properties_dict = self._create_properties()
+###        return properties_dict
 
 ###    def get_approval(self) -> bool:
 ###        """Extract the approval status."""
