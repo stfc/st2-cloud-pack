@@ -7,11 +7,24 @@ from openstack.compute.v2.server import Server
 from openstack.exceptions import ResourceFailure, ResourceTimeout
 
 
+def can_be_migrated(server: Server):
+    if server.flavor.name.startswith("g-") or server.flavor.name.startswith("f-"):
+        raise ValueError(
+            f"Attempted to move GPU or FPGA flavor, {server.flavor.name}, which is not allowed!"
+        )
+    if server.status not in ["ACTIVE", "SHUTOFF"]:
+        raise ValueError(
+            f"Server status: {server.status}. The server must be ACTIVE or SHUTOFF to be migrated"
+        )
+    if server.flavor.vcpus > 60:
+        raise ValueError(
+            f"Attempted to move flavor with greater than 60 cores, {server.flavor.name}, which is not allowed!"
+        )
+
+
 def snapshot_and_migrate_server(
     conn: Connection,
     server_id: str,
-    server_status: str,
-    flavor_id: str,
     snapshot: bool,
     dest_host: Optional[str] = None,
 ) -> None:
@@ -23,23 +36,16 @@ def snapshot_and_migrate_server(
     :param flavor_name: Server flavor name
     :param dest_host: Optional host to migrate to, otherwise chosen by scheduler
     """
-    if flavor_id.startswith("g-"):
-        raise ValueError(
-            f"Attempted to move GPU flavor, {flavor_id}, which is not allowed!"
-        )
-    if server_status not in ["ACTIVE", "SHUTOFF"]:
-        raise ValueError(
-            f"Server status: {server_status}. The server must be ACTIVE or SHUTOFF to be migrated"
-        )
+    server = conn.compute.get_server(server_id)
+    can_be_migrated(server)
     if snapshot:
         snapshot_server(conn=conn, server_id=server_id)
-    server = conn.compute.get_server(server_id)
-    if server_status == "SHUTOFF":
+    if server.status == "SHUTOFF":
         conn.compute.migrate_server(server=server_id, host=dest_host)
         conn.compute.wait_for_server(server, status="VERIFY_RESIZE")
         conn.compute.confirm_server_resize(server_id)
         wait_for_migration_status(conn, server_id, "confirmed")
-    if server_status == "ACTIVE":
+    if server.status == "ACTIVE":
         conn.compute.live_migrate_server(
             server=server_id, host=dest_host, block_migration=True
         )
