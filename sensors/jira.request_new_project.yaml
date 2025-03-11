@@ -1,0 +1,15 @@
+---
+class_name: JiraIssueSensor
+entry_point: src/jira_issue_sensor.py
+description: Search for new JIRA issues
+poll_interval: 300
+enabled: true
+trigger_types:
+  - name: "jira.request_new_project"
+    description: "Triggers when there is a new JIRA issue requesting the creation of a new OpenStack project"
+    payload_schema:
+      type: "object"
+      properties:
+        issue_key:
+          type: "string"
+          description: "unique ID to identify the JIRA Issue with the needed data for the creation of a new OpenStack project"
