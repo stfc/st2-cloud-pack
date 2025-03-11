@@ -7,7 +7,7 @@ enabled: true
 trigger:
   type: "core.st2.webhook"
   parameters:
-    url: "migrate-server"
+    url: "server-migrate"
 
 criteria:
   # Whitelist for groups of flavors

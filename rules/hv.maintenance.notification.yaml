@@ -21,4 +21,4 @@ action:
     hypervisor_name: "{{ trigger.hypervisor_name }}"
     cloud_account: "dev"
     send_email: false
-    webhook: "migrate-server"
+    webhook: "server-migrate"
