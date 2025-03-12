@@ -28,5 +28,4 @@ action:
   ref: "stackstorm_openstack.server.migrate"
   parameters:
     server_id: "{{ trigger.body.server_id }}"
-    server_status: "{{ trigger.body.server_status }}"
-    flavor_id: "{{ trigger.body.flavor_id }}"
+    snapshot: "{{ 'true' if not trigger.body.server_name.startswith('amphora-') else 'false' }}"
