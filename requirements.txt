@@ -19,3 +19,4 @@ parameterized
 pytest
 pytest-cov
 pytest-freezer
+munch
