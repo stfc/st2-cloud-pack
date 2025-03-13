@@ -1,0 +1,22 @@
+---
+name: "jupyter.prune_inactive"
+pack: "stackstorm_openstack"
+description: "Triggers the cleanup of inactive users in JupyterHub"
+enabled: true
+
+criteria:
+  trigger.env:
+    type: incontains
+    # Disable on prod until we migrate JupyterHub
+    # this is an additional safety net. Before you enable this
+    # ensure the threshold in the sensors is changed from 1 day to the desired value.
+    pattern: prod
+
+trigger:
+  type: "stackstorm_openstack.jupyter.inactiveusers"
+
+action:
+  ref: "stackstorm_openstack.jupyter.user.delete"
+  parameters:
+    jupyter_env: "{{ trigger.env }}"
+    users: "{{ trigger.inactive_users }}"
