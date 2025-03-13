@@ -8,15 +8,15 @@ trigger:
   type: "core.st2.generic.actiontrigger"
 
 criteria:
-  trigger.payload.action_name:
+  trigger.action_name:
     type: "equals"
     pattern: "stackstorm_openstack.server.migrate"
 
-  trigger.payload.status:
+  trigger.status:
     type: "equals"
     pattern: "succeeded"
 
-  trigger.payload.start_timestamp:
+  trigger.start_timestamp:
     type: timediff_gt
     pattern: 600
 
