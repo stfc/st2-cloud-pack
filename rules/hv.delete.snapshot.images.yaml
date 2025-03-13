@@ -16,9 +16,5 @@ criteria:
     type: "equals"
     pattern: "succeeded"
 
-  trigger.start_timestamp:
-    type: timediff_gt
-    pattern: 600
-
 action:
   ref: "core.noop"
