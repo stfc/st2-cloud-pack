@@ -29,12 +29,12 @@ parameters:
   properties_to_select:
     default:
       - "local_disk_free"
-      - "local_disk_size"
+      - "local_disk"
       - "local_disk_used"
       - "id"
       - "ip"
       - "memory_free"
-      - "memory_size"
+      - "memory"
       - "memory_used"
       - "name"
       - "state"
@@ -46,12 +46,12 @@ parameters:
     description: "
     A comma-spaced list of server properties to display for the resulting hypervisors - leave empty for all properties. One of:
       - 'local_disk_free'
-      - 'local_disk_size'
+      - 'local_disk'
       - 'local_disk_used'
       - 'id'
       - 'ip'
       - 'memory_free'
-      - 'memory_size'
+      - 'memory'
       - 'memory_used'
       - 'name'
       - 'state'
@@ -81,12 +81,12 @@ parameters:
     description: "choose property to search by (acts as OR for each)"
     enum:
       - "local_disk_free"
-      - "local_disk_size"
+      - "local_disk"
       - "local_disk_used"
       - "id"
       - "ip"
       - "memory_free"
-      - "memory_size"
+      - "memory"
       - "memory_used"
       - "name"
       - "state"
@@ -104,12 +104,12 @@ parameters:
     description: "(Optional) hypervisor property to group unique results by
     One of
       - 'local_disk_free'
-      - 'local_disk_size'
+      - 'local_disk'
       - 'local_disk_used'
       - 'id'
       - 'ip'
       - 'memory_free'
-      - 'memory_size'
+      - 'memory'
       - 'memory_used'
       - 'name'
       - 'state'
@@ -126,12 +126,12 @@ parameters:
     - multiple of the same property will be ignored.
     Any of:
       - 'local_disk_free'
-      - 'local_disk_size'
+      - 'local_disk'
       - 'local_disk_used'
       - 'id'
       - 'ip'
       - 'memory_free'
-      - 'memory_size'
+      - 'memory'
       - 'memory_used'
       - 'name'
       - 'state'
