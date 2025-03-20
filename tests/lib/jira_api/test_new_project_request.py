@@ -216,3 +216,67 @@ def test_create_properties_false():
     # Assert specifically for "True" here as
     assert res["externally_accessible"] is False
     assert res["tos_agreement"] is True
+
+
+MOCK_ISSUE_DATA_EMPTY_VALUES = [
+    DefaultMunch.fromDict(
+        {
+            "key": "proforma.forms.i1",
+            "value": {
+                "state": {
+                    "visibility": "e",
+                    "status": "o",
+                    "answers": {
+                        "3": {"text": "test-project-empty-values"},
+                        "29": {  # Empty list for users
+                            "adf": {
+                                "version": 1,
+                                "type": "doc",
+                                "content": [],
+                            }
+                        },
+                        "17": {  # Empty list for gpus
+                            "adf": {
+                                "version": 1,
+                                "type": "doc",
+                                "content": [],
+                            }
+                        },
+                        "32": {"text": "4"},
+                        "45": {"text": "2"},
+                        "33": {"text": "16"},
+                        "34": {"text": "5"},
+                        "35": {"text": "10"},
+                        "44": {"text": "8"},
+                        "42": {"text": "empty_fedid"},
+                        "25": {"text": "empty_user@mock_email"},
+                        "31": {"choices": ["2"]},
+                    },
+                },
+            },
+        }
+    )
+]
+
+
+def test_create_properties_empty_values():
+    """Test case where 'users' and 'gpus' fields should be empty."""
+    mock_conn = MagicMock()
+    mock_conn.issue_properties.return_value = MOCK_ISSUE_DATA_EMPTY_VALUES
+    issue = NewProjectRequestIssue(mock_conn, "EMPTY123")
+    res = issue.properties
+    mock_conn.issue_properties.assert_called_once_with("EMPTY123")
+
+    assert res["project_name"] == "test-project-empty-values"
+    assert res["users"] == ""  # Should be an empty string
+    assert res["gpus"] == ""  # Should be an empty string
+    assert res["cpus"] == 4
+    assert res["vms"] == 2
+    assert res["memory"] == 16
+    assert res["shared_storage"] == 5
+    assert res["object_storage"] == 10
+    assert res["block_storage"] == 8
+    assert res["contact_email"] == "empty_user@mock_email"
+    assert res["reporting_fed_id"] == "empty_fedid"
+    assert res["externally_accessible"] is False
+    assert res["tos_agreement"] is True
