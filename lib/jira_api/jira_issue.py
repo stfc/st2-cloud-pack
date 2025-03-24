@@ -119,51 +119,63 @@ def add_comment(
 def change_state(
     account: JiraAccount,
     issue_key: str,
-    to_state: str,
-    from_state: Optional[bool] = None,
+    transition_name: Optional[str] = None,
+    to_state: Optional[str] = None,
+    from_state: Optional[str] = None,
 ):
     """
-    If possible, transition a given JIRA Issue to a new state
+    If possible, transition a given JIRA Issue to a new state.
 
-    :param account: credentials to create a connection with the JIRA server
+    :param account: Credentials to create a connection with the JIRA server
     :type account: JiraAccount
-    :param issue_key: the unique key to identify the Issue to transition
+    :param issue_key: The unique key identifying the Issue to transition
     :type issue_key: str
-    :param to_state: the new state we want to transition into
-    :type to_state: str
-    :param from_state: optional, the current state the Issue is expected to be
+    :param transition_name: (Optional) the name of the transition to apply
+    :type transition_name: str or None
+    :param to_state: (Optional) the name of the new state we want to transition into
+    :type to_state: str or None
+    :param from_state: (Optional) the current state the Issue is expected to be in
     :type from_state: str or None
-    :raise MismatchedState: If the argument from_state is being provided,
-        but the Issue is not currently in that state,
-        we should abort immediately and raise an Exception
-    :raise ForbiddenTransition: If the current Issue's workflow does not allow
-        a transition from its current state to the new one we want to move into,
-        we should raise an Exception
+    :raise ValueError: If both transition_name and to_state are provided, or if neither is provided
+    :raise MismatchedState: If from_state is provided but the Issue is not currently in that state
+    :raise ForbiddenTransition: If the desired transition or state is not found in the Issue's workflow
     """
+    # 1. Check that exactly one among "transition_name" or "to_state" is provided
+    if (transition_name is None and to_state is None) or (transition_name and to_state):
+        raise ValueError("You must specify exactly one of transition_name or to_state.")
+
+    # 2. Connect to JIRA
     with JiraConnection(account) as conn:
+        # 3. Retrieve the Issue object for the given key
         issue = conn.issue(issue_key)
 
-        # 1. if needed, double check the current state is the one
-        #    passed as [optional] argument from_state
-        #    if that is not the case, raise an Exception
+        # 4. If a from_state is provided, make sure the Issue is currently in that state
         if from_state and issue.fields.status.name != from_state:
             raise MismatchedState(issue_key, from_state)
 
-        # 2. To perform a transition, using method "transition_issue( )"
-        #    we have 2 options:
-        #    - pass the name of the transition
-        #    - pass the id of the transition
-        #    it doesn't seem to be possible to just pass the name of the
-        #    destination state.
-        #    Therefore, we first need to find the transition moving
-        #    from current state to the desired one, and use it as argument
-        #    to method conn.transition_issue.
-        #    If we are not able to find any transition performing that
-        #    desired change, we raise an Exception
+        # 5. Get the list of possible transitions
         allowed_transitions = conn.transitions(issue_key)
-        for transition in allowed_transitions:
-            if transition["to"]["name"] == to_state:
-                conn.transition_issue(issue_key, transition["id"])
-                break
+
+        # 6. If a transition name is provided, find a matching transition by "name"
+        if transition_name:
+            for transition in allowed_transitions:
+                # If we find a matching name, perform the transition and return
+                if transition["name"] == transition_name:
+                    conn.transition_issue(issue_key, transition["id"])
+                    break
+            else:
+                # If no matching transition was found, raise ForbiddenTransition
+                raise ForbiddenTransition(
+                    issue_key, f"transition_name={transition_name}"
+                )
+
+        # 7. Otherwise, if a to_state is provided, find a matching transition by "to" state name
         else:
-            raise ForbiddenTransition(issue_key, to_state)
+            for transition in allowed_transitions:
+                # If we find the transition whose "to" state matches, perform the transition and return
+                if transition["to"]["name"] == to_state:
+                    conn.transition_issue(issue_key, transition["id"])
+                    break
+            else:
+                # If no matching state transition was found, raise ForbiddenTransition
+                raise ForbiddenTransition(issue_key, to_state)
