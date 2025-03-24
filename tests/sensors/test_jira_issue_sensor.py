@@ -183,7 +183,7 @@ def test_poll_with_no_issues(
         sensor.jira_account,
         "DCTE",
         [
-            'statusCategory in ("Ready For Automation")',
+            'status = "Ready For Automation"',
             '"Request Type" = "Request New Project"',
         ],
     )
@@ -191,7 +191,7 @@ def test_poll_with_no_issues(
         sensor.jira_account,
         "DCTE",
         [
-            'statusCategory in ("Ready For Automation")',
+            'status = "Ready For Automation"',
             '"Request Type" = "Add User"',
         ],
     )

@@ -57,7 +57,7 @@ class JiraIssueSensor(PollingSensor):
         """
         for request_type, trigger_name in self.request_type_dict.items():
             requirements_list = [
-                'statusCategory in ("Ready For Automation")',
+                'status = "Ready For Automation"',
                 f'"Request Type" = "{request_type}"',
             ]
             issues_list = search_issues(
