@@ -123,7 +123,7 @@ def test_search_by_property_all(mock_openstackquery, mock_to_webhook, output_typ
 @patch("workflows.search_by_property.openstackquery")
 def test_search_by_property_migrate_webhook(mock_openstackquery, mock_to_webhook):
     """
-    Tests search_by_property with webhook as migrate-server adds params to the query needed for the migrate action
+    Tests search_by_property with webhook as server-migrate adds params to the query needed for the migrate action
     """
 
     mock_query = MagicMock()
@@ -140,7 +140,7 @@ def test_search_by_property_migrate_webhook(mock_openstackquery, mock_to_webhook
         "values": ["val1", "val2"],
         "group_by": NonCallableMock(),
         "sort_by": ["prop1", "prop2"],
-        "webhook": "migrate-server",
+        "webhook": "server-migrate",
         "arg1": "val1",
         "arg2": "val2",
     }
@@ -148,5 +148,5 @@ def test_search_by_property_migrate_webhook(mock_openstackquery, mock_to_webhook
 
     mock_query.select.assert_called_once_with(*params["properties_to_select"])
     mock_to_webhook.assert_called_once_with(
-        webhook="migrate-server", payload=mock_query.select_all().to_props.return_value
+        webhook="server-migrate", payload=mock_query.select_all().to_props.return_value
     )
