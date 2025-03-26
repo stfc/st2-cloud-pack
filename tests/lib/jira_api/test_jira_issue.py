@@ -109,24 +109,50 @@ def test_add_comment_empty_text(mock_account):
 
 
 @pytest.mark.parametrize(
-    "current_state, target_state, transitions, expected_exception",
+    "current_state, to_state, transition_name, transitions, expected_exception",
     [
+        # Valid "to_state" scenario
         (
             "Open",
             "In Progress",
+            None,
             [
                 {"id": "21", "to": {"name": "In Progress"}},
                 {"id": "31", "to": {"name": "Closed"}},
             ],
             None,
         ),
-        ("To Do", "In Progress", [], MismatchedState),
+        # Mismatch state (from_state is "Open", but issue is actually "To Do")
+        ("To Do", "In Progress", None, [], MismatchedState),
+        # Forbidden transition for a to_state
         (
             "Open",
             "In Progress",
+            None,
             [
                 {"id": "21", "to": {"name": "Done"}},
                 {"id": "31", "to": {"name": "Closed"}},
+            ],
+            ForbiddenTransition,
+        ),
+        # Valid "transition_name" scenario
+        (
+            "Open",
+            None,
+            "Start Progress",
+            [
+                {"id": "45", "name": "Start Progress"},
+                {"id": "31", "name": "Close"},
+            ],
+            None,
+        ),
+        # Forbidden transition for a transition_name
+        (
+            "Open",
+            None,
+            "Start Progress",
+            [
+                {"id": "45", "name": "Something Else"},
             ],
             ForbiddenTransition,
         ),
@@ -136,20 +162,22 @@ def test_change_state(
     mock_jira,
     mock_account,
     current_state,
-    target_state,
+    to_state,
+    transition_name,
     transitions,
     expected_exception,
 ):
     """
-    Tests change_state under different conditions
+    Tests change_state under various scenarios, including both `to_state`
+    and `transition_name` usage.
 
     Parameters:
     - current_state (str): The initial state of the issue before transition.
-    - target_state (str): The desired state to transition to.
-    - transitions (list[dict]): A list of possible transitions, each represented as
-      a dictionary containing an 'id' and a 'to' field specifying the target state.
-    - expected_exception (Exception or None): The expected exception if the transition
-      is invalid, or None if the transition should succeed.`
+    - to_state (str or None): The desired state to transition to (optional).
+    - transition_name (str or None): The name of the transition to apply (optional).
+    - transitions (list[dict]): A list of possible transitions.
+    - expected_exception (Exception or None): The expected exception if invalid;
+      otherwise None if transition should succeed.
     """
     mock_issue = MagicMock()
     mock_issue.fields.status.name = current_state
@@ -158,9 +186,63 @@ def test_change_state(
 
     if expected_exception:
         with pytest.raises(expected_exception):
-            change_state(mock_account, "ISSUE-123", target_state, from_state="Open")
+            change_state(
+                account=mock_account,
+                issue_key="ISSUE-123",
+                to_state=to_state,
+                transition_name=transition_name,
+                from_state="Open",  # The test expects "Open" as the starting state
+            )
     else:
-        change_state(mock_account, "ISSUE-123", target_state)
+        change_state(
+            account=mock_account,
+            issue_key="ISSUE-123",
+            to_state=to_state,
+            transition_name=transition_name,
+            from_state="Open",
+        )
         mock_jira.issue.assert_called_once_with("ISSUE-123")
         mock_jira.transitions.assert_called_once_with("ISSUE-123")
-        mock_jira.transition_issue.assert_called_once_with("ISSUE-123", "21")
+
+        # Identify the chosen transition ID if success
+        if to_state:
+            # We matched transitions by "to" name
+            expected_match = next(
+                (t for t in transitions if t["to"].get("name") == to_state), {}
+            )
+            assert expected_match, "No valid transition found for provided to_state."
+            mock_jira.transition_issue.assert_called_once_with(
+                "ISSUE-123", expected_match["id"]
+            )
+        else:
+            # We matched transitions by "transition_name"
+            expected_match = next(
+                (t for t in transitions if t.get("name") == transition_name), {}
+            )
+            assert (
+                expected_match
+            ), "No valid transition found for provided transition_name."
+            mock_jira.transition_issue.assert_called_once_with(
+                "ISSUE-123", expected_match["id"]
+            )
+
+
+def test_change_state_no_transition_nor_state_provided(mock_account):
+    """Tests that calling change_state with neither to_state nor transition_name raises ValueError"""
+    with pytest.raises(ValueError):
+        change_state(
+            account=mock_account,
+            issue_key="ISSUE-999",
+            # neither transition_name nor to_state is passed
+        )
+
+
+def test_change_state_both_transition_and_state_provided(mock_account):
+    """Tests that calling change_state with both to_state and transition_name raises ValueError"""
+    with pytest.raises(ValueError):
+        change_state(
+            account=mock_account,
+            issue_key="ISSUE-888",
+            transition_name="Some Transition",
+            to_state="Some State",
+        )
