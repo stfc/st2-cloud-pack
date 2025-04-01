@@ -32,7 +32,7 @@ def create_test_server(
             conn,
             "stackstorm-test-server",
             flavor,
-            "ubuntu-focal-20.04-nogui",
+            "ubuntu-jammy-22.04-nogui",
             "Internal",
             hypervisor_name,
             delete_on_failure,
