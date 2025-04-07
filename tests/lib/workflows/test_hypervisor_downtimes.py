@@ -11,12 +11,23 @@ import pytest
 import pytz
 
 
+# pylint:disable=too-many-locals
+@pytest.mark.parametrize(
+    "set_silence,set_downtime",
+    [
+        (True, False),
+        (False, True),
+        (True, True),
+    ],
+)
 @pytest.mark.freeze_time
 @patch("workflows.hypervisor_downtime.schedule_silence")
 @patch("workflows.hypervisor_downtime.schedule_downtime")
 def test_successful_schedule_hypervisor_downtime(
     mock_schedule_downtime,
     mock_schedule_silence,
+    set_silence,
+    set_downtime,
 ):
     """
     Test successful running of schedule hypervisor downtime
@@ -38,6 +49,8 @@ def test_successful_schedule_hypervisor_downtime(
         hypervisor_name=mock_hypervisor_name,
         comment=comment,
         duration_hours=mock_duration,
+        set_silence=set_silence,
+        set_downtime=set_downtime,
     )
     mock_silence_details_instance = SilenceDetails(
         matchers=[AlertMatcherDetails(name="instance", value="test_host")],
@@ -53,24 +66,26 @@ def test_successful_schedule_hypervisor_downtime(
         author="stackstorm",
         comment=comment,
     )
-    mock_schedule_silence.assert_has_calls(
-        [
-            call(alertmanager_account, mock_silence_details_instance),
-            call(alertmanager_account, mock_silence_details_hostname),
-        ]
-    )
-    mock_schedule_downtime.assert_called_once_with(
-        icinga_account=icinga_account,
-        details=DowntimeDetails(
-            object_type=IcingaObject.HOST,
-            object_name=mock_hypervisor_name,
-            start_time=mock_start_timestamp,
-            end_time=mock_end_timestamp,
-            comment=comment,
-            is_fixed=True,
-            duration=mock_end_timestamp - mock_start_timestamp,
-        ),
-    )
+    if set_silence:
+        mock_schedule_silence.assert_has_calls(
+            [
+                call(alertmanager_account, mock_silence_details_instance),
+                call(alertmanager_account, mock_silence_details_hostname),
+            ]
+        )
+    if set_downtime:
+        mock_schedule_downtime.assert_called_once_with(
+            icinga_account=icinga_account,
+            details=DowntimeDetails(
+                object_type=IcingaObject.HOST,
+                object_name=mock_hypervisor_name,
+                start_time=mock_start_timestamp,
+                end_time=mock_end_timestamp,
+                comment=comment,
+                is_fixed=True,
+                duration=mock_end_timestamp - mock_start_timestamp,
+            ),
+        )
 
 
 @patch("workflows.hypervisor_downtime.schedule_silence")
@@ -96,6 +111,8 @@ def test_unsuccessful_schedule_hypervisor_downtime(
             hypervisor_name=mock_hypervisor_name,
             comment=comment,
             duration_hours=mock_duration,
+            set_silence=True,
+            set_downtime=True,
         )
 
     mock_schedule_downtime.assert_not_called()
