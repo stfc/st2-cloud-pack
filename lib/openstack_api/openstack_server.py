@@ -43,6 +43,7 @@ def snapshot_and_migrate_server(
     can_be_migrated(server)
     if snapshot:
         snapshot_server(conn=conn, server_id=server_id)
+        time.sleep(10)  # Ensure server task status has updated after snapshot
     logger.info("Migrating server: %s", server.id)
     if server.status == "SHUTOFF":
         conn.compute.migrate_server(server=server_id, host=dest_host)
