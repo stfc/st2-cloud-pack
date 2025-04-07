@@ -1,10 +1,13 @@
 from datetime import datetime
+import logging
 import time
 from typing import Optional
 from openstack.connection import Connection
 from openstack.compute.v2.image import Image
 from openstack.compute.v2.server import Server
 from openstack.exceptions import ResourceFailure, ResourceTimeout
+
+logger = logging.getLogger(__name__)
 
 
 def can_be_migrated(server: Server):
@@ -40,6 +43,7 @@ def snapshot_and_migrate_server(
     can_be_migrated(server)
     if snapshot:
         snapshot_server(conn=conn, server_id=server_id)
+    logger.info("Migrating server: %s", server.id)
     if server.status == "SHUTOFF":
         conn.compute.migrate_server(server=server_id, host=dest_host)
         conn.compute.wait_for_server(server, status="VERIFY_RESIZE")
@@ -50,6 +54,7 @@ def snapshot_and_migrate_server(
             server=server_id, host=dest_host, block_migration=True
         )
         wait_for_migration_status(conn, server_id, "completed")
+    logger.info("Migration completed of server: %s", server.id)
 
 
 def snapshot_server(conn: Connection, server_id: str) -> Image:
@@ -61,7 +66,8 @@ def snapshot_server(conn: Connection, server_id: str) -> Image:
     """
     current_time = datetime.now().strftime("%d-%m-%Y-%H%M")
 
-    project_id = conn.compute.find_server(server_id, all_projects=True).project_id
+    server = conn.compute.find_server(server_id, all_projects=True)
+    logger.info("Starting snapshot of server: %s", server.id)
     image = conn.compute.create_server_image(
         server=server_id,
         name=f"stackstorm-{server_id}-{current_time}",
@@ -70,8 +76,8 @@ def snapshot_server(conn: Connection, server_id: str) -> Image:
     )
     wait_for_image_status(conn, image, "active")
     # Make VM's project image owner
-    conn.image.update_image(image, owner=project_id)
-
+    conn.image.update_image(image, owner=server.project_id)
+    logger.info("Completed snapshot of server: %s", server.id)
     return image
 
 
@@ -88,6 +94,7 @@ def wait_for_image_status(conn: Connection, image, status, interval=5, timeout=6
         return image
     start_time = time.time()
     while time.time() - start_time < timeout:
+        logger.info("Status of image %s: %s", image.id, image.status)
         image = conn.image.get_image(image.id)
         if image.status == status:
             return image
@@ -111,6 +118,7 @@ def wait_for_migration_status(
     start_time = time.time()
     while time.time() - start_time < timeout:
         migration = next(conn.compute.migrations(instance_uuid=server_id))
+        logger.info("Status of migration of server %s: %s", server_id, migration.status)
         if migration.status == status:
             return migration
         if migration.status in ["error", "failed"]:
@@ -160,6 +168,7 @@ def build_server(
             "openstack_api_version": "2.74",
         }
     )
+    logger.info("Building server: %s", server.id)
     try:
         conn.compute.wait_for_server(
             server, status="ACTIVE", failures=None, interval=5, wait=300
@@ -168,6 +177,7 @@ def build_server(
         if delete_on_failure:
             conn.compute.delete_server(server, force=True)
         raise ResourceFailure(server.fault) from e
+    logger.info("Built server: %s", server.id)
     return server
 
 
@@ -187,6 +197,8 @@ def delete_server(
     :rtype: None
     """
     server = conn.compute.find_server(server_id)
+    logger.info("Deleting server: %s", server.id)
     conn.compute.delete_server(server, force)
 
     conn.compute.wait_for_delete(server, interval=5, wait=300)
+    logger.info("Deleted server: %s", server.id)
