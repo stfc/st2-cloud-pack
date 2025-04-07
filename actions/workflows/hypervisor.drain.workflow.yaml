@@ -1,0 +1,49 @@
+version: 1.0
+
+description: A basic sequential workflow.
+
+input:
+  - cloud_account
+  - hypervisor_name
+  - disabled_reason
+
+vars:
+  - servers: null
+
+output:
+  - servers: <% ctx().servers %>
+
+tasks:
+  disable_hypervisor:
+    action: stackstorm_openstack.hv.compute.service.disable
+    input:
+      cloud_account: <% ctx().cloud_account %>
+      hypervisor_name: <% ctx().hypervisor_name %>
+      disabled_reason: <% ctx().disabled_reason  %>
+    next:
+      - when: <% succeeded() %>
+        do: find_servers
+
+  find_servers:
+    action: stackstorm_openstack.server.search.by.property
+    input:
+      cloud_account: <% ctx().cloud_account %>
+      properties_to_select: ["server_name", "server_status", "server_id"]
+      property_to_search_by: "hypervisor_name"
+      values: [<% ctx().hypervisor_name %>]
+      output_type: "to_props"
+    next:
+      - when: <% succeeded() %>
+        publish:
+          - servers: <% result().result %>
+        do: migrate_server
+
+  migrate_server:
+    action: stackstorm_openstack.server.migrate
+    with:
+      items: <% ctx().servers %>
+      concurrency: 2
+    input:
+      cloud_account: <% ctx().cloud_account %>
+      server_id: <% item(server_id) %>
+      snapshot: <% not item(server_name).startsWith("amphora-") %>
