@@ -18,22 +18,32 @@ def set_quota(conn: Connection, details: QuotaDetails):
         details.project_identifier, ignore_missing=False
     ).id
 
-    _update_quota(conn, project_id, "floating_ips", details.num_floating_ips)
+    # Create dictionaries to pass to each quota call
+    compute_quotas = {'cores': details.cores, 'ram': details.ram, 'instances': details.instances}
+    network_quotas = {
+        'floating_ips': details.floating_ips,
+        'security_groups': details.security_groups,
+        'security_group_rules': details.security_group_rules,
 
-    _update_quota(
-        conn,
-        project_id,
-        "security_group_rules",
-        details.num_security_group_rules,
-    )
+    }
+    volume_quotas = {
+        'volumes': details.volumes,
+        'snapshots': details.snapshots,
+        'gigabytes': details.gigabytes
+    }
+
+    for quota in [compute_quotas, network_quotas, volume_quotas]:
+        for key, value in list(quota.items()):
+            if value == 0:
+                quota.pop(key)
+
+    if len(compute_quotas) > 0:
+        conn.set_compute_quotas(project_id, **compute_quotas)
+    if len(network_quotas) > 0:
+        conn.set_network_quotas(project_id, **network_quotas)
+    if len(volume_quotas) > 0:
+        conn.set_volume_quotas(project_id, **volume_quotas)
 
 
-def _update_quota(conn: Connection, project_id: str, quota_id: str, new_val: int):
-    """
-    Updates a given quota if the quota has a non-zero value
-    """
-    if new_val == 0:
-        return
-
-    kwargs = {"quota": project_id, quota_id: new_val}
-    conn.network.update_quota(**kwargs)
+def show_quota(conn: Connection, project_id: str):
+    conn.get_compute_quotas(project_id)
