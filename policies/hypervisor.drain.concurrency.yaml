@@ -1,0 +1,9 @@
+name: hypervisor.drain.concurrency
+pack: stackstorm_openstack
+description: Limits the concurrent hypervisor drain executions
+enabled: true
+resource_ref: stackstorm_openstack.hypervisor.drain
+policy_type: action.concurrency
+parameters:
+  action: delay
+  threshold: 2

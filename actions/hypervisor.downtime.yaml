@@ -30,4 +30,14 @@ parameters:
     description: "Name of AlertManager Account to use. Must be configured in in the pack settings."
     required: true
     default: "default"
+  set_silence:
+    type: boolean
+    description: Whether to set silences in alertmanager
+    required: true
+    default: True
+  set_downtime:
+    type: boolean
+    description: Whether to set downtime in icinga
+    required: true
+    default: False
 runner_type: python-script

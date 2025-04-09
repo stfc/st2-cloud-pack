@@ -19,6 +19,8 @@ def schedule_hypervisor_downtime(
     hypervisor_name: str,
     comment: str,
     duration_hours: int,
+    set_silence: bool,
+    set_downtime: bool,
 ):
 
     # Local UK time to Unix timestamp
@@ -55,7 +57,8 @@ def schedule_hypervisor_downtime(
         duration_hours=duration_hours,
     )
 
-    schedule_silence(alertmanager_account, silence_details_instance)
-    schedule_silence(alertmanager_account, silence_details_hostname)
-
-    schedule_downtime(icinga_account=icinga_account, details=downtime_details)
+    if set_silence:
+        schedule_silence(alertmanager_account, silence_details_instance)
+        schedule_silence(alertmanager_account, silence_details_hostname)
+    if set_downtime:
+        schedule_downtime(icinga_account=icinga_account, details=downtime_details)
