@@ -47,7 +47,7 @@ def snapshot_and_migrate_server(
     logger.info("Migrating server: %s", server.id)
     if server.status == "SHUTOFF":
         conn.compute.migrate_server(server=server_id, host=dest_host)
-        conn.compute.wait_for_server(server, status="VERIFY_RESIZE")
+        conn.compute.wait_for_server(server, status="VERIFY_RESIZE", wait=3600)
         conn.compute.confirm_server_resize(server_id)
         wait_for_migration_status(conn, server_id, "confirmed")
     if server.status == "ACTIVE":
@@ -82,7 +82,7 @@ def snapshot_server(conn: Connection, server_id: str) -> Image:
     return image
 
 
-def wait_for_image_status(conn: Connection, image, status, interval=5, timeout=600):
+def wait_for_image_status(conn: Connection, image, status, interval=5, timeout=3600):
     """
     Waits for the status of the image to be the selected status
     :param conn: Openstack connection
@@ -106,7 +106,7 @@ def wait_for_image_status(conn: Connection, image, status, interval=5, timeout=6
 
 
 def wait_for_migration_status(
-    conn: Connection, server_id, status, interval=5, timeout=600
+    conn: Connection, server_id, status, interval=5, timeout=3600
 ):
     """
     Waits for the status of the migration to be the selected status
@@ -172,7 +172,7 @@ def build_server(
     logger.info("Building server: %s", server.id)
     try:
         conn.compute.wait_for_server(
-            server, status="ACTIVE", failures=None, interval=5, wait=300
+            server, status="ACTIVE", failures=None, interval=5, wait=3600
         )
     except (ResourceTimeout, ResourceFailure) as e:
         if delete_on_failure:
@@ -201,5 +201,5 @@ def delete_server(
     logger.info("Deleting server: %s", server.id)
     conn.compute.delete_server(server, force)
 
-    conn.compute.wait_for_delete(server, interval=5, wait=300)
+    conn.compute.wait_for_delete(server, interval=5, wait=3600)
     logger.info("Deleted server: %s", server.id)

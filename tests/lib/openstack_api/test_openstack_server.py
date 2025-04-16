@@ -78,7 +78,7 @@ def test_shutoff_migration(
         server=mock_server_id, host=dest_host
     )
     mock_connection.compute.wait_for_server.assert_called_once_with(
-        mock_server, status="VERIFY_RESIZE"
+        mock_server, status="VERIFY_RESIZE", wait=3600
     )
     mock_connection.compute.confirm_server_resize(mock_server_id)
     mock_wait_for_migration_status.assert_called_once_with(
@@ -387,7 +387,7 @@ def test_build_server():
         }
     )
     mock_conn.compute.wait_for_server.assert_called_once_with(
-        mock_server, status="ACTIVE", failures=None, interval=5, wait=300
+        mock_server, status="ACTIVE", failures=None, interval=5, wait=3600
     )
 
     assert res == mock_server
@@ -434,7 +434,7 @@ def test_build_server_delete_on_failure():
         }
     )
     mock_conn.compute.wait_for_server.assert_called_once_with(
-        mock_server, status="ACTIVE", failures=None, interval=5, wait=300
+        mock_server, status="ACTIVE", failures=None, interval=5, wait=3600
     )
     mock_conn.compute.delete_server.assert_called_once_with(mock_server, force=True)
 
@@ -480,7 +480,7 @@ def test_build_server_delete_on_failure_false():
         }
     )
     mock_conn.compute.wait_for_server.assert_called_once_with(
-        mock_server, status="ACTIVE", failures=None, interval=5, wait=300
+        mock_server, status="ACTIVE", failures=None, interval=5, wait=3600
     )
     mock_conn.compute.delete_server.assert_not_called()
 
@@ -500,7 +500,7 @@ def test_delete_server():
     mock_conn.compute.find_server.assert_called_once_with("test-server-id")
     mock_conn.compute.delete_server.assert_called_once_with(mock_server, False)
     mock_conn.compute.wait_for_delete.assert_called_once_with(
-        mock_server, interval=5, wait=300
+        mock_server, interval=5, wait=3600
     )
 
 
@@ -519,5 +519,5 @@ def test_force_delete_server():
     mock_conn.compute.find_server.assert_called_once_with("test-server-id")
     mock_conn.compute.delete_server.assert_called_once_with(mock_server, True)
     mock_conn.compute.wait_for_delete.assert_called_once_with(
-        mock_server, interval=5, wait=300
+        mock_server, interval=5, wait=3600
     )
