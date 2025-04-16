@@ -1,0 +1,16 @@
+---
+name: "chatops.pr_reminder"
+pack: "stackstorm_openstack"
+description: "Sends a payload to the chatops endpoint to trigger pr reminders."
+enabled: true
+
+trigger:
+  type: "stackstorm_openstack.chatops.pr_reminder"
+
+action:
+  ref: "stackstorm_openstack.chatops.pr_reminder"
+  parameters:
+    token: "{{ trigger.token }}"
+    endpoint: "{{ trigger.endpoint }}"
+    channel: "{{ trigger.channel }}"
+    reminder_type: "{{ trigger.reminder_type }}"

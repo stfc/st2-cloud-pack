@@ -1,0 +1,28 @@
+---
+description: Triggers the ChatOps pull request reminder endpoint to send reminders to our Slack workspace
+enabled: true
+entry_point: src/openstack_actions.py
+name: chatops.pr_reminder
+parameters:
+  lib_entry_point:
+    type: string
+    default: workflows.chatops_pr_reminder.pr_reminder
+    immutable: true
+  endpoint:
+    type: string
+    description: ChatOps endpoint URL. Must be configured in the pack settings.
+    required: true
+  token:
+    type: string
+    description: ChatOps endpoint authentication token URL. Must be configured in the pack settings.
+    required: true
+    secret: true
+  channel:
+    type: string
+    description: Slack workspace channel ID.
+    required: true
+  reminder_type:
+    type: string
+    description: Reminder type, global or personal
+    required: true
+runner_type: python-script

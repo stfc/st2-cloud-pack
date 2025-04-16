@@ -1,0 +1,24 @@
+---
+class_name: ChatOpsPRReminderSensor
+entry_point: src/chatops_pr_reminder_sensor.py
+description: Poll ChatOps endpoint to send reminder
+poll_interval: 90
+enabled: true
+trigger_types:
+  - name: "chatops.pr_reminder"
+    description: "Triggers the ChatOps endpoint to send the reminders"
+    payload_schema:
+      type: "object"
+      properties:
+        token:
+          type: "string"
+          description: "ChatOps endpoint token"
+        endpoint:
+          type: "string"
+          description: "ChatOps endpoint url"
+        channel:
+          type: "string"
+          description: "Channel to send reminders to"
+        reminder_type:
+          type: "string"
+          description: "Type of reminder, global or personal"
