@@ -200,7 +200,7 @@ def test_snapshot_server(mock_wait_for_image_status):
         server=mock_server_id,
         name=f"stackstorm-{mock_server_id}-{current_time}",
         wait=True,
-        timeout=3600,
+        timeout=21600,  # 6 Hours
     )
     mock_wait_for_image_status.assert_called_once_with(
         mock_connection, mock_image, "active"

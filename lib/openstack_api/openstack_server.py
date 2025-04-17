@@ -73,7 +73,7 @@ def snapshot_server(conn: Connection, server_id: str) -> Image:
         server=server_id,
         name=f"stackstorm-{server_id}-{current_time}",
         wait=True,
-        timeout=3600,
+        timeout=21600,  # 6 Hours
     )
     wait_for_image_status(conn, image, "active")
     # Make VM's project image owner
