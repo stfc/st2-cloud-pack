@@ -1,92 +1,51 @@
 from unittest.mock import MagicMock, NonCallableMagicMock
-import pytest
-from openstack_api.openstack_service import disable_service, enable_service
+from lib.openstack_api.openstack_service import enable_service, disable_service
 
 
-def test_disable_service_function_disables_service_when_enabled():
-    """tests that openstack disables the service when it is currently enabled"""
+def test_service_disabled_successfully():
+    """test that hv_service_disable disables an openstack service"""
 
     mock_conn = MagicMock()
-    mock_service = MagicMock()
     mock_hypervisor_name = NonCallableMagicMock()
     mock_service_binary = NonCallableMagicMock()
-    mock_disable_reason = NonCallableMagicMock()
+    mock_disabled_reason = NonCallableMagicMock()
 
-    mock_service.status = "enabled"
+    mock_service = MagicMock()
+    mock_conn.compute.find_service.return_value = mock_service
 
-    res = disable_service(
+    disable_service(
         mock_conn,
-        mock_service,
         mock_hypervisor_name,
         mock_service_binary,
-        mock_disable_reason,
+        mock_disabled_reason,
+    )
+
+    mock_conn.compute.find_service.assert_called_once_with(
+        mock_service_binary, ignore_missing=False, host=mock_hypervisor_name
     )
 
     mock_conn.compute.disable_service.assert_called_once_with(
-        mock_service,
-        host=mock_hypervisor_name,
-        binary=mock_service_binary,
-        disabled_reason=mock_disable_reason,
+        service=mock_service.id,
+        disabled_reason=mock_disabled_reason,
     )
 
-    assert res == mock_conn.compute.disable_service.return_value
 
-
-def test_disable_service_function_returns_none_when_disabled():
-    """tests that openstack returns None when the service is currently disabled"""
+def test_hv_service_enabled_successfully():
+    """test that hv_service_enable enables an openstack service"""
 
     mock_conn = MagicMock()
-    mock_service = MagicMock()
-    mock_hypervisor_name = NonCallableMagicMock()
-    mock_service_binary = NonCallableMagicMock()
-    mock_disable_reason = NonCallableMagicMock()
-
-    mock_service.status = "disabled"
-
-    with pytest.raises(RuntimeError):
-        disable_service(
-            mock_conn,
-            mock_service,
-            mock_hypervisor_name,
-            mock_service_binary,
-            mock_disable_reason,
-        )
-
-
-def test_enable_service_function_enables_service_when_disabled():
-    """tests that openstack enables the service when it is currently disabled"""
-
-    mock_conn = MagicMock()
-    mock_service = MagicMock()
     mock_hypervisor_name = NonCallableMagicMock()
     mock_service_binary = NonCallableMagicMock()
 
-    mock_service.status = "disabled"
+    mock_service = MagicMock()
+    mock_conn.compute.find_service.return_value = mock_service
 
-    res = enable_service(
-        mock_conn, mock_service, mock_hypervisor_name, mock_service_binary
+    enable_service(mock_conn, mock_hypervisor_name, mock_service_binary)
+
+    mock_conn.compute.find_service.assert_called_once_with(
+        mock_service_binary, ignore_missing=False, host=mock_hypervisor_name
     )
 
     mock_conn.compute.enable_service.assert_called_once_with(
-        mock_service,
-        host=mock_hypervisor_name,
-        binary=mock_service_binary,
+        service=mock_service.id,
     )
-
-    assert res == mock_conn.compute.enable_service.return_value
-
-
-def test_enable_service_function_returns_none_when_enabled():
-    """tests that openstack returns none when the service is currently enabled"""
-
-    mock_conn = MagicMock()
-    mock_service = MagicMock()
-    mock_hypervisor_name = NonCallableMagicMock()
-    mock_service_binary = NonCallableMagicMock()
-
-    mock_service.status = "enabled"
-
-    with pytest.raises(RuntimeError):
-        enable_service(
-            mock_conn, mock_service, mock_hypervisor_name, mock_service_binary
-        )
