@@ -5,7 +5,6 @@ from openstack.compute.v2.service import Service
 
 def disable_service(
     conn: Connection,
-    service: Service,
     hypervisor_name: str,
     service_binary: str,
     disabled_reason: str,
@@ -19,22 +18,18 @@ def disable_service(
     :param disabled_reason: The reason for disabling the service.
     :return: Returns the Service object.
     """
-
-    if service.status == "enabled":
-        return conn.compute.disable_service(
-            service,
-            host=hypervisor_name,
-            binary=service_binary,
-            disabled_reason=disabled_reason,
-        )
-    raise RuntimeError(
-        f"Failed to disable {service_binary} on {hypervisor_name}. Already disabled."
+    service = conn.compute.find_service(
+        service_binary, ignore_missing=False, host=hypervisor_name
+    )
+    # Needs to be service.id since just passing service won't update the service correctly
+    return conn.compute.disable_service(
+        service=service.id,
+        disabled_reason=disabled_reason,
     )
 
 
 def enable_service(
     conn: Connection,
-    service: Service,
     hypervisor_name: str,
     service_binary: str,
 ) -> Optional[Service]:
@@ -46,11 +41,7 @@ def enable_service(
     :param service_binary: The name of the service.
     :return: Returns the Service object.
     """
-
-    if service.status == "disabled":
-        return conn.compute.enable_service(
-            service, host=hypervisor_name, binary=service_binary
-        )
-    raise RuntimeError(
-        f"Failed to enable {service_binary} on {hypervisor_name}. Already enabled."
+    service = conn.compute.find_service(
+        service_binary, ignore_missing=False, host=hypervisor_name
     )
+    return conn.compute.enable_service(service=service.id)
