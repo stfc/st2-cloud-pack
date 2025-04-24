@@ -42,7 +42,8 @@ tasks:
     action: stackstorm_openstack.server.migrate
     with:
       items: <% ctx().servers %>
-      concurrency: 2
+      # 1 per HV, this way larger migrations are less-likely to fill the disk with snapshots
+      concurrency: 1
     input:
       cloud_account: <% ctx().cloud_account %>
       server_id: <% item(server_id) %>

@@ -6,4 +6,6 @@ resource_ref: stackstorm_openstack.hypervisor.drain
 policy_type: action.concurrency
 parameters:
   action: delay
-  threshold: 2
+  # Three HVs can be drained concurrently, this does not affect the number of
+  # VMs draining per HV
+  threshold: 3
