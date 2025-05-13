@@ -1,5 +1,6 @@
 import eventlet
 from st2reactor.sensor.base import Sensor
+import requests
 
 
 class ChatOpsPRReminderSensor(Sensor):
@@ -24,15 +25,13 @@ class ChatOpsPRReminderSensor(Sensor):
     def run(self):
         """Poll the ChatOps endpoint."""
         while not self._stop:
-            self._logger.debug("ChatOpsPRReminderSensor dispatching trigger...")
-            self.sensor_service.dispatch(
-                trigger="chatops.pr_reminder", payload={
-                    "token": self.token,
-                    "endpoint": self.endpoint,
-                    "channel": self.channel,
-                    "reminder_type": self.reminder_type
-                }
+            self._logger.debug("ChatOpsPRReminderSensor making request...")
+            request = requests.post(
+                url=self.endpoint,
+                json={"reminder_type": self.reminder_type, "channel": self.channel},
+                headers={"Authorization": f"token {self.token}"}
             )
+            request.raise_for_status()
             eventlet.sleep(60)
 
     def cleanup(self):
