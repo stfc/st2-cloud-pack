@@ -170,3 +170,20 @@ hypervisor_sensor:
     state_expire_after:
       type: "integer"
       description: "Number of seconds before forcefully deleting previous state to update hypervisors stuck in a state"
+
+chatops_sensor:
+  description: "ChatOps sensor specific settings."
+  type: "object"
+  required: false
+  additionalProperties: false
+  properties:
+    endpoint:
+      type: "string"
+      description: "ChatOps endpoint to use."
+    token:
+      type: "string"
+      description: "API token to authenticate requests."
+      secret: true
+    channel:
+      type: "string"
+      description: "Channel to send reminders to."
