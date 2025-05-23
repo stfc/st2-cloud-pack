@@ -1,0 +1,19 @@
+---
+name: chatops_pr_reminder_personal
+pack: stackstorm_openstack
+description: Send a personal reminder request every Monday at 9AM to the ChatOps application
+enabled: true
+
+trigger:
+  type: core.st2.CronTimer
+  parameters:
+    timezone: "UTC"
+    day_of_week: mon
+    hour: 8
+    minute: 00
+
+
+action:
+  ref: stackstorm_openstack.chatops.pr_reminder
+  parameters:
+    reminder_type: "personal"
