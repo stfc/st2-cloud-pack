@@ -61,4 +61,11 @@ class OpenstackActions(Action):
                 self.config, kwargs["alertmanager_account_name"]
             )
             del kwargs["alertmanager_account_name"]
+
+        if "chatops_token" in kwargs:
+            kwargs["token"] = self.config["chatops_sensor"]["token"]
+            kwargs["endpoint"] = self.config["chatops_sensor"]["endpoint"]
+            kwargs["channel"] = self.config["chatops_sensor"]["channel"]
+            del kwargs["chatops_token"]
+
         return kwargs
