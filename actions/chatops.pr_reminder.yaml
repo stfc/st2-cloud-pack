@@ -1,0 +1,29 @@
+---
+description: Send a reminder request to the ChatOps application
+enabled: true
+entry_point: src/openstack_actions.py
+name: chatops.pr_reminder
+runner_type: python-script
+parameters:
+  lib_entry_point:
+    type: string
+    default: workflows.chatops_pr_reminder.pr_reminder
+    immutable: true
+  reminder_type:
+    type: string
+    description: "The type of message to send (e.g., global, personal)"
+    required: true
+  channel:
+    type: string
+    description: "The channel to send the message to. Must be configured in the pack settings."
+    required: true
+    default: "default"
+  chatops_token:
+    type: string
+    secret: true
+    description: "The token to authenticate the request with. Must be configured in the pack settings."
+    default: "default"
+  endpoint:
+    type: string
+    description: "The endpoint URL to send the request to. Must be configured in the pack settings."
+    default: "default"
