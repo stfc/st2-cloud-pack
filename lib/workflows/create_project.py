@@ -1,10 +1,40 @@
-from typing import List, Optional
+from typing import Optional, List
+
+from enums.network_providers import NetworkProviders
+from enums.rbac_network_actions import RbacNetworkActions
+from enums.user_domains import UserDomains
+
 from openstack.connection import Connection
+from openstack.identity.v3.project import Project
 
-from workflows.create_external_project import create_external_project
-from workflows.create_internal_project import create_internal_project
+from openstack_api.openstack_network import (
+    create_network,
+    create_network_rbac,
+    allocate_floating_ips,
+)
+from openstack_api.openstack_project import create_project
+from openstack_api.openstack_quota import set_quota
+from openstack_api.openstack_router import create_router, add_interface_to_router
+from openstack_api.openstack_security_groups import (
+    refresh_security_groups,
+    create_https_security_group,
+    create_http_security_group,
+    create_external_security_group_rules,
+    create_internal_security_group_rules,
+)
+from openstack_api.openstack_roles import assign_role_to_user
+from openstack_api.openstack_subnet import create_subnet
+from structs.network_details import NetworkDetails
+from structs.network_rbac import NetworkRbac
+
+from structs.project_details import ProjectDetails
+from structs.quota_details import QuotaDetails
+from structs.role_details import RoleDetails
+from structs.router_details import RouterDetails
 
 
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-locals
 def create_project(
     conn: Connection,
     project_name: str,
@@ -20,8 +50,7 @@ def create_project(
     user_list: Optional[List[str]] = None,
 ):
     """
-    Create openstack project
-
+    create an Openstack project
     :param conn: Openstack Connection
     :type conn: Connection
     :param project_name: Project name
@@ -32,7 +61,7 @@ def create_project(
     :type project_description: str
     :param project_domain: Project domain
     :type project_domain: str
-    :param networking_type: Project networking type, e.g. Internal, External
+    :param networking_type: Project networking type, e.g. Internal, External, JASMIN
     :type networking_type: str
     :param number_of_floating_ips: Floating IP quota for project
     :type number_of_floating_ips: int
@@ -47,38 +76,149 @@ def create_project(
     :param user_list: List of project users
     :type user_list: List[str]
     """
+    if not admin_user_list:
+        admin_user_list = []
 
-    if project_domain != "default":
-        raise NotImplementedError(
-            "domain support is work in progress, please use default domain",
-        )
+    if not user_list:
+        user_list = []
 
-    if networking_type == "internal":
-        create_internal_project(
-            conn=conn,
-            project_name=f"{project_name}",
-            project_email=project_email,
-            project_description=project_description,
-            project_immutable=project_immutable,
+    project = create_project(
+        conn,
+        ProjectDetails(
+            name=project_name,
+            email=project_email,
+            description=project_description,
+            immutable=project_immutable,
             parent_id=parent_id,
-            admin_user_list=admin_user_list,
-            stfc_user_list=user_list,
-        )
-    elif networking_type in ("external", "jasmin"):
-        create_external_project(
-            conn=conn,
-            project_name=f"{project_name}",
-            project_email=project_email,
-            project_description=project_description,
-            network_name=f"{project_name}-network",
-            subnet_name=f"{project_name}-subnet",
-            router_name=f"{project_name}-router",
-            number_of_floating_ips=number_of_floating_ips,
-            number_of_security_group_rules=number_of_security_group_rules,
-            project_immutable=project_immutable,
-            parent_id=parent_id,
-            admin_user_list=admin_user_list,
-            stfc_user_list=user_list,
-        )
+            is_enabled=True,
+        ),
+    )
+
+    # wait for default security group
+    refresh_security_groups(conn, project["id"])
+
+    if networking_type in ("external", "jasmin"):
+        setup_external_networking(conn, project)
+    elif networking_type == "internal":
+        setup_internal_networking(conn, project)
     else:
         raise NotImplementedError(f"Unknown networking type {networking_type}")
+
+    create_http_security_group(conn, project_identifier=project["id"])
+    create_https_security_group(conn, project_identifier=project["id"])
+
+    set_quota(
+        conn,
+        QuotaDetails(
+            project_identifier=project["id"],
+            num_floating_ips=number_of_floating_ips,
+            num_security_group_rules=number_of_security_group_rules,
+        ),
+    )
+
+    allocate_floating_ips(
+        conn,
+        network_identifier="External",
+        project_identifier=project["id"],
+        number_to_create=number_of_floating_ips,
+    )
+
+    for admin_user in admin_user_list:
+        assign_role_to_user(
+            conn,
+            RoleDetails(
+                user_identifier=admin_user,
+                user_domain=UserDomains.DEFAULT,
+                project_identifier=project["id"],
+                role_identifier="admin",
+            ),
+        )
+
+    for user in user_list:
+        assign_role_to_user(
+            conn,
+            RoleDetails(
+                user_identifier=user,
+                user_domain=UserDomains.STFC,
+                project_identifier=project["id"],
+                role_identifier="user",
+            ),
+        )
+
+
+def setup_external_networking(conn: Connection, project: Project):
+    """
+    setup the project's external networking
+    :param conn: Openstack connection object
+    :param project: Openstack project object
+    """
+    network = create_network(
+        conn,
+        NetworkDetails(
+            name=f"{project.name}-network",
+            description="",
+            project_identifier=project["id"],
+            provider_network_type=NetworkProviders.VXLAN,
+            port_security_enabled=True,
+            has_external_router=False,
+        ),
+    )
+
+    router = create_router(
+        conn,
+        RouterDetails(
+            router_name=f"{project.name}-router",
+            router_description="",
+            project_identifier=project["id"],
+            external_gateway="External",
+            is_distributed=False,
+        ),
+    )
+
+    subnet = create_subnet(
+        conn,
+        network_identifier=network["id"],
+        subnet_name=f"{project.name}-subnet",
+        subnet_description="",
+        dhcp_enabled=True,
+    )
+
+    add_interface_to_router(
+        conn,
+        project_identifier=project["id"],
+        router_identifier=router["id"],
+        subnet_identifier=subnet["id"],
+    )
+
+    create_network_rbac(
+        conn,
+        NetworkRbac(
+            project_identifier=project["id"],
+            network_identifier=network["id"],
+            action=RbacNetworkActions.SHARED,
+        ),
+    )
+
+    # create default security group rules
+    create_external_security_group_rules(
+        conn, project_identifier=project["id"], security_group_identifier="default"
+    )
+
+
+def setup_internal_networking(conn: Connection, project: Project):
+    """
+    setup the project's internal networking
+    :param conn: Openstack connection object
+    :param project: Openstack project object
+    """
+    create_network_rbac(
+        conn,
+        NetworkRbac(
+            project_identifier=project["id"],
+            network_identifier="Internal",
+            action=RbacNetworkActions.SHARED,
+        ),
+    )
+
+    # create default security group rules
+    create_internal_security_group_rules(conn, project["id"], "default")
