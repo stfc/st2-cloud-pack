@@ -55,6 +55,11 @@ parameters:
     Or, simply, just '-' to include all hostnames with a hyphen
     Leave empty to show all hosts"
     type: array
+  include_flavours:
+    description: "Optional comma-spaced list of flavour names, only hypervisors that support at least one are included."
+    type: array
+  exclude_flavours: 
+    description: "Optional comma-spaced list of flavour names, hypervisors that can provision any are excluded."
   properties_to_select:
     default:
       - "local_disk_free"
