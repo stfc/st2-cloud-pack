@@ -41,7 +41,8 @@ def create_project(
     project_email: str,
     project_description: str,
     project_domain: str,
-    networking_type: str,
+    user_domain: str,
+    network: str,
     number_of_floating_ips: int = 1,
     number_of_security_group_rules: int = 200,
     project_immutable: Optional[bool] = False,
@@ -61,8 +62,10 @@ def create_project(
     :type project_description: str
     :param project_domain: Project domain
     :type project_domain: str
-    :param networking_type: Project networking type, e.g. Internal, External, JASMIN
-    :type networking_type: str
+    :param user_domain: User domain
+    :type user_domain: str
+    :param network: Cloud network, e.g. Internal, External, JASMIN
+    :type network: str
     :param number_of_floating_ips: Floating IP quota for project
     :type number_of_floating_ips: int
     :param number_of_security_group_rules: Security Group quota for project
@@ -88,6 +91,7 @@ def create_project(
             name=project_name,
             email=project_email,
             description=project_description,
+            project_domain=project_domain,
             immutable=project_immutable,
             parent_id=parent_id,
             is_enabled=True,
@@ -97,12 +101,12 @@ def create_project(
     # wait for default security group
     refresh_security_groups(conn, project["id"])
 
-    if networking_type in ("external", "jasmin"):
-        setup_external_networking(conn, project)
-    elif networking_type == "internal":
+    if network in ("External", "JASMIN External Cloud Network"):
+        setup_external_networking(conn, project, network)
+    elif network == "Internal":
         setup_internal_networking(conn, project)
     else:
-        raise NotImplementedError(f"Unknown networking type {networking_type}")
+        raise NotImplementedError(f"Unknown networking type {network}")
 
     create_http_security_group(conn, project_identifier=project["id"])
     create_https_security_group(conn, project_identifier=project["id"])
@@ -118,7 +122,7 @@ def create_project(
 
     allocate_floating_ips(
         conn,
-        network_identifier="External",
+        network_identifier=network,
         project_identifier=project["id"],
         number_to_create=number_of_floating_ips,
     )
@@ -139,18 +143,21 @@ def create_project(
             conn,
             RoleDetails(
                 user_identifier=user,
-                user_domain=UserDomains.STFC,
+                user_domain=user_domain,
                 project_identifier=project["id"],
                 role_identifier="user",
             ),
         )
 
 
-def setup_external_networking(conn: Connection, project: Project):
+def setup_external_networking(
+    conn: Connection, project: Project, external_network: str
+):
     """
     setup the project's external networking
     :param conn: Openstack connection object
     :param project: Openstack project object
+    :param external_network: External Cloud network string
     """
     network = create_network(
         conn,
@@ -170,7 +177,7 @@ def setup_external_networking(conn: Connection, project: Project):
             router_name=f"{project.name}-router",
             router_description="",
             project_identifier=project["id"],
-            external_gateway="External",
+            external_gateway=external_network,
             is_distributed=False,
         ),
     )
