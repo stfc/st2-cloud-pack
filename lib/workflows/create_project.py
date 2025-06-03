@@ -12,7 +12,7 @@ from openstack_api.openstack_network import (
     create_network_rbac,
     allocate_floating_ips,
 )
-from openstack_api.openstack_project import create_project
+from openstack_api.openstack_project import create_project as create_openstack_project
 from openstack_api.openstack_quota import set_quota
 from openstack_api.openstack_router import create_router, add_interface_to_router
 from openstack_api.openstack_security_groups import (
@@ -85,7 +85,7 @@ def create_project(
     if not user_list:
         user_list = []
 
-    project = create_project(
+    project = create_openstack_project(
         conn,
         ProjectDetails(
             name=project_name,
