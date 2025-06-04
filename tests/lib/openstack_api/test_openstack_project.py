@@ -74,9 +74,9 @@ def test_create_project_forwards_error():
         create_project(mock_conn, mock_project_details)
 
 
-def test_get_domain_called():
+def test_find_domain_called():
     """
-    Tests that get_domain is called when creating a project
+    Tests that find_domain is called when creating a project
     """
 
     mock_project_details = MagicMock()
@@ -91,7 +91,7 @@ def test_get_domain_called():
     mock_conn = MagicMock()
 
     create_project(mock_conn, mock_project_details)
-    mock_conn.identity.get_domain.assert_called_once_with("test-domain")
+    mock_conn.identity.find_domain.assert_called_once_with("test-domain")
 
 
 def test_create_project_successful():
@@ -111,8 +111,8 @@ def test_create_project_successful():
 
     res = create_project(mock_conn, mock_project_details)
 
-    mock_conn.identity.get_domain.assert_called_once_with("test-domain")
-    domain_details = mock_conn.identity.get_domain(mock_project_details.project_domain)
+    mock_conn.identity.find_domain.assert_called_once_with("test-domain")
+    domain_details = mock_conn.identity.find_domain(mock_project_details.project_domain)
     domain_id = domain_details.id
 
     mock_conn.identity.create_project.assert_called_once_with(
@@ -142,9 +142,9 @@ def test_create_project_successful_no_parent_id_and_not_immutable():
 
     res = create_project(mock_conn, mock_project_details)
 
-    mock_conn.identity.get_domain.assert_called_once_with("buzz")
+    mock_conn.identity.find_domain.assert_called_once_with("buzz")
 
-    domain_details = mock_conn.identity.get_domain(mock_project_details.project_domain)
+    domain_details = mock_conn.identity.find_domain(mock_project_details.project_domain)
     domain_id = domain_details.id
 
     mock_conn.identity.create_project.assert_called_once_with(
@@ -175,9 +175,9 @@ def test_create_project_successful_with_parent_id_and_immutable():
 
     res = create_project(mock_conn, mock_project_details)
 
-    mock_conn.identity.get_domain.assert_called_once_with("buzz")
+    mock_conn.identity.find_domain.assert_called_once_with("buzz")
 
-    domain_details = mock_conn.identity.get_domain(mock_project_details.project_domain)
+    domain_details = mock_conn.identity.find_domain(mock_project_details.project_domain)
     domain_id = domain_details.id
 
     mock_conn.identity.create_project.assert_called_once_with(
