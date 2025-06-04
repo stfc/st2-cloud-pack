@@ -36,7 +36,7 @@ def create_project(
     }
 
     # get domain id for the domain to use
-    domain_details = conn.identity.get_domain(project_details.project_domain)
+    domain_details = conn.identity.find_domain(project_details.project_domain)
     create_project_kwargs["domain_id"] = domain_details.id
 
     if project_details.parent_id:
