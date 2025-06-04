@@ -12,6 +12,6 @@ def pr_reminder(endpoint: str, token: str, channel: str, reminder_type: str) -> 
     """
     headers = {"Content-Type": "application/json", "Authorization": f"token {token}"}
     body = {"reminder_type": reminder_type, "channel": channel}
-    response = requests.post(endpoint, json=body, headers=headers)
+    response = requests.post(endpoint, json=body, headers=headers, timeout=120)
     response.raise_for_status()
     return {"status_code": response.status_code, "response": response.text}
