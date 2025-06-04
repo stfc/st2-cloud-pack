@@ -37,3 +37,8 @@ hypervisor_sensor:
   cloud_account:
   uptime_limit:
   state_expire_after:
+
+chatops_sensor:
+  endpoint:
+  token:
+  channel:
