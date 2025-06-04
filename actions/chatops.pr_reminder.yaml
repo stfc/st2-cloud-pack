@@ -16,14 +16,3 @@ parameters:
     enum:
       - "global"
       - "personal"
-    required: true
-    default: "default"
-  chatops_token:
-    type: string
-    secret: true
-    description: "The token to authenticate the request with. Must be configured in the pack settings."
-    default: "default"
-  endpoint:
-    type: string
-    description: "The endpoint URL to send the request to. Must be configured in the pack settings."
-    default: "default"
