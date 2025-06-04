@@ -11,11 +11,11 @@ parameters:
     immutable: true
   reminder_type:
     type: string
-    description: "The type of message to send (e.g., global, personal)"
+    description: "The type of message to send."
     required: true
-  channel:
-    type: string
-    description: "The channel to send the message to. Must be configured in the pack settings."
+    enum:
+      - "global"
+      - "personal"
     required: true
     default: "default"
   chatops_token:
