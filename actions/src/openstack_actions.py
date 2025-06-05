@@ -62,10 +62,11 @@ class OpenstackActions(Action):
             )
             del kwargs["alertmanager_account_name"]
 
-        if "reminder_type" in kwargs:
+        if "chatops_reminder_type" in kwargs:
             kwargs["token"] = self.config["chatops_sensor"]["token"]
             kwargs["endpoint"] = self.config["chatops_sensor"]["endpoint"]
             kwargs["channel"] = self.config["chatops_sensor"]["channel"]
-            del kwargs["reminder_type"]
+            kwargs["reminder_type"] = kwargs["chatops_reminder_type"]
+            del kwargs["chatops_reminder_type"]
 
         return kwargs

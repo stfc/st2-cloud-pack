@@ -9,7 +9,7 @@ parameters:
     type: string
     default: workflows.chatops_pr_reminder.pr_reminder
     immutable: true
-  reminder_type:
+  chatops_reminder_type:
     type: string
     description: "The type of message to send."
     required: true

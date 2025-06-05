@@ -145,16 +145,17 @@ class TestOpenstackActions(OpenstackActionTestBase):
         self.action.config = {
             "chatops_sensor": {
                 "token": "mock_token",
-                "endpoint": "mock_endpoint",  # fix typo here
+                "endpoint": "mock_endpoint",
                 "channel": "mock_channel",
             }
         }
 
         # Call parse_configs with reminder_type
-        result = self.action.parse_configs(reminder_type="mock_reminder_type")
+        result = self.action.parse_configs(chatops_reminder_type="mock_reminder_type")
 
         assert result == {
             "token": "mock_token",
             "endpoint": "mock_endpoint",
             "channel": "mock_channel",
+            "reminder_type": "mock_reminder_type",
         }
