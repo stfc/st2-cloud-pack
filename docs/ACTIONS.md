@@ -101,6 +101,15 @@ the following are actions related to STFC Cloud JuptyerHub Service
 | workflow.jupyter.user.prepare | Creates a list of JupyterHub users, and starts up servers for each user                         |
 
 
+## ChatOps Actions
+
+The following are actions related to STFC Cloud Slack ChatOps
+
+| Action Name         | Description                                                                                 |
+|---------------------|---------------------------------------------------------------------------------------------|
+| chatops.pr_reminder | Sends a HTTP Post request to a ChatOps endpoint to trigger reminders to the Slack workspace |
+
+
 ## Query Library (WIP)
 
 The following are actions that use the query library.
