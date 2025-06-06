@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from parameterized import parameterized
 
 
 from enums.network_providers import NetworkProviders
@@ -14,6 +15,7 @@ from structs.role_details import RoleDetails
 from structs.router_details import RouterDetails
 from workflows.create_project import (
     create_project,
+    validate_jasmin_args,
     setup_external_networking,
     setup_internal_networking,
 )
@@ -562,6 +564,105 @@ def test_create_project_jasmin_no_users(
 
     # Verify assign_role_to_user was called 0 times
     assert mock_assign_role_to_user.call_count == 0
+
+
+@parameterized.expand(
+    [
+        (
+            "invalid_project_domain",
+            {
+                "project_domain": "stfc",
+                "user_domain": "jasmin",
+                "network": "JASMIN External Cloud Network",
+            },
+        ),
+        (
+            "invalid_user_domain",
+            {
+                "project_domain": "jasmin",
+                "user_domain": "default",
+                "network": "JASMIN External Cloud Network",
+            },
+        ),
+        (
+            "invalid_network",
+            {
+                "project_domain": "jasmin",
+                "user_domain": "jasmin",
+                "network": "Internal",
+            },
+        ),
+    ]
+)
+def test_create_project_invalid_jasmin_args(_, args):
+    # Test data
+    mock_conn = MagicMock()
+    project_name = "JASMIN Project"
+    project_email = "JASMIN@example.com"
+    project_description = "Test Description"
+    project_domain = args["project_domain"]
+    user_domain = args["user_domain"]
+    network = args["network"]
+    number_of_floating_ips = 2
+    number_of_security_group_rules = 200
+    project_immutable = True
+    parent_id = "parent-id"
+    admin_user_list = ["admin1", "admin2"]
+    user_list = ["user1", "user2"]
+
+    # Call the function
+    with pytest.raises(ValueError):
+        create_project(
+            mock_conn,
+            project_name,
+            project_email,
+            project_description,
+            project_domain,
+            user_domain,
+            network,
+            number_of_floating_ips,
+            number_of_security_group_rules,
+            project_immutable,
+            parent_id,
+            admin_user_list,
+            user_list,
+        )
+
+
+@parameterized.expand(
+    [
+        (
+            "invalid_project_domain",
+            {
+                "project_domain": "stfc",
+                "user_domain": "jasmin",
+                "network": "JASMIN External Cloud Network",
+            },
+        ),
+        (
+            "invalid_user_domain",
+            {
+                "project_domain": "jasmin",
+                "user_domain": "default",
+                "network": "JASMIN External Cloud Network",
+            },
+        ),
+        (
+            "invalid_network",
+            {
+                "project_domain": "jasmin",
+                "user_domain": "jasmin",
+                "network": "Internal",
+            },
+        ),
+    ]
+)
+def test_validate_jasmin_args(_, args):
+    # Call the function
+    with pytest.raises(ValueError):
+        validate_jasmin_args(
+            args["project_domain"], args["user_domain"], args["network"]
+        )
 
 
 @patch("workflows.create_project.create_network")
