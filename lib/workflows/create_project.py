@@ -85,6 +85,8 @@ def create_project(
     if not user_list:
         user_list = []
 
+    validate_jasmin_args(project_domain, user_domain, network)
+
     project = create_openstack_project(
         conn,
         ProjectDetails(
@@ -148,6 +150,15 @@ def create_project(
                 role_identifier="user",
             ),
         )
+
+
+def validate_jasmin_args(project_domain: str, user_domain: str, network: str):
+    args = [project_domain, user_domain, network]
+    if any(input in ("jasmin", "JASMIN External Cloud Network") for input in args):
+        if not all(
+            (input in ("jasmin", "JASMIN External Cloud Network") for input in args)
+        ):
+            raise ValueError("Invalid input: JASMIN project/domain/network must match")
 
 
 def setup_external_networking(
