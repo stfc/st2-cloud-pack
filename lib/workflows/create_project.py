@@ -104,7 +104,13 @@ def create_project(
     refresh_security_groups(conn, project["id"])
 
     if network in ("External", "JASMIN External Cloud Network"):
-        setup_external_networking(conn, project, network)
+        setup_external_networking(
+            conn,
+            project,
+            network,
+            number_of_floating_ips,
+            number_of_security_group_rules,
+        )
     elif network == "Internal":
         setup_internal_networking(conn, project)
     else:
@@ -112,22 +118,6 @@ def create_project(
 
     create_http_security_group(conn, project_identifier=project["id"])
     create_https_security_group(conn, project_identifier=project["id"])
-
-    set_quota(
-        conn,
-        QuotaDetails(
-            project_identifier=project["id"],
-            num_floating_ips=number_of_floating_ips,
-            num_security_group_rules=number_of_security_group_rules,
-        ),
-    )
-
-    allocate_floating_ips(
-        conn,
-        network_identifier=network,
-        project_identifier=project["id"],
-        number_to_create=number_of_floating_ips,
-    )
 
     for admin_user in admin_user_list:
         assign_role_to_user(
@@ -162,7 +152,11 @@ def validate_jasmin_args(project_domain: str, user_domain: str, network: str):
 
 
 def setup_external_networking(
-    conn: Connection, project: Project, external_network: str
+    conn: Connection,
+    project: Project,
+    external_network: str,
+    number_of_floating_ips: int,
+    number_of_security_group_rules: int,
 ):
     """
     setup the project's external networking
@@ -208,6 +202,15 @@ def setup_external_networking(
         subnet_identifier=subnet["id"],
     )
 
+    set_quota(
+        conn,
+        QuotaDetails(
+            project_identifier=project["id"],
+            num_floating_ips=number_of_floating_ips,
+            num_security_group_rules=number_of_security_group_rules,
+        ),
+    )
+
     create_network_rbac(
         conn,
         NetworkRbac(
@@ -220,6 +223,13 @@ def setup_external_networking(
     # create default security group rules
     create_external_security_group_rules(
         conn, project_identifier=project["id"], security_group_identifier="default"
+    )
+
+    allocate_floating_ips(
+        conn,
+        network_identifier=network["id"],
+        project_identifier=project["id"],
+        number_to_create=number_of_floating_ips,
     )
 
 
