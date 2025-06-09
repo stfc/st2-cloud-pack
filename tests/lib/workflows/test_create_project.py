@@ -28,13 +28,9 @@ from workflows.create_project import (
 @patch("workflows.create_project.setup_external_networking")
 @patch("workflows.create_project.create_http_security_group")
 @patch("workflows.create_project.create_https_security_group")
-@patch("workflows.create_project.set_quota")
-@patch("workflows.create_project.allocate_floating_ips")
 @patch("workflows.create_project.assign_role_to_user")
 def test_create_project_external(
     mock_assign_role_to_user,
-    mock_allocate_floating_ips,
-    mock_set_quota,
     mock_create_https_security_group,
     mock_create_http_security_group,
     mock_setup_external_networking,
@@ -96,7 +92,11 @@ def test_create_project_external(
     mock_refresh_security_groups.assert_called_once_with(mock_conn, "project-id")
 
     mock_setup_external_networking.assert_called_once_with(
-        mock_conn, mock_project, network
+        mock_conn,
+        mock_project,
+        network,
+        number_of_floating_ips,
+        number_of_security_group_rules,
     )
 
     mock_create_http_security_group.assert_called_once_with(
@@ -105,22 +105,6 @@ def test_create_project_external(
 
     mock_create_https_security_group.assert_called_once_with(
         mock_conn, project_identifier="project-id"
-    )
-
-    mock_set_quota.assert_called_once_with(
-        mock_conn,
-        QuotaDetails(
-            project_identifier="project-id",
-            num_floating_ips=number_of_floating_ips,
-            num_security_group_rules=number_of_security_group_rules,
-        ),
-    )
-
-    mock_allocate_floating_ips.assert_called_once_with(
-        mock_conn,
-        network_identifier="External",
-        project_identifier="project-id",
-        number_to_create=number_of_floating_ips,
     )
 
     # Assert that roles were assigned to the admins
@@ -175,13 +159,9 @@ def test_create_project_external(
 @patch("workflows.create_project.setup_internal_networking")
 @patch("workflows.create_project.create_http_security_group")
 @patch("workflows.create_project.create_https_security_group")
-@patch("workflows.create_project.set_quota")
-@patch("workflows.create_project.allocate_floating_ips")
 @patch("workflows.create_project.assign_role_to_user")
 def test_create_project_internal(
     mock_assign_role_to_user,
-    mock_allocate_floating_ips,
-    mock_set_quota,
     mock_create_https_security_group,
     mock_create_http_security_group,
     mock_setup_internal_networking,
@@ -252,22 +232,6 @@ def test_create_project_internal(
         mock_conn, project_identifier="project-id"
     )
 
-    mock_set_quota.assert_called_once_with(
-        mock_conn,
-        QuotaDetails(
-            project_identifier="project-id",
-            num_floating_ips=number_of_floating_ips,
-            num_security_group_rules=number_of_security_group_rules,
-        ),
-    )
-
-    mock_allocate_floating_ips.assert_called_once_with(
-        mock_conn,
-        network_identifier="Internal",
-        project_identifier="project-id",
-        number_to_create=number_of_floating_ips,
-    )
-
     # Assert that roles were assigned to the admins
     mock_assign_role_to_user.assert_any_call(
         mock_conn,
@@ -320,13 +284,9 @@ def test_create_project_internal(
 @patch("workflows.create_project.setup_external_networking")
 @patch("workflows.create_project.create_http_security_group")
 @patch("workflows.create_project.create_https_security_group")
-@patch("workflows.create_project.set_quota")
-@patch("workflows.create_project.allocate_floating_ips")
 @patch("workflows.create_project.assign_role_to_user")
 def test_create_project_jasmin(
     mock_assign_role_to_user,
-    mock_allocate_floating_ips,
-    mock_set_quota,
     mock_create_https_security_group,
     mock_create_http_security_group,
     mock_setup_external_networking,
@@ -388,7 +348,11 @@ def test_create_project_jasmin(
     mock_refresh_security_groups.assert_called_once_with(mock_conn, "project-id")
 
     mock_setup_external_networking.assert_called_once_with(
-        mock_conn, mock_project, network
+        mock_conn,
+        mock_project,
+        network,
+        number_of_floating_ips,
+        number_of_security_group_rules,
     )
 
     mock_create_http_security_group.assert_called_once_with(
@@ -397,22 +361,6 @@ def test_create_project_jasmin(
 
     mock_create_https_security_group.assert_called_once_with(
         mock_conn, project_identifier="project-id"
-    )
-
-    mock_set_quota.assert_called_once_with(
-        mock_conn,
-        QuotaDetails(
-            project_identifier="project-id",
-            num_floating_ips=number_of_floating_ips,
-            num_security_group_rules=number_of_security_group_rules,
-        ),
-    )
-
-    mock_allocate_floating_ips.assert_called_once_with(
-        mock_conn,
-        network_identifier="JASMIN External Cloud Network",
-        project_identifier="project-id",
-        number_to_create=number_of_floating_ips,
     )
 
     # Assert that roles were assigned to the admins
@@ -467,13 +415,9 @@ def test_create_project_jasmin(
 @patch("workflows.create_project.setup_external_networking")
 @patch("workflows.create_project.create_http_security_group")
 @patch("workflows.create_project.create_https_security_group")
-@patch("workflows.create_project.set_quota")
-@patch("workflows.create_project.allocate_floating_ips")
 @patch("workflows.create_project.assign_role_to_user")
 def test_create_project_jasmin_no_users(
     mock_assign_role_to_user,
-    mock_allocate_floating_ips,
-    mock_set_quota,
     mock_create_https_security_group,
     mock_create_http_security_group,
     mock_setup_external_networking,
@@ -535,7 +479,11 @@ def test_create_project_jasmin_no_users(
     mock_refresh_security_groups.assert_called_once_with(mock_conn, "project-id")
 
     mock_setup_external_networking.assert_called_once_with(
-        mock_conn, mock_project, network
+        mock_conn,
+        mock_project,
+        network,
+        number_of_floating_ips,
+        number_of_security_group_rules,
     )
 
     mock_create_http_security_group.assert_called_once_with(
@@ -544,22 +492,6 @@ def test_create_project_jasmin_no_users(
 
     mock_create_https_security_group.assert_called_once_with(
         mock_conn, project_identifier="project-id"
-    )
-
-    mock_set_quota.assert_called_once_with(
-        mock_conn,
-        QuotaDetails(
-            project_identifier="project-id",
-            num_floating_ips=number_of_floating_ips,
-            num_security_group_rules=number_of_security_group_rules,
-        ),
-    )
-
-    mock_allocate_floating_ips.assert_called_once_with(
-        mock_conn,
-        network_identifier="JASMIN External Cloud Network",
-        project_identifier="project-id",
-        number_to_create=number_of_floating_ips,
     )
 
     # Verify assign_role_to_user was called 0 times
@@ -669,11 +601,15 @@ def test_validate_jasmin_args(_, args):
 @patch("workflows.create_project.create_router")
 @patch("workflows.create_project.create_subnet")
 @patch("workflows.create_project.add_interface_to_router")
+@patch("workflows.create_project.set_quota")
 @patch("workflows.create_project.create_network_rbac")
 @patch("workflows.create_project.create_external_security_group_rules")
+@patch("workflows.create_project.allocate_floating_ips")
 def test_setup_external_networking(
+    mock_allocate_floating_ips,
     mock_create_external_security_group_rules,
     mock_create_network_rbac,
+    mock_set_quota,
     mock_add_interface_to_router,
     mock_create_subnet,
     mock_create_router,
@@ -690,9 +626,17 @@ def test_setup_external_networking(
     mock_project.name = "Test Project"
     mock_project.__getitem__.side_effect = lambda key: {"id": "project-id"}[key]
     network = "External"
+    number_of_floating_ips = 2
+    number_of_security_group_rules = 200
 
     # Call the function
-    setup_external_networking(mock_conn, mock_project, network)
+    setup_external_networking(
+        mock_conn,
+        mock_project,
+        network,
+        number_of_floating_ips,
+        number_of_security_group_rules,
+    )
 
     # Assertions to ensure the functions were called with correct parameters
     mock_create_network.assert_called_once_with(
@@ -717,6 +661,7 @@ def test_setup_external_networking(
             is_distributed=False,
         ),
     )
+
     mock_create_subnet.assert_called_once_with(
         mock_conn,
         network_identifier="network-id",
@@ -724,11 +669,21 @@ def test_setup_external_networking(
         subnet_description="",
         dhcp_enabled=True,
     )
+
     mock_add_interface_to_router.assert_called_once_with(
         mock_conn,
         project_identifier="project-id",
         router_identifier="router-id",
         subnet_identifier="subnet-id",
+    )
+
+    mock_set_quota.assert_called_once_with(
+        mock_conn,
+        QuotaDetails(
+            project_identifier="project-id",
+            num_floating_ips=number_of_floating_ips,
+            num_security_group_rules=number_of_security_group_rules,
+        ),
     )
 
     mock_create_network_rbac.assert_called_once_with(
@@ -742,6 +697,13 @@ def test_setup_external_networking(
 
     mock_create_external_security_group_rules.assert_called_once_with(
         mock_conn, project_identifier="project-id", security_group_identifier="default"
+    )
+
+    mock_allocate_floating_ips.assert_called_once_with(
+        mock_conn,
+        network_identifier="network-id",
+        project_identifier="project-id",
+        number_to_create=number_of_floating_ips,
     )
 
 
