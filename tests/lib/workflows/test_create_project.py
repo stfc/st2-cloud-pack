@@ -701,7 +701,7 @@ def test_setup_external_networking(
 
     mock_allocate_floating_ips.assert_called_once_with(
         mock_conn,
-        network_identifier="network-id",
+        network_identifier="External",
         project_identifier="project-id",
         number_to_create=number_of_floating_ips,
     )
