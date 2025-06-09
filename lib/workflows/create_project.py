@@ -227,7 +227,7 @@ def setup_external_networking(
 
     allocate_floating_ips(
         conn,
-        network_identifier=network["id"],
+        network_identifier=external_network,
         project_identifier=project["id"],
         number_to_create=number_of_floating_ips,
     )
