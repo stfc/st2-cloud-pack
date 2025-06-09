@@ -64,7 +64,6 @@ class TestOpenstackActions(OpenstackActionTestBase):
         mock_openstack_connection.return_value.__enter__.return_value = mock_conn
 
         with patch.object(self.action, "parse_configs") as mock_parse_configs:
-
             mock_parse_configs.return_value = {
                 "kwarg1": "foo",
                 "kwarg2": "bar",
