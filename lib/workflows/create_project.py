@@ -51,14 +51,14 @@ def create_project(
     user_list: Optional[List[str]] = None,
 ):
     """
-    create an Openstack project
-    :param conn: Openstack Connection
+    Creates an OpenStack project.
+    :param conn: OpenStack connection
     :type conn: Connection
     :param project_name: Project name
     :type project_name: str
     :param project_email: Contact email for project
     :type project_email: str
-    :param project_description: Project Description
+    :param project_description: Project description
     :type project_description: str
     :param project_domain: Project domain
     :type project_domain: str
@@ -68,7 +68,7 @@ def create_project(
     :type network: str
     :param number_of_floating_ips: Floating IP quota for project
     :type number_of_floating_ips: int
-    :param number_of_security_group_rules: Security Group quota for project
+    :param number_of_security_group_rules: Security group quota for project
     :type number_of_security_group_rules: int
     :param project_immutable: Project is immutable or not
     :type project_immutable: bool
@@ -143,6 +143,17 @@ def create_project(
 
 
 def validate_jasmin_args(project_domain: str, user_domain: str, network: str):
+    """
+    Validates that the given arguments are valid for a JASMIN project, i.e.
+    if a JASMIN-specific argument has been supplied, the applicable arguments
+    must match.
+    :param project_domain: Project domain
+    :type project_domain: str
+    :param user_domain: User domain
+    :type user_domain: str
+    :param network: Cloud network
+    :type network: str
+    """
     args = [project_domain, user_domain, network]
     if any(input in ("jasmin", "JASMIN External Cloud Network") for input in args):
         if not all(
@@ -159,10 +170,17 @@ def setup_external_networking(
     number_of_security_group_rules: int,
 ):
     """
-    setup the project's external networking
-    :param conn: Openstack connection object
-    :param project: Openstack project object
-    :param external_network: External Cloud network string
+    Setup the project's external networking.
+    :param conn: OpenStack connection object
+    :type conn: Connection
+    :param project: OpenStack project object
+    :type project: Project
+    :param external_network: External Cloud network
+    :type external_network: str
+    :param number_of_floating_ips: Floating IP quota for project
+    :type number_of_floating_ips: int
+    :param number_of_security_group_rules: Security group quota for project
+    :type number_of_security_group_rules: int
     """
     network = create_network(
         conn,
@@ -235,9 +253,11 @@ def setup_external_networking(
 
 def setup_internal_networking(conn: Connection, project: Project):
     """
-    setup the project's internal networking
-    :param conn: Openstack connection object
-    :param project: Openstack project object
+    Setup the project's internal networking.
+    :param conn: OpenStack connection object
+    :type conn: Connection
+    :param project: OpenStack project object
+    :type project: Project
     """
     create_network_rbac(
         conn,

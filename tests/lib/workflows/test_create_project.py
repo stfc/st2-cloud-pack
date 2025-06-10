@@ -37,6 +37,9 @@ def test_create_project_external(
     mock_refresh_security_groups,
     mock_create_openstack_project,
 ):
+    """
+    Test the creation of an external OpenStack project.
+    """
     # Mock the return value for project
     mock_project = MagicMock()
     mock_project.name = "Test Project"
@@ -168,6 +171,9 @@ def test_create_project_internal(
     mock_refresh_security_groups,
     mock_create_openstack_project,
 ):
+    """
+    Test the creation of an internal OpenStack project.
+    """
     # Mock the return value for project
     mock_project = MagicMock()
     mock_project.name = "Test Project"
@@ -293,6 +299,9 @@ def test_create_project_jasmin(
     mock_refresh_security_groups,
     mock_create_openstack_project,
 ):
+    """
+    Test the creation of a JASMIN external OpenStack project.
+    """
     # Mock the return value for project
     mock_project = MagicMock()
     mock_project.name = "Test Project"
@@ -424,6 +433,9 @@ def test_create_project_jasmin_no_users(
     mock_refresh_security_groups,
     mock_create_openstack_project,
 ):
+    """
+    Test the creation of a JASMIN OpenStack project without inputting user lists.
+    """
     # Mock the return value for project
     mock_project = MagicMock()
     mock_project.name = "Test Project"
@@ -527,6 +539,9 @@ def test_create_project_jasmin_no_users(
     ]
 )
 def test_create_project_invalid_jasmin_args(_, args):
+    """
+    Test the validation of non-matching JASMIN-specific arguments during project creation.
+    """
     # Test data
     mock_conn = MagicMock()
     project_name = "JASMIN Project"
@@ -590,6 +605,9 @@ def test_create_project_invalid_jasmin_args(_, args):
     ]
 )
 def test_validate_jasmin_args(_, args):
+    """
+    Tests the function responsible for validating JASMIN-specific arguments.
+    """
     # Call the function
     with pytest.raises(ValueError):
         validate_jasmin_args(
@@ -615,6 +633,9 @@ def test_setup_external_networking(
     mock_create_router,
     mock_create_network,
 ):
+    """
+    Test the setup of networking for external projects.
+    """
     # Mock the return values for network, router, and subnet
     mock_create_network.return_value = {"id": "network-id"}
     mock_create_router.return_value = {"id": "router-id"}
@@ -713,6 +734,9 @@ def test_setup_internal_networking(
     mock_create_internal_security_group_rules,
     mock_create_network_rbac,
 ):
+    """
+    Test the setup of networking for internal projects.
+    """
     # Test data
     mock_conn = MagicMock()
     mock_project = MagicMock()
@@ -739,7 +763,7 @@ def test_setup_internal_networking(
 
 def test_project_create_raise_unknown_network_type():
     """
-    Test project creation with unknown network type
+    Test project creation with an unknown network type.
     """
     mock_conn = MagicMock()
     mock_project = "mock_project"
