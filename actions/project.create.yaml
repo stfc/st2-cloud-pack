@@ -58,14 +58,22 @@ parameters:
     default: []
     type: array
     description: List of Users (IDs or Names) to give local user access
-  networking_type:
-    description: Type of networking, internal or external
+  user_domain:
+    description: Project user domain
     type: string
-    default: internal
+    default: stfc
     enum:
-      - internal
-      - external
+      - stfc
       - jasmin
+      - default
+  network:
+    description: Set cloud network, (internal, external, JASMIN)
+    type: string
+    default: Internal
+    enum:
+      - Internal
+      - External
+      - JASMIN External Cloud Network
   number_of_floating_ips:
     required: true
     type: integer
