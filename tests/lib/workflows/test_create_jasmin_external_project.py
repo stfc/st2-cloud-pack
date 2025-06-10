@@ -9,24 +9,24 @@ from structs.project_details import ProjectDetails
 from structs.quota_details import QuotaDetails
 from structs.role_details import RoleDetails
 from structs.router_details import RouterDetails
-from workflows.create_jasmin_external_project import create_jasmin_external_project
+from workflows.create_jasmin_project import create_jasmin_external_project
 
 
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-locals
-@patch("workflows.create_jasmin_external_project.create_project")
-@patch("workflows.create_jasmin_external_project.create_network")
-@patch("workflows.create_jasmin_external_project.create_router")
-@patch("workflows.create_jasmin_external_project.create_subnet")
-@patch("workflows.create_jasmin_external_project.add_interface_to_router")
-@patch("workflows.create_jasmin_external_project.refresh_security_groups")
-@patch("workflows.create_jasmin_external_project.set_quota")
-@patch("workflows.create_jasmin_external_project.create_external_security_group_rules")
-@patch("workflows.create_jasmin_external_project.create_http_security_group")
-@patch("workflows.create_jasmin_external_project.create_https_security_group")
-@patch("workflows.create_jasmin_external_project.create_network_rbac")
-@patch("workflows.create_jasmin_external_project.allocate_floating_ips")
-@patch("workflows.create_jasmin_external_project.assign_role_to_user")
+@patch("workflows.create_jasmin_project.create_project")
+@patch("workflows.create_jasmin_project.create_network")
+@patch("workflows.create_jasmin_project.create_router")
+@patch("workflows.create_jasmin_project.create_subnet")
+@patch("workflows.create_jasmin_project.add_interface_to_router")
+@patch("workflows.create_jasmin_project.refresh_security_groups")
+@patch("workflows.create_jasmin_project.set_quota")
+@patch("workflows.create_jasmin_project.create_external_security_group_rules")
+@patch("workflows.create_jasmin_project.create_http_security_group")
+@patch("workflows.create_jasmin_project.create_https_security_group")
+@patch("workflows.create_jasmin_project.create_network_rbac")
+@patch("workflows.create_jasmin_project.allocate_floating_ips")
+@patch("workflows.create_jasmin_project.assign_role_to_user")
 def test_create_jasmin_external_project(
     mock_assign_role_to_user,
     mock_allocate_floating_ips,
@@ -211,19 +211,19 @@ def test_create_jasmin_external_project(
     assert mock_assign_role_to_user.call_count == 4
 
 
-@patch("workflows.create_jasmin_external_project.create_project")
-@patch("workflows.create_jasmin_external_project.create_network")
-@patch("workflows.create_jasmin_external_project.create_router")
-@patch("workflows.create_jasmin_external_project.create_subnet")
-@patch("workflows.create_jasmin_external_project.add_interface_to_router")
-@patch("workflows.create_jasmin_external_project.refresh_security_groups")
-@patch("workflows.create_jasmin_external_project.set_quota")
-@patch("workflows.create_jasmin_external_project.create_external_security_group_rules")
-@patch("workflows.create_jasmin_external_project.create_http_security_group")
-@patch("workflows.create_jasmin_external_project.create_https_security_group")
-@patch("workflows.create_jasmin_external_project.create_network_rbac")
-@patch("workflows.create_jasmin_external_project.allocate_floating_ips")
-@patch("workflows.create_jasmin_external_project.assign_role_to_user")
+@patch("workflows.create_jasmin_project.create_project")
+@patch("workflows.create_jasmin_project.create_network")
+@patch("workflows.create_jasmin_project.create_router")
+@patch("workflows.create_jasmin_project.create_subnet")
+@patch("workflows.create_jasmin_project.add_interface_to_router")
+@patch("workflows.create_jasmin_project.refresh_security_groups")
+@patch("workflows.create_jasmin_project.set_quota")
+@patch("workflows.create_jasmin_project.create_external_security_group_rules")
+@patch("workflows.create_jasmin_project.create_http_security_group")
+@patch("workflows.create_jasmin_project.create_https_security_group")
+@patch("workflows.create_jasmin_project.create_network_rbac")
+@patch("workflows.create_jasmin_project.allocate_floating_ips")
+@patch("workflows.create_jasmin_project.assign_role_to_user")
 def test_create_jasmin_external_project_no_users(
     mock_assign_role_to_user,
     mock_allocate_floating_ips,
