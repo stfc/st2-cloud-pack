@@ -1,7 +1,11 @@
 from unittest.mock import MagicMock
 import pytest
 
-from openstack_api.openstack_router import add_interface_to_router, create_router
+from openstack_api.openstack_router import (
+    add_interface_to_router,
+    check_for_internal_routers,
+    create_router,
+)
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from structs.router_details import RouterDetails
 
@@ -178,3 +182,53 @@ def test_create_router_successful():
         is_ha=True,
     )
     assert res == mock_conn.network.create_router.return_value
+
+
+def test_check_internal_router_found():
+    """
+    Test router with addresses 172.16 are returned
+    """
+    mock_router_1 = MagicMock()
+    mock_router_1.id = "xxx-yyy-zzz"
+    mock_router_1.external_gateway_info = {
+        "external_fixed_ips": [
+            {"ip_address": "172.16.1.1"},
+            {"ip_address": "10.10.1.1"},
+        ]
+    }
+    mock_router_2 = MagicMock()
+    mock_router_2.id = "aaa-bbb-ccc"
+    mock_router_2.external_gateway_info = {
+        "external_fixed_ips": [
+            {"ip_address": "130.80.1.1"},
+        ]
+    }
+    mock_conn = MagicMock()
+    mock_conn.network.routers.return_value = [mock_router_1, mock_router_2]
+
+    res = check_for_internal_routers(mock_conn)
+
+    assert res == [mock_router_1]
+
+
+def test_check_internal_router_not_found():
+    """
+    Test routers not starting 172.16 are not returned
+    """
+    mock_router_1 = MagicMock()
+    mock_router_1.id = "xxx-yyy-zzz"
+    mock_router_1.external_gateway_info = {
+        "external_fixed_ips": [
+            {"ip_address": "192.168.1.1"},
+            {"ip_address": "10.10.1.1"},
+        ]
+    }
+    mock_router_2 = MagicMock()
+    mock_router_2.id = "aaa-bbb-ccc"
+    mock_router_2.external_gateway_info = None
+    mock_conn = MagicMock()
+    mock_conn.network.routers.return_value = [mock_router_1, mock_router_2]
+
+    res = check_for_internal_routers(mock_conn)
+
+    assert res == []
