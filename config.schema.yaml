@@ -155,6 +155,18 @@ alertmanager_accounts:
         secret: false
         default: ""
 
+router_sensor:
+  description: "Openstack Router sensor specific settings."
+  type: "object"
+  required: false
+  additionalProperties: false
+  properties:
+    cloud_account:
+      type: "string"
+      description: "cloud account to use - set in clouds.ymal"
+      default: "dev"
+      required: true
+
 hypervisor_sensor:
   description: "Hypervisor sensor specific settings."
   type: "object"
