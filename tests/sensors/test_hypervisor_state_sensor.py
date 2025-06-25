@@ -6,9 +6,15 @@ from sensors.src.hypervisor_state_sensor import HypervisorStateSensor
 
 @pytest.fixture(name="sensor")
 def state_sensor_fixture():
+    """
+    Fixture for sensor config
+    """
     return HypervisorStateSensor(
         sensor_service=MagicMock(),
-        config={"hypervisor_sensor": {"cloud_account": "dev", "uptime_limit": 180}},
+        config={
+            "sensor_cloud_account": "dev",
+            "hypervisor_sensor": {"uptime_limit": 180},
+        },
         poll_interval=10,
     )
 

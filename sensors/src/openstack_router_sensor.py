@@ -21,7 +21,7 @@ class OpenstackRouterSensor(PollingSensor):
             sensor_service=sensor_service, config=config, poll_interval=poll_interval
         )
         self._log = self._sensor_service.get_logger(__name__)
-        self.cloud_account = self.config["router_sensor"].get("cloud_account", "dev")
+        self.cloud_account = self.config["sensor_cloud_account"]
 
     def setup(self):
         """

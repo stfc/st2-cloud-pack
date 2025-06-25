@@ -10,7 +10,7 @@ def state_sensor_fixture():
     """
     return OpenstackRouterSensor(
         sensor_service=MagicMock(),
-        config={"router_sensor": {"cloud_account": "dev"}},
+        config={"sensor_cloud_account": "dev"},
         poll_interval=10,
     )
 
