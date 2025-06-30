@@ -21,7 +21,6 @@ def schedule_downtime(
     is_fixed: bool,
     duration: Optional[int] = None,
 ):
-
     # Local UK time to Unix timestamp
     start_datetime = datetime.strptime(start_time, "%d/%m/%y %H:%M:%S")
     end_datetime = datetime.strptime(end_time, "%d/%m/%y %H:%M:%S")
@@ -48,7 +47,6 @@ def schedule_downtime(
 
 
 def remove_downtime(icinga_account: IcingaAccount, object_type: str, name: str):
-
     downtime.remove_downtime(
         icinga_account=icinga_account,
         object_type=IcingaObject[object_type.upper()],
