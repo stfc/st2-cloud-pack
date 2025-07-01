@@ -88,7 +88,7 @@ def create_project(
     if not user_list:
         user_list = []
 
-    validate_jasmin_args(project_domain, user_domain, network)
+    # validate_jasmin_args(project_domain, user_domain, network)
 
     project = create_openstack_project(
         conn,
@@ -132,17 +132,20 @@ def create_project(
                 role_identifier="admin",
             ),
         )
+        logger.info("Added %s as project admin", admin_user)
 
     for user in user_list:
         assign_role_to_user(
             conn,
             RoleDetails(
                 user_identifier=user,
-                user_domain=user_domain,
+                user_domain=UserDomains.from_string(user_domain),
                 project_identifier=project["id"],
                 role_identifier="user",
             ),
         )
+        logger.info("Added %s as project user", user)
+    logger.info("Competed building project %s", project_name)
 
 
 def validate_jasmin_args(project_domain: str, user_domain: str, network: str):
@@ -199,6 +202,28 @@ def setup_external_networking(
 
     logger.info("Created network: %s", network.id)
 
+    external_rbac_policy = create_network_rbac(
+        conn,
+        NetworkRbac(
+            project_identifier=project["id"],
+            network_identifier=external_network,  # external-network?
+            action=RbacNetworkActions.EXTERNAL,  # RbacNetworkActions.EXTERNAL
+        ),
+    )
+
+    logger.info("Created external network rbac: %s", external_rbac_policy.id)
+
+    private_rbac_policy = create_network_rbac(
+        conn,
+        NetworkRbac(
+            project_identifier=project["id"],
+            network_identifier=network["id"],
+            action=RbacNetworkActions.SHARED,
+        ),
+    )
+
+    logger.info("Created private network rbac: %s", private_rbac_policy.id)
+
     router = create_router(
         conn,
         RouterDetails(
@@ -238,21 +263,13 @@ def setup_external_networking(
         ),
     )
 
-    rbac_policy = create_network_rbac(
-        conn,
-        NetworkRbac(
-            project_identifier=project["id"],
-            network_identifier=network["id"],
-            action=RbacNetworkActions.SHARED,
-        ),
-    )
-
-    logger.info("Created network rbac: %s", rbac_policy.id)
-
     # create default security group rules
-    create_external_security_group_rules(
-        conn, project_identifier=project["id"], security_group_identifier="default"
-    )
+    if external_network == "External":
+        create_external_security_group_rules(
+            conn, project_identifier=project["id"], security_group_identifier="default"
+        )
+    elif external_network == "Jasmin":
+        create_internal_security_group_rules(conn, project["id"], "default")
 
     logger.info("Created default security group")
 

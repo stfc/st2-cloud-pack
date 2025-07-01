@@ -49,7 +49,7 @@ def _find_role_details(
     if not details.user_identifier:
         raise MissingMandatoryParamError("A user name or ID must be provided")
 
-    domain = details.user_domain.value.lower().strip()
+    domain = details.user_domain.name.lower().strip()
 
     project = conn.identity.find_project(
         details.project_identifier, ignore_missing=False
