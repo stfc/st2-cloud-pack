@@ -8,15 +8,12 @@ tabulate
 requests
 python-dateutil
 Jinja2
-css-inline
 pytz
 jira
 paramiko
+css-inline == 0.14.6
 
 # for tests
-nose
-parameterized
 pytest
-pytest-cov
 pytest-freezer
 munch

@@ -1,6 +1,5 @@
 from unittest import mock
-
-from nose.tools import raises
+import pytest
 
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from openstack_api.openstack_connection import OpenstackConnection
@@ -27,34 +26,34 @@ def test_openstack_connection_uses_cloud_name():
             patched_connect.assert_called_once_with(cloud=expected_cloud)
 
 
-@raises(MissingMandatoryParamError)
 def test_connection_throws_for_no_cloud_name():
     """
     Tests a None type will throw if used as the account name
     """
-    with mock.patch("openstack_api.openstack_connection.connect"):
-        with OpenstackConnection(None):
-            pass
+    with pytest.raises(MissingMandatoryParamError):
+        with mock.patch("openstack_api.openstack_connection.connect"):
+            with OpenstackConnection(None):
+                pass
 
 
-@raises(MissingMandatoryParamError)
 def test_connection_throws_for_empty_cloud_name():
     """
     Tests an empty string will throw for the cloud name
     """
-    with mock.patch("openstack_api.openstack_connection.connect"):
-        with OpenstackConnection(""):
-            pass
+    with pytest.raises(MissingMandatoryParamError):
+        with mock.patch("openstack_api.openstack_connection.connect"):
+            with OpenstackConnection(""):
+                pass
 
 
-@raises(MissingMandatoryParamError)
 def test_connection_throws_for_whitespace_cloud_name():
     """
     Tests a whitespace string will throw for the cloud name
     """
-    with mock.patch("openstack_api.openstack_connection.connect"):
-        with OpenstackConnection(" \t"):
-            pass
+    with pytest.raises(MissingMandatoryParamError):
+        with mock.patch("openstack_api.openstack_connection.connect"):
+            with OpenstackConnection(" \t"):
+                pass
 
 
 def test_openstack_connection_disconnects():
