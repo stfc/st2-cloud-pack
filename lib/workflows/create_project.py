@@ -1,3 +1,4 @@
+import logging
 from typing import Optional, List
 
 from enums.network_providers import NetworkProviders
@@ -31,6 +32,8 @@ from structs.project_details import ProjectDetails
 from structs.quota_details import QuotaDetails
 from structs.role_details import RoleDetails
 from structs.router_details import RouterDetails
+
+logger = logging.getLogger(__name__)
 
 
 # pylint: disable=too-many-arguments
@@ -194,6 +197,8 @@ def setup_external_networking(
         ),
     )
 
+    logger.info("Created network: %s", network.id)
+
     router = create_router(
         conn,
         RouterDetails(
@@ -205,6 +210,8 @@ def setup_external_networking(
         ),
     )
 
+    logger.info("Created router: %s", router.id)
+
     subnet = create_subnet(
         conn,
         network_identifier=network["id"],
@@ -212,6 +219,8 @@ def setup_external_networking(
         subnet_description="",
         dhcp_enabled=True,
     )
+
+    logger.info("Created subnet: %s", subnet.id)
 
     add_interface_to_router(
         conn,
@@ -229,7 +238,7 @@ def setup_external_networking(
         ),
     )
 
-    create_network_rbac(
+    rbac_policy = create_network_rbac(
         conn,
         NetworkRbac(
             project_identifier=project["id"],
@@ -238,10 +247,14 @@ def setup_external_networking(
         ),
     )
 
+    logger.info("Created network rbac: %s", rbac_policy.id)
+
     # create default security group rules
     create_external_security_group_rules(
         conn, project_identifier=project["id"], security_group_identifier="default"
     )
+
+    logger.info("Created default security group")
 
     allocate_floating_ips(
         conn,
@@ -249,6 +262,8 @@ def setup_external_networking(
         project_identifier=project["id"],
         number_to_create=number_of_floating_ips,
     )
+
+    logger.info("Allocated %s floating ips", number_of_floating_ips)
 
 
 def setup_internal_networking(conn: Connection, project: Project):
