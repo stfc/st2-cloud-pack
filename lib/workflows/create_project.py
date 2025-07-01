@@ -193,7 +193,7 @@ def setup_external_networking(
         NetworkDetails(
             name=f"{project.name}-network",
             description="",
-            project_identifier=project["id"],
+            project_identifier=project.id,
             provider_network_type=NetworkProviders.VXLAN,
             port_security_enabled=True,
             has_external_router=False,
@@ -205,9 +205,9 @@ def setup_external_networking(
     external_rbac_policy = create_network_rbac(
         conn,
         NetworkRbac(
-            project_identifier=project["id"],
-            network_identifier=external_network,  # external-network?
-            action=RbacNetworkActions.EXTERNAL,  # RbacNetworkActions.EXTERNAL
+            project_identifier=project.id,
+            network_identifier=external_network,
+            action=RbacNetworkActions.EXTERNAL,
         ),
     )
 
@@ -216,8 +216,8 @@ def setup_external_networking(
     private_rbac_policy = create_network_rbac(
         conn,
         NetworkRbac(
-            project_identifier=project["id"],
-            network_identifier=network["id"],
+            project_identifier=project.id,
+            network_identifier=network.id,
             action=RbacNetworkActions.SHARED,
         ),
     )
@@ -229,7 +229,7 @@ def setup_external_networking(
         RouterDetails(
             router_name=f"{project.name}-router",
             router_description="",
-            project_identifier=project["id"],
+            project_identifier=project.id,
             external_gateway=external_network,
             is_distributed=False,
         ),
@@ -239,7 +239,7 @@ def setup_external_networking(
 
     subnet = create_subnet(
         conn,
-        network_identifier=network["id"],
+        network_identifier=network.id,
         subnet_name=f"{project.name}-subnet",
         subnet_description="",
         dhcp_enabled=True,
@@ -249,15 +249,15 @@ def setup_external_networking(
 
     add_interface_to_router(
         conn,
-        project_identifier=project["id"],
-        router_identifier=router["id"],
-        subnet_identifier=subnet["id"],
+        project_identifier=project.id,
+        router_identifier=router.id,
+        subnet_identifier=subnet.id,
     )
 
     set_quota(
         conn,
         QuotaDetails(
-            project_identifier=project["id"],
+            project_identifier=project.id,
             num_floating_ips=number_of_floating_ips,
             num_security_group_rules=number_of_security_group_rules,
         ),
@@ -266,17 +266,19 @@ def setup_external_networking(
     # create default security group rules
     if external_network == "External":
         create_external_security_group_rules(
-            conn, project_identifier=project["id"], security_group_identifier="default"
+            conn, project_identifier=project.id, security_group_identifier="default"
         )
     elif external_network == "Jasmin":
-        create_internal_security_group_rules(conn, project["id"], "default")
+        create_internal_security_group_rules(
+            conn, project_identifier=project.id, security_group_identifier="default"
+        )
 
     logger.info("Created default security group")
 
     allocate_floating_ips(
         conn,
         network_identifier=external_network,
-        project_identifier=project["id"],
+        project_identifier=project.id,
         number_to_create=number_of_floating_ips,
     )
 

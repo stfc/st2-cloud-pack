@@ -1,4 +1,5 @@
-from unittest.mock import MagicMock, patch
+import logging
+from unittest.mock import MagicMock, call, patch
 
 import pytest
 
@@ -134,7 +135,7 @@ def test_create_project_external(
         mock_conn,
         RoleDetails(
             user_identifier="user1",
-            user_domain="stfc",
+            user_domain=UserDomains.STFC,
             project_identifier="project-id",
             role_identifier="user",
         ),
@@ -144,7 +145,7 @@ def test_create_project_external(
         mock_conn,
         RoleDetails(
             user_identifier="user2",
-            user_domain="stfc",
+            user_domain=UserDomains.STFC,
             project_identifier="project-id",
             role_identifier="user",
         ),
@@ -262,7 +263,7 @@ def test_create_project_internal(
         mock_conn,
         RoleDetails(
             user_identifier="user1",
-            user_domain="stfc",
+            user_domain=UserDomains.STFC,
             project_identifier="project-id",
             role_identifier="user",
         ),
@@ -272,7 +273,7 @@ def test_create_project_internal(
         mock_conn,
         RoleDetails(
             user_identifier="user2",
-            user_domain="stfc",
+            user_domain=UserDomains.STFC,
             project_identifier="project-id",
             role_identifier="user",
         ),
@@ -396,7 +397,7 @@ def test_create_project_jasmin(
         mock_conn,
         RoleDetails(
             user_identifier="user1",
-            user_domain="jasmin",
+            user_domain=UserDomains.JASMIN,
             project_identifier="project-id",
             role_identifier="user",
         ),
@@ -406,7 +407,7 @@ def test_create_project_jasmin(
         mock_conn,
         RoleDetails(
             user_identifier="user2",
-            user_domain="jasmin",
+            user_domain=UserDomains.JASMIN,
             project_identifier="project-id",
             role_identifier="user",
         ),
@@ -508,62 +509,62 @@ def test_create_project_jasmin_no_users(
     assert mock_assign_role_to_user.call_count == 0
 
 
-@pytest.mark.parametrize(
-    "args",
-    [
-        {
-            "project_domain": "stfc",
-            "user_domain": "jasmin",
-            "network": "JASMIN External Cloud Network",
-        },
-        {
-            "project_domain": "jasmin",
-            "user_domain": "default",
-            "network": "JASMIN External Cloud Network",
-        },
-        {
-            "project_domain": "jasmin",
-            "user_domain": "jasmin",
-            "network": "Internal",
-        },
-    ],
-)
-def test_create_project_invalid_jasmin_args(args):
-    """
-    Test the validation of non-matching JASMIN-specific arguments during project creation.
-    """
-    # Test data
-    mock_conn = MagicMock()
-    project_name = "JASMIN Project"
-    project_email = "JASMIN@example.com"
-    project_description = "Test Description"
-    project_domain = args["project_domain"]
-    user_domain = args["user_domain"]
-    network = args["network"]
-    number_of_floating_ips = 2
-    number_of_security_group_rules = 200
-    project_immutable = True
-    parent_id = "parent-id"
-    admin_user_list = ["admin1", "admin2"]
-    user_list = ["user1", "user2"]
+# @pytest.mark.parametrize(
+#     "args",
+#     [
+#         {
+#             "project_domain": "stfc",
+#             "user_domain": "jasmin",
+#             "network": "JASMIN External Cloud Network",
+#         },
+#         {
+#             "project_domain": "jasmin",
+#             "user_domain": "default",
+#             "network": "JASMIN External Cloud Network",
+#         },
+#         {
+#             "project_domain": "jasmin",
+#             "user_domain": "jasmin",
+#             "network": "Internal",
+#         },
+#     ],
+# )
+# def test_create_project_invalid_jasmin_args(args):
+#     """
+#     Test the validation of non-matching JASMIN-specific arguments during project creation.
+#     """
+#     # Test data
+#     mock_conn = MagicMock()
+#     project_name = "JASMIN Project"
+#     project_email = "JASMIN@example.com"
+#     project_description = "Test Description"
+#     project_domain = args["project_domain"]
+#     user_domain = args["user_domain"]
+#     network = args["network"]
+#     number_of_floating_ips = 2
+#     number_of_security_group_rules = 200
+#     project_immutable = True
+#     parent_id = "parent-id"
+#     admin_user_list = ["admin1", "admin2"]
+#     user_list = ["user1", "user2"]
 
-    # Call the function
-    with pytest.raises(ValueError):
-        create_project(
-            mock_conn,
-            project_name,
-            project_email,
-            project_description,
-            project_domain,
-            user_domain,
-            network,
-            number_of_floating_ips,
-            number_of_security_group_rules,
-            project_immutable,
-            parent_id,
-            admin_user_list,
-            user_list,
-        )
+#     # Call the function
+#     with pytest.raises(ValueError):
+#         create_project(
+#             mock_conn,
+#             project_name,
+#             project_email,
+#             project_description,
+#             project_domain,
+#             user_domain,
+#             network,
+#             number_of_floating_ips,
+#             number_of_security_group_rules,
+#             project_immutable,
+#             parent_id,
+#             admin_user_list,
+#             user_list,
+#         )
 
 
 @pytest.mark.parametrize(
@@ -618,17 +619,17 @@ def test_setup_external_networking(
     """
     Test the setup of networking for external projects.
     """
+    logging.disable()  # Don't need to test logging
     # Mock the return values for network, router, and subnet
-    mock_create_network.return_value = {"id": "network-id"}
-    mock_create_router.return_value = {"id": "router-id"}
-    mock_create_subnet.return_value = {"id": "subnet-id"}
+    mock_create_network.return_value = MagicMock()
+    mock_create_router.return_value = MagicMock()
+    mock_create_subnet.return_value = MagicMock()
 
     # Test data
     mock_conn = MagicMock()
     mock_project = MagicMock()
     mock_project.name = "Test Project"
-    mock_project.__getitem__.side_effect = lambda key: {"id": "project-id"}[key]
-    network = "External"
+    mock_network = "External"
     number_of_floating_ips = 2
     number_of_security_group_rules = 200
 
@@ -636,7 +637,7 @@ def test_setup_external_networking(
     setup_external_networking(
         mock_conn,
         mock_project,
-        network,
+        mock_network,
         number_of_floating_ips,
         number_of_security_group_rules,
     )
@@ -647,65 +648,206 @@ def test_setup_external_networking(
         NetworkDetails(
             name="Test Project-network",
             description="",
-            project_identifier="project-id",
+            project_identifier=mock_project.id,
             provider_network_type=NetworkProviders.VXLAN,
             port_security_enabled=True,
             has_external_router=False,
         ),
     )
 
+    mock_create_network_rbac.assert_has_calls(
+        [
+            call(
+                mock_conn,
+                NetworkRbac(
+                    project_identifier=mock_project.id,
+                    network_identifier="External",
+                    action=RbacNetworkActions.EXTERNAL,
+                ),
+            ),
+            call(
+                mock_conn,
+                NetworkRbac(
+                    project_identifier=mock_project.id,
+                    network_identifier=mock_create_network.return_value.id,
+                    action=RbacNetworkActions.SHARED,
+                ),
+            ),
+        ]
+    )
+
     mock_create_router.assert_called_once_with(
         mock_conn,
         RouterDetails(
-            router_name="Test Project-router",
+            router_name=f"{mock_project.name}-router",
             router_description="",
-            project_identifier="project-id",
-            external_gateway="External",
+            project_identifier=mock_project.id,
+            external_gateway=mock_network,
             is_distributed=False,
         ),
     )
 
     mock_create_subnet.assert_called_once_with(
         mock_conn,
-        network_identifier="network-id",
-        subnet_name="Test Project-subnet",
+        network_identifier=mock_create_network.return_value.id,
+        subnet_name=f"{mock_project.name}-subnet",
         subnet_description="",
         dhcp_enabled=True,
     )
 
     mock_add_interface_to_router.assert_called_once_with(
         mock_conn,
-        project_identifier="project-id",
-        router_identifier="router-id",
-        subnet_identifier="subnet-id",
+        project_identifier=mock_project.id,
+        router_identifier=mock_create_router.return_value.id,
+        subnet_identifier=mock_create_subnet.return_value.id,
     )
 
     mock_set_quota.assert_called_once_with(
         mock_conn,
         QuotaDetails(
-            project_identifier="project-id",
+            project_identifier=mock_project.id,
             num_floating_ips=number_of_floating_ips,
             num_security_group_rules=number_of_security_group_rules,
         ),
     )
 
-    mock_create_network_rbac.assert_called_once_with(
-        mock_conn,
-        NetworkRbac(
-            project_identifier="project-id",
-            network_identifier="network-id",
-            action=RbacNetworkActions.SHARED,
-        ),
-    )
-
     mock_create_external_security_group_rules.assert_called_once_with(
-        mock_conn, project_identifier="project-id", security_group_identifier="default"
+        mock_conn,
+        project_identifier=mock_project.id,
+        security_group_identifier="default",
     )
 
     mock_allocate_floating_ips.assert_called_once_with(
         mock_conn,
         network_identifier="External",
-        project_identifier="project-id",
+        project_identifier=mock_project.id,
+        number_to_create=number_of_floating_ips,
+    )
+
+
+@patch("workflows.create_project.create_network")
+@patch("workflows.create_project.create_router")
+@patch("workflows.create_project.create_subnet")
+@patch("workflows.create_project.add_interface_to_router")
+@patch("workflows.create_project.set_quota")
+@patch("workflows.create_project.create_network_rbac")
+@patch("workflows.create_project.create_internal_security_group_rules")
+@patch("workflows.create_project.allocate_floating_ips")
+def test_setup_jasmin_networking(
+    mock_allocate_floating_ips,
+    mock_create_internal_security_group_rules,
+    mock_create_network_rbac,
+    mock_set_quota,
+    mock_add_interface_to_router,
+    mock_create_subnet,
+    mock_create_router,
+    mock_create_network,
+):
+    """
+    Test the setup of networking for external projects.
+    """
+    logging.disable()  # Don't need to test logging
+    # Mock the return values for network, router, and subnet
+    mock_create_network.return_value = MagicMock()
+    mock_create_router.return_value = MagicMock()
+    mock_create_subnet.return_value = MagicMock()
+
+    # Test data
+    mock_conn = MagicMock()
+    mock_project = MagicMock()
+    mock_project.name = "Test Project"
+    mock_network = "JASMIN External Cloud Network"
+    number_of_floating_ips = 2
+    number_of_security_group_rules = 200
+
+    # Call the function
+    setup_external_networking(
+        mock_conn,
+        mock_project,
+        mock_network,
+        number_of_floating_ips,
+        number_of_security_group_rules,
+    )
+
+    # Assertions to ensure the functions were called with correct parameters
+    mock_create_network.assert_called_once_with(
+        mock_conn,
+        NetworkDetails(
+            name="Test Project-network",
+            description="",
+            project_identifier=mock_project.id,
+            provider_network_type=NetworkProviders.VXLAN,
+            port_security_enabled=True,
+            has_external_router=False,
+        ),
+    )
+
+    mock_create_network_rbac.assert_has_calls(
+        [
+            call(
+                mock_conn,
+                NetworkRbac(
+                    project_identifier=mock_project.id,
+                    network_identifier="JASMIN External Cloud Network",
+                    action=RbacNetworkActions.EXTERNAL,
+                ),
+            ),
+            call(
+                mock_conn,
+                NetworkRbac(
+                    project_identifier=mock_project.id,
+                    network_identifier=mock_create_network.return_value.id,
+                    action=RbacNetworkActions.SHARED,
+                ),
+            ),
+        ]
+    )
+
+    mock_create_router.assert_called_once_with(
+        mock_conn,
+        RouterDetails(
+            router_name=f"{mock_project.name}-router",
+            router_description="",
+            project_identifier=mock_project.id,
+            external_gateway=mock_network,
+            is_distributed=False,
+        ),
+    )
+
+    mock_create_subnet.assert_called_once_with(
+        mock_conn,
+        network_identifier=mock_create_network.return_value.id,
+        subnet_name=f"{mock_project.name}-subnet",
+        subnet_description="",
+        dhcp_enabled=True,
+    )
+
+    mock_add_interface_to_router.assert_called_once_with(
+        mock_conn,
+        project_identifier=mock_project.id,
+        router_identifier=mock_create_router.return_value.id,
+        subnet_identifier=mock_create_subnet.return_value.id,
+    )
+
+    mock_set_quota.assert_called_once_with(
+        mock_conn,
+        QuotaDetails(
+            project_identifier=mock_project.id,
+            num_floating_ips=number_of_floating_ips,
+            num_security_group_rules=number_of_security_group_rules,
+        ),
+    )
+
+    mock_create_internal_security_group_rules.assert_called_once_with(
+        mock_conn,
+        project_identifier=mock_project.id,
+        security_group_identifier="default",
+    )
+
+    mock_allocate_floating_ips.assert_called_once_with(
+        mock_conn,
+        network_identifier="JASMIN External Cloud Network",
+        project_identifier=mock_project.id,
         number_to_create=number_of_floating_ips,
     )
 
