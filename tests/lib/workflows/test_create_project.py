@@ -1,8 +1,6 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from parameterized import parameterized
-
 
 from enums.network_providers import NetworkProviders
 from enums.rbac_network_actions import RbacNetworkActions
@@ -510,35 +508,27 @@ def test_create_project_jasmin_no_users(
     assert mock_assign_role_to_user.call_count == 0
 
 
-@parameterized.expand(
+@pytest.mark.parametrize(
+    "args",
     [
-        (
-            "invalid_project_domain",
-            {
-                "project_domain": "stfc",
-                "user_domain": "jasmin",
-                "network": "JASMIN External Cloud Network",
-            },
-        ),
-        (
-            "invalid_user_domain",
-            {
-                "project_domain": "jasmin",
-                "user_domain": "default",
-                "network": "JASMIN External Cloud Network",
-            },
-        ),
-        (
-            "invalid_network",
-            {
-                "project_domain": "jasmin",
-                "user_domain": "jasmin",
-                "network": "Internal",
-            },
-        ),
-    ]
+        {
+            "project_domain": "stfc",
+            "user_domain": "jasmin",
+            "network": "JASMIN External Cloud Network",
+        },
+        {
+            "project_domain": "jasmin",
+            "user_domain": "default",
+            "network": "JASMIN External Cloud Network",
+        },
+        {
+            "project_domain": "jasmin",
+            "user_domain": "jasmin",
+            "network": "Internal",
+        },
+    ],
 )
-def test_create_project_invalid_jasmin_args(_, args):
+def test_create_project_invalid_jasmin_args(args):
     """
     Test the validation of non-matching JASMIN-specific arguments during project creation.
     """
@@ -576,35 +566,27 @@ def test_create_project_invalid_jasmin_args(_, args):
         )
 
 
-@parameterized.expand(
+@pytest.mark.parametrize(
+    "args",
     [
-        (
-            "invalid_project_domain",
-            {
-                "project_domain": "stfc",
-                "user_domain": "jasmin",
-                "network": "JASMIN External Cloud Network",
-            },
-        ),
-        (
-            "invalid_user_domain",
-            {
-                "project_domain": "jasmin",
-                "user_domain": "default",
-                "network": "JASMIN External Cloud Network",
-            },
-        ),
-        (
-            "invalid_network",
-            {
-                "project_domain": "jasmin",
-                "user_domain": "jasmin",
-                "network": "Internal",
-            },
-        ),
-    ]
+        {
+            "project_domain": "stfc",
+            "user_domain": "jasmin",
+            "network": "JASMIN External Cloud Network",
+        },
+        {
+            "project_domain": "jasmin",
+            "user_domain": "default",
+            "network": "JASMIN External Cloud Network",
+        },
+        {
+            "project_domain": "jasmin",
+            "user_domain": "jasmin",
+            "network": "Internal",
+        },
+    ],
 )
-def test_validate_jasmin_args(_, args):
+def test_validate_jasmin_args(args):
     """
     Tests the function responsible for validating JASMIN-specific arguments.
     """
