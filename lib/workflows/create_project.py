@@ -2,6 +2,7 @@ import logging
 from typing import Optional, List
 
 from enums.network_providers import NetworkProviders
+from enums.networks import Networks
 from enums.rbac_network_actions import RbacNetworkActions
 from enums.user_domains import UserDomains
 
@@ -100,18 +101,17 @@ def create_project(
     # wait for default security group
     refresh_security_groups(conn, project["id"])
 
-    if network in ("External", "JASMIN External Cloud Network"):
+    network_type = Networks.from_string(network)
+    if network_type in (Networks.EXTERNAL, Networks.JASMIN):
         setup_external_networking(
             conn,
             project,
-            network,
+            network_type,
             number_of_floating_ips,
             number_of_security_group_rules,
         )
-    elif network == "Internal":
+    elif network_type == Networks.INTERNAL:
         setup_internal_networking(conn, project)
-    else:
-        raise NotImplementedError(f"Unknown networking type {network}")
 
     create_http_security_group(conn, project_identifier=project["id"])
     create_https_security_group(conn, project_identifier=project["id"])
@@ -145,7 +145,7 @@ def create_project(
 def setup_external_networking(
     conn: Connection,
     project: Project,
-    external_network: str,
+    external_network: Networks,
     number_of_floating_ips: int,
     number_of_security_group_rules: int,
 ):
@@ -156,7 +156,7 @@ def setup_external_networking(
     :param project: OpenStack project object
     :type project: Project
     :param external_network: External Cloud network
-    :type external_network: str
+    :type external_network: Networks
     :param number_of_floating_ips: Floating IP quota for project
     :type number_of_floating_ips: int
     :param number_of_security_group_rules: Security group quota for project
@@ -180,7 +180,7 @@ def setup_external_networking(
         conn,
         NetworkRbac(
             project_identifier=project.id,
-            network_identifier=external_network,
+            network_identifier=external_network.value,
             action=RbacNetworkActions.EXTERNAL,
         ),
     )
@@ -204,7 +204,7 @@ def setup_external_networking(
             router_name=f"{project.name}-router",
             router_description="",
             project_identifier=project.id,
-            external_gateway=external_network,
+            external_gateway=external_network.value,
             is_distributed=False,
         ),
     )
@@ -238,11 +238,11 @@ def setup_external_networking(
     )
 
     # create default security group rules
-    if external_network == "External":
+    if external_network == Networks.EXTERNAL:
         create_external_security_group_rules(
             conn, project_identifier=project.id, security_group_identifier="default"
         )
-    elif external_network == "Jasmin":
+    elif external_network == Networks.JASMIN:
         create_internal_security_group_rules(
             conn, project_identifier=project.id, security_group_identifier="default"
         )
@@ -251,7 +251,7 @@ def setup_external_networking(
 
     allocate_floating_ips(
         conn,
-        network_identifier=external_network,
+        network_identifier=external_network.value,
         project_identifier=project.id,
         number_to_create=number_of_floating_ips,
     )

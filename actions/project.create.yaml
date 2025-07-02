@@ -65,7 +65,7 @@ parameters:
     enum:
       - Internal
       - External
-      - JASMIN External Cloud Network
+      - Jasmin
   number_of_floating_ips:
     required: true
     type: integer

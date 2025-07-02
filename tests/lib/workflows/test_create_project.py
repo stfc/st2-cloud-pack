@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, call, patch
 import pytest
 
 from enums.network_providers import NetworkProviders
+from enums.networks import Networks
 from enums.rbac_network_actions import RbacNetworkActions
 from enums.user_domains import UserDomains
 from structs.network_details import NetworkDetails
@@ -92,7 +93,7 @@ def test_create_project_external(
     mock_setup_external_networking.assert_called_once_with(
         mock_conn,
         mock_project,
-        network,
+        Networks.EXTERNAL,
         number_of_floating_ips,
         number_of_security_group_rules,
     )
@@ -306,7 +307,7 @@ def test_create_project_jasmin(
     project_email = "test@example.com"
     project_description = "Test Description"
     user_domain = "jasmin"
-    network = "JASMIN External Cloud Network"
+    network = "Jasmin"
     number_of_floating_ips = 2
     number_of_security_group_rules = 200
     project_immutable = True
@@ -348,7 +349,7 @@ def test_create_project_jasmin(
     mock_setup_external_networking.assert_called_once_with(
         mock_conn,
         mock_project,
-        network,
+        Networks.JASMIN,
         number_of_floating_ips,
         number_of_security_group_rules,
     )
@@ -437,7 +438,7 @@ def test_create_project_jasmin_no_users(
     project_email = "test@example.com"
     project_description = "Test Description"
     user_domain = "jasmin"
-    network = "JASMIN External Cloud Network"
+    network = "Jasmin"
     number_of_floating_ips = 2
     number_of_security_group_rules = 200
     project_immutable = True
@@ -479,7 +480,7 @@ def test_create_project_jasmin_no_users(
     mock_setup_external_networking.assert_called_once_with(
         mock_conn,
         mock_project,
-        network,
+        Networks.JASMIN,
         number_of_floating_ips,
         number_of_security_group_rules,
     )
@@ -535,7 +536,7 @@ def test_setup_external_networking(
     setup_external_networking(
         mock_conn,
         mock_project,
-        mock_network,
+        Networks.EXTERNAL,
         number_of_floating_ips,
         number_of_security_group_rules,
     )
@@ -654,7 +655,6 @@ def test_setup_jasmin_networking(
     mock_conn = MagicMock()
     mock_project = MagicMock()
     mock_project.name = "Test Project"
-    mock_network = "JASMIN External Cloud Network"
     number_of_floating_ips = 2
     number_of_security_group_rules = 200
 
@@ -662,7 +662,7 @@ def test_setup_jasmin_networking(
     setup_external_networking(
         mock_conn,
         mock_project,
-        mock_network,
+        Networks.JASMIN,
         number_of_floating_ips,
         number_of_security_group_rules,
     )
@@ -707,7 +707,7 @@ def test_setup_jasmin_networking(
             router_name=f"{mock_project.name}-router",
             router_description="",
             project_identifier=mock_project.id,
-            external_gateway=mock_network,
+            external_gateway="JASMIN External Cloud Network",
             is_distributed=False,
         ),
     )
