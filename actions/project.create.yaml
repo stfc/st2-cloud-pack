@@ -20,14 +20,6 @@ parameters:
     enum:
       - "dev"
       - "prod"
-  project_domain:
-    description: Domain to create project in
-    type: string
-    default: default
-    enum:
-      - stfc
-      - jasmin
-      - default
   project_name:
     required: true
     type: string

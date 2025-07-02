@@ -14,7 +14,6 @@ from structs.role_details import RoleDetails
 from structs.router_details import RouterDetails
 from workflows.create_project import (
     create_project,
-    validate_jasmin_args,
     setup_external_networking,
     setup_internal_networking,
 )
@@ -50,7 +49,6 @@ def test_create_project_external(
     project_name = "Test Project"
     project_email = "test@example.com"
     project_description = "Test Description"
-    project_domain = "default"
     user_domain = "stfc"
     network = "External"
     number_of_floating_ips = 2
@@ -66,7 +64,6 @@ def test_create_project_external(
         project_name,
         project_email,
         project_description,
-        project_domain,
         user_domain,
         network,
         number_of_floating_ips,
@@ -84,7 +81,6 @@ def test_create_project_external(
             name=project_name,
             email=project_email,
             description=project_description,
-            project_domain=project_domain,
             immutable=project_immutable,
             parent_id=parent_id,
             is_enabled=True,
@@ -184,7 +180,6 @@ def test_create_project_internal(
     project_name = "Test Project"
     project_email = "test@example.com"
     project_description = "Test Description"
-    project_domain = "default"
     user_domain = "stfc"
     network = "Internal"
     number_of_floating_ips = 2
@@ -200,7 +195,6 @@ def test_create_project_internal(
         project_name,
         project_email,
         project_description,
-        project_domain,
         user_domain,
         network,
         number_of_floating_ips,
@@ -218,7 +212,6 @@ def test_create_project_internal(
             name=project_name,
             email=project_email,
             description=project_description,
-            project_domain=project_domain,
             immutable=project_immutable,
             parent_id=parent_id,
             is_enabled=True,
@@ -312,7 +305,6 @@ def test_create_project_jasmin(
     project_name = "Test Project"
     project_email = "test@example.com"
     project_description = "Test Description"
-    project_domain = "jasmin"
     user_domain = "jasmin"
     network = "JASMIN External Cloud Network"
     number_of_floating_ips = 2
@@ -328,7 +320,6 @@ def test_create_project_jasmin(
         project_name,
         project_email,
         project_description,
-        project_domain,
         user_domain,
         network,
         number_of_floating_ips,
@@ -346,7 +337,6 @@ def test_create_project_jasmin(
             name=project_name,
             email=project_email,
             description=project_description,
-            project_domain=project_domain,
             immutable=project_immutable,
             parent_id=parent_id,
             is_enabled=True,
@@ -446,7 +436,6 @@ def test_create_project_jasmin_no_users(
     project_name = "Test Project"
     project_email = "test@example.com"
     project_description = "Test Description"
-    project_domain = "jasmin"
     user_domain = "jasmin"
     network = "JASMIN External Cloud Network"
     number_of_floating_ips = 2
@@ -462,7 +451,6 @@ def test_create_project_jasmin_no_users(
         project_name,
         project_email,
         project_description,
-        project_domain,
         user_domain,
         network,
         number_of_floating_ips,
@@ -480,7 +468,6 @@ def test_create_project_jasmin_no_users(
             name=project_name,
             email=project_email,
             description=project_description,
-            project_domain=project_domain,
             immutable=project_immutable,
             parent_id=parent_id,
             is_enabled=True,
@@ -507,95 +494,6 @@ def test_create_project_jasmin_no_users(
 
     # Verify assign_role_to_user was called 0 times
     assert mock_assign_role_to_user.call_count == 0
-
-
-# @pytest.mark.parametrize(
-#     "args",
-#     [
-#         {
-#             "project_domain": "stfc",
-#             "user_domain": "jasmin",
-#             "network": "JASMIN External Cloud Network",
-#         },
-#         {
-#             "project_domain": "jasmin",
-#             "user_domain": "default",
-#             "network": "JASMIN External Cloud Network",
-#         },
-#         {
-#             "project_domain": "jasmin",
-#             "user_domain": "jasmin",
-#             "network": "Internal",
-#         },
-#     ],
-# )
-# def test_create_project_invalid_jasmin_args(args):
-#     """
-#     Test the validation of non-matching JASMIN-specific arguments during project creation.
-#     """
-#     # Test data
-#     mock_conn = MagicMock()
-#     project_name = "JASMIN Project"
-#     project_email = "JASMIN@example.com"
-#     project_description = "Test Description"
-#     project_domain = args["project_domain"]
-#     user_domain = args["user_domain"]
-#     network = args["network"]
-#     number_of_floating_ips = 2
-#     number_of_security_group_rules = 200
-#     project_immutable = True
-#     parent_id = "parent-id"
-#     admin_user_list = ["admin1", "admin2"]
-#     user_list = ["user1", "user2"]
-
-#     # Call the function
-#     with pytest.raises(ValueError):
-#         create_project(
-#             mock_conn,
-#             project_name,
-#             project_email,
-#             project_description,
-#             project_domain,
-#             user_domain,
-#             network,
-#             number_of_floating_ips,
-#             number_of_security_group_rules,
-#             project_immutable,
-#             parent_id,
-#             admin_user_list,
-#             user_list,
-#         )
-
-
-@pytest.mark.parametrize(
-    "args",
-    [
-        {
-            "project_domain": "stfc",
-            "user_domain": "jasmin",
-            "network": "JASMIN External Cloud Network",
-        },
-        {
-            "project_domain": "jasmin",
-            "user_domain": "default",
-            "network": "JASMIN External Cloud Network",
-        },
-        {
-            "project_domain": "jasmin",
-            "user_domain": "jasmin",
-            "network": "Internal",
-        },
-    ],
-)
-def test_validate_jasmin_args(args):
-    """
-    Tests the function responsible for validating JASMIN-specific arguments.
-    """
-    # Call the function
-    with pytest.raises(ValueError):
-        validate_jasmin_args(
-            args["project_domain"], args["user_domain"], args["network"]
-        )
 
 
 @patch("workflows.create_project.create_network")
@@ -893,7 +791,6 @@ def test_project_create_raise_unknown_network_type():
     mock_project = "mock_project"
     mock_email = "email@example.com"
     mock_description = "mock_description"
-    mock_domain = "default"
     mock_user_domain = "stfc"
     mock_network = "not_a_network"
 
@@ -903,7 +800,6 @@ def test_project_create_raise_unknown_network_type():
             mock_project,
             mock_email,
             mock_description,
-            mock_domain,
             mock_user_domain,
             mock_network,
         )

@@ -43,7 +43,6 @@ def create_project(
     project_name: str,
     project_email: str,
     project_description: str,
-    project_domain: str,
     user_domain: str,
     network: str,
     number_of_floating_ips: int = 1,
@@ -63,8 +62,6 @@ def create_project(
     :type project_email: str
     :param project_description: Project description
     :type project_description: str
-    :param project_domain: Project domain
-    :type project_domain: str
     :param user_domain: User domain
     :type user_domain: str
     :param network: Cloud network, e.g. Internal, External, JASMIN
@@ -88,15 +85,12 @@ def create_project(
     if not user_list:
         user_list = []
 
-    # validate_jasmin_args(project_domain, user_domain, network)
-
     project = create_openstack_project(
         conn,
         ProjectDetails(
             name=project_name,
             email=project_email,
             description=project_description,
-            project_domain=project_domain,
             immutable=project_immutable,
             parent_id=parent_id,
             is_enabled=True,
@@ -146,26 +140,6 @@ def create_project(
         )
         logger.info("Added %s as project user", user)
     logger.info("Competed building project %s", project_name)
-
-
-def validate_jasmin_args(project_domain: str, user_domain: str, network: str):
-    """
-    Validates that the given arguments are valid for a JASMIN project, i.e.
-    if a JASMIN-specific argument has been supplied, the applicable arguments
-    must match.
-    :param project_domain: Project domain
-    :type project_domain: str
-    :param user_domain: User domain
-    :type user_domain: str
-    :param network: Cloud network
-    :type network: str
-    """
-    args = [project_domain, user_domain, network]
-    if any(input in ("jasmin", "JASMIN External Cloud Network") for input in args):
-        if not all(
-            (input in ("jasmin", "JASMIN External Cloud Network") for input in args)
-        ):
-            raise ValueError("Invalid input: JASMIN project/domain/network must match")
 
 
 def setup_external_networking(
