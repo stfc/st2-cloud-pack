@@ -15,9 +15,6 @@ jira
 paramiko
 
 # for tests
-nose
-parameterized
 pytest
-pytest-cov
 pytest-freezer
 munch
