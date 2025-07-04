@@ -10,6 +10,7 @@ from openstack_api.openstack_security_groups import (
     create_external_security_group_rules,
     create_http_security_group,
     create_https_security_group,
+    create_jasmin_security_group_rules,
     refresh_security_groups,
     create_internal_security_group_rules,
 )
@@ -459,6 +460,90 @@ def test_create_internal_security_group_rules_invalid_security_group():
     mock_security_group_identifier = " \t"
     with pytest.raises(MissingMandatoryParamError):
         create_internal_security_group_rules(
+            mock_conn, mock_project_identifier, mock_security_group_identifier
+        )
+    mock_conn.network.create_security_group_rule.assert_not_called()
+
+
+# pylint: disable=too-many-arguments
+@pytest.mark.parametrize(
+    "direction, ip_version, protocol, remote_ip_cidr, port_range",
+    [
+        (
+            NetworkDirection.INGRESS,
+            IPVersion.IPV4,
+            Protocol.ICMP,
+            "0.0.0.0/0",
+            ("*", "*"),
+        ),
+        (
+            NetworkDirection.INGRESS,
+            IPVersion.IPV4,
+            Protocol.TCP,
+            "0.0.0.0/0",
+            ("22", "22"),
+        ),
+        (
+            NetworkDirection.INGRESS,
+            IPVersion.IPV4,
+            Protocol.UDP,
+            "0.0.0.0/0",
+            ("7777", "7777"),
+        ),
+    ],
+)
+def test_create_jasmin_rules_default_rules(
+    direction,
+    ip_version,
+    protocol,
+    remote_ip_cidr,
+    port_range,
+    create_security_group_rule_test,
+):
+    """
+    Tests that specific rules are created for jasmin security groups
+    """
+    mock_conn = MagicMock()
+    mock_project_identifier = NonCallableMock()
+    mock_security_group_identifier = NonCallableMock()
+
+    create_jasmin_security_group_rules(
+        mock_conn, mock_project_identifier, mock_security_group_identifier
+    )
+
+    create_security_group_rule_test(
+        mock_conn,
+        SecurityGroupRuleDetails(
+            security_group_identifier=mock_security_group_identifier,
+            project_identifier=mock_project_identifier,
+            direction=direction,
+            ip_version=ip_version,
+            protocol=protocol,
+            remote_ip_cidr=remote_ip_cidr,
+            port_range=port_range,
+        ),
+    )
+
+
+def test_create_jasmin_security_group_rules_invalid_project():
+    """test that create_jasmin_security_group_rules raises error if project identifier missing"""
+    mock_conn = MagicMock()
+    mock_project_identifier = " \t"
+    mock_security_group_identifier = "foo"
+    with pytest.raises(MissingMandatoryParamError):
+        create_jasmin_security_group_rules(
+            mock_conn, mock_project_identifier, mock_security_group_identifier
+        )
+    mock_conn.network.create_security_group_rule.assert_not_called()
+
+
+def test_create_jasmin_security_group_rules_invalid_security_group():
+    """test that create_jasmin_security_group_rules raises error if security group identifier missing"""
+    mock_conn = MagicMock()
+    mock_project_identifier = "foo"
+    mock_security_group_identifier = " \t"
+    with pytest.raises(MissingMandatoryParamError):
+        create_jasmin_security_group_rules(
             mock_conn, mock_project_identifier, mock_security_group_identifier
         )
     mock_conn.network.create_security_group_rule.assert_not_called()
