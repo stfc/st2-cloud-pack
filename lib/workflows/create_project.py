@@ -18,6 +18,7 @@ from openstack_api.openstack_project import create_project as create_openstack_p
 from openstack_api.openstack_quota import set_quota
 from openstack_api.openstack_router import create_router, add_interface_to_router
 from openstack_api.openstack_security_groups import (
+    create_jasmin_security_group_rules,
     refresh_security_groups,
     create_https_security_group,
     create_http_security_group,
@@ -243,7 +244,7 @@ def setup_external_networking(
             conn, project_identifier=project.id, security_group_identifier="default"
         )
     elif external_network == Networks.JASMIN:
-        create_internal_security_group_rules(
+        create_jasmin_security_group_rules(
             conn, project_identifier=project.id, security_group_identifier="default"
         )
 

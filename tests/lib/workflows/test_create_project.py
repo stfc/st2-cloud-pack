@@ -630,11 +630,11 @@ def test_setup_external_networking(
 @patch("workflows.create_project.add_interface_to_router")
 @patch("workflows.create_project.set_quota")
 @patch("workflows.create_project.create_network_rbac")
-@patch("workflows.create_project.create_internal_security_group_rules")
+@patch("workflows.create_project.create_jasmin_security_group_rules")
 @patch("workflows.create_project.allocate_floating_ips")
 def test_setup_jasmin_networking(
     mock_allocate_floating_ips,
-    mock_create_internal_security_group_rules,
+    mock_create_jasmin_security_group_rules,
     mock_create_network_rbac,
     mock_set_quota,
     mock_add_interface_to_router,
@@ -736,7 +736,7 @@ def test_setup_jasmin_networking(
         ),
     )
 
-    mock_create_internal_security_group_rules.assert_called_once_with(
+    mock_create_jasmin_security_group_rules.assert_called_once_with(
         mock_conn,
         project_identifier=mock_project.id,
         security_group_identifier="default",
