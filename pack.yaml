@@ -16,6 +16,7 @@ python_versions:
 dependencies:
   - core
   - git
+  - jira
 
 # Authors :
 # Anish Mudaraddi

@@ -33,8 +33,9 @@ smtp_accounts:
 max_attachment_size: 1024
 attachment_datastore_ttl: 1800
 
+sensor_cloud_account: dev
+
 hypervisor_sensor:
-  cloud_account:
   uptime_limit:
   state_expire_after:
 

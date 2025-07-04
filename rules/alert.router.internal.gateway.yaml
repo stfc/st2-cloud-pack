@@ -1,0 +1,24 @@
+---
+name: "alert.router.internal.gateway"
+pack: "stackstorm_openstack"
+description: "Sends Jira Ticket when a Router with an Internal gateway address is found"
+enabled: true
+
+trigger:
+  type: "stackstorm_openstack.openstack_router_issue"
+
+action:
+  ref: "jira.create_issue"
+  parameters:
+    summary: "[Stackstorm Alert]: Router with Gateway on Internal Network"
+    type: Problem
+    description: >
+      Router Details:\\
+      - ID: {{trigger.router_id}}\\
+      - Name: {{trigger.router_name}}\\
+      - Project ID: {{trigger.project_id}}\\
+      - Description: {{trigger.router_description}}\\
+      - Status: {{trigger.status}}\\
+      - Created at: {{trigger.created_at}}\\
+      - Gateway Info: {{trigger.gateways}}\\
+      - URL: [https://openstack.stfc.ac.uk/project/routers/{{trigger.router_id}}/]

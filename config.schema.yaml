@@ -155,8 +155,17 @@ alertmanager_accounts:
         secret: false
         default: ""
 
-hypervisor_sensor:
-  description: "Hypervisor sensor specific settings."
+sensor_cloud_account:
+  description: Which cloud account sensors requiring an openstack connection will use
+  type: "string"
+  required: true
+  default: "dev"
+  enum:
+    - dev
+    - prod
+
+router_sensor:
+  description: "Openstack Router sensor specific settings."
   type: "object"
   required: false
   additionalProperties: false
@@ -164,6 +173,15 @@ hypervisor_sensor:
     cloud_account:
       type: "string"
       description: "cloud account to use - set in clouds.ymal"
+      default: "dev"
+      required: true
+
+hypervisor_sensor:
+  description: "Hypervisor sensor specific settings."
+  type: "object"
+  required: false
+  additionalProperties: false
+  properties:
     uptime_limit:
       type: "number"
       description: "Number of uptime days before marking hypervisor for maintenance"

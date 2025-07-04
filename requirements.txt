@@ -8,10 +8,11 @@ tabulate
 requests
 python-dateutil
 Jinja2
+# Support for python 3.8, used by st2, dropped in css-inline 0.15.0
+css-inline < 0.15.0
 pytz
 jira
 paramiko
-css-inline == 0.14.6
 
 # for tests
 pytest
