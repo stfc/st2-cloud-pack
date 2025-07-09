@@ -113,6 +113,8 @@ def create_project(
         )
     elif network_type == Networks.INTERNAL:
         setup_internal_networking(conn, project)
+    else:
+        raise NotImplementedError(f"Unknown networking type {network_type}")
 
     create_http_security_group(conn, project_identifier=project["id"])
     create_https_security_group(conn, project_identifier=project["id"])

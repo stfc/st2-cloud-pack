@@ -1,5 +1,5 @@
 import logging
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, NonCallableMock, call, patch
 
 import pytest
 
@@ -793,6 +793,30 @@ def test_project_create_raise_unknown_network_type():
     mock_description = "mock_description"
     mock_user_domain = "stfc"
     mock_network = "not_a_network"
+
+    with pytest.raises(NotImplementedError):
+        create_project(
+            mock_conn,
+            mock_project,
+            mock_email,
+            mock_description,
+            mock_user_domain,
+            mock_network,
+        )
+
+
+@patch("workflows.create_project.Networks.from_string")
+def test_project_create_raise_unknown_network_type_enum(mock_from_string):
+    """
+    Test project creation with an unknown network type.
+    """
+    mock_conn = MagicMock()
+    mock_project = "mock_project"
+    mock_email = "email@example.com"
+    mock_description = "mock_description"
+    mock_user_domain = "stfc"
+    mock_network = "mock_network"
+    mock_from_string.return_value = NonCallableMock()
 
     with pytest.raises(NotImplementedError):
         create_project(
