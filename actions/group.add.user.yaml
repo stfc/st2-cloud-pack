@@ -4,10 +4,10 @@
 description: Adds a user directly to an existing group
 enabled: true
 entry_point: src/openstack_actions.py
-name: role.add.user.group
+name: group.add.user
 parameters:
   lib_entry_point:
-    default: workflows.role_actions.add_user_to_group
+    default: openstack_api.openstack_roles.add_user_to_group
     immutable: true
     type: string
   requires_openstack:
@@ -26,7 +26,7 @@ parameters:
     description: User to add to (Name or ID)
     type: string
     required: true
-  domain:
+  domain_identifier:
     description: Authentication domain to search, this much match between group and user
     type: string
     required: true

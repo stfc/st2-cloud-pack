@@ -119,7 +119,7 @@ def test_assign_group_role_to_project_successful():
     mock_conn.identity.find_role.assert_called_once_with("role", ignore_missing=False)
     mock_conn.identity.find_group.assert_called_once_with("group", ignore_missing=False)
 
-    mock_conn.identity.assign_project_role_to_group(
+    mock_conn.identity.assign_project_role_to_group.assert_called_once_with(
         project=mock_conn.identity.find_project.return_value,
         group=mock_conn.identity.find_group.return_value,
         role=mock_conn.identity.find_role.return_value,

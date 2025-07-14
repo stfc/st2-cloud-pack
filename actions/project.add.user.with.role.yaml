@@ -1,11 +1,11 @@
 ---
-description: Add a pre-created group to a given project
+description: Add a User directly to a project with a given role
 enabled: true
 entry_point: src/openstack_actions.py
-name: role.assign.group.to.project
+name: project.add.user.with.role
 parameters:
   lib_entry_point:
-    default: workflows.role_actions.assign_group_to_project
+    default: workflows.role_actions.role_add
     immutable: true
     type: string
   requires_openstack:
@@ -21,16 +21,24 @@ parameters:
       - "dev"
       - "prod"
   project_identifier:
-    description: Project to add the group to
+    description: Project (Name or ID)
     required: true
     type: string
   role_identifier:
-    description: Role to add use with group members
+    description: Role to add (Name or ID)
     required: true
     type: string
-    default: "user"
-  group_name:
-    description: Group to add to a project
+  user_identifier:
+    description: User to add to (Name or ID)
     type: string
     required: true
+  user_domain:
+    description: Authentication realm to search
+    type: string
+    required: true
+    default: stfc
+    enum:
+      - default
+      - stfc
+      - jasmin
 runner_type: python-script
