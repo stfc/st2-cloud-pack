@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, patch, call
 import pytest
 
-from enums.icinga.icinga_objects import IcingaObject
+from apis.icinga_api.enums.icinga_objects import IcingaObject
 
 from workflows.hv_post_reboot import post_reboot
 

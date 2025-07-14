@@ -1,14 +1,14 @@
 from openstack.connection import Connection
 
-from alertmanager_api.silence import get_hv_silences, remove_silence
+from apis.alertmanager_api.silence import get_hv_silences, remove_silence
 
-from enums.icinga.icinga_objects import IcingaObject
+from apis.icinga_api.enums.icinga_objects import IcingaObject
 
-from openstack_api.openstack_service import enable_service
-from structs.alertmanager.alertmanager_account import AlertManagerAccount
-from structs.icinga.icinga_account import IcingaAccount
+from apis.openstack_api.openstack_service import enable_service
+from apis.alertmanager_api.structs.alertmanager_account import AlertManagerAccount
+from apis.icinga_api.structs.icinga_account import IcingaAccount
 from workflows.hv_create_test_server import create_test_server
-from icinga_api import downtime
+from apis.icinga_api import downtime
 
 
 def post_reboot(

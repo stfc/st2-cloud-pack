@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from structs.ssh.ssh_connection_details import SSHDetails
+from apis.ssh_api.structs.ssh_connection_details import SSHDetails
 from workflows.ssh_remote_command import ssh_remote_command
 
 

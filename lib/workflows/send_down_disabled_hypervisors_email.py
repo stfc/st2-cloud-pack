@@ -1,12 +1,12 @@
 from typing import Optional, Union
 
-from email_api.emailer import Emailer
-from enums.cloud_domains import CloudDomains
+from apis.email_api.emailer import Emailer
+from apis.openstack_api.enums.cloud_domains import CloudDomains
 
 from openstackquery import HypervisorQuery
-from structs.email.email_params import EmailParams
-from structs.email.email_template_details import EmailTemplateDetails
-from structs.email.smtp_account import SMTPAccount
+from apis.email_api.structs.email_params import EmailParams
+from apis.email_api.structs.email_template_details import EmailTemplateDetails
+from apis.email_api.structs.smtp_account import SMTPAccount
 
 
 def find_down_hypervisors(cloud_account: str):

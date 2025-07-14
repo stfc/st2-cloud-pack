@@ -1,23 +1,25 @@
 import logging
 from typing import Optional, List
 
-from enums.network_providers import NetworkProviders
-from enums.networks import Networks
-from enums.rbac_network_actions import RbacNetworkActions
-from enums.user_domains import UserDomains
+from apis.openstack_api.enums.network_providers import NetworkProviders
+from apis.openstack_api.enums.networks import Networks
+from apis.openstack_api.enums.rbac_network_actions import RbacNetworkActions
+from apis.openstack_api.enums.user_domains import UserDomains
 
 from openstack.connection import Connection
 from openstack.identity.v3.project import Project
 
-from openstack_api.openstack_network import (
+from apis.openstack_api.openstack_network import (
     create_network,
     create_network_rbac,
     allocate_floating_ips,
 )
-from openstack_api.openstack_project import create_project as create_openstack_project
-from openstack_api.openstack_quota import set_quota
-from openstack_api.openstack_router import create_router, add_interface_to_router
-from openstack_api.openstack_security_groups import (
+from apis.openstack_api.openstack_project import (
+    create_project as create_openstack_project,
+)
+from apis.openstack_api.openstack_quota import set_quota
+from apis.openstack_api.openstack_router import create_router, add_interface_to_router
+from apis.openstack_api.openstack_security_groups import (
     create_jasmin_security_group_rules,
     refresh_security_groups,
     create_https_security_group,
@@ -25,15 +27,15 @@ from openstack_api.openstack_security_groups import (
     create_external_security_group_rules,
     create_internal_security_group_rules,
 )
-from openstack_api.openstack_roles import assign_role_to_user
-from openstack_api.openstack_subnet import create_subnet
-from structs.network_details import NetworkDetails
-from structs.network_rbac import NetworkRbac
+from apis.openstack_api.openstack_roles import assign_role_to_user
+from apis.openstack_api.openstack_subnet import create_subnet
+from apis.openstack_api.structs.network_details import NetworkDetails
+from apis.openstack_api.structs.network_rbac import NetworkRbac
 
-from structs.project_details import ProjectDetails
-from structs.quota_details import QuotaDetails
-from structs.role_details import RoleDetails
-from structs.router_details import RouterDetails
+from apis.openstack_api.structs.project_details import ProjectDetails
+from apis.openstack_api.structs.quota_details import QuotaDetails
+from apis.openstack_api.structs.role_details import RoleDetails
+from apis.openstack_api.structs.router_details import RouterDetails
 
 logger = logging.getLogger(__name__)
 

@@ -2,11 +2,11 @@ import datetime
 from unittest.mock import MagicMock, patch, call
 from paramiko import SSHException
 
-from enums.icinga.icinga_objects import IcingaObject
-from structs.alertmanager.alert_matcher_details import AlertMatcherDetails
-from structs.alertmanager.silence_details import SilenceDetails
-from structs.icinga.downtime_details import DowntimeDetails
-from structs.ssh.ssh_connection_details import SSHDetails
+from apis.icinga_api.enums.icinga_objects import IcingaObject
+from apis.alertmanager_api.structs.alert_matcher_details import AlertMatcherDetails
+from apis.alertmanager_api.structs.silence_details import SilenceDetails
+from apis.icinga_api.structs.downtime_details import DowntimeDetails
+from apis.ssh_api.structs.ssh_connection_details import SSHDetails
 from workflows.hv_patch_and_reboot import patch_and_reboot
 import pytest
 

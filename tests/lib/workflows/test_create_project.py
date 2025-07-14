@@ -3,16 +3,16 @@ from unittest.mock import MagicMock, NonCallableMock, call, patch
 
 import pytest
 
-from enums.network_providers import NetworkProviders
-from enums.networks import Networks
-from enums.rbac_network_actions import RbacNetworkActions
-from enums.user_domains import UserDomains
-from structs.network_details import NetworkDetails
-from structs.network_rbac import NetworkRbac
-from structs.project_details import ProjectDetails
-from structs.quota_details import QuotaDetails
-from structs.role_details import RoleDetails
-from structs.router_details import RouterDetails
+from apis.openstack_api.enums.network_providers import NetworkProviders
+from apis.openstack_api.enums.networks import Networks
+from apis.openstack_api.enums.rbac_network_actions import RbacNetworkActions
+from apis.openstack_api.enums.user_domains import UserDomains
+from apis.openstack_api.structs.network_details import NetworkDetails
+from apis.openstack_api.structs.network_rbac import NetworkRbac
+from apis.openstack_api.structs.project_details import ProjectDetails
+from apis.openstack_api.structs.quota_details import QuotaDetails
+from apis.openstack_api.structs.role_details import RoleDetails
+from apis.openstack_api.structs.router_details import RouterDetails
 from workflows.create_project import (
     create_project,
     setup_external_networking,
