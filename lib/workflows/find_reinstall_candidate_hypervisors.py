@@ -68,12 +68,11 @@ def find_reinstall_candidate_hypervisors(
 
     query.where(preset="EQUAL_TO", prop="status", value="enabled")
 
-    # TODO: Add custom openstackquery query for NOT_MATCHES_REGEX, lookahead filters like this aren't performant
     if exclude_hostnames:
         query.where(
-            preset="MATCHES_REGEX",
+            preset="NOT_MATCHES_REGEX",
             prop="name",
-            value=construct_hostname_exclude_regex(exclude_hostnames),
+            value=construct_hostname_regex(exclude_hostnames),
         )
 
     if sort_by is not None:
@@ -107,6 +106,8 @@ def find_reinstall_candidate_hypervisors(
         "to_string": query.to_string(),
         "to_objects": query.to_objects(),
         "to_props": query.to_props(),
+        "to_csv": query.to_csv(),
+        "to_json": query.to_json(),
     }[output_type]
 
 
@@ -134,6 +135,6 @@ def filter_hypervisors_by_flavour(
     return allowed_hv_names
 
 
-def construct_hostname_exclude_regex(exclude_hostnames: List[str]) -> str:
+def construct_hostname_regex(exclude_hostnames: List[str]) -> str:
     escaped_hostnames = [re.escape(h) for h in exclude_hostnames]
-    return f"^(?!.*({'|'.join(escaped_hostnames)})).*$"
+    return f".*(?:{'|'.join(escaped_hostnames)})"
