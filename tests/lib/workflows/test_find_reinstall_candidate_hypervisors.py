@@ -33,7 +33,8 @@ def test_find_reinstall_candidate_hypervisors(mock_hypervisor_query):
 
 @patch("workflows.find_reinstall_candidate_hypervisors.HypervisorQuery")
 @pytest.mark.parametrize(
-    "output_type", ["to_html", "to_string", "to_objects", "to_props"]
+    "output_type",
+    ["to_html", "to_string", "to_objects", "to_props", "to_csv", "to_json"],
 )
 def test_find_reinstall_candidate_hypervisors_with_params(
     mock_hypervisor_query_class, output_type
@@ -64,7 +65,7 @@ def test_find_reinstall_candidate_hypervisors_with_params(
         value=params["ip_regex"],
     )
     mock_query.where.assert_any_call(
-        preset="MATCHES_REGEX", prop="name", value=r"^(?!.*(rtx4000|a100|\-)).*$"
+        preset="NOT_MATCHES_REGEX", prop="name", value=r".*(?:rtx4000|a100|\-)"
     )
     mock_query.where.assert_any_call(
         preset="LESS_THAN_OR_EQUAL_TO", prop="vcpus_used", value=params["max_vcpus"]
@@ -82,6 +83,8 @@ def test_find_reinstall_candidate_hypervisors_with_params(
             "to_string": mock_query.to_string.return_value,
             "to_objects": mock_query.to_objects.return_value,
             "to_props": mock_query.to_props.return_value,
+            "to_csv": mock_query.to_csv.return_value,
+            "to_json": mock_query.to_json.return_value,
         }[output_type]
     )
 
