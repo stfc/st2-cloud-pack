@@ -2,9 +2,9 @@ from unittest.mock import patch, MagicMock
 from datetime import datetime
 import pytest
 import pytz
-from enums.icinga.icinga_objects import IcingaObject
 from workflows.icinga_downtime import schedule_downtime, remove_downtime
-from structs.icinga.downtime_details import DowntimeDetails
+from apis.icinga_api.structs.downtime_details import DowntimeDetails
+from apis.icinga_api.enums.icinga_objects import IcingaObject
 
 
 # pylint:disable=too-many-locals

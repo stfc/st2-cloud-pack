@@ -2,8 +2,8 @@ import re
 from typing import List, Optional
 
 from openstack.connection import Connection
-from openstack_api.openstack_connection import OpenstackConnection
-from openstack_api.openstack_hypervisor import get_available_flavors
+from apis.openstack_api.openstack_connection import OpenstackConnection
+from apis.openstack_api.openstack_hypervisor import get_available_flavors
 from openstackquery import HypervisorQuery, ServerQuery
 
 # pylint:disable=too-many-arguments
