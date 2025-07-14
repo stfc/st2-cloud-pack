@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 import pytest
-from enums.hypervisor_states import HypervisorState
+from apis.openstack_api.enums.hypervisor_states import HypervisorState
 from sensors.src.hypervisor_state_sensor import HypervisorStateSensor
 
 

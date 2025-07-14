@@ -1,17 +1,18 @@
 import datetime
 
-from alertmanager_api.silence import remove_silence, schedule_silence
+from apis.alertmanager_api.silence import remove_silence, schedule_silence
 
 from paramiko import SSHException
-from enums.icinga.icinga_objects import IcingaObject
-from icinga_api.downtime import schedule_downtime, remove_downtime
-from structs.alertmanager.alert_matcher_details import AlertMatcherDetails
-from structs.alertmanager.alertmanager_account import AlertManagerAccount
-from structs.alertmanager.silence_details import SilenceDetails
-from structs.icinga.downtime_details import DowntimeDetails
-from structs.icinga.icinga_account import IcingaAccount
-from structs.ssh.ssh_connection_details import SSHDetails
-from ssh_api.exec_command import SSHConnection
+from apis.icinga_api.enums.icinga_objects import IcingaObject
+from apis.icinga_api.downtime import schedule_downtime, remove_downtime
+from apis.alertmanager_api.structs.alert_matcher_details import AlertMatcherDetails
+from apis.alertmanager_api.structs.alertmanager_account import AlertManagerAccount
+from apis.alertmanager_api.structs.silence_details import SilenceDetails
+from apis.icinga_api.structs.downtime_details import DowntimeDetails
+from apis.icinga_api.structs.icinga_account import IcingaAccount
+
+from apis.ssh_api.structs.ssh_connection_details import SSHDetails
+from apis.ssh_api.exec_command import SSHConnection
 
 
 # pylint:disable=too-many-locals

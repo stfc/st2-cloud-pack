@@ -1,11 +1,11 @@
 from unittest.mock import patch, MagicMock
 
-from enums.user_domains import UserDomains
-from structs.role_details import RoleDetails
+from apis.openstack_api.enums.user_domains import UserDomains
+from apis.openstack_api.structs.role_details import RoleDetails
 from workflows.role_actions import role_add, role_remove
 
 
-@patch("workflows.role_actions.openstack_roles.assign_role_to_user")
+@patch("workflows.role_actions.assign_role_to_user")
 def test_role_add(mock_api_assign_role_to_user):
     """
     Tests that role_add function forwards on request to openstack API role_add function
@@ -40,7 +40,7 @@ def test_role_add(mock_api_assign_role_to_user):
     assert status
 
 
-@patch("workflows.role_actions.openstack_roles.remove_role_from_user")
+@patch("workflows.role_actions.remove_role_from_user")
 def test_role_remove(mock_api_remove_role_from_user):
     """
     Tests that role_add function forwards on request to openstack API role_add function

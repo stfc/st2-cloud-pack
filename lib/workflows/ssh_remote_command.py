@@ -1,5 +1,5 @@
-from ssh_api.exec_command import SSHConnection
-from structs.ssh.ssh_connection_details import SSHDetails
+from apis.ssh_api.exec_command import SSHConnection
+from apis.ssh_api.structs.ssh_connection_details import SSHDetails
 
 
 def ssh_remote_command(host: str, username: str, private_key_path: str, command: str):

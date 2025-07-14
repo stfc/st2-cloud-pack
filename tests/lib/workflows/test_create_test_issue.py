@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 
-from structs.jira.jira_issue_details import IssueDetails
+from apis.jira_api.structs.jira_issue_details import IssueDetails
 from workflows.create_test_issue import create_test_issue
 
 

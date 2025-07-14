@@ -1,10 +1,10 @@
 from typing import Optional
 
-from structs.email.smtp_account import SMTPAccount
-from structs.email.email_template_details import EmailTemplateDetails
-from structs.email.email_params import EmailParams
+from apis.email_api.structs.smtp_account import SMTPAccount
+from apis.email_api.structs.email_template_details import EmailTemplateDetails
+from apis.email_api.structs.email_params import EmailParams
 
-from email_api.emailer import Emailer
+from apis.email_api.emailer import Emailer
 
 
 def send_test_email(

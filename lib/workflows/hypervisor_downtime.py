@@ -2,14 +2,15 @@ from datetime import datetime, timedelta
 
 import pytz
 
-from alertmanager_api.silence import schedule_silence
-from icinga_api.downtime import schedule_downtime
-from enums.icinga.icinga_objects import IcingaObject
-from structs.alertmanager.alert_matcher_details import AlertMatcherDetails
-from structs.alertmanager.alertmanager_account import AlertManagerAccount
-from structs.alertmanager.silence_details import SilenceDetails
-from structs.icinga.downtime_details import DowntimeDetails
-from structs.icinga.icinga_account import IcingaAccount
+from apis.alertmanager_api.silence import schedule_silence
+from apis.icinga_api.downtime import schedule_downtime
+from apis.icinga_api.enums.icinga_objects import IcingaObject
+from apis.icinga_api.structs.downtime_details import DowntimeDetails
+from apis.icinga_api.structs.icinga_account import IcingaAccount
+
+from apis.alertmanager_api.structs.alert_matcher_details import AlertMatcherDetails
+from apis.alertmanager_api.structs.alertmanager_account import AlertManagerAccount
+from apis.alertmanager_api.structs.silence_details import SilenceDetails
 
 
 # pylint:disable=too-many-locals

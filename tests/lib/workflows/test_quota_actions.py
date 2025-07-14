@@ -1,5 +1,5 @@
 from unittest.mock import patch, MagicMock
-from structs.quota_details import QuotaDetails
+from apis.openstack_api.structs.quota_details import QuotaDetails
 from workflows.quota_actions import quota_set
 
 

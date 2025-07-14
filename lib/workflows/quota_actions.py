@@ -1,6 +1,6 @@
 from openstack.connection import Connection
-from openstack_api import openstack_quota
-from structs.quota_details import QuotaDetails
+from apis.openstack_api import openstack_quota
+from apis.openstack_api.structs.quota_details import QuotaDetails
 
 
 def quota_set(
