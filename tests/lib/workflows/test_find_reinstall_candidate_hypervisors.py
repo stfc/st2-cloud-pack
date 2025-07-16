@@ -17,18 +17,37 @@ def test_find_reinstall_candidate_hypervisors(mock_hypervisor_query):
 
     params = {
         "cloud_account": "test_cloud",
+        "ip_regex": r"^172\.16\.(?:\d{1,3})\.(?:\d{1,3})$",
     }
     result = find_reinstall_candidate_hypervisors(**params)
 
     assert result == "mock_string"
 
-    mock_query.select_all.assert_called_once()
+    properties_to_select = [
+        "id",
+        "ip",
+        "memory_free",
+        "memory",
+        "memory_used",
+        "name",
+        "state",
+        "status",
+        "vcpus",
+        "vcpus_used",
+        "running_vms",
+        "disabled_reason",
+    ]
+
+    mock_query.select.assert_any_call(*properties_to_select)
+
     mock_query.where.assert_any_call(
         preset="MATCHES_REGEX",
         prop="ip",
         value=r"^172\.16\.(?:\d{1,3})\.(?:\d{1,3})$",
     )
     mock_query.run.assert_called_once_with("test_cloud")
+    mock_query.where(preset="EQUAL_TO", prop="state", value="up")
+    mock_query.where(preset="EQUAL_TO", prop="status", value="enabled")
 
 
 @patch("workflows.find_reinstall_candidate_hypervisors.HypervisorQuery")
@@ -49,7 +68,8 @@ def test_find_reinstall_candidate_hypervisors_with_params(
         "ip_regex": r"^10\.11\.(?:\d{1,3})\.(?:\d{1,3})$",
         "max_vcpus": 40,
         "max_vms": 30,
-        "properties_to_select": ["name", "vcpus_used"],
+        "include_down": True,
+        "include_disabled": True,
         "exclude_hostnames": ["rtx4000", "a100", "-"],
         "sort_by": "vcpus_used",
         "sort_direction": "asc",
@@ -58,7 +78,6 @@ def test_find_reinstall_candidate_hypervisors_with_params(
 
     result = find_reinstall_candidate_hypervisors(**params)
 
-    mock_query.select.assert_called_once_with("name", "vcpus_used")
     mock_query.where.assert_any_call(
         preset="MATCHES_REGEX",
         prop="ip",
@@ -72,6 +91,14 @@ def test_find_reinstall_candidate_hypervisors_with_params(
     )
     mock_query.where.assert_any_call(
         preset="LESS_THAN_OR_EQUAL_TO", prop="running_vms", value=params["max_vms"]
+    )
+    assert (
+        call(preset="EQUAL_TO", prop="state", value="up")
+        not in mock_query.where.call_args_list
+    )
+    assert (
+        call(preset="EQUAL_TO", prop="status", value="enabled")
+        not in mock_query.where.call_args_list
     )
     mock_query.sort_by.assert_called_once_with(("vcpus_used", "asc"))
     mock_query.run.assert_called_once_with("test_cloud")
@@ -90,16 +117,14 @@ def test_find_reinstall_candidate_hypervisors_with_params(
 
 
 @pytest.mark.parametrize(
-    "include_flavours, exclude_flavours, properties_to_select, expected_allowed",
+    "include_flavours, exclude_flavours, expected_allowed",
     [
-        # Case 1: Only include_flavours, name not in props
-        (["small", "medium"], None, ["vcpus_used"], ["hv1", "hv2", "hv4"]),
-        # Case 2: Only exclude_flavours, name not in props
-        (None, ["large"], ["vcpus_used"], ["hv1", "hv3"]),
-        # Case 3: Both include/exclude flavours, name not in props
-        (["small", "medium"], ["large"], ["vcpus_used"], ["hv1"]),
-        # Case 4: include_flavours with 'name' already in props
-        (["small", "medium"], None, ["name", "vcpus_used"], ["hv1", "hv2", "hv4"]),
+        # Case 1: Only include_flavours
+        (["small", "medium"], None, ["hv1", "hv2", "hv4"]),
+        # Case 2: Only exclude_flavours
+        (None, ["large"], ["hv1", "hv3"]),
+        # Case 3: Both include/exclude flavours
+        (["small", "medium"], ["large"], ["hv1"]),
     ],
 )
 @patch("workflows.find_reinstall_candidate_hypervisors.OpenstackConnection")
@@ -111,7 +136,6 @@ def test_include_and_exclude_flavours_combined(
     mock_openstack_connection,
     include_flavours,
     exclude_flavours,
-    properties_to_select,
     expected_allowed,
 ):
     """Test find_reinstall_candidate_hypervisors with flavour filtering."""
@@ -137,28 +161,13 @@ def test_include_and_exclude_flavours_combined(
 
     params = {
         "cloud_account": "test_cloud",
+        "ip_regex": r"^172\.16\.(?:\d{1,3})\.(?:\d{1,3})$",
         "include_flavours": include_flavours,
         "exclude_flavours": exclude_flavours,
-        "properties_to_select": properties_to_select,
     }
 
     _ = find_reinstall_candidate_hypervisors(**params)
 
-    # hv1 supports small and medium, no excluded flavours → allowed
-    # hv2 supports medium but also large → excluded
-    # hv3 supports only xlarge → not included
-    # hv4 supports small (included) but also large (excluded) → excluded
     mock_query.where.assert_any_call(
         preset="ANY_IN", prop="name", value=expected_allowed
     )
-    if "name" not in properties_to_select:
-        mock_query.select.assert_has_calls(
-            [
-                call(*properties_to_select),
-                call("name", *properties_to_select),
-                call(*properties_to_select),
-            ],
-            any_order=False,
-        )
-    else:
-        mock_query.select.assert_called_once_with(*properties_to_select)
