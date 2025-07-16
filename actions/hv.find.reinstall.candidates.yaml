@@ -45,13 +45,23 @@ parameters:
     required: true
   max_vcpus:
     default: 60
-    description: "choose the maximum number of 'vCPUs Used' to consider."
+    description: "Choose the maximum number of 'vCPUs Used' to consider."
     type: integer
     required: false
   max_vms:
-    description: "choose the maximum number of 'vCPUs Used' to consider."
+    description: "Choose the maximum number of 'vCPUs Used' to consider."
     type: integer
     required: false
+  include_down:
+    description: "Choose whether to include HVs with state 'Down'"
+    type: boolean
+    required: true
+    default: false
+  include_disabled:
+    description: "Choose whether to include HVs with status 'Disabled'"
+    type: boolean
+    required: true
+    default: false
   exclude_hostnames:
     description: "Optionally exclude hostnames containing any of a comma-spaced list of substrings
     I.e. for GPUs you could use:
@@ -64,43 +74,6 @@ parameters:
     type: array
   exclude_flavours: 
     description: "Optional comma-spaced list of flavour names, hypervisors that can provision any are excluded."
-  properties_to_select:
-    default:
-      - "local_disk_free"
-      - "local_disk"
-      - "local_disk_used"
-      - "id"
-      - "ip"
-      - "memory_free"
-      - "memory"
-      - "memory_used"
-      - "name"
-      - "state"
-      - "status"
-      - "vcpus"
-      - "vcpus_used"
-      - "running_vms"
-      - "disabled_reason"
-    type: array
-    description: "
-    A comma-spaced list of server properties to display for the resulting hypervisors - leave empty for all properties. One of:
-      - 'local_disk_free'
-      - 'local_disk'
-      - 'local_disk_used'
-      - 'id'
-      - 'ip'
-      - 'memory_free'
-      - 'memory'
-      - 'memory_used'
-      - 'name'
-      - 'state'
-      - 'status'
-      - 'vcpus'
-      - 'vcpus_used'
-      - 'runnings_vms'
-      - 'disabled_reason'
-    Anything else will raise an error"
-    required: false
   sort_by:
     description: "(Optional) hypervisor property to sort by"
     type: string
