@@ -1,5 +1,5 @@
 ---
-description: Search Icinga for Hosts/Services in a given state
+description: Search Icinga for Hosts/Services by name
 enabled: true
 entry_point: src/openstack_actions.py
 name: icinga.search.by.name

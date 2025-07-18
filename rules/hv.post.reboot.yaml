@@ -12,7 +12,7 @@ criteria:
     type: equals
     pattern: REBOOTED
 trigger:
-  type: "stackstorm_openstack.hypervisor.state_change"
+  type: "stackstorm_openstack.hypervisor.state.change"
 
 action:
   ref: "stackstorm_openstack.hv.post.reboot"

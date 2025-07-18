@@ -54,7 +54,7 @@ class HypervisorStateSensor(PollingSensor):
                     "current_state": current_state.name,
                 }
                 self.sensor_service.dispatch(
-                    trigger="stackstorm_openstack.hypervisor.state_change",
+                    trigger="stackstorm_openstack.hv.change.state",
                     payload=payload,
                 )
                 self.sensor_service.set_value(

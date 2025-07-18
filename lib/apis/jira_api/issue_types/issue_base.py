@@ -17,3 +17,20 @@ class IssueBase(ABC):  # pylint: disable=too-few-public-methods
     @property
     def properties(self):
         return self._create_properties()
+
+    @staticmethod
+    def _get_text(all_props, prop_id):
+        return getattr(all_props, prop_id).text
+
+    @staticmethod
+    def _get_int(all_props, prop_id):
+        return int(getattr(all_props, prop_id).text)
+
+    @staticmethod
+    def _get_adf_text(all_props, prop_id):
+        content = getattr(all_props, prop_id).adf.content
+        return content[0].content[0].text if content else ""
+
+    @staticmethod
+    def _get_choice(all_props, prop_id):
+        return getattr(all_props, prop_id).choices[0]

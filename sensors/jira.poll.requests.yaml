@@ -1,13 +1,13 @@
 ---
 class_name: JiraIssueSensor
-entry_point: src/jira_issue_sensor.py
+entry_point: src/jira_poll_requests_sensor.py
 description: Search for new JIRA issues
 poll_interval: 300
 enabled: true
 sensor:
   jira_project: "STFCCLOUD"
 trigger_types:
-  - name: "jira.request_new_project"
+  - name: "jira.request.new.project"
     description: "Triggers when there is a new JIRA issue requesting the creation of a new OpenStack project"
     payload_schema:
       type: "object"

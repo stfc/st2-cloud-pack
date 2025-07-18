@@ -5,10 +5,10 @@ description: "Sends Jira Ticket when a Router with an Internal gateway address i
 enabled: true
 
 trigger:
-  type: "stackstorm_openstack.openstack_router_issue"
+  type: "stackstorm_openstack.router.issue"
 
 action:
-  ref: "jira.create_issue"
+  ref: "jira.create.issue"
   parameters:
     summary: "[Stackstorm Alert]: Router with Gateway on Internal Network"
     type: Problem

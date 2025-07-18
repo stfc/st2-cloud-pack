@@ -2,7 +2,7 @@
 description: Creates a new Project in OpenStack. This requires an associated JIRA ticket, for manual Project creation see project.create
 enabled: true
 entry_point: src/openstack_actions.py
-name: jira.request_new_project
+name: jira.request.new.project
 parameters:
   lib_entry_point:
     type: string

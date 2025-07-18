@@ -1,11 +1,11 @@
 ---
 class_name: OpenstackRouterSensor
-entry_point: src/openstack_router_sensor.py
+entry_point: src/router_poll_issues_sensor.py
 description: Monitor for issues with openstack routers
 poll_interval: 1800 # 30 mins
 enabled: true
 trigger_types:
-  - name: "openstack_router_issue"
+  - name: "router.issue"
     description: "Triggers when a issue with a router is found"
     payload_schema:
       type: "object"

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from apis.openstack_api.enums.issue_types import IssueType
+from apis.jira_api.enums.jira_issue_types import JiraIssueType
 
 
 @dataclass
@@ -11,7 +11,7 @@ class IssueDetails:
     """
 
     project_id: str
-    issue_type: IssueType
+    issue_type: JiraIssueType
     summary: str
     description: str
     components: List[Dict[str, str]]

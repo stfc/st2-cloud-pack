@@ -2,7 +2,7 @@
 description: Schedule a downtime a Hypervisor in Icinga and AlertManager, mutes all alerts for the hypervisor
 enabled: true
 entry_point: src/openstack_actions.py
-name: hypervisor.downtime
+name: hv.downtime
 parameters:
   hypervisor_name:
     type: string

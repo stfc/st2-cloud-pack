@@ -2,7 +2,7 @@
 description: Create a test jira task
 enabled: true
 entry_point: src/openstack_actions.py
-name: jira.create_test_issue
+name: jira.create.task
 parameters:
   timeout:
     default: 5400
@@ -16,7 +16,7 @@ parameters:
     required: true
   issue_type:
     description: "
-    The type of issue, select from
+    The type of task, select from
     - 'Task'
     - 'Epic'
     - 'Bug'"
@@ -29,11 +29,11 @@ parameters:
       - "Bug"
   summary:
     type: string
-    description: "An issue summary"
+    description: "An task summary"
     required: true
   description:
     type: string
-    description: "A description of the issue"
+    description: "A description of the task"
     required: true
   components:
     type: array

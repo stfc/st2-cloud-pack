@@ -1,5 +1,5 @@
 ---
-name: chatops_pr_reminder_global
+name: chatops.pr.reminder.global
 pack: stackstorm_openstack
 description: Send a global reminder request every Monday and Wednesday at 9AM to the ChatOps application
 enabled: true
@@ -14,6 +14,6 @@ trigger:
 
 
 action:
-  ref: stackstorm_openstack.chatops.pr_reminder
+  ref: stackstorm_openstack.chatops.pr.reminder
   parameters:
     chatops_reminder_type: "global"

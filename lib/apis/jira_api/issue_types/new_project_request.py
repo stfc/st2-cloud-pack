@@ -6,42 +6,25 @@ class NewProjectRequestIssue(IssueBase):  # pylint: disable=too-few-public-metho
     """Issue class to handle new project requests"""
 
     def _create_properties(self) -> Dict:
-        properties = {}
-        proforma_form = [
+        proforma_form = next(
             prop
             for prop in self.conn.issue_properties(self.issue_key)
             if prop.key == "proforma.forms.i1"
-        ][0]
+        )
         answers = proforma_form.value.state.answers
 
-        properties["project_name"] = getattr(answers, "3").text
-        potential_users_info = getattr(answers, "29").adf.content
-        if potential_users_info:
-            # the value is not an empty string
-            properties["users"] = potential_users_info[0].content[0].text
-        else:
-            properties["users"] = ""
-        properties["cpus"] = int(getattr(answers, "32").text)
-        properties["vms"] = int(getattr(answers, "45").text)
-        properties["memory"] = int(getattr(answers, "33").text)
-        properties["shared_storage"] = int(getattr(answers, "34").text)
-        properties["object_storage"] = int(getattr(answers, "35").text)
-        properties["block_storage"] = int(getattr(answers, "44").text)
-        potential_gpus_info = getattr(answers, "17").adf.content
-        if potential_gpus_info:
-            # the value is not an empty string
-            properties["gpus"] = potential_gpus_info[0].content[0].text
-        else:
-            properties["gpus"] = ""
-        properties["contact_email"] = getattr(answers, "25").text
-        properties["reporting_fed_id"] = getattr(answers, "42").text
-
-        if getattr(answers, "31").choices[0] == "1":
-            properties["externally_accessible"] = True
-        else:
-            properties["externally_accessible"] = False
-
-        # This can only be true otherwise the form cannot be submitted
-        properties["tos_agreement"] = True
-
-        return properties
+        return {
+            "project_name": self._get_text(answers, "3"),
+            "users": self._get_adf_text(answers, "29"),
+            "cpus": self._get_int(answers, "32"),
+            "vms": self._get_int(answers, "45"),
+            "memory": self._get_int(answers, "33"),
+            "shared_storage": self._get_int(answers, "34"),
+            "object_storage": self._get_int(answers, "35"),
+            "block_storage": self._get_int(answers, "44"),
+            "gpus": self._get_adf_text(answers, "17"),
+            "contact_email": self._get_text(answers, "25"),
+            "reporting_fed_id": self._get_text(answers, "42"),
+            "externally_accessible": self._get_choice(answers, "31") == "1",
+            "tos_agreement": True,  # always true if form is submitted
+        }

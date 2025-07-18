@@ -13,16 +13,27 @@ As with all StackStorm Packs, this Pack contains Actions, Rules and Sensors.
 
 #### Actions
 
-Actions are located in the `actions` folder - holding yaml configuration for each action the pack supports, along with a `src` folder.
-The `src` folder contains a Python code that handles an Action or a collection of Actions.
-- the main purpose of these handlers is to validate inputs and forward onto API methods held in `lib` folder
-- we aim to simplify much of these files in favor of `workflows` - see below.
+Actions are located in the `actions` folder
+    - each yaml file contains configuration for each action the pack supports
+    - the `src` subfolder contains a Python code that handles an action, parses it and forwards it to functions in the
+`lib` layer .
+
 
 #### Orquesta Workflows
 
-We have several Orquesta workflows implemented `actions/workflows` - mainly to create and configure projects in Openstack.
+We have several Orquesta workflows implemented `actions/workflows`
 
-We have decided that moving forward, we will not be using Orquesta workflows as they are hard to unittest.
+We only use orquesta workflows for simple workflows - forwarding output from one action to another.
+
+We don't use orquesta to:
+1. Perform complex logic
+2. Using operators like `for` or `if` where it can be helped
+3. Parse any data - must forward onto a python function to handle parsing
+4. Store any state - workflows must be stateless if at all possible
+
+This is because we cannot easily test orquesta workflows and so complex logic should be handled in Python files that
+can be unit-tested separately
+
 
 #### Rules and Sensors
 
@@ -37,54 +48,40 @@ Most of the implementation details for the pack's actions can be found in the `l
 
 This folder contains several python submodules - which each implement APIs that the pack's actions call.
 
-There are currently 4 API submodules:
+There are currently 7 API submodules (under `apis`:
 
 1. Email API - This API is responsible for sending emails, and handling email-related actions.
    - see [EMAIL_API.md](EMAIL_API.md) for details
 
-
-2. Jupyter API - This API is responsible for handling actions related to our JupyterHub instance.
-   - see [JUPYTER_API.md](JUPYTER_API.md) for details
-
-
-3. Openstack API - The Largest API - responsible for handling Openstack actions (which includes a majority of the pack's action).
+2. Openstack API - The Largest API - responsible for handling Openstack actions (which includes a majority of the pack's action).
    - This API, more than any of the others, requires major refactoring - and is a WIP
-   - see [OPENSTACK_API.md](OPENSTACK_API.md) for details
 
 
-4. Openstack Query API - A python library developed by the Cloud Team to make querying Openstack easier.
+3. Openstack Query API - A python library developed by the Cloud Team to make querying Openstack easier.
    - See [Openstack Query README.md](https://github.com/stfc/openstack-query-library/blob/main/README.md)
 
+4. Icinga API - This API is responsible for handling actions related to Icinga alerts
+    - this will likely be deprecated soon as we no longer use Icinga managing for our services
 
-There are also several folders which contain shared components used by multiple API submodules.
+5. Alertmanager API - this API is responsible for handling actions related to Alertmanager alerts
 
-1. `custom_types` - contains Python Type Declarations for submodules
-2. `enums` - contains Enums used throughout the pack
-3. `exceptions` - contains exception declarations that are used throughout the pack for custom error messages
-4. `structs` - contains dataclasses that are used throughout the pack
+6. SSH API - a simple API that exposes a single `exec_command` function for running various scripts on our hypverisors
+    - scripts that can be run are placed on the hosts
 
-Many of these folders contain information that really should be tightly coupled to the API module
-    - see issue [188](https://github.com/stfc/st2-cloud-pack/issues/188)
+7. Jira API - this API is responsible for handling actions related to JSM
+
+
+NOTE: we're aware that packs exist for Jira, SSH, openstack etc. We decided to maintain our own code for these services
+so we can write complex workflows and customise them to work for our team
 
 
 ### `lib/workflows` folder
 
-`lib/workflows` module contains standalone scripts that handle stackstorm Actions that have `workflow_actions.py` as
-their entrypoint.
-
-`workflow_actions.py` is aimed to be the simplest StackStorm Action handler possible.
-It's job is to:
-- Forward user-defined inputs from the Web UI to a script in `workflows`.
-- Evaluate and forward StackStorm-specific stored info - like pack config info
-
-We aim to convert all existing and new actions to use `workflow_actions` to simplify code structure.
-See issue [189](https://github.com/stfc/st2-cloud-pack/issues/189) for details
-
+`lib/workflows` contains the entrypoints to many complex actions. It is our way of stringing together multiple smaller
+actions like Orquesta but allows us to add unittests
 
 ### TODO Folder
-
 A set of Actions/Workflows that need to be implemented. These would be good-first issues!
-
 Many of them currently there are waiting to be re-implemented using the Query Library and workflows
 
 
@@ -124,21 +121,3 @@ For actions the architecture looks something like:
 
 This makes it trivial to inject mocks and tests into files contained within `lib`,
 and allows us to re-use various API calls and functionality.
-
-A complete example can be found in the following files:
-[actions/jupyter](https://github.com/stfc/st2-cloud-pack/blob/main/actions/src/jupyter.py),
-[lib/jupyter_api](https://github.com/stfc/st2-cloud-pack/blob/main/lib/jupyter_api/user_api.py)
-
-and their associated tests:
-[test_jupyter_actions](https://github.com/stfc/st2-cloud-pack/blob/main/tests/actions/test_jupyter_actions.py),
-[test_user_api](https://github.com/stfc/st2-cloud-pack/blob/main/tests/lib/jupyter/test_user_api.py).
-
-
-## Query Library
-We've implemented a python package to allow querying for OpenStack resources.
-This is built on top of the standard openstacksdk library and implements more query features, and allows running
-more complex queries.
-
-See the Query Library [README.md](https://github.com/stfc/openstack-query-library/blob/main/README.md)
-
-This will soon be extracted out into a separate repo soon.

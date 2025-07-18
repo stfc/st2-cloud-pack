@@ -1,8 +1,8 @@
 ---
-description: Common Queries about Hypervisors
+description: Find hypervisors that have no VMs running on them
 enabled: true
 entry_point: src/openstack_actions.py
-name: hypervisor.find.empty
+name: hv.find.empty
 parameters:
   lib_entry_point:
     default: workflows.find_empty_hypervisors.find_empty_hypervisors

@@ -13,7 +13,7 @@ criteria:
     pattern: PENDING_MAINTENANCE
 
 trigger:
-  type: "stackstorm_openstack.hypervisor.state_change"
+  type: "stackstorm_openstack.hypervisor.state.change"
 
 action:
   ref: "stackstorm_openstack.hypervisor.drain"

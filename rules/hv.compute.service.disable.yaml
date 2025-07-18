@@ -12,7 +12,7 @@ criteria:
     pattern: PENDING_MAINTENANCE
 
 trigger:
-  type: "stackstorm_openstack.hypervisor.state_change"
+  type: "stackstorm_openstack.hv.state.change"
 
 action:
   ref: "stackstorm_openstack.hv.compute.service.disable"

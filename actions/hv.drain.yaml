@@ -1,8 +1,8 @@
 ---
 description: Migrates servers off of the given hypervisor(s)
 enabled: true
-entry_point: "workflows/hypervisor.drain.workflow.yaml"
-name: hypervisor.drain
+entry_point: "workflows/hv.drain.workflow.yaml"
+name: hv.drain
 runner_type: orquesta
 parameters:
   cloud_account:

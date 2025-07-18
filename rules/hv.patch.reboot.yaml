@@ -11,7 +11,7 @@ criteria:
     type: equals
     pattern: DRAINED
 trigger:
-  type: "stackstorm_openstack.hypervisor.state_change"
+  type: "stackstorm_openstack.hv.state.change"
 action:
   ref: "stackstorm_openstack.hv.patch.reboot"
   parameters:

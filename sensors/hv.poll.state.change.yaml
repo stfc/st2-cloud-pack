@@ -1,11 +1,11 @@
 ---
 class_name: HypervisorStateSensor
-entry_point: src/hypervisor_state_sensor.py
+entry_point: src/hv_state_change_sensor.py
 description: Monitor state of Hypervisors
 poll_interval: 600
 enabled: false
 trigger_types:
-  - name: "hypervisor.state_change"
+  - name: "hv.poll.state.change"
     description: "Triggers when the state of the hypervisor changes"
     payload_schema:
       type: "object"

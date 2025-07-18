@@ -1,13 +1,13 @@
 ---
-name: "jira.request_new_project"
+name: "jira.request.create.project"
 pack: "stackstorm_openstack"
 description: "Handles JIRA issues requesting OpenStack project creation."
 enabled: true
 
 trigger:
-  type: "stackstorm_openstack.jira.request_new_project"
+  type: "stackstorm_openstack.jira.request.create.project"
 
 action:
-  ref: "stackstorm_openstack.jira.request_new_project"
+  ref: "stackstorm_openstack.jira.request.create.project"
   parameters:
     issue_key : "{{ trigger.issue_key }}"
