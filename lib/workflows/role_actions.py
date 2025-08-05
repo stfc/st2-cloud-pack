@@ -1,8 +1,11 @@
 from openstack.connection import Connection
 
-from enums.user_domains import UserDomains
-from structs.role_details import RoleDetails
-from openstack_api import openstack_roles
+from apis.openstack_api.enums.user_domains import UserDomains
+from apis.openstack_api.openstack_roles import (
+    assign_role_to_user,
+    remove_role_from_user,
+)
+from apis.openstack_api.structs.role_details import RoleDetails
 
 
 def role_add(
@@ -27,7 +30,7 @@ def role_add(
         role_identifier=role_identifier,
         user_domain=UserDomains.from_string(user_domain),
     )
-    openstack_roles.assign_role_to_user(conn, details=details)
+    assign_role_to_user(conn, details=details)
     return True  # the above method always returns None
 
 
@@ -53,5 +56,5 @@ def role_remove(
         role_identifier=role_identifier,
         user_domain=UserDomains.from_string(user_domain),
     )
-    openstack_roles.remove_role_from_user(conn, details=details)
+    remove_role_from_user(conn, details=details)
     return True

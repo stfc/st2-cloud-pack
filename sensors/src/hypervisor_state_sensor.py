@@ -1,5 +1,5 @@
-from openstack_api.openstack_hypervisor import get_hypervisor_state
-from openstack_query_api.hypervisor_queries import query_hypervisor_state
+from apis.openstack_api.openstack_hypervisor import get_hypervisor_state
+from apis.openstack_query_api.hypervisor_queries import query_hypervisor_state
 from st2reactor.sensor.base import PollingSensor
 
 
