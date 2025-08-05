@@ -2,12 +2,12 @@ from datetime import datetime, timedelta
 
 import pytz
 
-from apis.alertmanager_api.silence import schedule_silence
 from apis.icinga_api.downtime import schedule_downtime
 from apis.icinga_api.enums.icinga_objects import IcingaObject
 from apis.icinga_api.structs.downtime_details import DowntimeDetails
 from apis.icinga_api.structs.icinga_account import IcingaAccount
 
+from apis.alertmanager_api.silence import schedule_silence
 from apis.alertmanager_api.structs.alert_matcher_details import AlertMatcherDetails
 from apis.alertmanager_api.structs.alertmanager_account import AlertManagerAccount
 from apis.alertmanager_api.structs.silence_details import SilenceDetails

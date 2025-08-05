@@ -1,12 +1,13 @@
 from unittest.mock import MagicMock
 import pytest
 
+from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
+
 from apis.openstack_api.enums.user_domains import UserDomains
 from apis.openstack_api.openstack_roles import (
     assign_role_to_user,
     remove_role_from_user,
 )
-from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from apis.openstack_api.structs.role_details import RoleDetails
 
 

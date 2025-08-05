@@ -8,12 +8,11 @@ from openstack.network.v2.security_group_rule import SecurityGroupRule
 from apis.openstack_api.enums.ip_version import IPVersion
 from apis.openstack_api.enums.network_direction import NetworkDirection
 from apis.openstack_api.enums.protocol import Protocol
-
-from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
-
 from apis.openstack_api.structs.security_group_rule_details import (
     SecurityGroupRuleDetails,
 )
+
+from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 
 
 def create_http_security_group(conn, project_identifier: str):

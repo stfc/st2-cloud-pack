@@ -3,9 +3,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from requests import HTTPError
+from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 
 from apis.icinga_api.enums.icinga_objects import IcingaObject
-from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from apis.icinga_api.downtime import remove_downtime, schedule_downtime
 from apis.icinga_api.structs.downtime_details import DowntimeDetails
 
