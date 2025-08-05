@@ -3,7 +3,6 @@ from typing import Optional
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.email_params import EmailParams
-
 from apis.email_api.emailer import Emailer
 
 

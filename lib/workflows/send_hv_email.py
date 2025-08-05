@@ -1,6 +1,5 @@
 from typing import List, Optional, Union
 
-from apis.email_api.emailer import Emailer
 from openstackquery import ServerQuery, UserQuery
 
 from apis.openstack_api.enums.cloud_domains import CloudDomains
@@ -8,6 +7,8 @@ from apis.openstack_api.enums.cloud_domains import CloudDomains
 from apis.email_api.structs.email_params import EmailParams
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
+from apis.email_api.emailer import Emailer
+
 from workflows.to_webhook import to_webhook
 
 

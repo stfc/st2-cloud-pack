@@ -1,9 +1,8 @@
 import json
-
 import requests
-from apis.icinga_api.enums.icinga_objects import IcingaObject
 from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from requests.auth import HTTPBasicAuth
+from apis.icinga_api.enums.icinga_objects import IcingaObject
 from apis.icinga_api.structs.downtime_details import DowntimeDetails
 from apis.icinga_api.structs.icinga_account import IcingaAccount
 

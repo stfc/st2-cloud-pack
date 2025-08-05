@@ -1,13 +1,13 @@
 import logging
 from typing import Optional, List
 
+from openstack.connection import Connection
+from openstack.identity.v3.project import Project
+
 from apis.openstack_api.enums.network_providers import NetworkProviders
 from apis.openstack_api.enums.networks import Networks
 from apis.openstack_api.enums.rbac_network_actions import RbacNetworkActions
 from apis.openstack_api.enums.user_domains import UserDomains
-
-from openstack.connection import Connection
-from openstack.identity.v3.project import Project
 
 from apis.openstack_api.openstack_network import (
     create_network,

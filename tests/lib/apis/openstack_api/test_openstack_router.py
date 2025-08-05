@@ -1,12 +1,13 @@
 from unittest.mock import MagicMock
 import pytest
 
+from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
+
 from apis.openstack_api.openstack_router import (
     add_interface_to_router,
     check_for_internal_routers,
     create_router,
 )
-from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from apis.openstack_api.structs.router_details import RouterDetails
 
 

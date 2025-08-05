@@ -1,6 +1,8 @@
 from unittest.mock import MagicMock, NonCallableMock, call
 import pytest
 
+from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
+
 from apis.openstack_api.enums.network_providers import NetworkProviders
 from apis.openstack_api.enums.rbac_network_actions import RbacNetworkActions
 from apis.openstack_api.openstack_network import (
@@ -9,8 +11,6 @@ from apis.openstack_api.openstack_network import (
     delete_network,
     create_network_rbac,
 )
-
-from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from apis.openstack_api.structs.network_details import NetworkDetails
 from apis.openstack_api.structs.network_rbac import NetworkRbac
 

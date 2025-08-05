@@ -5,9 +5,8 @@ from openstack.network.v2.floating_ip import FloatingIP
 from openstack.network.v2.network import Network
 from openstack.network.v2.rbac_policy import RBACPolicy
 
-from apis.openstack_api.enums.rbac_network_actions import RbacNetworkActions
 from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
-
+from apis.openstack_api.enums.rbac_network_actions import RbacNetworkActions
 from apis.openstack_api.structs.network_details import NetworkDetails
 from apis.openstack_api.structs.network_rbac import NetworkRbac
 

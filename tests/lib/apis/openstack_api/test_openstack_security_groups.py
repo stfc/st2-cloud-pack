@@ -1,11 +1,11 @@
 from unittest.mock import MagicMock, NonCallableMock
 import pytest
 
+from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
+
 from apis.openstack_api.enums.ip_version import IPVersion
 from apis.openstack_api.enums.network_direction import NetworkDirection
 from apis.openstack_api.enums.protocol import Protocol
-from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
-
 from apis.openstack_api.openstack_security_groups import (
     create_external_security_group_rules,
     create_http_security_group,
