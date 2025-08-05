@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from apis.openstack_api.enums.issue_types import IssueType
+from apis.jira_api.enums.issue_types import IssueType
 
 
 @dataclass
