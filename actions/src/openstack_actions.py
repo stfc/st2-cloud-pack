@@ -1,10 +1,10 @@
 from importlib import import_module
 from st2common.runners.base_action import Action
 
-from apis.openstack_api import OpenstackConnection
-from apis.alertmanager_api.structs import AlertManagerAccount
-from apis.email_api import SMTPAccount
-from apis.icinga_api import IcingaAccount
+from apis.openstack_api.openstack_connection import OpenstackConnection
+from apis.alertmanager_api.structs.alertmanager_account import AlertManagerAccount
+from apis.email_api.structs.smtp_account import SMTPAccount
+from apis.icinga_api.structs.icinga_account import IcingaAccount
 from apis.jira_api.structs.jira_account import JiraAccount
 
 
