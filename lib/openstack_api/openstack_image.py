@@ -1,5 +1,7 @@
 from openstack.connection import Connection
 
+def get_image_metadata():
+    ...
 
 def share_image_to_project(
     conn: Connection,
