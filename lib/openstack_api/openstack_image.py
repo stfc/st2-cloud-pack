@@ -1,13 +1,13 @@
-from typing import Dict, List
 from openstack.connection import Connection
+from openstack.image.v2.image import Image
 
-def get_image_metadata(conn: Connection) -> List[Dict]:
+
+def get_all_image_metadata(conn: Connection):
     """
-    Returns metadata for the available images
-    :param conn: openstack connection object
+    Returns a list of images and their associated metadata
+    :param conn: Openstack connection
     :type conn: Connection
     :return: List of images and their associated metadata
-    :rtype: List[Dict]
     """
     all_image_metadata = []
 
@@ -19,7 +19,7 @@ def get_image_metadata(conn: Connection) -> List[Dict]:
         image_metadata["Visibility"] = image.visibility
         image_metadata["Min Disk (GB)"] = image.min_disk
         image_metadata["Min RAM (MB)"] = image.min_ram
-        image_metadata["OS Type"] = image.os_type
+        image_metadata["OS Type"] = image.get('os_type')
         image_metadata["Metadata"] = image.properties
         all_image_metadata.append(image_metadata)
 
