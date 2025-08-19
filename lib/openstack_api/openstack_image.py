@@ -19,7 +19,7 @@ def get_all_image_metadata(conn: Connection):
         image_metadata["Visibility"] = image.visibility
         image_metadata["Min Disk (GB)"] = image.min_disk
         image_metadata["Min RAM (MB)"] = image.min_ram
-        image_metadata["OS Type"] = image.get('os_type')
+        image_metadata["OS Type"] = image.get("os_type")
         image_metadata["Metadata"] = image.properties
         all_image_metadata.append(image_metadata)
 

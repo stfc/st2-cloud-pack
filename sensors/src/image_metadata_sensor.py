@@ -43,12 +43,12 @@ class ImageMetadataSensor(PollingSensor):
                     "image_visibility": image["Visibility"],
                     "image_min_disk": image["Min Disk (GB)"],
                     "image_min_ram": image["Min RAM (MB)"],
-                    "image_os_type": image["OS Type"]
-                    # "image_metadata": image["Metadata"]
+                    "image_os_type": image["OS Type"],
+                    "image_metadata": image["Metadata"],
                 }
                 self.sensor_service.dispatch(
                     trigger="stackstorm_openstack.image.metadata_change",
-                    payload=payload
+                    payload=payload,
                 )
 
     def cleanup(self):
