@@ -2,7 +2,7 @@
   class_name: ImageMetadataSensor
   entry_point: src/image_metadata_sensor.py
   description: Detect changes in image metadata
-  poll_interval: 600
+  poll_interval: 86400
   enabled: false
   trigger_types:
   - name: "image.metadata_change"
@@ -10,9 +10,6 @@
     payload_schema:
       type: "object"
       properties:
-        image_id:
-          type: "string"
-          description: "Image ID"
-        image_name:
-          type: "string"
-          description: "Image Name"
+        image_metadata:
+          type: "list"
+          description: "All image metadata"

@@ -1,5 +1,6 @@
+import openstack
+
 from openstack_api.openstack_image import get_image_metadata
-from openstack_query_api.image_queries import query_image_metadata
 from st2reactor.sensor.base import PollingSensor
 
 
@@ -20,49 +21,42 @@ class ImageMetadataSensor(PollingSensor):
         super().__init__(
             sensor_service=sensor_service, config=config, poll_interval=poll_interval
         )
+        self.conn = None
         self._log = self._sensor_service.get_logger(__name__)
         self.cloud_account = self.config["sensor_cloud_account"]
 
     def setup(self):
-        pass
+        self.conn = openstack.connect(cloud='dev')
 
     def poll(self):
         """
-        Polls the metadata of images
+        Polls the current dev cloud image metadata.
         """
-
-        data = query_image_metadata(self.cloud_account)
-        for image in data:
-            if not isinstance(image, dict):
-                continue
-            current_state = get_image_metadata()
-
-            payload = {
-                "hypervisor_name": hypervisor["hypervisor_name"],
-                "previous_state": prev_state,
-                "current_state": current_state.name,
-            }
-            self.sensor_service.dispatch(
-                trigger="stackstorm_openstack.hypervisor.state_change",
-                payload=payload,
-            )
-            self.sensor_service.set_value(
-                name=hypervisor["hypervisor_name"],
-                value=current_state.name,
-                ttl=self.state_expire_after,
-            )
+        all_image_metadata = get_image_metadata(self.conn)
+        payload = {"image_metadata": all_image_metadata}
+        self.sensor_service.dispatch(
+            trigger="stackstorm_openstack.image.metadata_change",
+            payload=payload)
+        self.sensor_service.set_value(
+            name="dev_cloud_image_metadata",
+            value=payload)
 
     def cleanup(self):
         """
         This is called when the st2 system goes down. You can perform cleanup operations like
         closing the connections to external system here.
         """
+        self.conn.close()
+        self.conn = None
 
     def add_trigger(self, trigger):
         """This method is called when trigger is created"""
+        pass
 
     def update_trigger(self, trigger):
         """This method is called when trigger is updated"""
+        pass
 
     def remove_trigger(self, trigger):
         """This method is called when trigger is deleted"""
+        pass

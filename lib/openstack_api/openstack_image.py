@@ -1,25 +1,26 @@
+from typing import Dict, List
 from openstack.connection import Connection
 
-def get_image_metadata():
-    ...
-
-def share_image_to_project(
-    conn: Connection,
-    image_identifier: str,
-    project_identifier: str,
-) -> None:
+def get_image_metadata(conn: Connection) -> List[Dict]:
     """
-    Shares given image with given project
-
+    Returns metadata for the available images
     :param conn: openstack connection object
-    :param image_identifier: The image name or ID that is shared with project
-    :param project_identifier: Project name or ID to share image to
+    :type conn: Connection
+    :return: List of images and their associated metadata
+    :rtype: List[Dict]
     """
-    image = conn.image.find_image(image_identifier, ignore_missing=False)
-    destination_project = conn.identity.find_project(
-        project_identifier, ignore_missing=False
-    )
+    all_image_metadata = []
 
-    conn.image.add_member(image["id"], member_id=destination_project["id"])
+    for image in conn.image.images():
+        image_metadata = {}
+        image_metadata["Image ID"] = image.id
+        image_metadata["Name"] = image.name
+        image_metadata["Status"] = image.status
+        image_metadata["Visibility"] = image.visibility
+        image_metadata["Min Disk (GB)"] = image.min_disk
+        image_metadata["Min RAM (MB)"] = image.min_ram
+        image_metadata["OS Type"] = image.os_type
+        image_metadata["Metadata"] = image.properties
+        all_image_metadata.append(image_metadata)
 
-    conn.image.update_member(destination_project["id"], image["id"], status="accepted")
+    return all_image_metadata

@@ -1,4 +1,5 @@
 from openstackquery.api.query_objects import ImageQuery
+import openstack
 
 
 def query_image_metadata(cloud_account: str):
