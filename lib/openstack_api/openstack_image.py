@@ -1,5 +1,4 @@
 from openstack.connection import Connection
-from openstack.image.v2.image import Image
 
 
 def get_all_image_metadata(conn: Connection):
