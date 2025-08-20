@@ -10,3 +10,4 @@ coverage.coverage
 .vscode/settings.json
 
 venv/
+.venv/
