@@ -1,5 +1,4 @@
 from openstack_api.openstack_connection import OpenstackConnection
-from openstack_api.openstack_image import get_all_image_metadata
 from st2reactor.sensor.base import PollingSensor
 
 
@@ -31,20 +30,21 @@ class ImageMetadataSensor(PollingSensor):
 
     def poll(self):
         """
-        Polls the dev cloud image metadata.
+        Polls the dev cloud images and for each image dispatches a payload containing
+        the image's properties, including metadata.
         """
         with OpenstackConnection(self.cloud_account) as conn:
-            for image in get_all_image_metadata(conn):
-                self._log.info("Dispatching trigger for image: %s", image["Image ID"])
+            for image in conn.image.images():
+                self._log.info("Dispatching trigger for image: %s", image.id)
                 payload = {
-                    "image_id": image["Image ID"],
-                    "image_name": image["Name"],
-                    "image_status": image["Status"],
-                    "image_visibility": image["Visibility"],
-                    "image_min_disk": image["Min Disk (GB)"],
-                    "image_min_ram": image["Min RAM (MB)"],
-                    "image_os_type": image["OS Type"],
-                    "image_metadata": image["Metadata"],
+                    "image_id": image.id,
+                    "image_name": image.name,
+                    "image_status": image.status,
+                    "image_visibility": image.visibility,
+                    "image_min_disk": image.min_disk,
+                    "image_min_ram": image.min_ram,
+                    "image_os_type": image.os_type,
+                    "image_metadata": image.properties,
                 }
                 self.sensor_service.dispatch(
                     trigger="stackstorm_openstack.image.metadata_change",
