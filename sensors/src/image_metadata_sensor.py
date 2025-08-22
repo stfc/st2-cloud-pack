@@ -23,15 +23,12 @@ class ImageMetadataSensor(PollingSensor):
         self.cloud_account = self.config["sensor_cloud_account"]
 
     def setup(self):
-        """
-        Setup stuff goes here. For example, you might establish connections
-        to external system once and reuse it. This is called only once by the system.
-        """
+        pass
 
     def poll(self):
         """
         Polls the dev cloud images and for each image dispatches a payload containing
-        the image's properties, including metadata.
+        the image's properties/metadata.
         """
         with OpenstackConnection(self.cloud_account) as conn:
             for image in conn.image.images():
@@ -52,16 +49,13 @@ class ImageMetadataSensor(PollingSensor):
                 )
 
     def cleanup(self):
-        """
-        This is called when the st2 system goes down. You can perform cleanup operations like
-        closing the connections to external system here.
-        """
+        pass
 
     def add_trigger(self, trigger):
-        """This method is called when trigger is created"""
+        pass
 
     def update_trigger(self, trigger):
-        """This method is called when trigger is updated"""
+        pass
 
     def remove_trigger(self, trigger):
-        """This method is called when trigger is deleted"""
+        pass
