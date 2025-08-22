@@ -23,7 +23,9 @@ class ImageMetadataSensor(PollingSensor):
         self.cloud_account = self.config["sensor_cloud_account"]
 
     def setup(self):
-        pass
+        """
+        Stub
+        """
 
     def poll(self):
         """
@@ -49,13 +51,21 @@ class ImageMetadataSensor(PollingSensor):
                 )
 
     def cleanup(self):
-        pass
+        """
+        Stub
+        """
 
     def add_trigger(self, trigger):
-        pass
+        """
+        Stub
+        """
 
     def update_trigger(self, trigger):
-        pass
+        """
+        Stub
+        """
 
     def remove_trigger(self, trigger):
-        pass
+        """
+        Stub
+        """
