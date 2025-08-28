@@ -205,3 +205,9 @@ chatops_sensor:
     channel:
       type: "string"
       description: "Channel to send reminders to."
+
+image_sensor:
+  description: "Image sensor specific settings."
+  type: "object"
+  required: false
+  additionalProperties: false
