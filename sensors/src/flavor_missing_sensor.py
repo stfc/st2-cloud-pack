@@ -1,16 +1,27 @@
 from st2reactor.sensor.base import PollingSensor
 from openstack_api.openstack_flavor import OpenstackFlavor
+from openstack_api.openstack_connection import OpenstackConnection
 
 
-class FlavorPollingSensor(PollingSensor):
+class FlavorListSensor(PollingSensor):
     def __init__(self, sensor_service, config=None, poll_interval=10):
-        super().__init__(sensor_service, config, poll_interval)
-        self.api = OpenstackFlavor()
+        super().__init__(
+            sensor_service=sensor_service, config=config, poll_interval=poll_interval
+        )
+        self._api = OpenstackFlavor()
+        self._log = self.sensor_service.get_logger(name=self._class_._name_)
         self._cloud = {
             "source": self._config.get("source_cloud", None),
             "destination": self._config.get("dest_cloud", None),
         }
-        self._log = self.sensor_service.get_logger(name=self._class_._name_)
+        self.cloud_account = self.config["sensor_cloud_account"]
+
+    def setup(self):
+        """
+        Sets up the sensor.
+        """
+        self._log.info(f"Source Cloud: {self._cloud['source']}")
+        self._log.info(f"Destination Cloud: {self._cloud['destination']}")
 
     def poll(self):
         missing_flavors = self._api.get_missing_flavors(
@@ -23,12 +34,19 @@ class FlavorPollingSensor(PollingSensor):
         self._log.info(f"Found {len(missing_flavors)}")
         self._log.info(f"Missing Flavors: {missing_flavors}")
 
-    def setup(self):
-        """
-        Sets up the sensor
-        """
-        self._log.info(f"Source Cloud: {self._cloud['source']}")
-        self._log.info(f"Destination Cloud: {self._cloud['destination']}")
+        source_flavors = self._api.list_flavor(self._cloud["source"])
+        dest_flavors = self._api.list_flavor(self._cloud["destination"])
+
+        self._log.info("Dispatching trigger for missing flavors")
+        payload = {
+            "source_flavors": source_flavors,
+            "dest_flavors": dest_flavors,
+            "missing_flavors": missing_flavors,
+        }
+        self.sensor_service.dispatch(
+            trigger="stackstorm_openstack.flavor.flavor_list",
+            payload=payload,
+        )
 
     def cleanup(self):
         """
