@@ -1,5 +1,5 @@
 import logging
-from typing import List, Dict, Union, Optional
+from typing import List
 from openstack.connection import Connection
 from openstack.compute.v2.flavor import Flavor
 from openstack_api.openstack_connection import OpenstackConnection
