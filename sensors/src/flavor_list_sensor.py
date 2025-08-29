@@ -27,6 +27,7 @@ class FlavorListSensor(PollingSensor):
         )
 
         if not missing_flavors:
+            self._log.info("No missing flavors found.")
             return
 
         self._log.info(f"Found {len(missing_flavors)}")
