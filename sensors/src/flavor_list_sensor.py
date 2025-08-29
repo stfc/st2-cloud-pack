@@ -10,8 +10,8 @@ class FlavorListSensor(PollingSensor):
         self._api = OpenstackFlavor()
         self._log = self._sensor_service.get_logger(__name__)
         self._cloud = {
-            "source": self._config["sensor_cloud_account"][4][1],
-            "destination": self._config["sensor_cloud_account"][4][0],
+            "source": self._config["sensor_cloud_account"],
+            "destination": self._config["sensor_cloud_account"],
         }
 
     def setup(self):
