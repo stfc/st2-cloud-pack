@@ -8,7 +8,7 @@ class FlavorListSensor(PollingSensor):
             sensor_service=sensor_service, config=config, poll_interval=poll_interval
         )
         self._api = OpenstackFlavor()
-        self._log = self.sensor_service.get_logger(name=self._class_._name_)
+        self._log = self._sensor_service.get_logger(__name__)
         self._cloud = {
             "source": self._config.get("source_cloud", None),
             "destination": self._config.get("dest_cloud", None),
