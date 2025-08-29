@@ -9,23 +9,14 @@ logger = logging.getLogger(__name__)
 
 
 class OpenstackFlavor:
-    def list_flavors(conn: Connection) -> List[Flavor]:
+    def list_flavors(self, cloud_account: str) -> List[Flavor]:
         """
         Get list of flavors from either production or development cloud
         :param cloud_account: Name of cloud to use
         :return: List of Flavor objects
         """
-        return conn.list_flavors()
-
-    def get_flavor(cloud_account: str, flavor_name: str) -> Flavor:
-        """
-        Get information for a specific flavor
-        :param cloud_account: Name of cloud to use
-        :param flavor_name: name of the flavor to get
-        :return: Flavor object or None if unsuccessful
-        """
         with OpenstackConnection(cloud_account) as conn:
-            return conn.get_flavor(flavor_name)
+            return conn.list_flavors()
 
     def get_missing_flavors(self, source_cloud: str, dest_cloud: str) -> List[str]:
         """
@@ -36,10 +27,10 @@ class OpenstackFlavor:
         :return: List of names of missing flavors or empty list
         """
         # list flavors from source cloud
-        source_flavors = self.list_flavor(source_cloud)
+        source_flavors = self.list_flavors(source_cloud)
 
         # list flavors from destination cloud
-        dest_flavors = self.list_flavor(dest_cloud)
+        dest_flavors = self.list_flavors(dest_cloud)
 
         # Prepare set of flavors in source and destination clouds
         source_flavor_names = {source.name for source in source_flavors}
