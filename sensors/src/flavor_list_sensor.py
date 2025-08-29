@@ -10,19 +10,19 @@ class FlavorListSensor(PollingSensor):
         self._api = OpenstackFlavor()
         self._log = self._sensor_service.get_logger(__name__)
         self._cloud = {
-            "source": self._config["sensor_cloud_account"],
-            "destination": self._config["sensor_cloud_account"],
+            "source": self._config["sensor_source_cloud"],
+            "destination": self._config["sensor_dest_cloud"],
         }
 
     def setup(self):
         """
         Sets up the sensor.
         """
-        self._log.info(f"Config: {self.config}")
         self._log.info(f"Source Cloud: {self._cloud['source']}")
         self._log.info(f"Destination Cloud: {self._cloud['destination']}")
 
     def poll(self):
+        self._log.info("Polling for missing flavors.")
         missing_flavors = self._api.get_missing_flavors(
             source_cloud=self._cloud["source"], dest_cloud=self._cloud["destination"]
         )
