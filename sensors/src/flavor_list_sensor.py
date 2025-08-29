@@ -10,10 +10,9 @@ class FlavorListSensor(PollingSensor):
         self._api = OpenstackFlavor()
         self._log = self._sensor_service.get_logger(__name__)
         self._cloud = {
-            "source": self._config.get("source_cloud", None),
-            "destination": self._config.get("dest_cloud", None),
+            "source": self._config["sensor_source_cloud"],
+            "destination": self._config["sensor_dest_cloud"],
         }
-        self.cloud_account = self.config["sensor_cloud_account"]
 
     def setup(self):
         """
@@ -23,23 +22,25 @@ class FlavorListSensor(PollingSensor):
         self._log.info(f"Destination Cloud: {self._cloud['destination']}")
 
     def poll(self):
+        self._log.info("Polling for missing flavors.")
         missing_flavors = self._api.get_missing_flavors(
             source_cloud=self._cloud["source"], dest_cloud=self._cloud["destination"]
         )
 
         if not missing_flavors:
+            self._log.info("No missing flavors found.")
             return
 
         self._log.info(f"Found {len(missing_flavors)}")
         self._log.info(f"Missing Flavors: {missing_flavors}")
 
-        source_flavors = self._api.list_flavor(self._cloud["source"])
+        # source_flavors = self._api.list_flavor(self._cloud["source"])
         dest_flavors = self._api.list_flavor(self._cloud["destination"])
 
         self._log.info("Dispatching trigger for missing flavors")
         payload = {
-            "source_flavors": source_flavors,
-            "dest_flavors": dest_flavors,
+            "source_flavors": dest_flavors,
+            "dest_flavors": dest_flavors[0],
             "missing_flavors": missing_flavors,
         }
         self.sensor_service.dispatch(
