@@ -9,12 +9,6 @@ trigger_types:
     payload_schema:
       type: "object"
       properties:
-        source_flavors:
-          type: "array"
-          description: "List of source (prod) cloud flavors"
         dest_flavors:
           type: "array"
           description: "List of destination (dev) cloud flavors"
-        missing_flavors:
-          type: "array"
-          description: "List of flavors missing in destination (dev) cloud based on source (prod) cloud"
