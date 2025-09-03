@@ -14,5 +14,7 @@ class OpenstackFlavor:
         :param cloud_account: Name of cloud to use
         :return: List of Flavor objects
         """
-        with OpenstackConnection(cloud_account) as conn:
+        with OpenstackConnection(
+            cloud_account
+        ) as conn:  # pylint: disable=protected-access
             return conn.list_flavors()

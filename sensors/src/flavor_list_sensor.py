@@ -7,22 +7,22 @@ class FlavorListSensor(PollingSensor):
         super().__init__(
             sensor_service=sensor_service, config=config, poll_interval=poll_interval
         )
-        self._api = OpenstackFlavor()
-        self._log = self._sensor_service.get_logger(__name__)
-        self._cloud = self._config["sensor_dest_cloud"]
+        self.api = OpenstackFlavor()
+        self.log = self._sensor_service.get_logger(__name__)
+        self.cloud = self._config["sensor_dest_cloud"]
 
     def setup(self):
         """
         Sets up the sensor.
         """
-        self._log.info(f"Destination Cloud: {self._cloud}")
+        self.log.info(f"Destination Cloud: {self.cloud}")
 
     def poll(self):
-        self._log.info("Polling for  flavors.")
+        self.log.info("Polling for  flavors.")
 
-        dest_flavors = self._api.list_flavors(self._cloud)
+        dest_flavors = self.api.list_flavors(self.cloud)
 
-        self._log.info("Dispatching trigger for flavor list.")
+        self.log.info("Dispatching trigger for flavor list.")
         payload = {
             "dest_flavors": [dest.name for dest in dest_flavors],
         }
