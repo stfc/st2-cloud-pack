@@ -172,7 +172,7 @@ router_sensor:
   properties:
     cloud_account:
       type: "string"
-      description: "cloud account to use - set in clouds.ymal"
+      description: "cloud account to use - set in clouds.yaml"
       default: "dev"
       required: true
 
@@ -211,3 +211,14 @@ image_sensor:
   type: "object"
   required: false
   additionalProperties: false
+  properties:
+    source_cloud_account:
+      type: "string"
+      description: "source OpenStack cloud account"
+      default: "dev"
+      required: true
+    target_cloud_account:
+      type: "string"
+      description: "target OpenStack cloud account"
+      default: "prod"
+      required: true

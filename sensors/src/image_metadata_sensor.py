@@ -1,6 +1,8 @@
 from openstack_api.openstack_connection import OpenstackConnection
 from st2reactor.sensor.base import PollingSensor
 
+from deepdiff import DeepDiff
+
 
 class ImageMetadataSensor(PollingSensor):
     """
@@ -20,7 +22,8 @@ class ImageMetadataSensor(PollingSensor):
             sensor_service=sensor_service, config=config, poll_interval=poll_interval
         )
         self._log = self._sensor_service.get_logger(__name__)
-        self.cloud_account = self.config["sensor_cloud_account"]
+        self.source_cloud = self.config["image_sensor"]["source_cloud_account"]
+        self.target_cloud = self.config["image_sensor"]["target_cloud_account"]
 
     def setup(self):
         """
@@ -29,26 +32,75 @@ class ImageMetadataSensor(PollingSensor):
 
     def poll(self):
         """
-        Polls the dev cloud images and for each image dispatches a payload containing
-        the image's properties/metadata.
+        Polls the source cloud images and lookup the relevant image in target for each image
+        Compare the image metadata between source and target cloud and dispatch a payload
+        containing the image's properties/metadata and the difference.
+
         """
-        with OpenstackConnection(self.cloud_account) as conn:
-            for image in conn.image.images():
-                self._log.info("Dispatching trigger for image: %s", image.id)
-                payload = {
-                    "image_id": image.id,
-                    "image_name": image.name,
-                    "image_status": image.status,
-                    "image_visibility": image.visibility,
-                    "image_min_disk": image.min_disk,
-                    "image_min_ram": image.min_ram,
-                    "image_os_type": image.os_type,
-                    "image_metadata": image.properties,
-                }
-                self.sensor_service.dispatch(
-                    trigger="stackstorm_openstack.image.metadata_change",
-                    payload=payload,
+
+        with OpenstackConnection(self.source_cloud) as source_conn, OpenstackConnection(
+            self.target_cloud
+        ) as target_conn:
+
+            source_images = {}
+            for img in source_conn.image.images():
+                source_images[img.name] = img
+
+            target_images = {}
+            for img in target_conn.image.images():
+                target_images[img.name] = img
+
+            self._log.info("Compare source and target metadata")
+
+            for image_name in source_images:
+                source_img = source_images[image_name]
+                target_img = target_images.get(image_name)
+
+                if not target_img:
+                    self._log.info("Image %s doesn't exist in target cloud", image_name)
+                    continue
+
+                diff = DeepDiff(
+                    source_img,
+                    target_img,
+                    ignore_order=True,
+                    threshold_to_diff_deeper=0,
+                    exclude_paths={
+                        "root['instance_uuid']",
+                        "root['location']['project']['id']",
+                        "root['location']['cloud']",
+                        "root['owner_id']",
+                        "root['owner']",
+                        "root['file']",
+                        "root['direct_url']",
+                        "root['locations']",
+                        "root['id']",
+                        "root['created_at']",
+                        "root['updated_at']",
+                    },
                 )
+
+                self._log.info(
+                    "Checking for the difference between metadata %s", diff.pretty()
+                )
+
+                if diff:
+
+                    self._log.info(
+                        "Image metadata mismatch between source and target: %s",
+                        image_name,
+                    )
+
+                    payload = {
+                        "image_name": source_img.name,
+                        "source_metadata": source_img.properties,
+                        "target_cloud": self.target_cloud,
+                    }
+
+                    self.sensor_service.dispatch(
+                        trigger="stackstorm_openstack.image.metadata_mismatch",
+                        payload=payload,
+                    )
 
     def cleanup(self):
         """
