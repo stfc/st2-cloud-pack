@@ -1,3 +1,5 @@
+import json
+
 from openstack_api.openstack_connection import OpenstackConnection
 from st2reactor.sensor.base import PollingSensor
 
@@ -37,7 +39,9 @@ class HostAggregateSensor(PollingSensor):
             self._log.info("Polling for destination aggregates.")
 
             # Returns a generator, consume it into a list and convert each item to a dict
-            dest_aggregates = [agg.to_dict() for agg in conn.compute.aggregates()]
+            dest_aggregates = [
+                json.dumps(agg.to_dict()) for agg in conn.compute.aggregates()
+            ]
 
             self._log.info("Dispatching trigger for aggregate list.")
 
