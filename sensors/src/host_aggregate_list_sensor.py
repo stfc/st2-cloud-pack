@@ -36,7 +36,8 @@ class HostAggregateSensor(PollingSensor):
             self._log.info(f"Destination Cloud: {self.dest_cloud_account}")
             self._log.info("Polling for destination aggregates.")
 
-            dest_aggregates = conn.compute.aggregates()
+            # Returns a generator, consume it into a list and convert each item to a dict
+            dest_aggregates = [agg.to_dict() for agg in conn.compute.aggregates()]
 
             self._log.info("Dispatching trigger for aggregate list.")
 
