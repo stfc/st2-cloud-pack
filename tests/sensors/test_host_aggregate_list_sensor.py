@@ -1,3 +1,4 @@
+import json
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -28,13 +29,19 @@ def test_poll(mock_openstack_connection, sensor):
     mock_openstack_connection.return_value.__enter__.return_value = mock_conn
 
     mock_aggregate = MagicMock()
+    mock_aggregate.to_dict.return_value = {
+        "name": "aggregate1",
+        "availability_zone": "nova",
+    }
     mock_conn.compute.aggregates.return_value = [mock_aggregate]
 
     sensor.poll()
 
     mock_conn.compute.aggregates.assert_called_once_with()
 
-    expected_payload = {"dest_aggregates": [mock_aggregate]}
+    expected_payload = {
+        "dest_aggregates": [json.dumps(mock_aggregate.to_dict.return_value)]
+    }
 
     sensor.sensor_service.dispatch.assert_called_once_with(
         trigger="stackstorm_openstack.aggregate.aggregate_list",
