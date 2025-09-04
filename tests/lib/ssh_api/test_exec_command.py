@@ -48,18 +48,29 @@ def test_run_command_on_host(mock_rsa_key, mock_ssh_client):
     mock_client_instance = MagicMock()
     mock_ssh_client.return_value = mock_client_instance
     mock_stdout = MagicMock()
-    mock_stdout.read.return_value = b"test_output"
     mock_stderr = MagicMock()
-    mock_stderr.read.return_value = b""
+    mock_stdin = MagicMock()
 
-    mock_client_instance.exec_command.return_value = (None, mock_stdout, mock_stderr)
+    mock_stdout.channel.recv_exit_status.return_value = 0
+    mock_stdout.channel.recv_ready.side_effect = [True, True, True, False, False]
+    mock_stdout.channel.exit_status_ready.side_effect = [False, True]
+    mock_stdout.channel.recv.return_value = b"output"
 
-    ssh_conn = SSHConnection(mock_details)
+    mock_client_instance.exec_command.return_value = (
+        mock_stdin,
+        mock_stdout,
+        mock_stderr,
+    )
 
-    output = ssh_conn.run_command_on_host("ls")
+    instance = SSHConnection(mock_details)
+    instance.run_command_on_host("ls")
 
     mock_client_instance.exec_command.assert_called_once_with(command="ls")
-    assert output == b"test_output"
+
+    mock_stdout.channel.shutdown_read.assert_called_once()
+
+    mock_stdout.close.assert_called_once()
+    mock_stderr.close.assert_called_once()
 
 
 @patch("ssh_api.exec_command.paramiko.SSHClient")
@@ -78,15 +89,21 @@ def test_run_command_on_host_failure(mock_rsa_key, mock_ssh_client):
     mock_client_instance = MagicMock()
     mock_ssh_client.return_value = mock_client_instance
     mock_stdout = MagicMock()
-    mock_stdout.read.return_value = b""
     mock_stderr = MagicMock()
-    mock_stderr.read.return_value = b"test_error"
+    mock_stdin = MagicMock()
 
-    mock_client_instance.exec_command.return_value = (None, mock_stdout, mock_stderr)
+    mock_stdout.channel.recv_exit_status.return_value = 1
+    mock_stdout.channel.recv_ready.side_effect = [True, False, False]
+    mock_stdout.channel.exit_status_ready.side_effect = [False, False, False, True]
+    mock_stdout.channel.recv.return_value = b"output"
 
-    ssh_conn = SSHConnection(mock_details)
+    mock_client_instance.exec_command.return_value = (
+        mock_stdin,
+        mock_stdout,
+        mock_stderr,
+    )
 
-    with pytest.raises(SSHException, match="test_error"):
-        ssh_conn.run_command_on_host("ls")
+    instance = SSHConnection(mock_details)
 
-    mock_client_instance.exec_command.assert_called_once_with(command="ls")
+    with pytest.raises(SSHException):
+        instance.run_command_on_host("ls")

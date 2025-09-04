@@ -4,9 +4,9 @@ from alertmanager_api.silence import get_hv_silences, remove_silence
 
 from enums.icinga.icinga_objects import IcingaObject
 
+from openstack_api.openstack_service import enable_service
 from structs.alertmanager.alertmanager_account import AlertManagerAccount
 from structs.icinga.icinga_account import IcingaAccount
-from workflows.hv_service_actions import hv_service_enable
 from workflows.hv_create_test_server import create_test_server
 from icinga_api import downtime
 
@@ -15,7 +15,7 @@ def post_reboot(
     alertmanager_account: AlertManagerAccount,
     icinga_account: IcingaAccount,
     hypervisor_hostname: str,
-    conn=Connection,
+    conn: Connection,
 ):
     """
     Action to run after a successful reboot
@@ -29,11 +29,14 @@ def post_reboot(
         object_type=IcingaObject.HOST,
         object_name=hypervisor_hostname,
     )
-    hv_service_enable(
+    enable_service(
         conn=conn, hypervisor_name=hypervisor_hostname, service_binary="nova-compute"
     )
     create_test_server(
-        conn=conn, hypervisor_name=hypervisor_hostname, test_all_flavors=False
+        conn=conn,
+        hypervisor_name=hypervisor_hostname,
+        test_all_flavors=False,
+        delete_on_failure=True,
     )
     silences = get_hv_silences(alertmanager_account, hypervisor_hostname)
     for silence_id in silences:

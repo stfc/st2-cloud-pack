@@ -35,3 +35,10 @@ to handle rabbitmq message commands.
 | ----------- | ----------- |
 | `openstack.deletedmachines.rule` | matches trigger `openstack.deletingmachines` when a machine is stuck in the deleting state for more than 10m. Calls the `atlassian.create.tickets` action. The sensor for this rule runs every 7 days. |
 | `openstack.loadbalancers.rule` | matches trigger `openstack.loadbalancer` when a loadbalancer or amphora is not pingable or is reporting an error. Calls the `atlassian.create.tickets` action. The sensor for this rule runs every 7 days. |
+
+## ChatOps rules
+
+| Rule                           | Description                                                                                             |
+|--------------------------------|---------------------------------------------------------------------------------------------------------|
+| `chatops.pr_reminder.global`   | Uses `core.st2.CronTimer` to trigger every Monday, Wednesday at 8AM UTC and calls `chatops.pr_reminder` |
+| `chatops.pr_reminder.personal` | Uses `core.st2.CronTimer` to trigger every Monday at 8AM UTC and calls `chatops.pr_reminder`            |

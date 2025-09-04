@@ -1,0 +1,23 @@
+---
+name: "hv.drain.for.maintenance"
+pack: "stackstorm_openstack"
+description: "Drains a hypervisor for patching"
+enabled: false
+
+criteria:
+  trigger.previous_state:
+    type: inside
+    pattern: [RUNNING, EMPTY]
+  trigger.current_state:
+    type: equals
+    pattern: PENDING_MAINTENANCE
+
+trigger:
+  type: "stackstorm_openstack.hypervisor.state_change"
+
+action:
+  ref: "stackstorm_openstack.hypervisor.drain"
+  parameters:
+    hypervisor_name: "{{ trigger.hypervisor_name }}"
+    cloud_account: "dev"
+    disabled_reason: "Stackstorm: patching"

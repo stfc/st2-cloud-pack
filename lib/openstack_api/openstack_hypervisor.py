@@ -13,6 +13,10 @@ def get_hypervisor_state(hypervisor: Dict, uptime_limit: int) -> HypervisorState
     """
     if hypervisor["hypervisor_state"] == "down":
         return HypervisorState.DOWN
+    if hypervisor["hypervisor_disabled_reason"] and not hypervisor[
+        "hypervisor_disabled_reason"
+    ].startswith("Stackstorm:"):
+        return HypervisorState.DISABLED
     if not valid_state(hypervisor):
         return HypervisorState.UNKNOWN
     if (

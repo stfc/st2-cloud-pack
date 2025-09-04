@@ -56,7 +56,7 @@ examples of atomic Actions are shown below (not an exhaustive list):
 | project.create             | Action to create a new openstack project (not-configured)                       |
 | project.show               | Action to find and list an Openstack Project's properties given it's Name or ID |
 | quota.set                  | Action to set project quota                                                     |
-| role.add                   | Action to add user role to a project                                            |
+| role.add.user.project           | Action to add user role to a project                                            |
 | router.add.interface       | Action to add interface to a router                                             |
 | router.create              | Action to create a Openstack router                                             |
 | security.group.create      | Action to create new security group for a project                               |
@@ -99,6 +99,15 @@ the following are actions related to STFC Cloud JuptyerHub Service
 | jupyter.user.create           | Creates the given list of users                                                                 |
 | jupyter.user.delete           | Removes the given list of users. This implicitly deletes any running pods the user has started. |
 | workflow.jupyter.user.prepare | Creates a list of JupyterHub users, and starts up servers for each user                         |
+
+
+## ChatOps Actions
+
+The following are actions related to STFC Cloud Slack ChatOps
+
+| Action Name         | Description                                                                                 |
+|---------------------|---------------------------------------------------------------------------------------------|
+| chatops.pr_reminder | Sends a HTTP Post request to a ChatOps endpoint to trigger reminders to the Slack workspace |
 
 
 ## Query Library (WIP)

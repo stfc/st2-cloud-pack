@@ -126,8 +126,46 @@ icinga_accounts:
         secret: false
         default: ""
 
-hypervisor_sensor:
-  description: "Hypervisor sensor specific settings."
+alertmanager_accounts:
+  type: "array"
+  required: true
+  description: Alertmanager account
+  items:
+    type: "object"
+    required: true
+    properties:
+      name:
+        description: "Name of the alertmanager account"
+        type: "string"
+        secret: false
+        required: true
+      username:
+        type: "string"
+        description: "Username for alertmanager"
+        required: true
+      password:
+        type: "string"
+        description: "Password for alertmanager"
+        required: true
+        secret: true
+      alertmanager_endpoint:
+        type: "string"
+        description: "alertmanager endpoint"
+        required: true
+        secret: false
+        default: ""
+
+sensor_cloud_account:
+  description: Which cloud account sensors requiring an openstack connection will use
+  type: "string"
+  required: true
+  default: "dev"
+  enum:
+    - dev
+    - prod
+
+router_sensor:
+  description: "Openstack Router sensor specific settings."
   type: "object"
   required: false
   additionalProperties: false
@@ -135,9 +173,41 @@ hypervisor_sensor:
     cloud_account:
       type: "string"
       description: "cloud account to use - set in clouds.ymal"
+      default: "dev"
+      required: true
+
+hypervisor_sensor:
+  description: "Hypervisor sensor specific settings."
+  type: "object"
+  required: false
+  additionalProperties: false
+  properties:
     uptime_limit:
       type: "number"
       description: "Number of uptime days before marking hypervisor for maintenance"
     state_expire_after:
       type: "integer"
       description: "Number of seconds before forcefully deleting previous state to update hypervisors stuck in a state"
+
+chatops_sensor:
+  description: "ChatOps sensor specific settings."
+  type: "object"
+  required: false
+  additionalProperties: false
+  properties:
+    endpoint:
+      type: "string"
+      description: "ChatOps endpoint to use."
+    token:
+      type: "string"
+      description: "API token to authenticate requests."
+      secret: true
+    channel:
+      type: "string"
+      description: "Channel to send reminders to."
+
+image_sensor:
+  description: "Image sensor specific settings."
+  type: "object"
+  required: false
+  additionalProperties: false

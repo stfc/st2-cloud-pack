@@ -1,0 +1,19 @@
+---
+name: chatops_pr_reminder_global
+pack: stackstorm_openstack
+description: Send a global reminder request every Monday and Wednesday at 9AM to the ChatOps application
+enabled: true
+
+trigger:
+  type: core.st2.CronTimer
+  parameters:
+    timezone: "Europe/London"
+    day_of_week: mon,wed
+    hour: 9
+    minute: 00
+
+
+action:
+  ref: stackstorm_openstack.chatops.pr_reminder
+  parameters:
+    chatops_reminder_type: "global"

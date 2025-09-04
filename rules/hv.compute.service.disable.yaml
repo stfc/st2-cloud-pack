@@ -19,4 +19,4 @@ action:
   parameters:
     cloud_account: "dev"
     hypervisor_name: "{{ trigger.hypervisor_name }}"
-    disabled_reason: "Stackstorm Patch Reboot Maintenance"
+    disabled_reason: "Stackstorm: Disabled for Maintenance"

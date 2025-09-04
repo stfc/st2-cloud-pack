@@ -1,8 +1,8 @@
 from openstack.connection import Connection
 
 from enums.user_domains import UserDomains
-from structs.role_details import RoleDetails
 from openstack_api import openstack_roles
+from structs.role_details import RoleDetails
 
 
 def role_add(

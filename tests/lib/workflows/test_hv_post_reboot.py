@@ -8,13 +8,13 @@ from workflows.hv_post_reboot import post_reboot
 
 @patch("workflows.hv_post_reboot.remove_silence")
 @patch("workflows.hv_post_reboot.get_hv_silences")
-@patch("workflows.hv_post_reboot.hv_service_enable")
+@patch("workflows.hv_post_reboot.enable_service")
 @patch("workflows.hv_post_reboot.create_test_server")
 @patch("workflows.hv_post_reboot.downtime.remove_downtime")
 def test_successful_post_reboot(
     mock_remove_downtime,
     mock_create_test_server,
-    mock_hv_service_enable,
+    mock_enable_service,
     mock_get_hv_silences,
     mock_remove_silence,
 ):
@@ -43,9 +43,12 @@ def test_successful_post_reboot(
         object_name=mock_hv_name,
     )
     mock_create_test_server.assert_called_once_with(
-        conn=mock_conn, hypervisor_name=mock_hv_name, test_all_flavors=False
+        conn=mock_conn,
+        hypervisor_name=mock_hv_name,
+        test_all_flavors=False,
+        delete_on_failure=True,
     )
-    mock_hv_service_enable.assert_called_once_with(
+    mock_enable_service.assert_called_once_with(
         conn=mock_conn, hypervisor_name=mock_hv_name, service_binary="nova-compute"
     )
     mock_get_hv_silences.assert_called_once_with(alertmanager_account, mock_hv_name)
@@ -57,13 +60,13 @@ def test_successful_post_reboot(
 
 @patch("workflows.hv_post_reboot.remove_silence")
 @patch("workflows.hv_post_reboot.get_hv_silences")
-@patch("workflows.hv_post_reboot.hv_service_enable")
+@patch("workflows.hv_post_reboot.enable_service")
 @patch("workflows.hv_post_reboot.create_test_server")
 @patch("workflows.hv_post_reboot.downtime.remove_downtime")
 def test_failed_post_reboot(
     mock_remove_downtime,
     mock_create_test_server,
-    mock_hv_service_enable,
+    mock_enable_service,
     mock_get_hv_silences,
     mock_remove_silence,
 ):
@@ -93,11 +96,14 @@ def test_failed_post_reboot(
         object_type=IcingaObject.HOST,
         object_name=mock_hv_name,
     )
-    mock_hv_service_enable.assert_called_once_with(
+    mock_enable_service.assert_called_once_with(
         conn=mock_conn, hypervisor_name=mock_hv_name, service_binary="nova-compute"
     )
     mock_create_test_server.assert_called_once_with(
-        conn=mock_conn, hypervisor_name=mock_hv_name, test_all_flavors=False
+        conn=mock_conn,
+        hypervisor_name=mock_hv_name,
+        test_all_flavors=False,
+        delete_on_failure=True,
     )
     mock_get_hv_silences.assert_not_called()
     mock_remove_silence.assert_not_called()

@@ -1,0 +1,11 @@
+name: hypervisor.drain.concurrency
+pack: stackstorm_openstack
+description: Limits the concurrent hypervisor drain executions
+enabled: true
+resource_ref: stackstorm_openstack.hypervisor.drain
+policy_type: action.concurrency
+parameters:
+  action: delay
+  # Three HVs can be drained concurrently, this does not affect the number of
+  # VMs draining per HV
+  threshold: 3

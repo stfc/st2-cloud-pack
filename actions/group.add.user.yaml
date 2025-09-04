@@ -1,11 +1,13 @@
 ---
-description: Add User Role to Project
+# This is slightly a misnomer, as it is actually adding a user to a group,
+# but it follows the same pattern as the other role actions
+description: Adds a user directly to an existing group
 enabled: true
 entry_point: src/openstack_actions.py
-name: role.add
+name: group.add.user
 parameters:
   lib_entry_point:
-    default: workflows.role_actions.role_add
+    default: openstack_api.openstack_roles.add_user_to_group
     immutable: true
     type: string
   requires_openstack:
@@ -20,24 +22,21 @@ parameters:
     enum:
       - "dev"
       - "prod"
-  project_identifier:
-    description: Project (Name or ID)
-    required: true
-    type: string
-  role_identifier:
-    description: Role to add (Name or ID)
-    required: true
-    type: string
   user_identifier:
     description: User to add to (Name or ID)
     type: string
     required: true
-  user_domain:
-    description: Authentication realm to search
+  domain_identifier:
+    description: Authentication domain to search, this much match between group and user
     type: string
     required: true
-    default: stfc
+    default: default
     enum:
       - default
       - stfc
+      - jasmin
+  group_name:
+    description: Group to add the user to
+    type: string
+    required: true
 runner_type: python-script

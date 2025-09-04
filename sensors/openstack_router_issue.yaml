@@ -1,0 +1,33 @@
+---
+class_name: OpenstackRouterSensor
+entry_point: src/openstack_router_sensor.py
+description: Monitor for issues with openstack routers
+poll_interval: 1800 # 30 mins
+enabled: true
+trigger_types:
+  - name: "openstack_router_issue"
+    description: "Triggers when a issue with a router is found"
+    payload_schema:
+      type: "object"
+      properties:
+        router_name:
+          type: "string"
+          description: "The router name"
+        router_id:
+          type: "string"
+          description: "The ID of the router "
+        project_id:
+          type: "string"
+          description: "The ID of the project this router is associated with"
+        description:
+          type: "string"
+          description: "The router description"
+        status:
+          type: "string"
+          description: "The router status"
+        created_at:
+          type: "string"
+          description: "Timestamp when the router was created"
+        external_gateway_info:
+          type: "array"
+          description: "The network_id, for the external gateway"

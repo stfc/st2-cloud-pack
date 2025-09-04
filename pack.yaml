@@ -16,12 +16,15 @@ python_versions:
 dependencies:
   - core
   - git
+  - jira
 
 # Authors :
 # Anish Mudaraddi
 # David Fairbrother
 # Joel Davies
 # Reilly Hewitson
+# George Matthews
+# Lizzie Salmon
 
 author: STFC Cloud Team
 email: cloud-support@stfc.ac.uk

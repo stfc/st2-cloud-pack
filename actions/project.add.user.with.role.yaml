@@ -1,11 +1,11 @@
 ---
-description: Removes a role from a user's project permissions
+description: Add a User directly to a project with a given role
 enabled: true
 entry_point: src/openstack_actions.py
-name: role.remove
+name: project.add.user.with.role
 parameters:
   lib_entry_point:
-    default: workflows.role_actions.role_remove
+    default: workflows.role_actions.role_add
     immutable: true
     type: string
   requires_openstack:
@@ -21,15 +21,15 @@ parameters:
       - "dev"
       - "prod"
   project_identifier:
-    description: Project name (Name or ID)
+    description: Project (Name or ID)
     required: true
     type: string
   role_identifier:
-    description: Role to remove (Name or ID)
+    description: Role to add (Name or ID)
     required: true
     type: string
   user_identifier:
-    description: User to remove from (Name or ID)
+    description: User to add to (Name or ID)
     type: string
     required: true
   user_domain:
@@ -40,4 +40,5 @@ parameters:
     enum:
       - default
       - stfc
+      - jasmin
 runner_type: python-script

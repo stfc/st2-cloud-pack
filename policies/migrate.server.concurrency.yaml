@@ -6,4 +6,6 @@ resource_ref: stackstorm_openstack.server.migrate
 policy_type: action.concurrency
 parameters:
   action: delay
+  # The global number of migrations allowed to happen concurrently
+  # this is limited to three to avoid saturating the network
   threshold: 3

@@ -340,6 +340,59 @@ def create_internal_security_group_rules(
     )
 
 
+def create_jasmin_security_group_rules(
+    conn: Connection, project_identifier: str, security_group_identifier: str
+):
+    """
+    Sets jasmin related security group rules
+    :param conn: openstack connection object
+    :param project_identifier: the name or the Openstack ID of the associated project
+    :param security_group_identifier: The name or the Openstack ID of the associated security group
+    """
+
+    # allow all icmp by default
+    _create_security_group_rule(
+        conn,
+        SecurityGroupRuleDetails(
+            project_identifier=project_identifier,
+            security_group_identifier=security_group_identifier,
+            direction=NetworkDirection.INGRESS,
+            ip_version=IPVersion.IPV4,
+            protocol=Protocol.ICMP,
+            remote_ip_cidr="0.0.0.0/0",
+            port_range=("*", "*"),
+        ),
+    )
+
+    # allow ssh by default
+    _create_security_group_rule(
+        conn,
+        SecurityGroupRuleDetails(
+            project_identifier=project_identifier,
+            security_group_identifier=security_group_identifier,
+            direction=NetworkDirection.INGRESS,
+            ip_version=IPVersion.IPV4,
+            protocol=Protocol.TCP,
+            remote_ip_cidr="0.0.0.0/0",
+            port_range=("22", "22"),
+        ),
+    )
+
+    # allow aquilon notify by default
+    _create_security_group_rule(
+        conn,
+        SecurityGroupRuleDetails(
+            project_identifier=project_identifier,
+            security_group_identifier=security_group_identifier,
+            direction=NetworkDirection.INGRESS,
+            ip_version=IPVersion.IPV4,
+            protocol=Protocol.UDP,
+            remote_ip_cidr="0.0.0.0/0",
+            port_range=("7777", "7777"),
+        ),
+    )
+
+
 def refresh_security_groups(
     conn: Connection, project_identifier: str
 ) -> List[SecurityGroup]:

@@ -38,6 +38,7 @@ class HypervisorState(Enum):
     }
     PENDING_MAINTENANCE = auto()
     DOWN = auto()
+    DISABLED = auto()
     UNKNOWN = auto()
 
     @classmethod

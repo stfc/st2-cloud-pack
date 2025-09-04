@@ -1,0 +1,43 @@
+---
+description: Schedule a downtime a Hypervisor in Icinga and AlertManager, mutes all alerts for the hypervisor
+enabled: true
+entry_point: src/openstack_actions.py
+name: hypervisor.downtime
+parameters:
+  hypervisor_name:
+    type: string
+    description: Hostname of the hypervisor, e.g. hvxyz.nubes.rl.ac.uk
+    required: true
+  duration_hours:
+    type: integer
+    description: Duration of downtime in hours, CANNOT be a decimal
+    required: true
+  comment:
+    type: string
+    description: Downtime reason
+    required: true
+  lib_entry_point:
+    type: string
+    default: workflows.hypervisor_downtime.schedule_hypervisor_downtime
+    immutable: true
+  icinga_account_name:
+    type: string
+    description: "Name of Icinga Account to use. Must be configured in in the pack settings."
+    required: true
+    default: "default"
+  alertmanager_account_name:
+    type: string
+    description: "Name of AlertManager Account to use. Must be configured in in the pack settings."
+    required: true
+    default: "default"
+  set_silence:
+    type: boolean
+    description: Whether to set silences in alertmanager
+    required: true
+    default: True
+  set_downtime:
+    type: boolean
+    description: Whether to set downtime in icinga
+    required: true
+    default: False
+runner_type: python-script

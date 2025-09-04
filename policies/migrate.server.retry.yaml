@@ -6,4 +6,4 @@ policy_type: action.retry
 parameters:
   retry_on: failure
   delay: 120
-  max_retry_count: 3
+  max_retry_count: 1

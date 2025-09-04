@@ -60,6 +60,31 @@ def test_create_project_forwards_error():
         create_project(mock_conn, mock_project_details)
 
 
+def test_create_project_successful():
+    """
+    Tests that create project works
+    """
+    mock_project_details = MagicMock()
+    mock_project_details.name = "foo"
+    mock_project_details.description = "bar"
+    mock_project_details.is_enabled = True
+    mock_project_details.email = "test@test.com"
+    mock_project_details.parent_id = None
+    mock_project_details.immutable = False
+
+    mock_conn = MagicMock()
+
+    res = create_project(mock_conn, mock_project_details)
+
+    mock_conn.identity.create_project.assert_called_once_with(
+        name="foo",
+        description="bar",
+        is_enabled=True,
+        tags=["test@test.com"],
+    )
+    assert res == mock_conn.identity.create_project.return_value
+
+
 def test_create_project_successful_no_parent_id_and_not_immutable():
     """
     Tests that create project works
@@ -77,7 +102,10 @@ def test_create_project_successful_no_parent_id_and_not_immutable():
     res = create_project(mock_conn, mock_project_details)
 
     mock_conn.identity.create_project.assert_called_once_with(
-        name="foo", description="bar", is_enabled=True, tags=["test@test.com"]
+        name="foo",
+        description="bar",
+        is_enabled=True,
+        tags=["test@test.com"],
     )
     assert res == mock_conn.identity.create_project.return_value
 

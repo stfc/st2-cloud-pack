@@ -1,10 +1,8 @@
-from enum import auto
-
-from enums.auto_name import _AutoName
+from enum import Enum, auto
 
 
 # pylint: disable=too-few-public-methods
-class UserDomains(_AutoName):
+class UserDomains(Enum):
     """
     Holds a list of domains where users can be found
     """
@@ -12,6 +10,7 @@ class UserDomains(_AutoName):
     DEFAULT = auto()
     STFC = auto()
     OPENID = auto()  # irisiam - now openid since Stein
+    JASMIN = auto()
 
     @staticmethod
     def from_string(val: str):

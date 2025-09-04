@@ -64,7 +64,6 @@ class TestOpenstackActions(OpenstackActionTestBase):
         mock_openstack_connection.return_value.__enter__.return_value = mock_conn
 
         with patch.object(self.action, "parse_configs") as mock_parse_configs:
-
             mock_parse_configs.return_value = {
                 "kwarg1": "foo",
                 "kwarg2": "bar",
@@ -136,3 +135,26 @@ class TestOpenstackActions(OpenstackActionTestBase):
         mock_kwargs = {"arg1": "val1", "arg2": "val2"}
         res = self.action.parse_configs(**mock_kwargs)
         assert res == mock_kwargs
+
+    def test_parse_configs_with_chatops(self):
+        """
+        tests that parse_configs parses chatops config properly if reminder_type is provided
+        """
+        # Set the config properly
+        self.action.config = {
+            "chatops_sensor": {
+                "token": "mock_token",
+                "endpoint": "mock_endpoint",
+                "channel": "mock_channel",
+            }
+        }
+
+        # Call parse_configs with reminder_type
+        result = self.action.parse_configs(chatops_reminder_type="mock_reminder_type")
+
+        assert result == {
+            "token": "mock_token",
+            "endpoint": "mock_endpoint",
+            "channel": "mock_channel",
+            "reminder_type": "mock_reminder_type",
+        }

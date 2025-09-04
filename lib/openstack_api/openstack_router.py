@@ -1,8 +1,11 @@
+import logging
 from openstack.connection import Connection
 from openstack.network.v2.router import Router
 from structs.router_details import RouterDetails
 
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
+
+logger = logging.getLogger(__name__)
 
 
 def add_interface_to_router(
@@ -78,3 +81,35 @@ def create_router(conn: Connection, details: RouterDetails) -> Router:
         is_distributed=details.is_distributed,
         is_ha=True,
     )
+
+
+def check_for_internal_routers(conn: Connection):
+    """
+    Check for routers with gateway address on the internal network
+
+    :param conn: Openstack connection
+    :type conn: Connection
+    :return: List of routers objects
+    """
+
+    def get_gateway_ips_from_router(router: Router):
+        """
+        Returns the gateway ips of a router
+        """
+        if not router.external_gateway_info:
+            return []
+        ips = []
+        for i in router.external_gateway_info.get("external_fixed_ips"):
+            ips.append(i["ip_address"])
+        return ips
+
+    routers_with_internal_gateway = []
+    for router in conn.network.routers():
+        logger.info("checking router %s", router.id)
+        ips = get_gateway_ips_from_router(router)
+        for ip in ips:
+            if ip.startswith("172.16"):
+                routers_with_internal_gateway.append(router)
+                logger.error("Address: %s Router UUID: %s", ip, router.id)
+
+    return routers_with_internal_gateway
