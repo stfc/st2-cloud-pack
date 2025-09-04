@@ -35,16 +35,18 @@ def quota_set(
     """
     openstack_quota.set_quota(
         conn,
-        QuotaDetails(project_identifier, 
-                     floating_ips, 
-                     security_group_rules, 
-                     cores, 
-                     gigabytes,
-                     instances, 
-                     backups, 
-                     ram, 
-                     security_groups, 
-                     snapshots, 
-                     volumes),
+        QuotaDetails(
+            project_identifier,
+            floating_ips,
+            security_group_rules,
+            cores,
+            gigabytes,
+            instances,
+            backups,
+            ram,
+            security_groups,
+            snapshots,
+            volumes,
+        ),
     )
     return True

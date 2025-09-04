@@ -1,6 +1,5 @@
-from openstack.connection import Connection
-
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
+from openstack.connection import Connection
 from structs.quota_details import QuotaDetails
 
 
@@ -19,17 +18,20 @@ def set_quota(conn: Connection, details: QuotaDetails):
     ).id
 
     # Create dictionaries to pass to each quota call
-    compute_quotas = {'cores': details.cores, 'ram': details.ram, 'instances': details.instances}
+    compute_quotas = {
+        "cores": details.cores,
+        "ram": details.ram,
+        "instances": details.instances,
+    }
     network_quotas = {
-        'floating_ips': details.floating_ips,
-        'security_groups': details.security_groups,
-        'security_group_rules': details.security_group_rules,
-
+        "floating_ips": details.floating_ips,
+        "security_groups": details.security_groups,
+        "security_group_rules": details.security_group_rules,
     }
     volume_quotas = {
-        'volumes': details.volumes,
-        'snapshots': details.snapshots,
-        'gigabytes': details.gigabytes
+        "volumes": details.volumes,
+        "snapshots": details.snapshots,
+        "gigabytes": details.gigabytes,
     }
 
     for quota in [compute_quotas, network_quotas, volume_quotas]:
