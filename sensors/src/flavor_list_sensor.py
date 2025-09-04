@@ -13,11 +13,11 @@ class FlavorListSensor(PollingSensor):
 
     def setup(self):
         """
-        Sets up the sensor.
+        Stub
         """
-        self.log.info(f"Destination Cloud: {self.cloud}")
 
     def poll(self):
+        self.log.info(f"Destination Cloud: {self.cloud}")
         self.log.info("Polling for  flavors.")
 
         dest_flavors = self.api.list_flavors(self.cloud)
