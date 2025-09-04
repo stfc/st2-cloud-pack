@@ -43,7 +43,7 @@ class HostAggregateSensor(PollingSensor):
             payload = {"dest_aggregates": dest_aggregates}
 
             self.sensor_service.dispatch(
-                trigger="stackstorm_openstack.aggregate.aggregate_change",
+                trigger="stackstorm_openstack.aggregate.aggregate_list",
                 payload=payload,
             )
 

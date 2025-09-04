@@ -231,7 +231,7 @@ image_sensor:
   additionalProperties: false
 
 host_aggregate_sensor:
-  descrption: "Host aggregate sensor specific settings."
+  description: "Host aggregate sensor specific settings."
   type: "object"
   required: false
   additionalProperties: false

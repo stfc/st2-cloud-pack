@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock, patch
+
 import pytest
+
 from sensors.src.host_aggregate_list_sensor import HostAggregateSensor
 
 
@@ -35,6 +37,6 @@ def test_poll(mock_openstack_connection, sensor):
     expected_payload = {"dest_aggregates": [mock_aggregate]}
 
     sensor.sensor_service.dispatch.assert_called_once_with(
-        trigger="stackstorm_openstack.aggregate.aggregate_change",
+        trigger="stackstorm_openstack.aggregate.aggregate_list",
         payload=expected_payload,
     )
