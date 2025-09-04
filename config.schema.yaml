@@ -164,6 +164,24 @@ sensor_cloud_account:
     - dev
     - prod
 
+sensor_source_cloud:
+  description: The source cloud from which the sensor will apply updates
+  type: "string"
+  required: true
+  default: "prod"
+  enum:
+    - dev
+    - prod
+
+sensor_dest_cloud:
+  description: The destination cloud which the sensor will apply any required updates to
+  type: "string"
+  required: true
+  default: "dev"
+  enum:
+    - dev
+    - prod
+
 router_sensor:
   description: "Openstack Router sensor specific settings."
   type: "object"
@@ -208,6 +226,12 @@ chatops_sensor:
 
 image_sensor:
   description: "Image sensor specific settings."
+  type: "object"
+  required: false
+  additionalProperties: false
+
+host_aggregate_sensor:
+  descrption: "Host aggregate sensor specific settings."
   type: "object"
   required: false
   additionalProperties: false
