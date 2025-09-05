@@ -11,3 +11,5 @@ coverage.coverage
 
 venv/
 .venv/
+
+.env
