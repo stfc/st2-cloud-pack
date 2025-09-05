@@ -235,8 +235,8 @@ def setup_external_networking(
         conn,
         QuotaDetails(
             project_identifier=project.id,
-            num_floating_ips=number_of_floating_ips,
-            num_security_group_rules=number_of_security_group_rules,
+            floating_ips=number_of_floating_ips,
+            security_group_rules=number_of_security_group_rules,
         ),
     )
 

@@ -605,8 +605,8 @@ def test_setup_external_networking(
         mock_conn,
         QuotaDetails(
             project_identifier=mock_project.id,
-            num_floating_ips=number_of_floating_ips,
-            num_security_group_rules=number_of_security_group_rules,
+            floating_ips=number_of_floating_ips,
+            security_group_rules=number_of_security_group_rules,
         ),
     )
 
@@ -731,8 +731,8 @@ def test_setup_jasmin_networking(
         mock_conn,
         QuotaDetails(
             project_identifier=mock_project.id,
-            num_floating_ips=number_of_floating_ips,
-            num_security_group_rules=number_of_security_group_rules,
+            floating_ips=number_of_floating_ips,
+            security_group_rules=number_of_security_group_rules,
         ),
     )
 
