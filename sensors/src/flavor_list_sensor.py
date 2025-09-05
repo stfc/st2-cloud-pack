@@ -1,5 +1,5 @@
 from st2reactor.sensor.base import PollingSensor
-from openstack_api.openstack_flavor import OpenstackFlavor
+from openstack_api.openstack_connection import OpenstackConnection
 
 
 class FlavorListSensor(PollingSensor):
@@ -7,9 +7,8 @@ class FlavorListSensor(PollingSensor):
         super().__init__(
             sensor_service=sensor_service, config=config, poll_interval=poll_interval
         )
-        self.api = OpenstackFlavor()
         self.log = self._sensor_service.get_logger(__name__)
-        self.cloud = self._config["sensor_dest_cloud"]
+        self.dest_cloud_account = self._config["sensor_dest_cloud"]
 
     def setup(self):
         """
@@ -17,19 +16,23 @@ class FlavorListSensor(PollingSensor):
         """
 
     def poll(self):
-        self.log.info(f"Destination Cloud: {self.cloud}")
-        self.log.info("Polling for  flavors.")
 
-        dest_flavors = self.api.list_flavors(self.cloud)
+        with OpenstackConnection(self.dest_cloud_account) as conn:
+            self.log.info(f"Destination Cloud: {self.dest_cloud_account}")
+            self.log.info("Polling for  flavors.")
 
-        self.log.info("Dispatching trigger for flavor list.")
-        payload = {
-            "dest_flavors": [dest.name for dest in dest_flavors],
-        }
-        self.sensor_service.dispatch(
-            trigger="stackstorm_openstack.flavor.flavor_list",
-            payload=payload,
-        )
+            dest_flavors = conn.list_flavors()
+
+            self.log.info("Dispatching trigger for flavor list.")
+
+            payload = {
+                "dest_flavors": [dest_flavors],
+            }
+
+            self.sensor_service.dispatch(
+                trigger="stackstorm_openstack.flavor.flavor_list",
+                payload=payload,
+            )
 
     def cleanup(self):
         """
