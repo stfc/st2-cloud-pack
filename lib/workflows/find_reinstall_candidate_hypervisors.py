@@ -4,7 +4,7 @@ from typing import List, Optional
 from openstack.connection import Connection
 from openstack_api.openstack_connection import OpenstackConnection
 from openstack_api.openstack_hypervisor import get_available_flavors
-from openstackquery import HypervisorQuery
+from openstackquery import HypervisorQuery, ServerQuery
 
 # pylint:disable=too-many-arguments
 # pylint:disable=too-many-locals
@@ -32,7 +32,6 @@ def find_reinstall_candidate_hypervisors(
     :param cloud_account: A string representing the cloud account to use - set in clouds.yaml
     :param ip_regex: Regular expression pattern to filter hypervisor IPs (default: "172.16.x.x").
     :param max_vcpus: Optional maximum threshold for used vCPUs.
-    :param max_vms: Optional maximum threshold for # of hosted VMs.
     :param include_down: Optional boolean to include hypervisors with state "down"
     :param include_disabled: Optional boolean to include hypervisors with status "disabled"
     :param exclude_hostnames: Optional list of hypervisor hostname substrings to exclude.
@@ -59,7 +58,6 @@ def find_reinstall_candidate_hypervisors(
         "status",
         "vcpus",
         "vcpus_used",
-        "running_vms",
         "disabled_reason",
     ]
 
@@ -74,9 +72,6 @@ def find_reinstall_candidate_hypervisors(
     if max_vcpus is not None:
         query.where(preset="LESS_THAN_OR_EQUAL_TO", prop="vcpus_used", value=max_vcpus)
 
-    if max_vms is not None:
-        query.where(preset="LESS_THAN_OR_EQUAL_TO", prop="running_vms", value=max_vms)
-
     if not include_down:
         query.where(preset="EQUAL_TO", prop="state", value="up")
 
@@ -90,7 +85,7 @@ def find_reinstall_candidate_hypervisors(
             value=construct_hostname_regex(exclude_hostnames),
         )
 
-    if sort_by:
+    if sort_by and sort_by != "running_vms":
         query.sort_by((sort_by, sort_direction))
 
     if include_flavours or exclude_flavours:
@@ -108,6 +103,36 @@ def find_reinstall_candidate_hypervisors(
             value=allowed_hv_names,
         )
     query.run(cloud_account, **kwargs)
+
+    # pylint: disable=protected-access
+    hypervisor_results = query.results_container._results
+
+    server_query = ServerQuery()
+    server_query.group_by("hypervisor_name")
+    server_query.run(cloud_account, all_projects=True, as_admin=True)
+    servers_grouped = server_query.to_props()
+
+    for hv_result in hypervisor_results:
+        hv_name = hv_result.get_prop(hv_result._prop_enum_cls.HYPERVISOR_NAME)
+        running_vms_count = len(servers_grouped.get(hv_name, []))
+        hv_result.update_forwarded_properties({"running_vms": running_vms_count})
+
+    if max_vms is not None:
+        filtered_results = [
+            r
+            for r in hypervisor_results
+            if r._forwarded_props.get("running_vms", 0) <= max_vms
+        ]
+        query.results_container._results = filtered_results
+        query.results_container._parsed_results = []
+
+    if sort_by == "running_vms":
+        query.results_container._results.sort(
+            key=lambda result: result._forwarded_props.get("running_vms", 0),
+            reverse=(sort_direction != "asc"),
+        )
+
+    query.results_container._parsed_results = query.results_container._results
 
     return {
         "to_html": query.to_html(),
