@@ -32,7 +32,6 @@ class FlavorListSensor(PollingSensor):
             payload = {
                 "dest_flavors": dest_flavors,
             }
-            self.log.info(f"Payload: {payload}")
 
             self.sensor_service.dispatch(
                 trigger="stackstorm_openstack.flavor.flavor_list",
