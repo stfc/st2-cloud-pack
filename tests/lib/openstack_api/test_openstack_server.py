@@ -16,8 +16,9 @@ from openstack_api.openstack_server import (
 @pytest.mark.parametrize("dest_host", [None, "hv01"])
 @patch("openstack_api.openstack_server.snapshot_server")
 @patch("openstack_api.openstack_server.wait_for_migration_status")
+@patch("time.sleep")
 def test_active_migration(
-    mock_wait_for_migration_status, mock_snapshot_server, dest_host
+    mock_time, mock_wait_for_migration_status, mock_snapshot_server, dest_host
 ):
     """
     Test migration when the status of the server is ACTIVE and the destination host is supplied
@@ -38,6 +39,7 @@ def test_active_migration(
     mock_snapshot_server.assert_called_once_with(
         conn=mock_connection, server_id=mock_server_id
     )
+    mock_time.assert_called_once_with(10)
     mock_connection.compute.live_migrate_server.assert_called_once_with(
         server=mock_server_id, host=dest_host, block_migration=True
     )
