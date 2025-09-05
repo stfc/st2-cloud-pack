@@ -34,7 +34,6 @@ def test_find_reinstall_candidate_hypervisors(mock_hypervisor_query):
         "status",
         "vcpus",
         "vcpus_used",
-        "running_vms",
         "disabled_reason",
     ]
 
@@ -67,7 +66,6 @@ def test_find_reinstall_candidate_hypervisors_with_params(
         "cloud_account": "test_cloud",
         "ip_regex": r"^10\.11\.(?:\d{1,3})\.(?:\d{1,3})$",
         "max_vcpus": 40,
-        "max_vms": 30,
         "include_down": True,
         "include_disabled": True,
         "exclude_hostnames": ["rtx4000", "a100", "-"],
@@ -88,9 +86,6 @@ def test_find_reinstall_candidate_hypervisors_with_params(
     )
     mock_query.where.assert_any_call(
         preset="LESS_THAN_OR_EQUAL_TO", prop="vcpus_used", value=params["max_vcpus"]
-    )
-    mock_query.where.assert_any_call(
-        preset="LESS_THAN_OR_EQUAL_TO", prop="running_vms", value=params["max_vms"]
     )
     assert (
         call(preset="EQUAL_TO", prop="state", value="up")

@@ -14,7 +14,6 @@ def find_reinstall_candidate_hypervisors(
     cloud_account: str,
     ip_regex: str,
     max_vcpus: Optional[int] = None,
-    max_vms: Optional[int] = None,
     include_down: Optional[bool] = False,
     include_disabled: Optional[bool] = False,
     exclude_hostnames: Optional[List[str]] = None,
@@ -32,7 +31,6 @@ def find_reinstall_candidate_hypervisors(
     :param cloud_account: A string representing the cloud account to use - set in clouds.yaml
     :param ip_regex: Regular expression pattern to filter hypervisor IPs (default: "172.16.x.x").
     :param max_vcpus: Optional maximum threshold for used vCPUs.
-    :param max_vms: Optional maximum threshold for # of hosted VMs.
     :param include_down: Optional boolean to include hypervisors with state "down"
     :param include_disabled: Optional boolean to include hypervisors with status "disabled"
     :param exclude_hostnames: Optional list of hypervisor hostname substrings to exclude.
@@ -59,7 +57,6 @@ def find_reinstall_candidate_hypervisors(
         "status",
         "vcpus",
         "vcpus_used",
-        "running_vms",
         "disabled_reason",
     ]
 
@@ -73,9 +70,6 @@ def find_reinstall_candidate_hypervisors(
 
     if max_vcpus is not None:
         query.where(preset="LESS_THAN_OR_EQUAL_TO", prop="vcpus_used", value=max_vcpus)
-
-    if max_vms is not None:
-        query.where(preset="LESS_THAN_OR_EQUAL_TO", prop="running_vms", value=max_vms)
 
     if not include_down:
         query.where(preset="EQUAL_TO", prop="state", value="up")
