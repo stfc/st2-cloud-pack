@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock, patch
 import pytest
-from deepdiff import DeepDiff
 from sensors.src.image_metadata_sensor import ImageMetadataSensor
 
 
@@ -27,7 +26,10 @@ def test_metadata_mismatch_dispatch(mock_openstack_connection, sensor):
     """
     mock_source_conn = MagicMock()
     mock_target_conn = MagicMock()
-    mock_openstack_connection.return_value.__enter__.return_value = [mock_source_conn, mock_target_conn]
+    mock_openstack_connection.return_value.__enter__.return_value = [
+        mock_source_conn,
+        mock_target_conn,
+    ]
 
     mock_source_image = MagicMock()
     mock_source_image.name = "ubuntu"

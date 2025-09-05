@@ -52,7 +52,7 @@ class ImageMetadataSensor(PollingSensor):
 
             self._log.info("Compare source and target metadata")
 
-            for image_name in source_images:
+            for image_name in source_images.items():
                 source_img = source_images[image_name]
                 target_img = target_images.get(image_name)
 
