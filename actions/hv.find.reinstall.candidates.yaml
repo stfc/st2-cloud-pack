@@ -74,9 +74,9 @@ parameters:
     description: "(Optional) hypervisor property to sort by"
     type: string
     enum:
-      - null
+      - ""
       - "vcpus_used"
-      - "running_vms"
+      - "memory_used"
     required: false
     default: "vcpus_used"
   sort_direction:
@@ -86,5 +86,5 @@ parameters:
       - "desc"
     type: string
     required: true
-    default: "desc"
+    default: "asc"
 runner_type: python-script
