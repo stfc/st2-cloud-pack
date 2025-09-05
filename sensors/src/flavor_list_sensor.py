@@ -21,7 +21,7 @@ class FlavorListSensor(PollingSensor):
 
         with OpenstackConnection(self.dest_cloud_account) as conn:
             self.log.info(f"Destination Cloud: {self.dest_cloud_account}")
-            self.log.info("Polling for  flavors.")
+            self.log.info("Polling for flavors.")
 
             dest_flavors = [
                 json.dumps(flavor.to_dict()) for flavor in conn.list_flavors()
