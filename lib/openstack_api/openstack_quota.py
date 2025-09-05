@@ -13,38 +13,21 @@ def set_quota(conn: Connection, details: QuotaDetails):
     details.project_identifier = details.project_identifier.strip()
     if not details.project_identifier:
         raise MissingMandatoryParamError("The project name is missing")
+
     project_id = conn.identity.find_project(
         details.project_identifier, ignore_missing=False
     ).id
 
-    # Create dictionaries to pass to each quota call
-    compute_quotas = {
-        "cores": details.cores,
-        "ram": details.ram,
-        "instances": details.instances,
-    }
-    network_quotas = {
-        "floating_ips": details.floating_ips,
-        "security_groups": details.security_groups,
-        "security_group_rules": details.security_group_rules,
-    }
-    volume_quotas = {
-        "volumes": details.volumes,
-        "snapshots": details.snapshots,
-        "gigabytes": details.gigabytes,
+    service_methods = {
+        "compute": conn.set_compute_quotas,
+        "network": conn.set_network_quotas,
+        "volume": conn.set_volume_quotas,
     }
 
-    for quota in [compute_quotas, network_quotas, volume_quotas]:
-        for key, value in list(quota.items()):
-            if value == 0:
-                quota.pop(key)
-
-    if len(compute_quotas) > 0:
-        conn.set_compute_quotas(project_id, **compute_quotas)
-    if len(network_quotas) > 0:
-        conn.set_network_quotas(project_id, **network_quotas)
-    if len(volume_quotas) > 0:
-        conn.set_volume_quotas(project_id, **volume_quotas)
+    for service_type, service_quotas in details.get_all_quotas().items():
+        if service_quotas:
+            quota_method = service_methods[service_type]
+            quota_method(project_id, **service_quotas)
 
 
 def show_quota(conn: Connection, project_id: str):

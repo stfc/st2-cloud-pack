@@ -34,16 +34,16 @@ def test_set_quota_cores():
     """
     mock_details = QuotaDetails(
         project_identifier="foo",
-        floating_ips=0,
-        security_group_rules=0,
+        floating_ips=None,
+        security_group_rules=None,
         cores=1,
-        gigabytes=0,
-        instances=0,
-        backups=0,
-        ram=0,
-        security_groups=0,
-        snapshots=0,
-        volumes=0,
+        gigabytes=None,
+        instances=None,
+        backups=None,
+        ram=None,
+        security_groups=None,
+        snapshots=None,
+        volumes=None,
     )
     mock_conn = MagicMock()
     set_quota(mock_conn, mock_details)
@@ -51,6 +51,8 @@ def test_set_quota_cores():
     mock_conn.set_compute_quotas.assert_called_once_with(
         mock_conn.identity.find_project.return_value.id, cores=1
     )
+    mock_conn.set_network_quotas.assert_not_called()
+    mock_conn.set_volume_quotas.assert_not_called()
 
 
 def test_set_quota_security_group_rules():
@@ -59,16 +61,16 @@ def test_set_quota_security_group_rules():
     """
     mock_details = QuotaDetails(
         project_identifier="foo",
-        floating_ips=0,
+        floating_ips=None,
         security_group_rules=1,
-        cores=0,
-        gigabytes=0,
-        instances=0,
-        backups=0,
-        ram=0,
-        security_groups=0,
-        snapshots=0,
-        volumes=0,
+        cores=None,
+        gigabytes=None,
+        instances=None,
+        backups=None,
+        ram=None,
+        security_groups=None,
+        snapshots=None,
+        volumes=None,
     )
     mock_conn = MagicMock()
     set_quota(mock_conn, mock_details)
@@ -76,6 +78,8 @@ def test_set_quota_security_group_rules():
     mock_conn.set_network_quotas.assert_called_once_with(
         mock_conn.identity.find_project.return_value.id, security_group_rules=1
     )
+    mock_conn.set_compute_quotas.assert_not_called()
+    mock_conn.set_volume_quotas.assert_not_called()
 
 
 def test_set_quota_everything():
@@ -98,7 +102,6 @@ def test_set_quota_everything():
     mock_conn = MagicMock()
     set_quota(mock_conn, mock_details)
     mock_conn.identity.find_project.assert_called_once_with("foo", ignore_missing=False)
-    mock_conn.identity.find_project.assert_called_once_with("foo", ignore_missing=False)
     mock_conn.set_compute_quotas.assert_called_once_with(
         mock_conn.identity.find_project.return_value.id, cores=8, instances=10, ram=64
     )
@@ -113,4 +116,5 @@ def test_set_quota_everything():
         volumes=10,
         snapshots=4,
         gigabytes=10,
+        backups=4,
     )
