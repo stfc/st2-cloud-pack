@@ -21,7 +21,7 @@ def find_reinstall_candidate_hypervisors(
     include_flavours: Optional[List[str]] = None,
     exclude_flavours: Optional[List[str]] = None,
     output_type: Optional[str] = "to_string",
-    sort_by: Optional[str] = None,
+    sort_by: Optional[str] = "",
     sort_direction: Optional[str] = "desc",
     **kwargs,
 ):
@@ -90,7 +90,7 @@ def find_reinstall_candidate_hypervisors(
             value=construct_hostname_regex(exclude_hostnames),
         )
 
-    if sort_by is not None:
+    if sort_by:
         query.sort_by((sort_by, sort_direction))
 
     if include_flavours or exclude_flavours:
