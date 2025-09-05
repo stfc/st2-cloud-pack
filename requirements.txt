@@ -3,7 +3,7 @@ openstacksdk
 # for various "side-effects" such as creating "default" security
 # groups....don't ask...
 python-openstackclient == 6.3.0
-https://github.com/stfc/openstack-query-library/releases/download/v1.2.0/openstackquery-1.2.0-py3-none-any.whl
+https://github.com/stfc/openstack-query-library/releases/download/v1.3.0/openstackquery-1.3.0-py3-none-any.whl
 tabulate
 requests
 python-dateutil
