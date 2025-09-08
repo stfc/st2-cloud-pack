@@ -15,7 +15,7 @@ trigger_types:
           description: "The name of the image"
         source_metadata:
           type: "object"
-          description: "Metadata from source cloud"
-        target_metadata:
+          description: "Metadata of the image from source cloud"
+        target_cloud:
           type: "object"
-          description: "Metadata from target cloud"
+          description: "Name of the Target cloud"
