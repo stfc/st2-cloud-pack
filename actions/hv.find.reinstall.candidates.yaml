@@ -48,6 +48,10 @@ parameters:
     description: "Choose the maximum number of 'vCPUs Used' to consider."
     type: integer
     required: false
+  max_vms:
+    description: "Choose the maximum number of 'Running VMs' to consider."
+    type: integer
+    required: false
   include_down:
     description: "Choose whether to include HVs with state 'Down'"
     type: boolean
@@ -74,9 +78,10 @@ parameters:
     description: "(Optional) hypervisor property to sort by"
     type: string
     enum:
-      - ""
       - "vcpus_used"
       - "memory_used"
+      - "running_vms"
+      - ""
     required: false
     default: "vcpus_used"
   sort_direction:
