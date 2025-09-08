@@ -1,0 +1,15 @@
+---
+class_name: HostAggregateSensor
+entry_point: src/host_aggregate_list_sensor.py
+description: Detect changes in host aggregates
+poll_interval: 86400  # 24 hours
+enabled: false
+trigger_types:
+  - name: "aggregate.aggregate_list"
+    description: "Triggers for aggregate list poll"
+    payload_schema:
+      type: "object"
+      properties:
+        dest_aggregates:
+          type: "array"
+          description: "List of destination (dev) aggregates"
