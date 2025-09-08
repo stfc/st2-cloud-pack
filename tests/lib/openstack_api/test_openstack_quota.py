@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
-from openstack_api.openstack_quota import set_quota
+from openstack_api.openstack_quota import set_quota, show_quota
 from structs.quota_details import QuotaDetails
 
 
@@ -118,3 +118,15 @@ def test_set_quota_everything():
         gigabytes=10,
         backups=4,
     )
+
+
+def test_show_quota_calls_get_compute_quotas():
+    """
+    Tests that show_quota correctly calls get_compute_quotas with project ID
+    """
+    mock_conn = MagicMock()
+    project_id = "test-project-id"
+
+    show_quota(mock_conn, project_id)
+
+    mock_conn.get_compute_quotas.assert_called_once_with(project_id)
