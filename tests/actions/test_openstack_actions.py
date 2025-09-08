@@ -1,8 +1,9 @@
-from unittest.mock import patch, NonCallableMock, MagicMock
 from importlib import import_module
-import pytest
+from unittest.mock import MagicMock, NonCallableMock, patch
 
+import pytest
 from src.openstack_actions import OpenstackActions
+
 from tests.actions.openstack_action_test_base import OpenstackActionTestBase
 
 
@@ -11,9 +12,10 @@ def test_module_exists(action_name):
     """
     Test that each action's entry-point module exists
     """
-    workflow_module = import_module("workflows")
-
-    assert hasattr(workflow_module, action_name)
+    try:
+        import_module(f"workflows.{action_name}")
+    except ModuleNotFoundError:
+        pytest.fail(f"Module workflows.{action_name} not found")
 
 
 class TestOpenstackActions(OpenstackActionTestBase):
