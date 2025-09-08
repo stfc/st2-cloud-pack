@@ -21,8 +21,8 @@ def find_reinstall_candidate_hypervisors(
     include_flavours: Optional[List[str]] = None,
     exclude_flavours: Optional[List[str]] = None,
     output_type: Optional[str] = "to_string",
-    sort_by: Optional[str] = "",
-    sort_direction: Optional[str] = "desc",
+    sort_by: Optional[str] = "vcpus_used",
+    sort_direction: Optional[str] = "asc",
     **kwargs,
 ):
     """
@@ -32,6 +32,7 @@ def find_reinstall_candidate_hypervisors(
     :param cloud_account: A string representing the cloud account to use - set in clouds.yaml
     :param ip_regex: Regular expression pattern to filter hypervisor IPs (default: "172.16.x.x").
     :param max_vcpus: Optional maximum threshold for used vCPUs.
+    :param max_vms: Optional maximum threshold for running VMs.
     :param include_down: Optional boolean to include hypervisors with state "down"
     :param include_disabled: Optional boolean to include hypervisors with status "disabled"
     :param exclude_hostnames: Optional list of hypervisor hostname substrings to exclude.

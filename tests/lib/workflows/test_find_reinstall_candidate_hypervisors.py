@@ -193,6 +193,8 @@ def test_running_vms_filter_and_sort(
     mock_hypervisor_query_class,
     mock_server_query_class,
 ):
+    """Test the running_vms property,
+    and filtering/sorting by it"""
     mock_hypervisor_query = MagicMock()
     mock_hypervisor_query_class.return_value = mock_hypervisor_query
 
