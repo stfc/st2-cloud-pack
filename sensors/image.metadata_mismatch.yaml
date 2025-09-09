@@ -1,0 +1,21 @@
+---
+class_name: ImageMetadataSensor
+entry_point: src/image_metadata_sensor.py
+description: Detect differences in image metadata between source and target
+poll_interval: 86400 # 24 hours
+enabled: false
+trigger_types:
+  - name: "image.metadata_mismatch"
+    description: "Trigger when image metadata is different between source and target"
+    payload_schema:
+      type: "object"
+      properties:
+        image_name:
+          type: "string"
+          description: "The name of the image"
+        source_metadata:
+          type: "object"
+          description: "Metadata of the image from source cloud"
+        target_cloud:
+          type: "object"
+          description: "Name of the Target cloud"
