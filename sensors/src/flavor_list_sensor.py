@@ -5,6 +5,18 @@ from openstack_api.openstack_connection import OpenstackConnection
 
 
 class FlavorListSensor(PollingSensor):
+    """
+    * self.sensor_service
+        - provides utilities like
+            get_logger() for writing to logs.
+            dispatch() for dispatching triggers into the system.
+    * self._config
+        - contains configuration that was specified as
+          config.yaml in the pack.
+    * self._poll_interval
+        - indicates the interval between two successive poll() calls.
+    """
+
     def __init__(self, sensor_service, config=None, poll_interval=10):
         super().__init__(
             sensor_service=sensor_service, config=config, poll_interval=poll_interval
@@ -18,7 +30,10 @@ class FlavorListSensor(PollingSensor):
         """
 
     def poll(self):
-
+        """
+        Polls the dev cloud flavors and dispatches a payload containing
+        a list of flavors.
+        """
         with OpenstackConnection(self.dest_cloud_account) as conn:
             self.log.info(f"Destination Cloud: {self.dest_cloud_account}")
             self.log.info("Polling for flavors.")
