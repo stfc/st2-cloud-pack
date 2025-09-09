@@ -1,0 +1,14 @@
+class_name: "FlavorListSensor"
+entry_point: "src/flavor_list_sensor.py"
+description: "Detect missing flavors"
+poll_interval: 86400 # Every 24 hours 60*60*24
+enabled: false
+trigger_types:
+  - name: "flavor.flavor_list"
+    description: "Trigger for flavor list poll"
+    payload_schema:
+      type: "object"
+      properties:
+        dest_flavors:
+          type: "array"
+          description: "List of destination (dev) cloud flavors"
