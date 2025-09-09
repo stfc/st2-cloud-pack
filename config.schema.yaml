@@ -212,9 +212,6 @@ flavor_sensor:
   type: "object"
   required: false
   additionalProperties: false
-  properties:
-    source_cloud_account: "{{sensor_source_cloud}}"
-    target_cloud_account: "{{sensor_dest_cloud}}"
 
 chatops_sensor:
   description: "ChatOps sensor specific settings."
