@@ -1,0 +1,26 @@
+class_name: "FlavorListSensor"
+entry_point: "src/flavor_list_sensor.py"
+description: "Detect differences in flavor lists between source and destination"
+poll_interval: 86400 # Every 24 hours 60*60*24
+enabled: false
+trigger_types:
+  - name: "flavor.flavor_list"
+    description: "Trigger when flavor list is different between source and destination"
+    payload_schema:
+      type: "object"
+      properties:
+        flavor_name:
+          type: "string"
+          description: "The name of the flavor"
+        target_cloud:
+          type: "object"
+          description: "Name of the target cloud"
+        source_flavor_properties:
+          type: "object"
+          description: "Properties of the flavor from the source cloud"
+        dest_flavor_properties:
+          type: "object"
+          description: "Properties of the flavor from the destination cloud"
+        sync_date:
+          type: "string"
+          description: "The date and time the sync was performed"

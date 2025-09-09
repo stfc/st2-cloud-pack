@@ -14,12 +14,14 @@ def flavor_sensor_fixture():
     return FlavorListSensor(
         sensor_service=MagicMock(),
         config={
+            "sensor_source_cloud": "prod",
             "sensor_dest_cloud": "dev",
         },
         poll_interval=10,
     )
 
 
+# TODO: Update unit test with comparison
 @patch("sensors.src.flavor_list_sensor.OpenstackConnection")
 def test_poll(mock_openstack_connection, sensor):
     """
