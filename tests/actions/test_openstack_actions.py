@@ -12,10 +12,9 @@ def test_module_exists(action_name):
     """
     Test that each action's entry-point module exists
     """
-    try:
-        import_module(f"workflows.{action_name}")
-    except ModuleNotFoundError:
-        pytest.fail(f"Module workflows.{action_name} not found")
+    workflow_module = import_module(f"workflows.{action_name}")
+
+    assert hasattr(workflow_module, action_name)
 
 
 class TestOpenstackActions(OpenstackActionTestBase):
