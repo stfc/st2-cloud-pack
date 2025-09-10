@@ -1,4 +1,4 @@
-from structs.jira.jira_account import JiraAccount
+from apis.jira_api.structs.jira_account import JiraAccount
 
 # pylint: disable=unused-argument
 

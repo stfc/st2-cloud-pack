@@ -1,13 +1,13 @@
 from typing import List, Optional, Union
 
-from email_api.emailer import Emailer
 from openstackquery import ServerQuery, UserQuery
 
-from enums.cloud_domains import CloudDomains
+from apis.openstack_api.enums.cloud_domains import CloudDomains
 
-from structs.email.email_params import EmailParams
-from structs.email.email_template_details import EmailTemplateDetails
-from structs.email.smtp_account import SMTPAccount
+from apis.email_api.structs.email_params import EmailParams
+from apis.email_api.structs.email_template_details import EmailTemplateDetails
+from apis.email_api.structs.smtp_account import SMTPAccount
+from apis.email_api.emailer import Emailer
 
 
 def find_servers_with_shutoff_vms(

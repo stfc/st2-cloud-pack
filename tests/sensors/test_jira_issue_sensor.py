@@ -62,7 +62,9 @@ def jira_sensor_fixture():
     )
 
 
-@patch("structs.jira.jira_account.JiraAccount.from_pack_config")  # Mock JiraAccount
+@patch(
+    "apis.jira_api.structs.jira_account.JiraAccount.from_pack_config"
+)  # Mock JiraAccount
 def test_sensor_initialization(mock_from_pack_config):
     """
     Test `__init__()` method of JiraIssueSensor.
@@ -138,7 +140,7 @@ def test_setup(mock_jira_client, sensor):
     "sensors.src.jira_issue_sensor.search_issues"
 )  # Mocks the Jira issue search function
 @patch(
-    "structs.jira.jira_account.JiraAccount.from_pack_config"
+    "apis.jira_api.structs.jira_account.JiraAccount.from_pack_config"
 )  # Mocks Jira account retrieval
 def test_poll_with_no_issues(
     mock_from_pack_config, mock_search_issues, mock_jira_client, sensor
@@ -205,7 +207,7 @@ def test_poll_with_no_issues(
     "sensors.src.jira_issue_sensor.search_issues"
 )  # Mocks the Jira issue search function
 @patch(
-    "structs.jira.jira_account.JiraAccount.from_pack_config"
+    "apis.jira_api.structs.jira_account.JiraAccount.from_pack_config"
 )  # Mocks Jira account retrieval
 def test_poll_with_issues(
     mock_from_pack_config, mock_search_issues, mock_jira_client, sensor

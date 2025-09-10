@@ -3,11 +3,11 @@ from typing import Optional
 
 import pytz
 
-from enums.icinga.icinga_objects import IcingaObject
-from structs.icinga.downtime_details import DowntimeDetails
-from structs.icinga.icinga_account import IcingaAccount
+from apis.icinga_api.enums.icinga_objects import IcingaObject
+from apis.icinga_api.structs.downtime_details import DowntimeDetails
+from apis.icinga_api.structs.icinga_account import IcingaAccount
 
-from icinga_api import downtime
+from apis.icinga_api import downtime
 
 
 # pylint:disable=too-many-locals

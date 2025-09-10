@@ -4,12 +4,12 @@ from datetime import datetime
 from tabulate import tabulate
 from openstackquery import ImageQuery, UserQuery
 
-from enums.cloud_domains import CloudDomains
-from structs.email.smtp_account import SMTPAccount
-from structs.email.email_template_details import EmailTemplateDetails
-from structs.email.email_params import EmailParams
+from apis.openstack_api.enums.cloud_domains import CloudDomains
 
-from email_api.emailer import Emailer
+from apis.email_api.structs.smtp_account import SMTPAccount
+from apis.email_api.structs.email_template_details import EmailTemplateDetails
+from apis.email_api.structs.email_params import EmailParams
+from apis.email_api.emailer import Emailer
 
 
 def get_affected_images_html(image_info_list: List[Dict]):

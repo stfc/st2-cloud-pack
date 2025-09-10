@@ -1,5 +1,5 @@
-from openstack_api.openstack_connection import OpenstackConnection
-from openstack_api.openstack_router import check_for_internal_routers
+from apis.openstack_api.openstack_connection import OpenstackConnection
+from apis.openstack_api.openstack_router import check_for_internal_routers
 from st2reactor.sensor.base import PollingSensor
 
 
