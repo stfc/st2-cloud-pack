@@ -98,6 +98,8 @@ class FlavorListSensor(PollingSensor):
                         "sync_date": sync_date,
                     }
 
+                    self.log.info("Dispatching payload: %s", payload)
+
                     self.sensor_service.dispatch(
                         trigger="stackstorm_openstack.flavor.flavor_mismatch",
                         payload=payload,
