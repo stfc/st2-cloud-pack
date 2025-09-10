@@ -55,9 +55,6 @@ class FlavorListSensor(PollingSensor):
                 for flavor in dest_conn.list_flavors()
             }
 
-            self.log.info("Source flavors: %s", source_flavors)
-            self.log.info("Destination flavors: %s", dest_flavors)
-
             sync_date = str(datetime.datetime.now())
             self.log.info("Sync date: %s", sync_date)
 
@@ -82,7 +79,9 @@ class FlavorListSensor(PollingSensor):
                     },
                 )
 
-                self.log.info("Checking differences between flavors %s", diff.pretty())
+                self.log.info(
+                    "Checking differences between flavors\n %s", diff.pretty()
+                )
 
                 if diff:
 
