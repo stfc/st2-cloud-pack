@@ -1,6 +1,3 @@
-import json
-import datetime
-
 from st2reactor.sensor.base import PollingSensor
 from openstack_api.openstack_connection import OpenstackConnection
 from deepdiff import DeepDiff
@@ -41,9 +38,6 @@ class FlavorListSensor(PollingSensor):
         with OpenstackConnection(
             self.source_cloud_account
         ) as source_conn, OpenstackConnection(self.dest_cloud_account) as dest_conn:
-            self.log.info("Source: %s", self.source_cloud_account)
-            self.log.info("Destination: %s", self.dest_cloud_account)
-
             self.log.info("Polling for flavors.")
 
             source_flavors = {
@@ -51,16 +45,28 @@ class FlavorListSensor(PollingSensor):
             }
             dest_flavors = {flavor.name: flavor for flavor in dest_conn.list_flavors()}
 
-            sync_date = str(datetime.datetime.now())
-            self.log.info("Sync date: %s", sync_date)
-
             for flavor_name, source_flavor in source_flavors.items():
                 dest_flavor = dest_flavors.get(flavor_name)
 
                 if not dest_flavor:
                     self.log.info("%s doesn't exist in the target cloud.", flavor_name)
+                    self.dispatch_trigger(
+                        flavor_name=source_flavor.name,
+                        source_flavor_id=source_flavor.id,
+                        dest_flavor_id=None,
+                        mismatch=str(
+                            "%s does not exist in target",
+                            source_flavor.name,
+                        ),
+                    )
                     continue
 
+                self.log.info(
+                    "Checking for mismatch between source and target: %s",
+                    self.source_cloud_account,
+                    self.dest_cloud_account,
+                    flavor_name,
+                )
                 diff = DeepDiff(
                     source_flavor,
                     dest_flavor,
@@ -73,41 +79,28 @@ class FlavorListSensor(PollingSensor):
                     },
                 )
 
-                # self.log.info(
-                #     "Checking differences between flavors\n %s", diff.pretty()
-                # )
-                self.log.info(
-                    "Checking differences between prod and dev %s", flavor_name
-                )
-
                 if diff:
+                    self.log.info("Mismatch found: %s", diff.pretty())
 
-                    self.log.info(
-                        "Flavor mismatch between source and target: %s", diff.pretty()
-                    )
-
-                    payload = {
-                        "source_flavor_name": source_flavor.name,
-                        "source_flavor_id": source_flavor.id,
-                        "dest_flavor_id": dest_flavor.id,
-                        "dest_cloud": {"name": self.dest_cloud_account},
-                        "source_flavor_properties": [
-                            json.dumps(source_flavor.to_dict())
-                        ],
-                        "dest_flavor_properties": [json.dumps(dest_flavor.to_dict())],
-                        "sync_date": sync_date,
-                    }
-
-                    self.log.info("Dispatching payload: %s", payload)
-
-                    self.sensor_service.dispatch(
-                        trigger="stackstorm_openstack.flavor.flavor_mismatch",
-                        payload=payload,
+                    self.dispatch_trigger(
+                        flavor_name=source_flavor.name,
+                        source_flavor_id=source_flavor.id,
+                        dest_flavor_id=dest_flavor.id,
+                        mismatch=str(diff.pretty()),
                     )
 
                 else:
-
                     self.log.info("No mismatch found.")
+
+    def dispatch_trigger(self, **kwargs):
+        payload = {**kwargs}
+
+        self.log.info("Dispatching payload: %s", payload)
+
+        self.sensor_service.dispatch(
+            trigger="stackstorm_openstack.flavor.flavor_mismatch",
+            payload=payload,
+        )
 
     def cleanup(self):
         """
