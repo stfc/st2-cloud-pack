@@ -41,21 +41,21 @@ class FlavorListSensor(PollingSensor):
         with OpenstackConnection(
             self.source_cloud_account
         ) as source_conn, OpenstackConnection(self.dest_cloud_account) as dest_conn:
-            self.log.info("Source Cloud: %s", self.source_cloud_account)
-            self.log.info("Destination Cloud: %s", self.dest_cloud_account)
+            self.log.info("Source: %s", self.source_cloud_account)
+            self.log.info("Destination: %s", self.dest_cloud_account)
 
             self.log.info("Polling for flavors.")
 
             source_flavors = {
-                flavor.name: json.dumps(flavor.to_dict())
-                for flavor in source_conn.list_flavors()
+                flavor.name: flavor for flavor in source_conn.list_flavors()
             }
-            dest_flavors = {
-                flavor.name: json.dumps(flavor.to_dict())
-                for flavor in dest_conn.list_flavors()
-            }
+            dest_flavors = {flavor.name: flavor for flavor in dest_conn.list_flavors()}
+
+            self.log.info("Source flavors: %s", source_flavors)
+            self.log.info("Destination flavors: %s", dest_flavors)
 
             sync_date = str(datetime.datetime.now())
+            self.log.info("Sync date: %s", sync_date)
 
             for flavor_name, source_flavor in source_flavors.items():
                 dest_flavor = dest_flavors.get(flavor_name)
