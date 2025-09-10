@@ -7,6 +7,8 @@ from apis.openstack_api.enums.user_domains import UserDomains
 from apis.openstack_api.openstack_roles import (
     assign_role_to_user,
     remove_role_from_user,
+    add_user_to_group,
+    assign_group_role_to_project,
 )
 from apis.openstack_api.structs.role_details import RoleDetails
 

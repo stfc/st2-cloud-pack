@@ -1,4 +1,4 @@
-from openstack_api.openstack_connection import OpenstackConnection
+from apis.openstack_api.openstack_connection import OpenstackConnection
 from st2reactor.sensor.base import PollingSensor
 from deepdiff import DeepDiff
 
