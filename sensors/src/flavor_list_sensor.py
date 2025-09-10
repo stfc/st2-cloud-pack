@@ -50,14 +50,12 @@ class FlavorListSensor(PollingSensor):
 
                 if not dest_flavor:
                     self.log.info("%s doesn't exist in the target cloud.", flavor_name)
+                    mismatch = str("%s does not exist in target", source_flavor.name)
                     self.dispatch_trigger(
                         flavor_name=source_flavor.name,
                         source_flavor_id=source_flavor.id,
                         dest_flavor_id=None,
-                        mismatch=str(
-                            "%s does not exist in target",
-                            source_flavor.name,
-                        ),
+                        mismatch=mismatch,
                     )
                     continue
 
