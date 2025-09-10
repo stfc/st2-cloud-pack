@@ -16,10 +16,10 @@ trigger_types:
           type: "object"
           description: "Name of the target cloud"
         source_flavor_properties:
-          type: "object"
+          type: "array"
           description: "Properties of the flavor from the source cloud"
         dest_flavor_properties:
-          type: "object"
+          type: "array"
           description: "Properties of the flavor from the destination cloud"
         sync_date:
           type: "string"
