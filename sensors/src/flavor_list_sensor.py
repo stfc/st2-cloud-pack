@@ -71,14 +71,17 @@ class FlavorListSensor(PollingSensor):
                     ignore_order=True,
                     threshold_to_diff_deeper=0,
                     exclude_paths={
-                        "root['id']",
+                        # "root['id']",
                         "root['location']",
                         "root['extra_specs']",
                     },
                 )
 
+                # self.log.info(
+                #     "Checking differences between flavors\n %s", diff.pretty()
+                # )
                 self.log.info(
-                    "Checking differences between flavors\n %s", diff.pretty()
+                    "Checking differences between prod and dev %s", flavor_name
                 )
 
                 if diff:
@@ -99,6 +102,10 @@ class FlavorListSensor(PollingSensor):
                         trigger="stackstorm_openstack.flavor.flavor_mismatch",
                         payload=payload,
                     )
+
+                else:
+
+                    self.log.info("No mismatch found.")
 
     def cleanup(self):
         """
