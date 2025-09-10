@@ -4,7 +4,7 @@ description: "Detect differences in flavor lists between source and destination"
 poll_interval: 86400 # Every 24 hours 60*60*24
 enabled: false
 trigger_types:
-  - name: "flavor.flavor_list"
+  - name: "flavor.flavor_mismatch"
     description: "Trigger when flavor list is different between source and destination"
     payload_schema:
       type: "object"
