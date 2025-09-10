@@ -83,14 +83,14 @@ class FlavorListSensor(PollingSensor):
                 if diff:
 
                     self.log.info(
-                        "Flavor mismatch between source and target: %s", flavor_name
+                        "Flavor mismatch between source and target: %s", diff.pretty()
                     )
 
                     payload = {
                         "flavor_name": source_flavor.name,
                         "dest_cloud": {"name": self.dest_cloud_account},
-                        "source_flavor_properties": source_flavor,
-                        "dest_flavor_properties": dest_flavor,
+                        "source_flavor_properties": json.dumps(source_flavor.to_dict()),
+                        "dest_flavor_properties": json.dumps(dest_flavor.to_dict()),
                         "sync_date": sync_date,
                     }
 
