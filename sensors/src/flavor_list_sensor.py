@@ -49,8 +49,11 @@ class FlavorListSensor(PollingSensor):
                 dest_flavor = dest_flavors.get(flavor_name)
 
                 if not dest_flavor:
-                    self.log.info("%s doesn't exist in the target cloud.", flavor_name)
-                    mismatch = str("%s does not exist in target", source_flavor.name)
+                    mismatch = (
+                        f"Flavor does not exist in target cloud: {source_flavor.name}"
+                    )
+                    self.log.info(mismatch)
+
                     self.dispatch_trigger(
                         flavor_name=source_flavor.name,
                         source_flavor_id=source_flavor.id,
@@ -60,10 +63,7 @@ class FlavorListSensor(PollingSensor):
                     continue
 
                 self.log.info(
-                    "Checking for mismatch between source and target: %s",
-                    self.source_cloud_account,
-                    self.dest_cloud_account,
-                    flavor_name,
+                    f"Checking for mismatch between source and target: {flavor_name}"
                 )
                 diff = DeepDiff(
                     source_flavor,
@@ -78,13 +78,14 @@ class FlavorListSensor(PollingSensor):
                 )
 
                 if diff:
-                    self.log.info("Mismatch found: %s", diff.pretty())
+                    mismatch = f"Differences in properties found: {diff.pretty()}"
+                    self.log.info(mismatch)
 
                     self.dispatch_trigger(
                         flavor_name=source_flavor.name,
                         source_flavor_id=source_flavor.id,
                         dest_flavor_id=dest_flavor.id,
-                        mismatch=str(diff.pretty()),
+                        mismatch=mismatch,
                     )
 
                 else:
@@ -93,7 +94,7 @@ class FlavorListSensor(PollingSensor):
     def dispatch_trigger(self, **kwargs):
         payload = {**kwargs}
 
-        self.log.info("Dispatching payload: %s", payload)
+        self.log.info(f"Dispatching payload: {payload}")
 
         self.sensor_service.dispatch(
             trigger="stackstorm_openstack.flavor.flavor_mismatch",
