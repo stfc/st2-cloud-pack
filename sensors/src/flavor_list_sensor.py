@@ -47,9 +47,13 @@ class FlavorListSensor(PollingSensor):
             self.log.info("Polling for flavors.")
 
             source_flavors = {
-                flavor.name: flavor for flavor in source_conn.list_flavors()
+                flavor.name: json.dumps(flavor.to_dict())
+                for flavor in source_conn.list_flavors()
             }
-            dest_flavors = {flavor.name: flavor for flavor in dest_conn.list_flavors()}
+            dest_flavors = {
+                flavor.name: json.dumps(flavor.to_dict())
+                for flavor in dest_conn.list_flavors()
+            }
 
             self.log.info("Source flavors: %s", source_flavors)
             self.log.info("Destination flavors: %s", dest_flavors)
@@ -62,7 +66,7 @@ class FlavorListSensor(PollingSensor):
 
                 if not dest_flavor:
                     self.log.info(
-                        "Flavor %s doesn't exist in the target cloud.", dest_flavor
+                        "Flavor %s doesn't exist in the target cloud.", flavor_name
                     )
                     continue
 
@@ -71,6 +75,11 @@ class FlavorListSensor(PollingSensor):
                     dest_flavor,
                     ignore_order=True,
                     threshold_to_diff_deeper=0,
+                    exclude_paths={
+                        "root['id']",
+                        "root['location']",
+                        "root['extra_specs']",
+                    },
                 )
 
                 self.log.info("Checking differences between flavors %s", diff.pretty())
