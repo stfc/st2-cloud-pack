@@ -87,7 +87,9 @@ class FlavorListSensor(PollingSensor):
                     )
 
                     payload = {
-                        "flavor_name": source_flavor.name,
+                        "source_flavor_name": source_flavor.name,
+                        "source_flavor_id": source_flavor.id,
+                        "dest_flavor_id": dest_flavor.id,
                         "dest_cloud": {"name": self.dest_cloud_account},
                         "source_flavor_properties": json.dumps(source_flavor.to_dict()),
                         "dest_flavor_properties": json.dumps(dest_flavor.to_dict()),
