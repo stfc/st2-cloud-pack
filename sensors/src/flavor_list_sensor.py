@@ -47,12 +47,10 @@ class FlavorListSensor(PollingSensor):
             self.log.info("Polling for flavors.")
 
             source_flavors = {
-                flavor.name: json.dumps(flavor.to_dict())
-                for flavor in source_conn.list_flavors()
+                flavor.name: flavor.name for flavor in source_conn.list_flavors()
             }
             dest_flavors = {
-                flavor.name: json.dumps(flavor.to_dict())
-                for flavor in dest_conn.list_flavors()
+                flavor.name: flavor.name for flavor in dest_conn.list_flavors()
             }
 
             sync_date = str(datetime.datetime.now())
