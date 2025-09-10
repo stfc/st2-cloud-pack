@@ -47,11 +47,9 @@ class FlavorListSensor(PollingSensor):
             self.log.info("Polling for flavors.")
 
             source_flavors = {
-                flavor.name: flavor.name for flavor in source_conn.list_flavors()
+                flavor.name: flavor for flavor in source_conn.list_flavors()
             }
-            dest_flavors = {
-                flavor.name: flavor.name for flavor in dest_conn.list_flavors()
-            }
+            dest_flavors = {flavor.name: flavor for flavor in dest_conn.list_flavors()}
 
             sync_date = str(datetime.datetime.now())
             self.log.info("Sync date: %s", sync_date)
@@ -60,9 +58,7 @@ class FlavorListSensor(PollingSensor):
                 dest_flavor = dest_flavors.get(flavor_name)
 
                 if not dest_flavor:
-                    self.log.info(
-                        "Flavor %s doesn't exist in the target cloud.", flavor_name
-                    )
+                    self.log.info("%s doesn't exist in the target cloud.", flavor_name)
                     continue
 
                 diff = DeepDiff(
