@@ -1,6 +1,5 @@
-from openstack.connection import Connection
-
 from exceptions.missing_mandatory_param_error import MissingMandatoryParamError
+from openstack.connection import Connection
 from structs.quota_details import QuotaDetails
 
 
@@ -14,26 +13,22 @@ def set_quota(conn: Connection, details: QuotaDetails):
     details.project_identifier = details.project_identifier.strip()
     if not details.project_identifier:
         raise MissingMandatoryParamError("The project name is missing")
+
     project_id = conn.identity.find_project(
         details.project_identifier, ignore_missing=False
     ).id
 
-    _update_quota(conn, project_id, "floating_ips", details.num_floating_ips)
+    service_methods = {
+        "compute": conn.set_compute_quotas,
+        "network": conn.set_network_quotas,
+        "volume": conn.set_volume_quotas,
+    }
 
-    _update_quota(
-        conn,
-        project_id,
-        "security_group_rules",
-        details.num_security_group_rules,
-    )
+    for service_type, service_quotas in details.get_all_quotas().items():
+        if service_quotas:
+            quota_method = service_methods[service_type]
+            quota_method(project_id, **service_quotas)
 
 
-def _update_quota(conn: Connection, project_id: str, quota_id: str, new_val: int):
-    """
-    Updates a given quota if the quota has a non-zero value
-    """
-    if new_val == 0:
-        return
-
-    kwargs = {"quota": project_id, quota_id: new_val}
-    conn.network.update_quota(**kwargs)
+def show_quota(conn: Connection, project_id: str):
+    conn.get_compute_quotas(project_id)
