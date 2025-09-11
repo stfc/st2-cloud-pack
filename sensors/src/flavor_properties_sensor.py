@@ -3,7 +3,7 @@ from openstack_api.openstack_connection import OpenstackConnection
 from deepdiff import DeepDiff
 
 
-class FlavorListSensor(PollingSensor):
+class FlavorPropertiesSensor(PollingSensor):
     """
     * self.sensor_service
         - provides utilities like

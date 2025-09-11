@@ -1,11 +1,11 @@
-class_name: "FlavorListSensor"
-entry_point: "src/flavor_list_sensor.py"
-description: "Detect differences in flavor lists between source and target"
+class_name: "FlavorPropertiesSensor"
+entry_point: "src/flavor_properties_sensor.py"
+description: "Detect differences between source and target flavors"
 poll_interval: 86400 # Every 24 hours 60*60*24
 enabled: false
 trigger_types:
   - name: "flavor.flavor_mismatch"
-    description: "Trigger when flavor list is different between source and target"
+    description: "Trigger when a mismatch between source and target flavors is detected"
     payload_schema:
       type: "object"
       properties:
@@ -14,10 +14,10 @@ trigger_types:
           description: "The name of the flavor"
         source_flavor_id:
           type: "string"
-          description: "Source cloud flavor ID"
+          description: "ID of the flavor in the source cloud"
         target_flavor_id:
           type: "string"
-          description: "Target cloud flavor ID"
+          description: "ID of the flavor in the target cloud"
         mismatch:
           type: "string"
-          descripion: "The mismatch between the source and target flavors"
+          descripion: "The difference between the source and target flavors"
