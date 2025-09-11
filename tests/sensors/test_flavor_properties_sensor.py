@@ -3,15 +3,15 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from sensors.src.flavor_list_sensor import FlavorListSensor
+from sensors.src.flavor_properties_sensor import FlavorPropertiesSensor
 
 
 @pytest.fixture(name="sensor")
-def flavor_sensor_fixture():
+def flavor_properties_sensor_fixture():
     """
     Fixture for sensor config.
     """
-    return FlavorListSensor(
+    return FlavorPropertiesSensor(
         sensor_service=MagicMock(),
         config={
             "sensor_source_cloud": "prod",
@@ -22,7 +22,7 @@ def flavor_sensor_fixture():
 
 
 # TODO: Update unit test with comparison
-@patch("sensors.src.flavor_list_sensor.OpenstackConnection")
+@patch("sensors.src.flavor_properties_sensor.OpenstackConnection")
 def test_poll_no_diff(mock_openstack_connection, sensor):
     """
     Test main function of sensor, polling the dev cloud flavors.
@@ -70,12 +70,12 @@ def test_poll_no_diff(mock_openstack_connection, sensor):
     expected_payload = {"dest_flavors": [json.dumps(mock_flavor.to_dict.return_value)]}
 
     sensor.sensor_service.dispatch.assert_called_once_with(
-        trigger="stackstorm_openstack.flavor.flavor_list",
+        trigger="stackstorm_openstack.flavor.properties_mismatch",
         payload=expected_payload,
     )
 
 
-@patch("sensors.src.flavor_list_sensor.OpenstackConnection")
+@patch("sensors.src.flavor_properties_sensor.OpenstackConnection")
 def test_poll_diff(mock_openstack_connection, sensor):
     """
     Test main function of sensor, polling the dev cloud flavors.
@@ -123,6 +123,6 @@ def test_poll_diff(mock_openstack_connection, sensor):
     expected_payload = {"dest_flavors": [json.dumps(mock_flavor.to_dict.return_value)]}
 
     sensor.sensor_service.dispatch.assert_called_once_with(
-        trigger="stackstorm_openstack.flavor.flavor_list",
+        trigger="stackstorm_openstack.flavor.properties_mismatch",
         payload=expected_payload,
     )
