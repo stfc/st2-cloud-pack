@@ -78,7 +78,7 @@ class FlavorListSensor(PollingSensor):
                 )
 
                 if diff:
-                    mismatch = f"Differences in properties found: {diff.pretty()}"
+                    mismatch = f"Mismatch in properties found: {diff.pretty()}"
                     self.log.info(mismatch)
 
                     self.dispatch_trigger(
@@ -93,8 +93,6 @@ class FlavorListSensor(PollingSensor):
 
     def dispatch_trigger(self, **kwargs):
         payload = {**kwargs}
-
-        self.log.info(f"Dispatching payload: {payload}")
 
         self.sensor_service.dispatch(
             trigger="stackstorm_openstack.flavor.flavor_mismatch",
