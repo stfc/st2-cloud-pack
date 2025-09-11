@@ -71,7 +71,7 @@ class FlavorListSensor(PollingSensor):
                     ignore_order=True,
                     threshold_to_diff_deeper=0,
                     exclude_paths={
-                        # "root['id']",
+                        "root['id']",
                         "root['location']",
                         "root['extra_specs']",
                     },
