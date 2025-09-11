@@ -32,8 +32,8 @@ class FlavorListSensor(PollingSensor):
     def poll(self):
         """
         Polls the source cloud flavors and checks each flavor against those in the
-        destination cloud. Compares the flavor properties and, where there is a difference,
-        dispatches a payload containing the flavor name and the difference.
+        destination cloud. Compares the flavor properties and, where there is a difference or
+        the flavor does not exist, dispatches a payload containing the flavor name, IDs, and the mismatch.
         """
         with OpenstackConnection(
             self.source_cloud_account
@@ -92,6 +92,9 @@ class FlavorListSensor(PollingSensor):
                     self.log.info("No mismatch found.")
 
     def dispatch_trigger(self, **kwargs):
+        """
+        Creates a payload and dispatches it alongside a trigger using the sensor service.
+        """
         payload = {**kwargs}
 
         self.sensor_service.dispatch(
