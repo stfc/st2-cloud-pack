@@ -13,10 +13,10 @@ trigger_types:
           type: "string"
           description: "The name of the flavor"
         source_flavor_id:
-          type: "array"
+          type: "string"
           description: "Source cloud flavor ID"
         target_flavor_id:
-          type: "array"
+          type: "string"
           description: "Target cloud flavor ID"
         mismatch:
           type: "string"
