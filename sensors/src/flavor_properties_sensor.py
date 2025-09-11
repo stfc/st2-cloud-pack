@@ -21,8 +21,8 @@ class FlavorPropertiesSensor(PollingSensor):
             sensor_service=sensor_service, config=config, poll_interval=poll_interval
         )
         self.log = self._sensor_service.get_logger(__name__)
-        self.source_cloud_account = self.config["sensor_source_cloud"]
-        self.dest_cloud_account = self.config["sensor_dest_cloud"]
+        self.source_cloud = self.config["flavor_sensor"]["source_cloud_account"]
+        self.target_cloud = self.config["flavor_sensor"]["target_cloud_account"]
 
     def setup(self):
         """
@@ -32,18 +32,20 @@ class FlavorPropertiesSensor(PollingSensor):
     def poll(self):
         """
         Polls the source cloud flavors and checks each flavor against those in the
-        destination cloud. Compares the flavor properties and, where there is a difference or
+        target cloud. Compares the flavor properties and, where there is a difference or
         the flavor does not exist, dispatches a payload containing the flavor name, IDs, and the mismatch.
         """
-        with OpenstackConnection(
-            self.source_cloud_account
-        ) as source_conn, OpenstackConnection(self.dest_cloud_account) as dest_conn:
+        with OpenstackConnection(self.source_cloud) as source_conn, OpenstackConnection(
+            self.target_cloud
+        ) as dest_conn:
             self.log.info("Polling for flavors.")
 
             source_flavors = {
                 flavor.name: flavor for flavor in source_conn.list_flavors()
             }
             dest_flavors = {flavor.name: flavor for flavor in dest_conn.list_flavors()}
+
+            self.log.info(f"source_flavors: {source_flavors}")
 
             for flavor_name, source_flavor in source_flavors.items():
                 dest_flavor = dest_flavors.get(flavor_name)
