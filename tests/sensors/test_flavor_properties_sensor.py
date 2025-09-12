@@ -127,9 +127,9 @@ def test_poll_flavor_match(mock_openstack_connection, sensor):
         mock_target_conn,
     ]
 
-    mock_source_flavor = MagicMock()
-    mock_source_flavor.name = "test_flavor"
-    mock_source_conn.list_flavors.return_value = {
+    mock_source_flavors = MagicMock()
+    mock_source_flavors.name = "test_flavor"
+    mock_source_flavors.items.return_value = {
         "test_flavor": {
             "name": "test_flavor",
             "disk": 700,
@@ -147,10 +147,11 @@ def test_poll_flavor_match(mock_openstack_connection, sensor):
             },
         }
     }
+    mock_source_conn.list_flavors.return_value = mock_source_flavors
 
-    mock_target_flavor = MagicMock()
-    mock_target_flavor.name = "test_flavor"
-    mock_target_conn.list_flavors.return_value = {
+    mock_target_flavors = MagicMock()
+    mock_target_flavors.name = "test_flavor"
+    mock_target_flavors.items.return_value = {
         "test_flavor": {
             "name": "test_flavor",
             "disk": 700,
@@ -168,6 +169,7 @@ def test_poll_flavor_match(mock_openstack_connection, sensor):
             },
         }
     }
+    mock_target_conn.list_flavors.return_value = mock_target_flavors
 
     sensor.poll()
 
