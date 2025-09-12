@@ -65,8 +65,8 @@ class HypervisorStateSensor(PollingSensor):
 
     def cleanup(self):
         """
-        This is called when the st2 system goes down. You can perform cleanup operations like
-        closing the connections to external system here.
+        This is called whene st2 system goes down. You can perform cleanup operations like
+        closing the connect thions to external system here.
         """
 
     def add_trigger(self, trigger):

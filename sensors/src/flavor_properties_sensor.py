@@ -1,5 +1,5 @@
-from st2reactor.sensor.base import PollingSensor
 from openstack_api.openstack_connection import OpenstackConnection
+from st2reactor.sensor.base import PollingSensor
 from deepdiff import DeepDiff
 
 
@@ -35,6 +35,18 @@ class FlavorPropertiesSensor(PollingSensor):
         target cloud. Compares the flavor properties and, where there is a difference or
         the flavor does not exist, dispatches a payload containing the flavor name, IDs, and the mismatch.
         """
+
+        def dispatch_trigger(**kwargs):
+            """
+            Creates a payload and dispatches it alongside a trigger using the sensor service.
+            """
+            payload = {**kwargs}
+
+            self.sensor_service.dispatch(
+                trigger="stackstorm_openstack.flavor.flavor_mismatch",
+                payload=payload,
+            )
+
         with OpenstackConnection(self.source_cloud) as source_conn, OpenstackConnection(
             self.target_cloud
         ) as target_conn:
@@ -58,7 +70,7 @@ class FlavorPropertiesSensor(PollingSensor):
                     )
                     self.log.info(mismatch)
 
-                    self.dispatch_trigger(
+                    dispatch_trigger(
                         flavor_name=source_flavor.name,
                         source_flavor_id=source_flavor.id,
                         target_flavor_id=None,
@@ -70,14 +82,13 @@ class FlavorPropertiesSensor(PollingSensor):
                     f"Checking for mismatch between source and target: {flavor_name}"
                 )
                 diff = DeepDiff(
-                    source_flavor,
-                    target_flavor,
+                    source_flavor.to_dict(),
+                    target_flavor.to_dict(),
                     ignore_order=True,
                     threshold_to_diff_deeper=0,
                     exclude_paths={
                         "root['id']",
                         "root['location']",
-                        "root['extra_specs']",
                     },
                 )
 
@@ -85,7 +96,7 @@ class FlavorPropertiesSensor(PollingSensor):
                     mismatch = f"Mismatch in properties found: {diff.pretty()}"
                     self.log.info(mismatch)
 
-                    self.dispatch_trigger(
+                    dispatch_trigger(
                         flavor_name=source_flavor.name,
                         source_flavor_id=source_flavor.id,
                         target_flavor_id=target_flavor.id,
@@ -94,17 +105,6 @@ class FlavorPropertiesSensor(PollingSensor):
 
                 else:
                     self.log.info("No mismatch found.")
-
-    def dispatch_trigger(self, **kwargs):
-        """
-        Creates a payload and dispatches it alongside a trigger using the sensor service.
-        """
-        payload = {**kwargs}
-
-        self.sensor_service.dispatch(
-            trigger="stackstorm_openstack.flavor.flavor_mismatch",
-            payload=payload,
-        )
 
     def cleanup(self):
         """
