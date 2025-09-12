@@ -37,20 +37,22 @@ class FlavorPropertiesSensor(PollingSensor):
         """
         with OpenstackConnection(self.source_cloud) as source_conn, OpenstackConnection(
             self.target_cloud
-        ) as dest_conn:
+        ) as target_conn:
             self.log.info("Polling for flavors.")
 
             source_flavors = {
                 flavor.name: flavor for flavor in source_conn.list_flavors()
             }
-            dest_flavors = {flavor.name: flavor for flavor in dest_conn.list_flavors()}
+            target_flavors = {
+                flavor.name: flavor for flavor in target_conn.list_flavors()
+            }
 
             self.log.info(f"source_flavors: {source_flavors}")
 
             for flavor_name, source_flavor in source_flavors.items():
-                dest_flavor = dest_flavors.get(flavor_name)
+                target_flavor = target_flavors.get(flavor_name)
 
-                if not dest_flavor:
+                if not target_flavor:
                     mismatch = (
                         f"Flavor does not exist in target cloud: {source_flavor.name}"
                     )
@@ -59,7 +61,7 @@ class FlavorPropertiesSensor(PollingSensor):
                     self.dispatch_trigger(
                         flavor_name=source_flavor.name,
                         source_flavor_id=source_flavor.id,
-                        dest_flavor_id=None,
+                        target_flavor_id=None,
                         mismatch=mismatch,
                     )
                     continue
@@ -69,7 +71,7 @@ class FlavorPropertiesSensor(PollingSensor):
                 )
                 diff = DeepDiff(
                     source_flavor,
-                    dest_flavor,
+                    target_flavor,
                     ignore_order=True,
                     threshold_to_diff_deeper=0,
                     exclude_paths={
@@ -86,7 +88,7 @@ class FlavorPropertiesSensor(PollingSensor):
                     self.dispatch_trigger(
                         flavor_name=source_flavor.name,
                         source_flavor_id=source_flavor.id,
-                        dest_flavor_id=dest_flavor.id,
+                        target_flavor_id=target_flavor.id,
                         mismatch=mismatch,
                     )
 
