@@ -61,11 +61,8 @@ def flavor_properties_sensor_fixture():
 #     )
 
 
-@patch("sensors.src.flavor_properties_sensor.FlavorPropertiesSensor.dispatch_trigger")
 @patch("sensors.src.flavor_properties_sensor.OpenstackConnection")
-def test_poll_flavor_not_in_target(
-    mock_openstack_connection, mock_dispatch_trigger, sensor
-):
+def test_poll_flavor_not_in_target(mock_openstack_connection, sensor):
     """
     Test main function of sensor, detecting that the source flavor does not exist in the target.
     """
@@ -124,11 +121,16 @@ def test_poll_flavor_not_in_target(
 
     sensor.poll()
 
-    mock_dispatch_trigger.assert_called_once_with(
-        flavor_name="test_flavor",
-        source_flavor_id="0000-0000-0000-0000",
-        target_flavor_id=None,
-        mismatch="Flavor does not exist in target cloud: test_flavor",
+    expected_payload = {
+        "flavor_name": "test_flavor",
+        "source_flavor_id": "0000-0000-0000-0000",
+        "target_flavor_id": None,
+        "mismatch": "Flavor does not exist in target cloud: test_flavor",
+    }
+
+    sensor.sensor_service.dispatch.assert_called_once_with(
+        trigger="stackstorm_openstack.flavor.flavor_mismatch",
+        payload=expected_payload,
     )
 
 
@@ -196,4 +198,4 @@ def test_poll_flavor_match(mock_openstack_connection, mock_dispatch_trigger, sen
     mock_source_conn.list_flavors.assert_called_once_with()
     mock_target_conn.list_flavors.assert_called_once_with()
 
-    mock_dispatch_trigger.assert_not_called()
+    sensor.sensor_service.dispatch.assert_not_called()
