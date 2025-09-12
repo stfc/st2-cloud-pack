@@ -176,4 +176,4 @@ def test_poll_flavor_match(mock_openstack_connection, sensor):
     mock_source_conn.list_flavors.assert_called_once_with()
     mock_target_conn.list_flavors.assert_called_once_with()
 
-    sensor.dispatch_trigger.assert_not_called()
+    sensor.sensor_service.dispatch.assert_not_called()
