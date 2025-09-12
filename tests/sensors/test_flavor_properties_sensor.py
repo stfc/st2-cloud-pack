@@ -97,10 +97,30 @@ def test_poll_flavor_not_in_target(
             },
         }
     }
-    mock_source_conn.list_flavors.return_value = mock_source_flavor
+
+    mock_target_flavor = MagicMock()
+    mock_target_flavor.name = "test_flavor"
+    mock_target_flavor.items.return_value = {
+        "test_flavor_2": {
+            "name": "test_flavor_2",
+            "disk": 700,
+            "ram": 91200,
+            "vcpus": 12,
+            "extra_specs": {
+                "spec_1": "1",
+            },
+            "id": "9999-9999-9999-9999",
+            "location": {
+                "cloud": "test_cloud",
+                "project": {
+                    "id": "1111-1111-1111-1111",
+                },
+            },
+        }
+    }
 
     mock_source_conn.list_flavors.return_value = mock_source_flavor
-    mock_target_conn.list_flavors.return_value = None
+    mock_target_conn.list_flavors.return_value = mock_target_flavor
 
     sensor.poll()
 
