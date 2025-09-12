@@ -99,7 +99,7 @@ def test_poll_flavor_not_in_target(
     }
 
     mock_target_flavor = MagicMock()
-    mock_target_flavor.name = "test_flavor"
+    mock_target_flavor.name = "test_flavor_2"
     mock_target_flavor.items.return_value = {
         "test_flavor_2": {
             "name": "test_flavor_2",
