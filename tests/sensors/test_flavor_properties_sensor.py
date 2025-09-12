@@ -124,16 +124,11 @@ def test_poll_flavor_not_in_target(
 
     sensor.poll()
 
-    expected_payload = {
-        "flavor_name": "test_flavor",
-        "source_flavor_id": "0000-0000-0000-0000",
-        "target_flavor_id": None,
-        "mismatch": "test_flavor",
-    }
-
     mock_dispatch_trigger.assert_called_once_with(
-        trigger="stackstorm_openstack.image.metadata_mismatch",
-        payload=expected_payload,
+        flavor_name="test_flavor",
+        source_flavor_id="0000-0000-0000-0000",
+        target_flavor_id=None,
+        mismatch="Flavor does not exist in target cloud: test_flavor",
     )
 
 
