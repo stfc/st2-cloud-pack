@@ -1,0 +1,19 @@
+Dear Cloud Users,
+
+As you may be aware, the STFC Cloud regularly rotates its set of CAPI (Cluster API) images for Kubernetes clusters in order to provide support for new versions, remove End-of-Life (EOL) images, and to include updates for the underlying operating system.
+
+The following images are due to be decommissioned/warehoused:
+{{affected_images_table}}
+
+Access to the above images will be revoked at the time specified. This means you will not be able to create new machines using any of the above images but any existing machines will not be affected.
+
+^ NOTE TO REVIEWER: Is this true? Is the intention instead that warehoused images can still be used but are not publicly listed, in order to allow clusters to autoheal?
+
+We request that you upgrade any CAPI Clusters using the affected images to a newly released equivalent as soon as possible.
+
+(Note: Users who do not use Kubernetes Clusters, or who do not use CAPI or our images to deploy their clusters, do not need to take any action)
+
+If you have any concerns with this notice or require clarification or support, please get in touch with the Cloud Ops Team directly by raising a ticket with STFC Cloud Support at cloud-support@stfc.ac.uk.
+
+Best Regards,
+STFC Cloud Operations Group
