@@ -1,7 +1,7 @@
 from typing import Tuple
 
 from openstack.connection import Connection
-from openstack_api import openstack_project
+from apis.openstack_api import openstack_project
 
 
 def delete_project(
