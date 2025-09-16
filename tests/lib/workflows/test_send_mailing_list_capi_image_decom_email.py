@@ -175,7 +175,7 @@ def test_send_mailing_list_capi_image_decom_email_send_plaintext(
 
     mock_build_email_params.assert_called_once_with(
         mock_get_affected_images_plaintext.return_value,
-        email_to="mailing list email",
+        email_to=["mailing list email"],
         as_html=False,
         **mock_kwargs,
     )
@@ -224,7 +224,7 @@ def test_send_mailing_list_capi_image_decom_email_send_html(
 
     mock_build_email_params.assert_called_once_with(
         mock_get_affected_images_html.return_value,
-        email_to="mailing list email",
+        email_to=["mailing list email"],
         as_html=True,
         **mock_kwargs,
     )
