@@ -1,7 +1,7 @@
 from typing import Optional
-from jira_api.jira_issue import create_jira_task
-from structs.jira.jira_issue_details import IssueDetails
-from structs.jira.jira_account import JiraAccount
+from apis.jira_api.jira_issue import create_jira_task
+from apis.jira_api.structs.jira_issue_details import IssueDetails
+from apis.jira_api.structs.jira_account import JiraAccount
 
 
 # pylint: disable=too-many-arguments

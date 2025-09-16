@@ -1,7 +1,7 @@
 from unittest.mock import patch, NonCallableMock
 import pytest
 
-from structs.email.email_template_details import EmailTemplateDetails
+from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from workflows.send_test_email import send_test_email
 
 

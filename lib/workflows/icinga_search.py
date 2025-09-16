@@ -2,9 +2,9 @@ import json
 from functools import partial
 from typing import Callable, Dict, List, Optional
 
-from enums.icinga.icinga_states import HostState, ServiceState
-from icinga_api.query_objects import IcingaQuery, query_object
-from structs.icinga.icinga_account import IcingaAccount
+from apis.icinga_api.enums.icinga_states import HostState, ServiceState
+from apis.icinga_api.query_objects import IcingaQuery, query_object
+from apis.icinga_api.structs.icinga_account import IcingaAccount
 from tabulate import tabulate
 
 

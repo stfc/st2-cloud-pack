@@ -1,6 +1,6 @@
 from st2reactor.sensor.base import PollingSensor
-from jira_api.jira_issue import search_issues
-from structs.jira.jira_account import JiraAccount
+from apis.jira_api.jira_issue import search_issues
+from apis.jira_api.structs.jira_account import JiraAccount
 import jira
 
 # pylint: disable=attribute-defined-outside-init
