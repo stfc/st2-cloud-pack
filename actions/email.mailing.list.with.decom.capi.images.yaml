@@ -10,7 +10,13 @@ parameters:
     default: workflows.send_mailing_list_capi_image_decom_email.send_mailing_list_capi_image_decom_email
     immutable: true
     type: string
+  subject:
+    type: string
+    description: "Subject to add to each email"
+    required: true
+    default: "STFC Cloud CAPI Image Decommissioning Notice"
   mailing_list:
+    required: true
     type: string
     description: "Email address of the mailing list."
   image_name_list:
@@ -19,7 +25,7 @@ parameters:
     required: True
   image_eol_list:
     type: array
-    description: "Comma-spaced list of End of Life (YY/MM/DD) for each Image in image-name-list."
+    description: "Comma-spaced list of End of Life (YYYY/MM/DD) for each Image in image-name-list."
     required: True
   image_upgrade_list:
     type: array
