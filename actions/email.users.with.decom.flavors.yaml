@@ -31,7 +31,12 @@ parameters:
   flavor_name_list:
     type: array
     description: "comma-spaced list of flavor names to decommission"
-    required: false
+    required: true
+    default: null
+  flavor_eol_list:
+    type: array
+    description: "comma-spaced list of flavor End of Life (YY/MM/DD) for each flavor in flavor_name_list"
+    required: true
     default: null
   limit_by_projects:
     type: array

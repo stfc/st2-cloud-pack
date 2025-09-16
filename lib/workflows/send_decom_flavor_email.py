@@ -1,40 +1,66 @@
+from datetime import datetime
 from typing import List, Optional, Union
 
-from openstackquery import FlavorQuery, UserQuery
-
-from apis.openstack_api.enums.cloud_domains import CloudDomains
-
-from apis.email_api.structs.smtp_account import SMTPAccount
-from apis.email_api.structs.email_template_details import EmailTemplateDetails
-from apis.email_api.structs.email_params import EmailParams
-
 from apis.email_api.emailer import Emailer
+from apis.email_api.structs.email_params import EmailParams
+from apis.email_api.structs.email_template_details import EmailTemplateDetails
+from apis.email_api.structs.smtp_account import SMTPAccount
+from apis.openstack_api.enums.cloud_domains import CloudDomains
+from openstackquery import FlavorQuery, UserQuery
+from tabulate import tabulate
 
 
-def get_flavor_list_html(flavor_list: List[str]):
+def get_affected_flavors_html(flavor_list: List[str], eol_list: List[str]):
     """
-    prints flavor list in html format (as unordered list)
+    Return HTML table for decommissioned flavors with their EOL dates.
     :parma flavor_list a list of flavor strings
+    :parma eol_list: a list of flavor EOL dates
     """
-    unordered_list = "<ul> "
-    unordered_list += " ".join(f"<li> {item} </li>" for item in flavor_list)
-    unordered_list += " </ul>"
-    return unordered_list
+    table_html = "<table>"
+    table_html += "<tr><th>Affected Flavors</th><th>EOL Date</th></tr>"
+    for flavor, eol in zip(flavor_list, eol_list):
+        table_html += f"<tr><td>{flavor}</td><td>{eol}</td></tr>"
+    table_html += "</table>"
+    return table_html
 
 
-def validate(
+def get_affected_flavors_plaintext(flavor_list: List[str], eol_list: List[str]):
+    """
+    Return plain text table for decommissioned flavors with their EOL dates.
+    :parma flavor_list a list of flavor strings
+    :parma eol_list: a list of flavor EOL dates
+    """
+    rows = [
+        {"Flavor": flavor, "EOL Date": eol}
+        for flavor, eol in zip(flavor_list, eol_list)
+    ]
+    return tabulate(rows, headers="keys", tablefmt="plain")
+
+
+def validate_flavor_input(
     flavor_name_list: List[str],
+    flavor_eol_list: List[str],
     from_projects: List[str] = None,
     all_projects: bool = False,
 ):
     """
-    Validate incoming kwargs to ensure they are valid
+    Validate incoming inputs
     :param flavor_name_list: list of flavor names to limit query by
+    :param flavor_eol_list: list of flavor EOL dates
     :param from_projects: list of projects to limit query by
     :param all_projects: a flag which if set, will run the query on all projects
     """
     if not flavor_name_list:
         raise RuntimeError("please provide a list of flavor names to decommission")
+
+    if not flavor_eol_list or len(flavor_name_list) != len(flavor_eol_list):
+        raise RuntimeError("Each flavor must have a corresponding EOL date")
+
+    for eol in flavor_eol_list:
+        try:
+            datetime.strptime(eol, "%Y/%m/%d")
+        except ValueError as exc:
+            raise RuntimeError("EOL date must be in format YYYY/MM/DD") from exc
 
     if from_projects and all_projects:
         raise RuntimeError(
@@ -43,7 +69,7 @@ def validate(
 
     if not from_projects and not all_projects:
         raise RuntimeError(
-            "please provide either a list of project identifiers or with flag 'all_projects' to run globally"
+            "please provide either a list of project identifiers or the 'all_projects' flag"
         )
 
 
@@ -107,7 +133,7 @@ def print_email_params(
     :param email_addr: email address to send to
     :param user_name: name of user in openstack
     :param as_html: A boolean which if selected will send an email, otherwise prints email details only
-    :param flavor_table: a table representing decommissioned flavors
+    :param flavor_table: a table representing decommissioned flavors (names and EOL dates)
     :param decom_table: a table representing info found in openstack
     about VMs running with decommissioned flavors
     """
@@ -126,7 +152,7 @@ def build_email_params(
     """
     build email params dataclass which will be used to configure how to send the email
     :param user_name: name of user in openstack
-    :param flavor_table: a table representing decommissioned flavors
+    :param flavor_table: a table representing decommissioned flavors (names and EOL dates)
     :param decom_table: a table representing info found in openstack about VMs
         running with decommissioned flavors
     :param email_kwargs: a set of email kwargs to pass to EmailParams
@@ -167,6 +193,7 @@ def send_decom_flavor_email(
     smtp_account: SMTPAccount,
     cloud_account: Union[CloudDomains, str],
     flavor_name_list: List[str],
+    flavor_eol_list: List[str],
     limit_by_projects: Optional[List[str]] = None,
     all_projects: bool = False,
     as_html: bool = False,
@@ -182,6 +209,7 @@ def send_decom_flavor_email(
     :param smtp_account: (SMTPAccount): SMTP config
     :param cloud_account: string represents cloud account to use
     :param flavor_name_list: A list of flavor names to be decommissioned
+    :param flavor_eol_list: A list of EOL dates for decommisioned flavors
     :param limit_by_projects: A list of project names or ids to limit search in
     :param all_projects: A boolean which if selected will search in all projects
     :param send_email: Actually send the email instead of printing what will be sent
@@ -191,7 +219,10 @@ def send_decom_flavor_email(
     :param cc_cloud_support: flag if set will cc cloud-support email address to each generated email
     :param email_params_kwargs: see EmailParams dataclass class docstring
     """
-    validate(flavor_name_list, limit_by_projects, all_projects)
+    validate_flavor_input(
+        flavor_name_list, flavor_eol_list, limit_by_projects, all_projects
+    )
+
     server_query = find_servers_with_decom_flavors(
         cloud_account, flavor_name_list, limit_by_projects
     )
@@ -206,23 +237,26 @@ def send_decom_flavor_email(
         if use_override:
             send_to = [override_email_address]
 
+        if as_html:
+            flavor_table = get_affected_flavors_html(flavor_name_list, flavor_eol_list)
+        else:
+            flavor_table = get_affected_flavors_plaintext(
+                flavor_name_list, flavor_eol_list
+            )
+
         if not send_email:
             print_email_params(
                 send_to[0],
                 user_name,
                 as_html,
-                ", ".join(flavor_name_list),
+                flavor_table,
                 server_query.to_string(groups=[user_id]),
             )
 
         else:
             email_params = build_email_params(
                 user_name,
-                (
-                    ", ".join(flavor_name_list)
-                    if not as_html
-                    else get_flavor_list_html(flavor_name_list)
-                ),
+                flavor_table,
                 (
                     server_query.to_string(groups=[user_id])
                     if not as_html
