@@ -1,13 +1,12 @@
 import os
-from typing import Dict
 from pathlib import Path
+from typing import Dict
 
-from yaml import safe_load, YAMLError
+from apis.email_api.exceptions.email_template_error import EmailTemplateError
+from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from jinja2 import Environment, FileSystemLoader, Template
 from jinja2.exceptions import TemplateError, TemplateNotFound
-from apis.email_api.exceptions.email_template_error import EmailTemplateError
-
-from apis.email_api.structs.email_template_details import EmailTemplateDetails
+from yaml import YAMLError, safe_load
 
 
 class TemplateHandler:
@@ -24,9 +23,7 @@ class TemplateHandler:
 
     # Holds absolute dirpath to directory where email template files are stores
     # .../st2-cloud-pack/email_templates
-    EMAIL_TEMPLATE_ROOT_DIR = (
-        Path(__file__).resolve().parent.parent.parent / "email_templates"
-    )
+    EMAIL_TEMPLATE_ROOT_DIR = Path(__file__).resolve().parent / "templates"
 
     def __init__(self, template_metadata=None):
         self._template_env = Environment(
