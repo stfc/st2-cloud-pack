@@ -126,14 +126,14 @@ def send_mailing_list_capi_image_decom_email(
 
     image_data = get_image_info(image_name_list, image_eol_list, image_upgrade_list)
 
+    if as_html:
+        image_table = get_affected_images_html(image_data)
+    else:
+        image_table = get_affected_images_plaintext(image_data)
+
     if not send_email:
         print_email_params(mailing_list, image_table)
     else:
-        if as_html:
-            image_table = get_affected_images_html(image_data)
-        else:
-            image_table = get_affected_images_plaintext(image_data)
-
         email_params = build_email_params(
             image_table,
             email_to=mailing_list,
