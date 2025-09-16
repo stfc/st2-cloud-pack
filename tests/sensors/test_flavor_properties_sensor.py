@@ -36,22 +36,20 @@ def test_poll_flavor_mismatch(mock_openstack_connection, sensor):
     ]
 
     mock_source_flavor_dict = {
-        "test_flavor": {
-            "name": "test_flavor",
-            "disk": 700,
-            "ram": 91200,
-            "vcpus": 12,
-            "extra_specs": {
-                "spec_1": "1",
+        "name": "test_flavor",
+        "disk": 700,
+        "ram": 91200,
+        "vcpus": 12,
+        "extra_specs": {
+            "spec_1": "1",
+        },
+        "id": "0000-0000-0000-0000",
+        "location": {
+            "cloud": "test_cloud",
+            "project": {
+                "id": "1111-1111-1111-1111",
             },
-            "id": "0000-0000-0000-0000",
-            "location": {
-                "cloud": "test_cloud",
-                "project": {
-                    "id": "1111-1111-1111-1111",
-                },
-            },
-        }
+        },
     }
     mock_source_flavor = MagicMock()
     mock_source_flavor.name = "test_flavor"
@@ -61,24 +59,22 @@ def test_poll_flavor_mismatch(mock_openstack_connection, sensor):
     mock_source_flavor.to_dict.return_value = mock_source_flavor_dict
 
     mock_target_flavor_dict = {
-        "test_flavor": {
-            "name": "test_flavor",
-            "disk": 800,
-            "ram": 91300,
-            "vcpus": 14,
-            "extra_specs": {
-                "spec_1": "1",
-                "spec_2": "2",
-                "spec_3": "3",
+        "name": "test_flavor",
+        "disk": 800,
+        "ram": 91300,
+        "vcpus": 14,
+        "extra_specs": {
+            "spec_1": "1",
+            "spec_2": "2",
+            "spec_3": "3",
+        },
+        "id": "9999-9999-9999-9999",
+        "location": {
+            "cloud": "test_cloud",
+            "project": {
+                "id": "1111-1111-1111-1111",
             },
-            "id": "9999-9999-9999-9999",
-            "location": {
-                "cloud": "test_cloud",
-                "project": {
-                    "id": "1111-1111-1111-1111",
-                },
-            },
-        }
+        },
     }
     mock_target_flavor = MagicMock()
     mock_target_flavor.name = "test_flavor"
@@ -92,11 +88,18 @@ def test_poll_flavor_mismatch(mock_openstack_connection, sensor):
     mock_source_conn.list_flavors.assert_called_once_with()
     mock_target_conn.list_flavors.assert_called_once_with()
 
+    expected_mismatch = (
+        "Mismatch in properties found: Item root['extra_specs']['spec_2'] added to dictionary.\n"
+        + "Item root['extra_specs']['spec_3'] added to dictionary.\n"
+        + "Value of root['disk'] changed from 700 to 800.\n"
+        + "Value of root['ram'] changed from 91200 to 91300.\n"
+        + "Value of root['vcpus'] changed from 12 to 14."
+    )
     expected_payload = {
         "flavor_name": "test_flavor",
         "source_flavor_id": "0000-0000-0000-0000",
-        "target_flavor_id": None,
-        "mismatch": "Flavor does not exist in target cloud: test_flavor",
+        "target_flavor_id": "9999-9999-9999-9999",
+        "mismatch": expected_mismatch,
     }
 
     sensor.sensor_service.dispatch.assert_called_once_with(
@@ -119,22 +122,20 @@ def test_poll_flavor_not_in_target(mock_openstack_connection, sensor):
     ]
 
     mock_source_flavor_dict = {
-        "test_flavor": {
-            "name": "test_flavor",
-            "disk": 700,
-            "ram": 91200,
-            "vcpus": 12,
-            "extra_specs": {
-                "spec_1": "1",
+        "name": "test_flavor",
+        "disk": 700,
+        "ram": 91200,
+        "vcpus": 12,
+        "extra_specs": {
+            "spec_1": "1",
+        },
+        "id": "0000-0000-0000-0000",
+        "location": {
+            "cloud": "test_cloud",
+            "project": {
+                "id": "1111-1111-1111-1111",
             },
-            "id": "0000-0000-0000-0000",
-            "location": {
-                "cloud": "test_cloud",
-                "project": {
-                    "id": "1111-1111-1111-1111",
-                },
-            },
-        }
+        },
     }
     mock_source_flavor = MagicMock()
     mock_source_flavor.name = "test_flavor"
@@ -156,11 +157,12 @@ def test_poll_flavor_not_in_target(mock_openstack_connection, sensor):
     mock_source_conn.list_flavors.assert_called_once_with()
     mock_target_conn.list_flavors.assert_called_once_with()
 
+    expected_mismatch = "Flavor does not exist in target cloud: test_flavor"
     expected_payload = {
         "flavor_name": "test_flavor",
         "source_flavor_id": "0000-0000-0000-0000",
         "target_flavor_id": None,
-        "mismatch": "Flavor does not exist in target cloud: test_flavor",
+        "mismatch": expected_mismatch,
     }
 
     sensor.sensor_service.dispatch.assert_called_once_with(
@@ -183,22 +185,20 @@ def test_poll_flavor_match(mock_openstack_connection, sensor):
     ]
 
     mock_source_flavor_dict = {
-        "test_flavor": {
-            "name": "test_flavor",
-            "disk": 700,
-            "ram": 91200,
-            "vcpus": 12,
-            "extra_specs": {
-                "spec_1": "1",
+        "name": "test_flavor",
+        "disk": 700,
+        "ram": 91200,
+        "vcpus": 12,
+        "extra_specs": {
+            "spec_1": "1",
+        },
+        "id": "0000-0000-0000-0000",
+        "location": {
+            "cloud": "test_cloud",
+            "project": {
+                "id": "1111-1111-1111-1111",
             },
-            "id": "0000-0000-0000-0000",
-            "location": {
-                "cloud": "test_cloud",
-                "project": {
-                    "id": "1111-1111-1111-1111",
-                },
-            },
-        }
+        },
     }
     mock_source_flavor = MagicMock()
     mock_source_flavor.name = "test_flavor"
@@ -208,22 +208,20 @@ def test_poll_flavor_match(mock_openstack_connection, sensor):
     mock_source_flavor.to_dict.return_value = mock_source_flavor_dict
 
     mock_target_flavor_dict = {
-        "test_flavor": {
-            "name": "test_flavor",
-            "disk": 700,
-            "ram": 91200,
-            "vcpus": 12,
-            "extra_specs": {
-                "spec_1": "1",
+        "name": "test_flavor",
+        "disk": 700,
+        "ram": 91200,
+        "vcpus": 12,
+        "extra_specs": {
+            "spec_1": "1",
+        },
+        "id": "9999-9999-9999-9999",
+        "location": {
+            "cloud": "test_cloud",
+            "project": {
+                "id": "1111-1111-1111-1111",
             },
-            "id": "9999-9999-9999-9999",
-            "location": {
-                "cloud": "test_cloud",
-                "project": {
-                    "id": "1111-1111-1111-1111",
-                },
-            },
-        }
+        },
     }
     mock_target_flavor = MagicMock()
     mock_target_flavor.name = "test_flavor"
