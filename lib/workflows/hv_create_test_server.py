@@ -2,8 +2,8 @@ import logging
 import random
 
 from openstack.connection import Connection
-from openstack_api.openstack_hypervisor import get_available_flavors
-from openstack_api.openstack_server import build_server, delete_server
+from apis.openstack_api.openstack_hypervisor import get_available_flavors
+from apis.openstack_api.openstack_server import build_server, delete_server
 
 logger = logging.getLogger(__name__)
 

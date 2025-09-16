@@ -14,7 +14,7 @@ We have designed templates that our emails can be constructed from.
 
 We use [jinja2](https://jinja.palletsprojects.com/en/3.0.x/intro/) templating language to build our email templates.
 
-Templates are stored in `email_templates`. Each template contains two versions
+Templates are stored in `templates` folder under `lib/apis/email_api/`. Each template contains two versions
 - in HTML format (stored in `html` directory)
 - in plaintext format (stored in `plaintext` directory)
 
@@ -32,7 +32,7 @@ to add both so there are both options in case one of them doesn't work for whate
 Though this is optional if you just want a HTML version - it's recommended to start with plaintext
 before you write the html template
 
-create a new file in `email_templates/plaintext/<template-name>.txt.j2`
+create a new file in `lib/apis/email_api/templates/plaintext/<template-name>.txt.j2`
 
 **NOTE: remember to include the `.j2` extension so that it will be treated as a jinja2 template**
 
@@ -41,7 +41,7 @@ see [Jinja2 Templates](https://jinja.palletsprojects.com/en/3.0.x/templates/)
 
 One of the main features you will be using is the ability to include variables - like so:
 
-e.g. we'll create a file called - `example.txt.j2` in `email_templates/plaintext` and write in it
+e.g. we'll create a file called - `example.txt.j2` in `templates/plaintext` and write in it
 ```
 Dear Cloud User {{username}},
 
@@ -54,7 +54,7 @@ will replace any instance of `{{username}}` with the value of what's stored in g
 
 You can write a html email template by writing raw HTML.
 
-create a new file in `email_templates/html/<template-name>.html.j2`
+create a new file in `templates/html/<template-name>.html.j2`
 - remember to include the `.j2` extension so that it will be treated as a jinja2 template
 
 e.g. for `example.html.j2`
@@ -77,7 +77,7 @@ The template schema file holds:
     - what variables the template expects,
     - any default values for the variables to send if not given.
 
-The email template schema file is located in `/lib/email_api/email_template_schemas.yaml`
+The email template schema file is located in `/lib/apis/email_api/email_template_schemas.yaml`
 
 To add a new template, you must add another entry like so:
 

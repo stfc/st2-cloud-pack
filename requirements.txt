@@ -13,6 +13,7 @@ css-inline < 0.15.0
 pytz
 jira
 paramiko
+deepdiff
 
 # for tests
 pytest

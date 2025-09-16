@@ -1,14 +1,12 @@
 # Adding Actions
 
-**NOTE: Many of our actions need to be refactored to use this guide**
-
 This guide will go through how to add actions using `workflows` module and
 `workflow_actions` as the entrypoint for your action
 
 
 ## 1. Write The Action script in Workflows
 
-We recommend writing the script in `lib/workflows/email`
+We recommend writing the script in `lib/workflows/`
 - `lib/workflows` contains scripts that validate and handle actions.
   - These scripts will make use of specific API modules also located in `lib`
 
