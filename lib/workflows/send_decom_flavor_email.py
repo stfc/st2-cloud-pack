@@ -110,7 +110,7 @@ def find_servers_with_decom_flavors(
     server_query.select(
         "server_id",
         "server_name",
-        "server_addresses",
+        "addresses",
     )
 
     if not server_query.to_props():

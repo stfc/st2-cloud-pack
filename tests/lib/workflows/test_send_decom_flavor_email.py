@@ -233,7 +233,7 @@ def test_find_users_with_decom_flavor_valid(mock_flavor_query):
     mock_server_query_obj.select.assert_called_once_with(
         "server_id",
         "server_name",
-        "server_addresses",
+        "addresses",
     )
     mock_server_query_obj.to_props.assert_called_once()
 
@@ -300,7 +300,7 @@ def test_find_users_with_decom_flavor_no_servers_found(mock_flavor_query):
     mock_server_query_obj.select.assert_called_once_with(
         "server_id",
         "server_name",
-        "server_addresses",
+        "addresses",
     )
     mock_server_query_obj.to_props.assert_called_once()
 
