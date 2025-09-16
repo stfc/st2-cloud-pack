@@ -1,12 +1,11 @@
 from datetime import datetime
 from typing import Dict, List
 
+from apis.email_api.emailer import Emailer
+from apis.email_api.structs.email_params import EmailParams
+from apis.email_api.structs.email_template_details import EmailTemplateDetails
+from apis.email_api.structs.smtp_account import SMTPAccount
 from tabulate import tabulate
-
-from lib.email_api.emailer import Emailer
-from lib.structs.email.email_params import EmailParams
-from lib.structs.email.email_template_details import EmailTemplateDetails
-from lib.structs.email.smtp_account import SMTPAccount
 
 
 def get_affected_images_plaintext(image_info_list: List[Dict]):
