@@ -8,6 +8,20 @@ from apis.email_api.structs.smtp_account import SMTPAccount
 from tabulate import tabulate
 
 
+def get_affected_images_html(image_info_list: List[Dict]):
+    """
+    returns information on images that are to be decommissioned as a html table
+    :param image_info_list: A list of dictionaries containing information on images that are to be decommissioned
+    """
+
+    table_html = "<table>"
+    table_html += "<tr><th>Affected Images</th><th>EOL Date</th><th>Recommended Upgraded Image</th></tr>"
+    for image in image_info_list:
+        table_html += f"<tr><td>{image['name']}</td><td>{image['eol']}</td><td>{image['upgrade']}</td></tr>"
+    table_html += "</table>"
+    return table_html
+
+
 def get_affected_images_plaintext(image_info_list: List[Dict]):
     """
     returns information on images that are to be decommissioned as a plaintext tabulate table
@@ -97,6 +111,7 @@ def send_mailing_list_capi_image_decom_email(
     image_eol_list: List[str],
     image_upgrade_list: List[str],
     send_email: bool = False,
+    as_html: bool = True,
     **email_params_kwargs,
 ):
     """
@@ -110,14 +125,19 @@ def send_mailing_list_capi_image_decom_email(
     """
 
     image_data = get_image_info(image_name_list, image_eol_list, image_upgrade_list)
-    image_table = get_affected_images_plaintext(image_data)
 
     if not send_email:
         print_email_params(mailing_list, image_table)
     else:
+        if as_html:
+            image_table = get_affected_images_html(image_data)
+        else:
+            image_table = get_affected_images_plaintext(image_data)
+
         email_params = build_email_params(
             image_table,
             email_to=mailing_list,
+            as_html=as_html,
             **email_params_kwargs,
         )
         Emailer(smtp_account).send_emails([email_params])
