@@ -3,11 +3,31 @@ from unittest.mock import NonCallableMock, call, patch
 import pytest
 from workflows.send_mailing_list_capi_image_decom_email import (
     build_email_params,
+    get_affected_images_html,
     get_affected_images_plaintext,
     get_image_info,
     print_email_params,
     send_mailing_list_capi_image_decom_email,
 )
+
+
+def test_get_affected_images_html():
+    """
+    Tests that get_affected_images_html returns a html formatted list given valid inputs
+    """
+    res = get_affected_images_html(
+        [
+            {"name": "img1", "eol": "2024/06/30", "upgrade": "new-img1"},
+            {"name": "img2", "eol": "2024/06/29", "upgrade": "new-img2"},
+        ]
+    )
+    assert res == (
+        "<table>"
+        "<tr><th>Affected Images</th><th>EOL Date</th><th>Recommended Upgraded Image</th></tr>"
+        "<tr><td>img1</td><td>2024/06/30</td><td>new-img1</td></tr>"
+        "<tr><td>img2</td><td>2024/06/29</td><td>new-img2</td></tr>"
+        "</table>"
+    )
 
 
 @patch("workflows.send_mailing_list_capi_image_decom_email.tabulate")
@@ -130,7 +150,7 @@ def test_send_mailing_list_capi_image_decom_email_send_plaintext(
     mock_get_image_info,
 ):
     """
-    Tests send_mailing_list_capi_image_decom_email() function actually sends email - as_html false
+    Tests send_mailing_list_capi_image_decom_email() function actually sends email - as_html False
     """
     image_name_list = ["img1", "img2"]
     image_eol_list = NonCallableMock()
@@ -144,7 +164,7 @@ def test_send_mailing_list_capi_image_decom_email_send_plaintext(
         image_name_list=image_name_list,
         image_eol_list=image_eol_list,
         image_upgrade_list=image_upgrade_list,
-        # as_html=False,
+        as_html=False,
         send_email=True,
         **mock_kwargs,
     )
@@ -156,7 +176,56 @@ def test_send_mailing_list_capi_image_decom_email_send_plaintext(
     mock_build_email_params.assert_called_once_with(
         mock_get_affected_images_plaintext.return_value,
         email_to="mailing list email",
-        # as_html=False,
+        as_html=False,
+        **mock_kwargs,
+    )
+
+    mock_emailer.assert_has_calls(
+        [
+            call(smtp_account),
+            call().send_emails([mock_build_email_params.return_value]),
+        ]
+    )
+
+
+@patch("workflows.send_mailing_list_capi_image_decom_email.get_image_info")
+@patch("workflows.send_mailing_list_capi_image_decom_email.get_affected_images_html")
+@patch("workflows.send_mailing_list_capi_image_decom_email.build_email_params")
+@patch("workflows.send_mailing_list_capi_image_decom_email.Emailer")
+def test_send_mailing_list_capi_image_decom_email_send_html(
+    mock_emailer,
+    mock_build_email_params,
+    mock_get_affected_images_html,
+    mock_get_image_info,
+):
+    """
+    Tests send_mailing_list_capi_image_decom_email() function actually sends email - as_html True
+    """
+    image_name_list = ["img1", "img2"]
+    image_eol_list = NonCallableMock()
+    image_upgrade_list = NonCallableMock()
+    smtp_account = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+
+    send_mailing_list_capi_image_decom_email(
+        smtp_account=smtp_account,
+        mailing_list="mailing list email",
+        image_name_list=image_name_list,
+        image_eol_list=image_eol_list,
+        image_upgrade_list=image_upgrade_list,
+        as_html=True,
+        send_email=True,
+        **mock_kwargs,
+    )
+
+    mock_get_image_info.assert_called_once_with(
+        image_name_list, image_eol_list, image_upgrade_list
+    )
+
+    mock_build_email_params.assert_called_once_with(
+        mock_get_affected_images_html.return_value,
+        email_to="mailing list email",
+        as_html=True,
         **mock_kwargs,
     )
 
@@ -193,7 +262,7 @@ def test_send_mailing_list_capi_image_decom_email_print_email(
         image_name_list=image_name_list,
         image_eol_list=image_eol_list,
         image_upgrade_list=image_upgrade_list,
-        # as_html=False,
+        as_html=False,
         send_email=False,
         **mock_kwargs,
     )
