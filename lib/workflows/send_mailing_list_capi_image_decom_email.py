@@ -136,7 +136,7 @@ def send_mailing_list_capi_image_decom_email(
     else:
         email_params = build_email_params(
             image_table,
-            email_to=mailing_list,
+            email_to=[mailing_list],
             as_html=as_html,
             **email_params_kwargs,
         )
