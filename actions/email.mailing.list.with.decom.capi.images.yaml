@@ -1,5 +1,5 @@
 ---
-description: Sends an email to inform users that they have VMs running images that are to be decommissioned
+description: Sends an email to inform users that they have VMs running CAPI images that are to be decommissioned
 enabled: true
 entry_point: src/openstack_actions.py
 name: email.mailing.list.with.decom.capi.images
@@ -21,15 +21,15 @@ parameters:
     description: "Email address of the mailing list."
   image_name_list:
     type: array
-    description: "Comma-spaced list of Openstack Images names to decommission."
+    description: "Comma-spaced list of Openstack CAPI Images names to decommission."
     required: True
   image_eol_list:
     type: array
-    description: "Comma-spaced list of End of Life (YYYY/MM/DD) for each Image in image-name-list."
+    description: "Comma-spaced list of End of Life (YYYY/MM/DD) for each CAPI Image in image-name-list."
     required: True
   image_upgrade_list:
     type: array
-    description: "Comma-spaced list of images to upgrade to for each Image in image-name-list.
+    description: "Comma-spaced list of images to upgrade to for each CAPI Image in image-name-list.
       Use empty string '' to specify no upgraded image available"
     required: True
   send_email:
