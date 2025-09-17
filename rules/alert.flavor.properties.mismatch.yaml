@@ -1,0 +1,21 @@
+---
+name: "alert.flavor.properties.mismatch"
+pack: "stackstorm_openstack"
+description: "Sends Jira Ticket when it finds a Flavor mismatch is found between the source and target clouds"
+enabled: true
+
+trigger:
+  type: "stackstorm_openstack.flavor.flavor_mismatch"
+
+action:
+  ref: "jira.create_issue"
+  parameters:
+    summary: "[Stackstorm Alert]: Flavor Mismatch Found"
+    type: Problem
+    description: >
+      Flavor Details:\\
+      - Flavor Name: {{trigger.flavor_name}}\\
+      - Source Flavor ID: {{trigger.source_flavor_id}}\\
+      - Target Flavor ID: {{trigger.target_flavor_id}}\\
+      - Mismatch: {{trigger.mismatch}}\\
+      - Triggered At: {{trigger.occurrence_time}}\\
