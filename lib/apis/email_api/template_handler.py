@@ -22,7 +22,7 @@ class TemplateHandler:
     )
 
     # Holds absolute dirpath to directory where email template files are stores
-    # .../st2-cloud-pack/email_templates
+    # .../st2-cloud-pack/lib/apis/email_api/templates
     EMAIL_TEMPLATE_ROOT_DIR = Path(__file__).resolve().parent / "templates"
 
     def __init__(self, template_metadata=None):
