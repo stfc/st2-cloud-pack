@@ -59,8 +59,6 @@ class FlavorPropertiesSensor(PollingSensor):
                 flavor.name: flavor for flavor in target_conn.list_flavors()
             }
 
-            self.log.info(f"source_flavors: {source_flavors}")
-
             for flavor_name, source_flavor in source_flavors.items():
                 target_flavor = target_flavors.get(flavor_name)
 
