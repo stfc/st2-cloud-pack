@@ -18,4 +18,3 @@ action:
       - Source Flavor ID: {{trigger.source_flavor_id}}\\
       - Target Flavor ID: {{trigger.target_flavor_id}}\\
       - Mismatch: {{trigger.mismatch}}\\
-      - Triggered At: {{trigger.occurrence_time}}\\
