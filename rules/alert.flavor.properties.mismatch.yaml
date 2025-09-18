@@ -8,7 +8,7 @@ trigger:
   type: "stackstorm_openstack.flavor.flavor_mismatch"
 
 action:
-  ref: "jira.create_issue"
+  ref: "jira.create_test_issue"
   parameters:
     summary: "[Stackstorm Alert]: Flavor properties mismatch between source and target cloud"
     type: Task
