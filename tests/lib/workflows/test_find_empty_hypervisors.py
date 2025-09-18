@@ -21,7 +21,7 @@ def test_with_empty_hvs(mocked_query_factory):
     query_obj.select.assert_called_once_with("hypervisor_name")
     query_obj.where.assert_called_once_with(
         "equal_to",
-        "hypervisor_vcpus_used",
+        "vcpus_used",
         value=0,
     )
     query_obj.run.assert_called_once_with(cloud_account="test")
@@ -46,7 +46,7 @@ def test_with_empty_hvs_excluding_offline(mocked_query_factory):
     query_obj.select.assert_called_once_with("hypervisor_name")
     query_obj.where.assert_any_call(
         "equal_to",
-        "hypervisor_vcpus_used",
+        "vcpus_used",
         value=0,
     )
     query_obj.where.assert_any_call(
