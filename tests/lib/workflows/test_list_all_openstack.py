@@ -1,12 +1,13 @@
-from unittest.mock import patch, NonCallableMock, MagicMock
-import pytest
+from unittest.mock import MagicMock, NonCallableMock, patch
 
+import pytest
 from workflows.list_all_openstack import list_all_openstack
 
 
 @patch("workflows.list_all_openstack.openstackquery")
 @pytest.mark.parametrize(
-    "output_type", ["to_html", "to_string", "to_objects", "to_props"]
+    "output_type",
+    ["to_html", "to_string", "to_objects", "to_props", "to_csv", "to_json"],
 )
 def test_list_all_openstack_minimal(mock_openstackquery, output_type):
     """
@@ -34,13 +35,16 @@ def test_list_all_openstack_minimal(mock_openstackquery, output_type):
             "to_string": mock_query.to_string.return_value,
             "to_objects": mock_query.to_objects.return_value,
             "to_props": mock_query.to_props.return_value,
+            "to_csv": mock_query.to_csv.return_value,
+            "to_json": mock_query.to_json.return_value,
         }[output_type]
     )
 
 
 @patch("workflows.list_all_openstack.openstackquery")
 @pytest.mark.parametrize(
-    "output_type", ["to_html", "to_string", "to_objects", "to_props"]
+    "output_type",
+    ["to_html", "to_string", "to_objects", "to_props", "to_csv", "to_json"],
 )
 def test_list_all_openstack_all(mock_openstackquery, output_type):
     """
@@ -78,5 +82,7 @@ def test_list_all_openstack_all(mock_openstackquery, output_type):
             "to_string": mock_query.to_string.return_value,
             "to_objects": mock_query.to_objects.return_value,
             "to_props": mock_query.to_props.return_value,
+            "to_csv": mock_query.to_csv.return_value,
+            "to_json": mock_query.to_json.return_value,
         }[output_type]
     )
