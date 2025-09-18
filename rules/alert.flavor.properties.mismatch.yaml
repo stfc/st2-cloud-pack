@@ -15,7 +15,7 @@ action:
     description: >
       Details:\\
       - Flavor Name: {{trigger.flavor_name}}\\
-      - Sync Direction: {{trigger.source_cloud}} >>> {{trigger.target_cloud}}\\
+      - Sync Direction: {{trigger.source_cloud}} {{ '>>>' }} {{trigger.target_cloud}}\\
       - Source Flavor ID: {{trigger.source_flavor_id}}\\
       - Target Flavor ID: {{trigger.target_flavor_id}}\\
       \\
