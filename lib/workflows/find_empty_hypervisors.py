@@ -14,7 +14,7 @@ def find_empty_hypervisors(cloud_account: str, include_offline: bool) -> List[st
     hv_query = HypervisorQuery()
     hv_query.where(
         "equal_to",
-        "hypervisor_vcpus_used",
+        "vcpus_used",
         value=0,
     )
     if not include_offline:
