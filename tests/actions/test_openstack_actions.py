@@ -113,6 +113,22 @@ class TestOpenstackActions(OpenstackActionTestBase):
         )
         assert res == {"jira_account": mock_jira_account.from_pack_config.return_value}
 
+    @patch("src.openstack_actions.IcingaAccount")
+    def test_parse_configs_with_icinga_account(self, mock_icinga_account):
+        """
+        tests that parse_configs parses icinga_account_name properly if provided
+        """
+        mock_icinga_account_name = NonCallableMock()
+        res = self.action.parse_configs(
+            **{"icinga_account_name": mock_icinga_account_name}
+        )
+        mock_icinga_account.from_pack_config.assert_called_once_with(
+            self.config, mock_icinga_account_name
+        )
+        assert res == {
+            "icinga_account": mock_icinga_account.from_pack_config.return_value
+        }
+
     @patch("src.openstack_actions.AlertManagerAccount")
     def test_parse_configs_with_alertmanager_account(self, mock_alertmanager_account):
         """
