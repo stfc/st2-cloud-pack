@@ -12,12 +12,24 @@ trigger_types:
         flavor_name:
           type: "string"
           description: "The name of the flavor"
+        source_cloud:
+          type: "string"
+          description: "Name of the source cloud"
+        target_cloud:
+          type: "string"
+          description: "Name of the target cloud"
         source_flavor_id:
           type: "string"
           description: "ID of the flavor in the source cloud"
         target_flavor_id:
           type: "string"
           description: "ID of the flavor in the target cloud"
+        source_flavor_properties:
+          type: "object"
+          description: "The properties of the source flavor"
+        target_flavor_properties:
+          type: "object"
+          description: "The properties of the target flavor"
         mismatch:
           type: "string"
           descripion: "The difference between the source and target flavors"
