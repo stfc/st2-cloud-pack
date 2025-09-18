@@ -1,4 +1,5 @@
 from typing import List, Optional
+
 import openstackquery
 
 # pylint:disable=too-many-arguments
@@ -42,4 +43,6 @@ def list_all_openstack(
         "to_string": query.to_string(),
         "to_objects": query.to_objects(),
         "to_props": query.to_props(),
+        "to_csv": query.to_csv(),
+        "to_json": query.to_json(),
     }[output_type]

@@ -1,12 +1,13 @@
-from unittest.mock import patch, NonCallableMock, MagicMock
-import pytest
+from unittest.mock import MagicMock, NonCallableMock, patch
 
+import pytest
 from workflows.search_by_property import search_by_property
 
 
 @patch("workflows.search_by_property.openstackquery")
 @pytest.mark.parametrize(
-    "output_type", ["to_html", "to_string", "to_objects", "to_props"]
+    "output_type",
+    ["to_html", "to_string", "to_objects", "to_props", "to_csv", "to_json"],
 )
 def test_search_by_property_minimal(mock_openstackquery, output_type):
     """
@@ -42,6 +43,8 @@ def test_search_by_property_minimal(mock_openstackquery, output_type):
             "to_string": mock_query.to_string.return_value,
             "to_objects": mock_query.to_objects.return_value,
             "to_props": mock_query.to_props.return_value,
+            "to_csv": mock_query.to_csv.return_value,
+            "to_json": mock_query.to_json.return_value,
         }[output_type]
     )
 
@@ -64,7 +67,8 @@ def test_search_by_property_errors_when_no_values_given():
 @patch("workflows.search_by_property.to_webhook")
 @patch("workflows.search_by_property.openstackquery")
 @pytest.mark.parametrize(
-    "output_type", ["to_html", "to_string", "to_objects", "to_props"]
+    "output_type",
+    ["to_html", "to_string", "to_objects", "to_props", "to_csv", "to_json"],
 )
 def test_search_by_property_all(mock_openstackquery, mock_to_webhook, output_type):
     """
@@ -115,6 +119,8 @@ def test_search_by_property_all(mock_openstackquery, mock_to_webhook, output_typ
             "to_string": mock_query.to_string.return_value,
             "to_objects": mock_query.to_objects.return_value,
             "to_props": mock_query.to_props.return_value,
+            "to_csv": mock_query.to_csv.return_value,
+            "to_json": mock_query.to_json.return_value,
         }[output_type]
     )
 
