@@ -101,8 +101,8 @@ def test_poll_flavor_mismatch(mock_openstack_connection, sensor):
         "source_flavor_id": mock_source_flavor.id,
         "target_flavor_id": mock_target_flavor.id,
         "flavor_mismatch": expected_mismatch,
-        "source_flavor_properties": mock_source_flavor_dict,
-        "target_flavor_properties": mock_target_flavor_dict,
+        "source_flavor_properties": str(mock_source_flavor_dict),
+        "target_flavor_properties": str(mock_target_flavor_dict),
     }
 
     sensor.sensor_service.dispatch.assert_called_once_with(
@@ -166,7 +166,7 @@ def test_poll_flavor_not_in_target(mock_openstack_connection, sensor):
         "source_flavor_id": mock_source_flavor.id,
         "target_flavor_id": None,
         "flavor_mismatch": expected_mismatch,
-        "source_flavor_properties": mock_source_flavor_dict,
+        "source_flavor_properties": str(mock_source_flavor_dict),
         "target_flavor_properties": None,
     }
 
