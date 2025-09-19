@@ -11,7 +11,7 @@ action:
   ref: "jira.create_issue"
   parameters:
     summary: "[Stackstorm Alert]: Flavor mismatch detected - {{trigger.flavor_name}}"
-    type: Task
+    type: Problem
     description: >
       Details:\\
       - Flavor Name: {{trigger.flavor_name}}\\
