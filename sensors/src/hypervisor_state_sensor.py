@@ -28,11 +28,13 @@ class HypervisorStateSensor(PollingSensor):
         )
 
     def setup(self):
-        pass
+        """
+        Stub
+        """
 
     def poll(self):
         """
-        Polls the state of hypervisors
+        Polls the state of hypervisors.
         """
 
         data = query_hypervisor_state(self.cloud_account)
@@ -65,15 +67,20 @@ class HypervisorStateSensor(PollingSensor):
 
     def cleanup(self):
         """
-        This is called when the st2 system goes down. You can perform cleanup operations like
-        closing the connections to external system here.
+        Stub
         """
 
     def add_trigger(self, trigger):
-        """This method is called when trigger is created"""
+        """
+        Stub
+        """
 
     def update_trigger(self, trigger):
-        """This method is called when trigger is updated"""
+        """
+        Stub
+        """
 
     def remove_trigger(self, trigger):
-        """This method is called when trigger is deleted"""
+        """
+        Stub
+        """
