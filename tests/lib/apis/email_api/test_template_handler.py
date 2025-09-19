@@ -1,13 +1,11 @@
-from unittest.mock import patch, mock_open, NonCallableMock, MagicMock
+from unittest.mock import MagicMock, NonCallableMock, mock_open, patch
 
 import pytest
-from yaml import YAMLError
-
-
-from jinja2.exceptions import TemplateError, TemplateNotFound
 from apis.email_api.exceptions.email_template_error import EmailTemplateError
-from apis.email_api.template_handler import TemplateHandler
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
+from apis.email_api.template_handler import TemplateHandler
+from jinja2.exceptions import TemplateError, TemplateNotFound
+from yaml import YAMLError
 
 # pylint:disable=protected-access
 
@@ -333,3 +331,17 @@ def test_render_plaintext_template(mock_render_template, instance):
         file_path_key="plaintext_filepath",
     )
     assert res == mock_render_template.return_value
+
+
+def test_render_template_schema_but_no_params(instance):
+    """
+    Tests that render_template raises error when schema is defined but no params are provided
+    """
+    with pytest.raises(EmailTemplateError):
+        instance._render_template(
+            template_details=EmailTemplateDetails(
+                template_name="mock-template",  # This one has a schema
+                template_params=None,  # Missing params
+            ),
+            file_path_key="html_filepath",
+        )

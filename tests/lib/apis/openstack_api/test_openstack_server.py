@@ -1,16 +1,23 @@
-from datetime import datetime
 import itertools
+from datetime import datetime
 from unittest.mock import MagicMock, patch
-from openstack.exceptions import ResourceTimeout, ResourceFailure
+
 import pytest
 from apis.openstack_api.openstack_server import (
     build_server,
     delete_server,
     snapshot_and_migrate_server,
     snapshot_server,
-    wait_for_migration_status,
     wait_for_image_status,
+    wait_for_migration_status,
 )
+from openstack.exceptions import ResourceFailure, ResourceTimeout
+
+
+@pytest.fixture(autouse=True)
+def patch_sleep():
+    with patch("time.sleep", return_value=None):
+        yield
 
 
 @pytest.mark.parametrize("dest_host", [None, "hv01"])

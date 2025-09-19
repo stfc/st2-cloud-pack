@@ -1,6 +1,8 @@
 from unittest.mock import MagicMock, patch
+
 import pytest
 from apis.openstack_api.enums.hypervisor_states import HypervisorState
+
 from sensors.src.hypervisor_state_sensor import HypervisorStateSensor
 
 
@@ -59,3 +61,52 @@ def test_poll(mock_query_hypervisor_state, mock_get_hypervisor_state, sensor):
     sensor.sensor_service.set_value.assert_called_once_with(
         name="hv1", value="PENDING_MAINTENANCE", ttl=1209600
     )
+
+
+@patch("sensors.src.hypervisor_state_sensor.get_hypervisor_state")
+@patch("sensors.src.hypervisor_state_sensor.query_hypervisor_state")
+def test_poll_no_state_change(
+    mock_query_hypervisor_state, mock_get_hypervisor_state, sensor
+):
+    """
+    Test poll does nothing if hypervisor state hasn't changed
+    """
+    mock_query_hypervisor_state.return_value = [{"hypervisor_name": "hv1"}]
+
+    # Simulate state not changing
+    mock_get_hypervisor_state.return_value = HypervisorState.RUNNING
+    sensor.sensor_service.get_value.return_value = "RUNNING"
+
+    sensor.poll()
+
+    # Should call these
+    mock_query_hypervisor_state.assert_called_once()
+    mock_get_hypervisor_state.assert_called_once()
+
+    # Should NOT call these
+    sensor.sensor_service.dispatch.assert_not_called()
+    sensor.sensor_service.set_value.assert_not_called()
+
+
+def test_setup(sensor):
+    """
+    Ensure setup() can be called without error
+    """
+    sensor.setup()
+
+
+@patch("sensors.src.hypervisor_state_sensor.get_hypervisor_state")
+@patch("sensors.src.hypervisor_state_sensor.query_hypervisor_state")
+def test_poll_skips_non_dict(
+    mock_query_hypervisor_state, mock_get_hypervisor_state, sensor
+):
+    """
+    Test that non-dict entries in hypervisor list are skipped
+    """
+    mock_query_hypervisor_state.return_value = ["not_a_dict"]
+
+    sensor.poll()
+
+    mock_get_hypervisor_state.assert_not_called()
+    sensor.sensor_service.dispatch.assert_not_called()
+    sensor.sensor_service.set_value.assert_not_called()

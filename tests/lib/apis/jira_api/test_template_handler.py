@@ -1,13 +1,11 @@
-from unittest.mock import patch, mock_open, NonCallableMock, MagicMock
+from unittest.mock import MagicMock, NonCallableMock, mock_open, patch
 
 import pytest
-from yaml import YAMLError
-
-
-from jinja2.exceptions import TemplateError, TemplateNotFound
 from apis.jira_api.exceptions.jira_template_error import JiraTemplateError
 from apis.jira_api.structs.jira_template_details import JiraTemplateDetails
 from apis.jira_api.template_handler import TemplateHandler
+from jinja2.exceptions import TemplateError, TemplateNotFound
+from yaml import YAMLError
 
 # pylint:disable=protected-access
 
@@ -274,16 +272,19 @@ def test_render_template_params_missing(instance):
 @patch("apis.jira_api.template_handler.TemplateHandler._get_template_file")
 def test_render_template_jinja_failure(mock_get_template_file, instance):
     """
-    Tests that render_template method works expectedly - if jinja render() fails
-    should raise JiraTemplate error
+    Tests that render_template raises JiraTemplateError when Jinja's render raises TemplateError
     """
-    mock_get_template_file.return_value.render.side_effect = TemplateError()
+    mock_template = MagicMock()
+    mock_template.render.side_effect = TemplateError("rendering failed")
+    mock_get_template_file.return_value = mock_template
+
     with pytest.raises(JiraTemplateError):
         instance._render_template(
             template_details=JiraTemplateDetails(
-                template_name="mock-template-no-schema",
+                template_name="mock-template",
+                template_params={"attr1": "123", "attr2": "abc", "attr3": "def"},
             ),
-            file_path_key="html_filepath",
+            file_path_key="plaintext_filepath",
         )
 
 
@@ -304,3 +305,17 @@ def test_render_plaintext_template(mock_render_template, instance):
         file_path_key="plaintext_filepath",
     )
     assert res == mock_render_template.return_value
+
+
+def test_render_template_schema_but_no_params(instance):
+    """
+    Tests that render_template raises error when schema is defined but no params are provided
+    """
+    with pytest.raises(JiraTemplateError):
+        instance._render_template(
+            template_details=JiraTemplateDetails(
+                template_name="mock-template",  # This one has a schema
+                template_params=None,  # Missing params
+            ),
+            file_path_key="plaintext_filepath",
+        )

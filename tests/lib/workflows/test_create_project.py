@@ -1,8 +1,8 @@
 import logging
+from enum import Enum
 from unittest.mock import MagicMock, NonCallableMock, call, patch
 
 import pytest
-
 from apis.openstack_api.enums.network_providers import NetworkProviders
 from apis.openstack_api.enums.networks import Networks
 from apis.openstack_api.enums.rbac_network_actions import RbacNetworkActions
@@ -630,11 +630,13 @@ def test_setup_external_networking(
 @patch("workflows.create_project.add_interface_to_router")
 @patch("workflows.create_project.set_quota")
 @patch("workflows.create_project.create_network_rbac")
+@patch("workflows.create_project.create_external_security_group_rules")
 @patch("workflows.create_project.create_jasmin_security_group_rules")
 @patch("workflows.create_project.allocate_floating_ips")
 def test_setup_jasmin_networking(
     mock_allocate_floating_ips,
     mock_create_jasmin_security_group_rules,
+    mock_create_external_security_group_rules,
     mock_create_network_rbac,
     mock_set_quota,
     mock_add_interface_to_router,
@@ -686,7 +688,7 @@ def test_setup_jasmin_networking(
                 mock_conn,
                 NetworkRbac(
                     project_identifier=mock_project.id,
-                    network_identifier="JASMIN External Cloud Network",
+                    network_identifier=Networks.JASMIN.value,
                     action=RbacNetworkActions.EXTERNAL,
                 ),
             ),
@@ -707,7 +709,7 @@ def test_setup_jasmin_networking(
             router_name=f"{mock_project.name}-router",
             router_description="",
             project_identifier=mock_project.id,
-            external_gateway="JASMIN External Cloud Network",
+            external_gateway=Networks.JASMIN.value,
             is_distributed=False,
         ),
     )
@@ -736,6 +738,8 @@ def test_setup_jasmin_networking(
         ),
     )
 
+    mock_create_external_security_group_rules.assert_not_called()
+
     mock_create_jasmin_security_group_rules.assert_called_once_with(
         mock_conn,
         project_identifier=mock_project.id,
@@ -748,6 +752,31 @@ def test_setup_jasmin_networking(
         project_identifier=mock_project.id,
         number_to_create=number_of_floating_ips,
     )
+
+
+def test_setup_external_networking_unsupported_enum():
+    """
+    Test setup_external_networking raises NotImplementedError
+    when passed an unsupported Networks enum value.
+    """
+    mock_conn = MagicMock()
+    mock_project = MagicMock()
+    mock_project.name = "Test Project"
+    mock_project.id = "test-id"
+
+    class UnsupportedNetwork(Enum):
+        INVALID = "Invalid Network"
+
+    with pytest.raises(NotImplementedError) as exc_info:
+        setup_external_networking(
+            mock_conn,
+            mock_project,
+            external_network=UnsupportedNetwork.INVALID,  # enum value, but unsupported
+            number_of_floating_ips=1,
+            number_of_security_group_rules=100,
+        )
+
+    assert "Unknown external network type" in str(exc_info.value)
 
 
 @patch("workflows.create_project.create_network_rbac")
