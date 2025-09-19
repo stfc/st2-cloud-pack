@@ -22,8 +22,8 @@ action:
       Mismatch:\\
       {{trigger.flavor_mismatch}}\\
       \\
-      Source Flavor Properties:\\
-      {{trigger.source_flavor_properties}}\\
-      \\
-      Target Flavor Properties:\\
-      {{trigger.target_flavor_properties}}\\
+# Source Flavor Properties:\\
+# {{trigger.source_flavor_properties}}\\
+# \\
+# Target Flavor Properties:\\
+# {{trigger.target_flavor_properties}}\\
