@@ -75,3 +75,9 @@ decom_image:
     decom_table: "No VMs affected"
   html_filepath: "html/decom_image.html.j2"
   plaintext_filepath: "plaintext/decom_image.txt.j2"
+
+mailing_list_capi_decom_image:
+  schema:
+    affected_images_table: "No Images"
+  html_filepath: "html/mailing_list_capi_decom_image.html.j2"
+  plaintext_filepath: "plaintext/mailing_list_capi_decom_image.txt.j2"
