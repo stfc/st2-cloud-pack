@@ -20,7 +20,7 @@ action:
       - Target Flavor ID: {{trigger.target_flavor_id}}\\
       \\
       Mismatch:\\
-      {{trigger.mismatch}}\\
+      {{trigger.flavor_mismatch}}\\
       \\
       Source Flavor Properties:\\
       {{trigger.source_flavor_properties}}\\
