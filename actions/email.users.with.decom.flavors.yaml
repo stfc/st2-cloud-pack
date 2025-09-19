@@ -31,7 +31,12 @@ parameters:
   flavor_name_list:
     type: array
     description: "comma-spaced list of flavor names to decommission"
-    required: false
+    required: true
+    default: null
+  flavor_eol_list:
+    type: array
+    description: "comma-spaced list of flavor End of Life (YY/MM/DD) for each flavor in flavor_name_list"
+    required: true
     default: null
   limit_by_projects:
     type: array
@@ -62,7 +67,7 @@ parameters:
     type: string
     description: "Set an email address to override where to send the emails generated"
     required: true
-    default: false
+    default: "cloud-support@stfc.ac.uk"
   cc_cloud_support:
     type: boolean
     description: "Flag if set, will cc in cloud-support@stfc.ac.uk automatically"
