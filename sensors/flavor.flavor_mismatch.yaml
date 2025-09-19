@@ -28,8 +28,8 @@ trigger_types:
           type: "string"
           description: "The difference between the source and target flavors"
         source_flavor_properties:
-          type: "array"
+          type: "string"
           description: "The properties of the source flavor"
         target_flavor_properties:
-          type: "array"
+          type: "string"
           description: "The properties of the target flavor"
