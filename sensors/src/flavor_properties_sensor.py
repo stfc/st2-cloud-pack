@@ -75,8 +75,8 @@ class FlavorPropertiesSensor(PollingSensor):
                         source_flavor_id=source_flavor.id,
                         target_flavor_id=None,
                         flavor_mismatch=mismatch,
-                        source_flavor_properties=source_flavor.to_dict(),
-                        target_flavor_properties=None,
+                        # source_flavor_properties=source_flavor.to_dict(),
+                        # target_flavor_properties=None,
                     )
                     continue
 
@@ -109,8 +109,8 @@ class FlavorPropertiesSensor(PollingSensor):
                         source_flavor_id=source_flavor.id,
                         target_flavor_id=target_flavor.id,
                         flavor_mismatch=mismatch,
-                        source_flavor_properties=source_flavor_properties,
-                        target_flavor_properties=target_flavor_properties,
+                        # source_flavor_properties=source_flavor_properties,
+                        # target_flavor_properties=target_flavor_properties,
                     )
 
                 else:
