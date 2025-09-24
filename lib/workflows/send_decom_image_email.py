@@ -1,15 +1,14 @@
-from typing import List, Dict, Optional, Union
 import re
 from datetime import datetime
-from tabulate import tabulate
-from openstackquery import ImageQuery, UserQuery
+from typing import Dict, List, Optional, Union
 
-from apis.openstack_api.enums.cloud_domains import CloudDomains
-
-from apis.email_api.structs.smtp_account import SMTPAccount
-from apis.email_api.structs.email_template_details import EmailTemplateDetails
-from apis.email_api.structs.email_params import EmailParams
 from apis.email_api.emailer import Emailer
+from apis.email_api.structs.email_params import EmailParams
+from apis.email_api.structs.email_template_details import EmailTemplateDetails
+from apis.email_api.structs.smtp_account import SMTPAccount
+from apis.openstack_api.enums.cloud_domains import CloudDomains
+from openstackquery import ImageQuery, UserQuery
+from tabulate import tabulate
 
 
 def get_affected_images_html(image_info_list: List[Dict]):
