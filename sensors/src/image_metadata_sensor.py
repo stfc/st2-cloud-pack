@@ -40,7 +40,9 @@ class ImageMetadataSensor(PollingSensor):
             self.target_cloud
         ) as target_conn:
 
-            source_images = {img.name: img for img in source_conn.image.images()}
+            source_images = {
+                img.name: img for img in source_conn.image.images(status="active")
+            }
             target_images = {img.name: img for img in target_conn.image.images()}
 
             self._log.info("Compare source and target metadata")
