@@ -1,6 +1,7 @@
 import json
 
 from apis.openstack_api.openstack_connection import OpenstackConnection
+from apis.utils.diff_table import diff_to_tabulate_table
 from st2reactor.sensor.base import PollingSensor
 
 
