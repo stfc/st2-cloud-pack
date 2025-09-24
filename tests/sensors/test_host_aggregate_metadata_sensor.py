@@ -1,4 +1,3 @@
-import json
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -21,9 +20,12 @@ def aggregate_sensor_fixture():
     )
 
 
+@patch("sensors.src.host_aggregate_metadata_sensor.tabulate")
 @patch("sensors.src.host_aggregate_metadata_sensor.diff_to_tabulate_table")
 @patch("sensors.src.host_aggregate_metadata_sensor.OpenstackConnection")
-def test_poll(mock_openstack_connection, mock_diff_to_tabulate_table, sensor):
+def test_poll(
+    mock_openstack_connection, mock_diff_to_tabulate_table, mock_tabulate, sensor
+):
     """
     Test main function of sensor, polling the dev cloud aggregates and their properties.
     """
@@ -57,7 +59,14 @@ def test_poll(mock_openstack_connection, mock_diff_to_tabulate_table, sensor):
 
     mock_diff_to_tabulate_table.assert_called_once()
 
-    expected_payload = {"aggregate_name": mock_source_aggregate.name, "diff": mock_diff}
+    expected_payload = {
+        "aggregate_name": mock_source_aggregate.name,
+        "diff": mock_tabulate.tabulate(
+            mock_diff,
+            headers=["Path", "dev", "prod"],
+            tablefmt="jira",
+        ),
+    }
 
     sensor.sensor_service.dispatch.assert_called_once_with(
         trigger="stackstorm_openstack.aggregate.metadata_mismatch",
