@@ -1,4 +1,4 @@
-import json
+import tabulate
 
 from apis.openstack_api.openstack_connection import OpenstackConnection
 from apis.utils.diff_table import diff_to_tabulate_table
@@ -23,7 +23,8 @@ class HostAggregateSensor(PollingSensor):
             sensor_service=sensor_service, config=config, poll_interval=poll_interval
         )
         self._log = self._sensor_service.get_logger(__name__)
-        self.dest_cloud_account = self.config["sensor_dest_cloud"]
+        self.source_cloud = self.config["sensor_source_cloud"]
+        self.target_cloud = self.config["sensor_dest_cloud"]
 
     def setup(self):
         """
@@ -35,23 +36,73 @@ class HostAggregateSensor(PollingSensor):
         Polls the dev cloud host aggregates and dispatches a payload containing
         a list of aggregates.
         """
-        with OpenstackConnection(self.dest_cloud_account) as conn:
-            self._log.info(f"Destination Cloud: {self.dest_cloud_account}")
-            self._log.info("Polling for destination aggregates.")
+        with OpenstackConnection(self.source_cloud) as source_conn, OpenstackConnection(
+            self.target_cloud
+        ) as target_conn:
 
-            # Returns a generator, consume it into a list and convert each item to a dict
-            dest_aggregates = [
-                json.dumps(agg.to_dict()) for agg in conn.compute.aggregates()
-            ]
+            source_aggregates = {
+                agg.name: agg for agg in source_conn.compute.aggregates()
+            }
+            target_aggregates = {
+                agg.name: agg for agg in target_conn.compute.aggregates()
+            }
 
-            self._log.info("Dispatching trigger for aggregate list.")
-
-            payload = {"dest_aggregates": dest_aggregates}
-
-            self.sensor_service.dispatch(
-                trigger="stackstorm_openstack.aggregate.aggregate_list",
-                payload=payload,
+            self._log.info(
+                "Compare source (%s) and target (%s) host aggregate metadata"
             )
+
+            for aggregate_name, source_agg in source_aggregates.items():
+                target_agg = target_aggregates.get(aggregate_name)
+
+                if not target_agg:
+                    self._log.info(
+                        "aggregate %s doesn't exist in %s cloud",
+                        aggregate_name,
+                        self.target_cloud,
+                    )
+                    continue
+
+                diff = diff_to_tabulate_table(
+                    obj1=source_agg,
+                    obj2=target_agg,
+                    excluded_paths=[
+                        "root['hosts']",
+                        "root['created_at']",
+                        "root['updated_at']",
+                        "root['uuid']",
+                        "root['id']",
+                        "root['location']",
+                    ],
+                )
+
+                if diff:
+
+                    self._log.info(
+                        "aggregate metadata mismatch between source (%s) and target (%s): %s",
+                        self.source_cloud,
+                        self.target_cloud,
+                        aggregate_name,
+                    )
+
+                    headers = [
+                        "Path",
+                        self.source_cloud,
+                        self.target_cloud,
+                    ]
+
+                    payload = {
+                        "aggregate_name": source_agg.name,
+                        "diff": tabulate.tabulate(
+                            diff,
+                            headers=headers,
+                            tablefmt="jira",
+                        ),
+                    }
+
+                    self.sensor_service.dispatch(
+                        trigger="stackstorm_openstack.aggregate.metadata_mismatch",
+                        payload=payload,
+                    )
 
     def cleanup(self):
         """
