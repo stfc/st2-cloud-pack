@@ -212,6 +212,17 @@ flavor_sensor:
   type: "object"
   required: false
   additionalProperties: false
+  properties:
+    source_cloud_account:
+      type: "string"
+      description: "source OpenStack cloud account"
+      default: "dev"
+      required: true
+    target_cloud_account:
+      type: "string"
+      description: "target OpenStack cloud account"
+      default: "prod"
+      required: true
 
 chatops_sensor:
   description: "ChatOps sensor specific settings."
