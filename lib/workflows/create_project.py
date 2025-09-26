@@ -1,41 +1,38 @@
 import logging
-from typing import Optional, List
-
-from openstack.connection import Connection
-from openstack.identity.v3.project import Project
+from typing import List, Optional
 
 from apis.openstack_api.enums.network_providers import NetworkProviders
 from apis.openstack_api.enums.networks import Networks
 from apis.openstack_api.enums.rbac_network_actions import RbacNetworkActions
 from apis.openstack_api.enums.user_domains import UserDomains
-
 from apis.openstack_api.openstack_network import (
+    allocate_floating_ips,
     create_network,
     create_network_rbac,
-    allocate_floating_ips,
 )
 from apis.openstack_api.openstack_project import (
     create_project as create_openstack_project,
 )
 from apis.openstack_api.openstack_quota import set_quota
-from apis.openstack_api.openstack_router import create_router, add_interface_to_router
+from apis.openstack_api.openstack_roles import assign_role_to_user
+from apis.openstack_api.openstack_router import add_interface_to_router, create_router
 from apis.openstack_api.openstack_security_groups import (
+    create_external_security_group_rules,
+    create_http_security_group,
+    create_https_security_group,
+    create_internal_security_group_rules,
     create_jasmin_security_group_rules,
     refresh_security_groups,
-    create_https_security_group,
-    create_http_security_group,
-    create_external_security_group_rules,
-    create_internal_security_group_rules,
 )
-from apis.openstack_api.openstack_roles import assign_role_to_user
 from apis.openstack_api.openstack_subnet import create_subnet
 from apis.openstack_api.structs.network_details import NetworkDetails
 from apis.openstack_api.structs.network_rbac import NetworkRbac
-
 from apis.openstack_api.structs.project_details import ProjectDetails
 from apis.openstack_api.structs.quota_details import QuotaDetails
 from apis.openstack_api.structs.role_details import RoleDetails
 from apis.openstack_api.structs.router_details import RouterDetails
+from openstack.connection import Connection
+from openstack.identity.v3.project import Project
 
 logger = logging.getLogger(__name__)
 
@@ -251,6 +248,8 @@ def setup_external_networking(
         create_jasmin_security_group_rules(
             conn, project_identifier=project.id, security_group_identifier="default"
         )
+    else:
+        raise NotImplementedError(f"Unknown external network type {external_network}")
 
     logger.info("Created default security group")
 

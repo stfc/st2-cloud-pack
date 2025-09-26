@@ -1,22 +1,23 @@
+import re
 from unittest.mock import MagicMock, NonCallableMock
+
 import pytest
-
-from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
-
 from apis.openstack_api.enums.ip_version import IPVersion
 from apis.openstack_api.enums.network_direction import NetworkDirection
 from apis.openstack_api.enums.protocol import Protocol
 from apis.openstack_api.openstack_security_groups import (
+    _validate_rule_ports,
     create_external_security_group_rules,
     create_http_security_group,
     create_https_security_group,
+    create_internal_security_group_rules,
     create_jasmin_security_group_rules,
     refresh_security_groups,
-    create_internal_security_group_rules,
 )
 from apis.openstack_api.structs.security_group_rule_details import (
     SecurityGroupRuleDetails,
 )
+from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 
 
 @pytest.fixture(name="create_security_group_rule_test")
@@ -573,3 +574,70 @@ def test_refresh_security_groups_invalid_project():
     mock_conn = MagicMock()
     with pytest.raises(MissingMandatoryParamError):
         refresh_security_groups(mock_conn, project_identifier)
+
+
+@pytest.mark.parametrize(
+    "start_port, end_port, expected_exception, expected_message",
+    [
+        (
+            "80",
+            "80",
+            None,
+            None,
+        ),
+        (
+            "*",
+            "*",
+            None,
+            None,
+        ),
+        (
+            "80",
+            "*",
+            None,
+            None,
+        ),
+        (
+            "*",
+            "80",
+            None,
+            None,
+        ),
+        (
+            "",
+            "80",
+            ValueError,
+            "A starting and ending port must both be provided",
+        ),
+        (
+            "80",
+            "",
+            ValueError,
+            "A starting and ending port must both be provided",
+        ),
+        (
+            "foo",
+            "80",
+            ValueError,
+            re.escape("The starting port must be an integer or '*'. Got foo"),
+        ),
+        (
+            "80",
+            "bar",
+            ValueError,
+            re.escape("The end port must be an integer or '*'. Got bar"),
+        ),
+    ],
+)
+def test_validate_rule_ports(
+    start_port, end_port, expected_exception, expected_message
+):
+    """
+    Test the _validate_rule_ports function with various valid and invalid inputs.
+    """
+    if expected_exception:
+        with pytest.raises(expected_exception, match=expected_message):
+            _validate_rule_ports(start_port, end_port)
+    else:
+        # A simple check to ensure no exception is raised
+        _validate_rule_ports(start_port, end_port)

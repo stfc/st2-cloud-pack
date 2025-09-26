@@ -1,18 +1,18 @@
 from unittest.mock import MagicMock, NonCallableMock, call
+
 import pytest
-
-from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
-
 from apis.openstack_api.enums.network_providers import NetworkProviders
 from apis.openstack_api.enums.rbac_network_actions import RbacNetworkActions
 from apis.openstack_api.openstack_network import (
     allocate_floating_ips,
     create_network,
-    delete_network,
     create_network_rbac,
+    delete_network,
+    delete_network_rbac,
 )
 from apis.openstack_api.structs.network_details import NetworkDetails
 from apis.openstack_api.structs.network_rbac import NetworkRbac
+from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 
 
 def test_allocate_floating_ip_project_not_found():
@@ -297,3 +297,14 @@ def test_create_rbac_unknown_key():
         create_network_rbac(mock_conn, mock_rbac_details)
 
     mock_conn.network.create_rbac_policy.assert_not_called()
+
+
+def test_delete_network_rbac_not_implemented():
+    """
+    Function not implemented but needs a unit test for coverage
+    """
+    mock_conn = MagicMock()
+    rbac_identifier = "dummy-id"
+
+    with pytest.raises(NotImplementedError, match="Pending better RBAC search"):
+        delete_network_rbac(mock_conn, rbac_identifier)
