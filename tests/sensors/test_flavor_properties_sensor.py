@@ -80,7 +80,6 @@ def test_poll_flavor_mismatch(mock_openstack_connection, sensor):
     mock_target_flavor.name = "test_flavor"
     mock_target_flavor.id = "9999-9999-9999-9999"
     mock_target_conn.list_flavors.return_value = [mock_target_flavor]
-    mock_target_flavor.items.return_value = mock_target_flavor_dict.items
     mock_target_flavor.to_dict.return_value = mock_target_flavor_dict
 
     sensor.poll()
@@ -96,10 +95,14 @@ def test_poll_flavor_mismatch(mock_openstack_connection, sensor):
         + "Value of root['vcpus'] changed from 12 to 14."
     )
     expected_payload = {
-        "flavor_name": "test_flavor",
-        "source_flavor_id": "0000-0000-0000-0000",
-        "target_flavor_id": "9999-9999-9999-9999",
-        "mismatch": expected_mismatch,
+        "flavor_name": mock_source_flavor.name,
+        "source_cloud": sensor.source_cloud,
+        "target_cloud": sensor.target_cloud,
+        "source_flavor_id": mock_source_flavor.id,
+        "target_flavor_id": mock_target_flavor.id,
+        "flavor_mismatch": expected_mismatch,
+        "source_flavor_properties": str(mock_source_flavor_dict),
+        "target_flavor_properties": str(mock_target_flavor_dict),
     }
 
     sensor.sensor_service.dispatch.assert_called_once_with(
@@ -144,25 +147,27 @@ def test_poll_flavor_not_in_target(mock_openstack_connection, sensor):
     mock_source_flavor.items.return_value = mock_source_flavor_dict.items()
     mock_source_flavor.to_dict.return_value = mock_source_flavor_dict
 
-    mock_target_flavor_dict = {}
     mock_target_flavor = MagicMock()
     mock_target_flavor.name = None
-    mock_target_flavor.id = None
     mock_target_conn.list_flavors.return_value = [mock_target_flavor]
-    mock_target_flavor.items.return_value = mock_target_flavor_dict.items
-    mock_target_flavor.to_dict.return_value = mock_target_flavor_dict
 
     sensor.poll()
 
     mock_source_conn.list_flavors.assert_called_once_with()
     mock_target_conn.list_flavors.assert_called_once_with()
 
-    expected_mismatch = "Flavor does not exist in target cloud: test_flavor"
+    expected_mismatch = (
+        f"Flavor does not exist in target cloud: {mock_source_flavor.name}"
+    )
     expected_payload = {
-        "flavor_name": "test_flavor",
-        "source_flavor_id": "0000-0000-0000-0000",
+        "flavor_name": mock_source_flavor.name,
+        "source_cloud": sensor.source_cloud,
+        "target_cloud": sensor.target_cloud,
+        "source_flavor_id": mock_source_flavor.id,
         "target_flavor_id": None,
-        "mismatch": expected_mismatch,
+        "flavor_mismatch": expected_mismatch,
+        "source_flavor_properties": str(mock_source_flavor_dict),
+        "target_flavor_properties": None,
     }
 
     sensor.sensor_service.dispatch.assert_called_once_with(
@@ -227,7 +232,6 @@ def test_poll_flavor_match(mock_openstack_connection, sensor):
     mock_target_flavor.name = "test_flavor"
     mock_target_flavor.id = "9999-9999-9999-9999"
     mock_target_conn.list_flavors.return_value = [mock_target_flavor]
-    mock_target_flavor.items.return_value = mock_target_flavor_dict.items
     mock_target_flavor.to_dict.return_value = mock_target_flavor_dict
 
     sensor.poll()
