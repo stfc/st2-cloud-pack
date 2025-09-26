@@ -50,7 +50,6 @@ class HostAggregateSensor(PollingSensor):
             self._log.info(
                 "Compare source (%s) and target (%s) host aggregate metadata"
             )
-
             for aggregate_name, source_agg in source_aggregates.items():
                 target_agg = target_aggregates.get(aggregate_name)
 
