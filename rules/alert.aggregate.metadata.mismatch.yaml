@@ -1,0 +1,16 @@
+---
+name: "alert.aggregate.metadata.mismatch"
+pack: "stackstorm_openstack"
+description: "Sends Jira Ticket for Aggregate metadata mismatch between prod and dev clouds"
+enabled: true
+
+trigger:
+  type: "stackstorm_openstack.aggregate.metadata_mismatch"
+
+action:
+  ref: "jira.create_issue"
+  parameters:
+    summary: "[Stackstorm Alert]: {{trigger.aggregate_name}} Aggregate metadata mismatch between prod and dev clouds"
+    type: Problem
+    description: >
+      {{trigger.diff}}
