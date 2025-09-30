@@ -1,9 +1,8 @@
 from email.mime.multipart import MIMEMultipart
 from pathlib import Path
-from unittest.mock import patch, call, MagicMock, mock_open, NonCallableMock
+from unittest.mock import MagicMock, NonCallableMock, call, mock_open, patch
 
 import pytest
-
 from apis.email_api.emailer import Emailer
 
 
@@ -27,14 +26,25 @@ def instance_fixture(template_handler):
     return Emailer(mock_smtp_account, template_handler)
 
 
+@pytest.mark.parametrize(
+    "cc_value, expected_recipients",
+    [
+        (
+            ("cc1@example.com", "cc2@example.com"),
+            ("test1@example.com", "cc1@example.com", "cc2@example.com"),
+        ),
+        (None, ("test1@example.com",)),
+    ],
+)
 @patch("apis.email_api.emailer.Emailer.build_email")
 @patch("apis.email_api.emailer.SMTP")
 @patch("apis.email_api.emailer.ssl")
-def test_send_emails(mock_ssl, mock_smtp, mock_build_email, instance):
+def test_send_email(
+    mock_ssl, mock_smtp, mock_build_email, cc_value, expected_recipients, instance
+):
     """
-    Tests that send_emails method works expectedly
-    Should setup SMTP_SSL connection to web server, and
-    iterate through list of EmailParams call sendmail for each
+    Tests that send_email method works expectedly, with and without CC
+    Should setup SMTP connection to web server and send a single email
     """
     mock_template_1 = MagicMock()
     mock_template_1.template_name = "mock_template_1"
@@ -45,20 +55,12 @@ def test_send_emails(mock_ssl, mock_smtp, mock_build_email, instance):
     mock_email_param = MagicMock()
     mock_email_param.email_to = ("test1@example.com",)
     mock_email_param.email_from = "from@example.com"
-    mock_email_param.email_cc = ("cc1@example.com", "cc2@example.com")
+    mock_email_param.email_cc = cc_value
     mock_email_param.email_templates = [mock_template_1, mock_template_2]
-
-    mock_email_param2 = MagicMock()
-    mock_email_param2.email_to = ("test2@example.com",)
-    mock_email_param2.email_from = "from@example.com"
-    mock_email_param2.email_cc = None
-    mock_email_param2.email_templates = [mock_template_1]
 
     mock_server = mock_smtp.return_value.__enter__.return_value
 
-    instance.send_emails(
-        emails=[mock_email_param, mock_email_param2],
-    )
+    instance.send_email(email_params=mock_email_param)
 
     mock_ssl.create_default_context.assert_called_once()
 
@@ -73,27 +75,40 @@ def test_send_emails(mock_ssl, mock_smtp, mock_build_email, instance):
         context=mock_ssl.create_default_context.return_value
     )
 
-    mock_server.sendmail.assert_has_calls(
-        [
-            call(
-                mock_email_param.email_from,
-                ("test1@example.com", "cc1@example.com", "cc2@example.com"),
-                mock_build_email.return_value.as_string.return_value,
-            ),
-            call(
-                mock_email_param2.email_from,
-                ("test2@example.com",),
-                mock_build_email.return_value.as_string.return_value,
-            ),
-        ]
+    mock_server.sendmail.assert_called_once_with(
+        mock_email_param.email_from,
+        expected_recipients,
+        mock_build_email.return_value.as_string.return_value,
     )
 
     mock_build_email.assert_has_calls(
         [
             call(mock_email_param),
             call().as_string(),
-            call(mock_email_param2),
-            call().as_string(),
+        ]
+    )
+
+
+@patch("apis.email_api.emailer.Emailer.send_email")
+def test_send_emails(mock_send_email, instance):
+    """
+    Tests that send_emails method works expectedly
+    Should iterate through list of email params and call send_email for each one
+    """
+    mock_email_param_1 = MagicMock()
+    mock_email_param_2 = MagicMock()
+    mock_email_param_3 = MagicMock()
+
+    mock_emails = [mock_email_param_1, mock_email_param_2, mock_email_param_3]
+
+    instance.send_emails(mock_emails)
+
+    assert mock_send_email.call_count == 3
+    mock_send_email.assert_has_calls(
+        [
+            call(mock_email_param_1),
+            call(mock_email_param_2),
+            call(mock_email_param_3),
         ]
     )
 

@@ -38,11 +38,8 @@ class Emailer:
         self.smtp_account = smtp_account
         self._template_handler = template_handler
 
-    def send_emails(self, emails: List[EmailParams]):
-        """
-        send emails via SMTP server relay
-        :param emails: A list of email param config objects
-        """
+    def send_email(self, email_params: EmailParams):
+        """Send a single email via the configured SMTP relay."""
 
         logger.debug("connecting to SMTP server")
         context = ssl.create_default_context()
@@ -54,38 +51,44 @@ class Emailer:
             server.ehlo()
             server.starttls(context=context)
             logger.info("SMTP server connection established")
-            logger.info("sending %s email(s)", len(emails))
-            start = time.time()
-            for email_params in emails:
-                logger.debug(
-                    "sending email: "
-                    "\n\tto: %s"
-                    "\n\tcc'd: %s"
-                    "\n\tfrom: %s"
-                    "\n\twith templates: %s\n",
-                    ", ".join(email_params.email_to),
-                    ", ".join(
-                        email_params.email_cc if email_params.email_cc else ["<none>"]
-                    ),
-                    email_params.email_from,
-                    ", ".join(
-                        [f"{tmp.template_name}" for tmp in email_params.email_templates]
-                    ),
-                )
-
-                send_to = email_params.email_to
-                if email_params.email_cc:
-                    send_to += email_params.email_cc
-
-                server.sendmail(
-                    email_params.email_from,
-                    send_to,
-                    self.build_email(email_params).as_string(),
-                )
-
-            logger.info(
-                "sending complete - time elapsed: %s seconds", time.time() - start
+            logger.debug(
+                "sending email: "
+                "\n\tto: %s"
+                "\n\tcc'd: %s"
+                "\n\tfrom: %s"
+                "\n\twith templates: %s\n",
+                ", ".join(email_params.email_to),
+                ", ".join(
+                    email_params.email_cc if email_params.email_cc else ["<none>"]
+                ),
+                email_params.email_from,
+                ", ".join(
+                    [f"{tmp.template_name}" for tmp in email_params.email_templates]
+                ),
             )
+
+            send_to = list(email_params.email_to)
+            if email_params.email_cc:
+                send_to.extend(email_params.email_cc)
+
+            server.sendmail(
+                email_params.email_from,
+                tuple(send_to),
+                self.build_email(email_params).as_string(),
+            )
+
+    def send_emails(self, emails: List[EmailParams]):
+        """
+        send emails via SMTP server relay
+        :param emails: A list of email param config objects
+        """
+
+        logger.info("sending %s email(s)", len(emails))
+        start = time.time()
+        for email_params in emails:
+            self.send_email(email_params)
+
+        logger.info("sending complete - time elapsed: %s seconds", time.time() - start)
 
     def build_email(self, email_params: EmailParams) -> MIMEMultipart:
         """
