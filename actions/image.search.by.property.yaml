@@ -59,16 +59,12 @@ parameters:
       - "to_objects"
       - "to_props"
       - "to_string"
-      - "to_csv"
-      - "to_json"
     description: "
     A string representing how to return the results of the query
       - 'to_html' - a tabulate table (in html)
       - 'to_props' - properties dicts as a python list
       - 'to_objects - as a list of openstack resources
-      - 'to_string' - a tabulate table
-      - 'to_csv' - a csv string
-      - 'to_json' - a json string"
+      - 'to_string' - a tabulate table"
     required: true
   property_to_search_by:
     default: "image_name"
