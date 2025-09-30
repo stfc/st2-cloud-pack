@@ -7,7 +7,7 @@ parameters:
   timeout:
     default: 43200 # 12 Hours
   lib_entry_point:
-    default: openstack_api.openstack_server.snapshot_and_migrate_server
+    default: apis.openstack_api.openstack_server.snapshot_and_migrate_server
     immutable: true
     type: string
   requires_openstack:
