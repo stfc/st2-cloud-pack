@@ -7,7 +7,7 @@ parameters:
   timeout:
     default: 5400
   lib_entry_point:
-    default: openstack_api.openstack_service.disable_service
+    default: apis.openstack_api.openstack_service.disable_service
     immutable: true
     type: string
   requires_openstack:

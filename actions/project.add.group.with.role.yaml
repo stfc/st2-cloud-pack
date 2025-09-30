@@ -5,7 +5,7 @@ entry_point: src/openstack_actions.py
 name: project.add.group.with.role
 parameters:
   lib_entry_point:
-    default: openstack_api.openstack_roles.assign_group_role_to_project
+    default: apis.openstack_api.openstack_roles.assign_group_role_to_project
     immutable: true
     type: string
   requires_openstack:

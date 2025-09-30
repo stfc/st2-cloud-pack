@@ -7,7 +7,7 @@ parameters:
   timeout:
     default: 5400
   lib_entry_point:
-    default: openstack_api.openstack_image.share_image_to_project
+    default: apis.openstack_api.openstack_image.share_image_to_project
     immutable: true
     type: string
   requires_openstack:

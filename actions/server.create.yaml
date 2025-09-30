@@ -7,7 +7,7 @@ parameters:
   timeout:
     default: 5400
   lib_entry_point:
-    default: openstack_api.openstack_server.build_server
+    default: apis.openstack_api.openstack_server.build_server
     immutable: true
     type: string
   requires_openstack:

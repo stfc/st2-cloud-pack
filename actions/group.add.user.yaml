@@ -7,7 +7,7 @@ entry_point: src/openstack_actions.py
 name: group.add.user
 parameters:
   lib_entry_point:
-    default: openstack_api.openstack_roles.add_user_to_group
+    default: apis.openstack_api.openstack_roles.add_user_to_group
     immutable: true
     type: string
   requires_openstack:
