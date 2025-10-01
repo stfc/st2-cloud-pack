@@ -95,4 +95,10 @@ decom_capi_image:
   html_filepath: "html/decom_capi_image.html.j2"
   plaintext_filepath: "plaintext/decom_capi_image.txt.j2"
 
-
+power_testing:
+  schema:
+    user_name: null
+    affected_flavors_table: "No Flavors"
+    affected_servers_table: "No VMs affected"
+  html_filepath: "html/power_testing.html.j2"
+  plaintext_filepath: "plaintext/power_testing.txt.j2"

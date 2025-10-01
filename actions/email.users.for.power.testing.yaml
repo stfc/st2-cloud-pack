@@ -1,0 +1,76 @@
+description: Sends an email to inform users about VMs running on flavors scheduled for power testing or decommissioning
+enabled: true
+entry_point: src/openstack_actions.py
+name: email.users.with.power.test.flavors
+parameters:
+  timeout:
+    default: 5400
+  lib_entry_point:
+    default: workflows.send_power_testing_email.send_power_testing_email
+    immutable: true
+    type: string
+  subject:
+    type: string
+    description: "Subject to add to each email"
+    required: true
+    default: "STFC Cloud Flavor Power Testing Notice"
+  smtp_account_name:
+    type: string
+    description: "Name of SMTP Account to use. Must be configured in the pack settings."
+    required: true
+    default: "default"
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  flavor_name_list:
+    type: array
+    description: "List of flavor names to include in the power testing notice"
+    required: true
+    default: null
+  limit_by_projects:
+    type: array
+    description: "List of project names or IDs to limit action to - incompatible with all_projects"
+    required: false
+    default: null
+  all_projects:
+    type: boolean
+    description: "Search across all projects - mutually exclusive with limit_by_projects"
+    required: true
+    default: true
+  use_override:
+    type: boolean
+    description: "Redirect all emails to override address"
+    required: true
+    default: false
+  as_html:
+    type: boolean
+    description: "Send email body as HTML"
+    required: true
+    default: true
+  send_email:
+    type: boolean
+    description: "Actually send emails instead of just printing what would be sent"
+    required: true
+    default: false
+  override_email_address:
+    type: string
+    description: "Override recipient email address"
+    required: true
+    default: "cloud-support@stfc.ac.uk"
+  cc_cloud_support:
+    type: boolean
+    description: "CC cloud-support@stfc.ac.uk on all emails"
+    required: false
+    default: false
+  email_from:
+    type: string
+    description: "Email address to send email from"
+    required: true
+    default: "cloud-support@stfc.ac.uk"
+    immutable: true
+runner_type: python-script

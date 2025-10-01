@@ -1,21 +1,19 @@
-import time
-import ssl
-from typing import List
-from pathlib import Path
-from smtplib import SMTP
 import logging
-
+import ssl
+import time
 from email.header import Header
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
-
-from apis.email_api.template_handler import TemplateHandler
+from pathlib import Path
+from smtplib import SMTP
+from typing import List
 
 from apis.email_api.structs.email_params import EmailParams
-from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
+from apis.email_api.structs.smtp_account import SMTPAccount
+from apis.email_api.template_handler import TemplateHandler
 
 # weird issue where pylint can't find the module - works fine though
 # pylint:disable=no-name-in-module
@@ -89,6 +87,54 @@ class Emailer:
             self.send_email(email_params)
 
         logger.info("sending complete - time elapsed: %s seconds", time.time() - start)
+
+    def print_email(self, email_params: EmailParams):
+        """
+        Print a well-formatted version of the email that would be sent.
+        Useful for debugging or dry-run previews.
+        """
+        # Build the MIME email using the same function that send_email uses
+        msg = self.build_email(email_params)
+
+        # Display email headers
+        print("===== EMAIL PREVIEW =====")
+        print(f"From   : {msg['From']}")
+        print(f"To     : {msg['To']}")
+        print(f"Cc     : {msg['Cc'] or '<none>'}")
+        print(f"Subject: {msg['Subject']}")
+        print(f"Date   : {msg['Date']}")
+        print(f"Reply-To: {msg['reply-to']}")
+        print("\n--- Body ---")
+
+        # Extract and print the body parts (could be plain or HTML)
+        for part in msg.walk():
+            content_type = part.get_content_type()
+            content_disposition = part.get("Content-Disposition", "").lower()
+            if (
+                content_type.startswith("text/")
+                and "attachment" not in content_disposition
+            ):
+                charset = part.get_content_charset() or "utf-8"
+                body = part.get_payload(decode=True).decode(charset, errors="replace")
+                print(body)
+                print("\n--- End of Body ---\n")
+
+        # List any attachments
+        attachments = []
+        for part in msg.walk():
+            content_disposition = part.get("Content-Disposition", "").lower()
+            if "attachment" in content_disposition:
+                filename = part.get_filename()
+                attachments.append(filename)
+
+        if attachments:
+            print("--- Attachments ---")
+            for filename in attachments:
+                print(f"- {filename}")
+        else:
+            print("No attachments.")
+
+        print("=========================\n")
 
     def build_email(self, email_params: EmailParams) -> MIMEMultipart:
         """
