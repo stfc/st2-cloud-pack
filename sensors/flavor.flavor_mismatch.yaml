@@ -1,7 +1,7 @@
 class_name: "FlavorPropertiesSensor"
 entry_point: "src/flavor_properties_sensor.py"
 description: "Detect differences between source and target flavors"
-poll_interval: 86400 # Every 24 hours 60*60*24
+poll_interval: 604800 # Every 7 days 60*60*24*7
 enabled: false
 trigger_types:
   - name: "flavor.flavor_mismatch"
