@@ -260,7 +260,7 @@ def test_build_params(mock_email_params, mock_email_template_details):
 
 # pylint:disable=too-many-arguments
 @patch("workflows.send_decom_flavor_email.validate_flavor_input")
-@patch("workflows.send_decom_flavor_email.find_servers_with_decom_flavors")
+@patch("workflows.send_decom_flavor_email.find_servers_with_flavors")
 @patch("workflows.send_decom_flavor_email.find_user_info")
 @patch("workflows.send_decom_flavor_email.get_affected_flavors_plaintext")
 @patch("workflows.send_decom_flavor_email.build_email_params")
@@ -365,7 +365,7 @@ def test_send_decom_flavor_email_send_plaintext(
 
 # pylint:disable=too-many-arguments
 @patch("workflows.send_decom_flavor_email.validate_flavor_input")
-@patch("workflows.send_decom_flavor_email.find_servers_with_decom_flavors")
+@patch("workflows.send_decom_flavor_email.find_servers_with_flavors")
 @patch("workflows.send_decom_flavor_email.find_user_info")
 @patch("workflows.send_decom_flavor_email.get_affected_flavors_html")
 @patch("workflows.send_decom_flavor_email.build_email_params")
@@ -470,7 +470,7 @@ def test_send_decom_flavor_email_send_html(
 
 
 @patch("workflows.send_decom_flavor_email.validate_flavor_input")
-@patch("workflows.send_decom_flavor_email.find_servers_with_decom_flavors")
+@patch("workflows.send_decom_flavor_email.find_servers_with_flavors")
 @patch("workflows.send_decom_flavor_email.find_user_info")
 @patch("workflows.send_decom_flavor_email.get_affected_flavors_plaintext")
 @patch("workflows.send_decom_flavor_email.print_email_params")
@@ -553,7 +553,7 @@ def test_send_decom_flavor_email_print(
 
 
 @patch("workflows.send_decom_flavor_email.validate_flavor_input")
-@patch("workflows.send_decom_flavor_email.find_servers_with_decom_flavors")
+@patch("workflows.send_decom_flavor_email.find_servers_with_flavors")
 @patch("workflows.send_decom_flavor_email.find_user_info")
 @patch("workflows.send_decom_flavor_email.get_affected_flavors_plaintext")
 @patch("workflows.send_decom_flavor_email.build_email_params")
