@@ -7,7 +7,7 @@ from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.openstack_api.enums.cloud_domains import CloudDomains
 from apis.openstack_query_api.server_queries import find_servers_with_flavors
-from openstackquery import FlavorQuery, UserQuery
+from openstackquery import UserQuery
 from tabulate import tabulate
 
 
