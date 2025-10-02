@@ -1,10 +1,10 @@
 from unittest.mock import patch
 
 import pytest
-from workflows.send_decom_flavor_email import find_servers_with_flavors
+from apis.openstack_query_api.server_queries import find_servers_with_flavors
 
 
-@patch("workflows.send_decom_flavor_email.FlavorQuery")
+@patch("apis.openstack_query_api.server_queries.FlavorQuery")
 def test_find_servers_with_flavor_valid(mock_flavor_query):
     """
     Tests find_servers_with_flavors() function
@@ -51,7 +51,7 @@ def test_find_servers_with_flavor_valid(mock_flavor_query):
     assert res == mock_server_query_obj
 
 
-@patch("workflows.send_decom_flavor_email.FlavorQuery")
+@patch("apis.openstack_query_api.server_queries.FlavorQuery")
 def test_find_servers_with_flavor_invalid_flavor(mock_flavor_query):
     """
     Tests that find_servers_with_flavors fails when provided invalid flavor name
@@ -73,7 +73,7 @@ def test_find_servers_with_flavor_invalid_flavor(mock_flavor_query):
     mock_flavor_query_obj.to_props.assert_called_once()
 
 
-@patch("workflows.send_decom_flavor_email.FlavorQuery")
+@patch("apis.openstack_query_api.server_queries.FlavorQuery")
 def test_find_servers_with_flavor_no_servers_found(mock_flavor_query):
     """
     Tests that find_servers_with_flavors fails when no servers found with given flavors
