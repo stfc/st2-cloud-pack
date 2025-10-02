@@ -62,11 +62,12 @@ def search_by_property(
             webhook=webhook,
             payload=query.select_all().to_props(),
         )
+    # pylint: disable=unnecessary-lambda
     return {
-        "to_html": query.to_html(),
-        "to_string": query.to_string(),
-        "to_objects": query.to_objects(),
-        "to_props": query.to_props(),
-        "to_csv": query.to_csv(),
-        "to_json": query.to_json(),
-    }[output_type]
+        "to_html": lambda: query.to_html(),
+        "to_string": lambda: query.to_string(),
+        "to_objects": lambda: query.to_objects(),
+        "to_props": lambda: query.to_props(),
+        "to_csv": lambda: query.to_csv(),
+        "to_json": lambda: query.to_json(),
+    }[output_type]()
