@@ -1,6 +1,7 @@
 from typing import List, Optional
 from openstackquery import FlavorQuery
 
+
 def find_servers_with_flavors(
     cloud_account: str,
     flavor_name_list: List[str],

@@ -1,4 +1,4 @@
-from unittest.mock import NonCallableMock, call, patch
+from unittest.mock import patch
 
 import pytest
 from workflows.send_decom_flavor_email import find_servers_with_flavors
