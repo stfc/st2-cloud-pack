@@ -1,4 +1,6 @@
+from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from pathlib import Path
 from unittest.mock import MagicMock, NonCallableMock, call, mock_open, patch
 
@@ -111,6 +113,66 @@ def test_send_emails(mock_send_email, instance):
             call(mock_email_param_3),
         ]
     )
+
+
+@pytest.mark.parametrize(
+    "has_attachments, expected_attachment_output",
+    [
+        (True, "- test.txt"),
+        (False, "No attachments."),
+    ],
+)
+@patch("apis.email_api.emailer.Emailer.build_email")
+@patch("builtins.print")
+def test_print_email_outputs_correct_attachment_section(
+    mock_print, mock_build_email, instance, has_attachments, expected_attachment_output
+):
+    """
+    Tests that print_email prints the correct email structure including headers,
+    body content, and attachment names.
+    """
+    mock_email_params = MagicMock()
+
+    msg = MIMEMultipart()
+    msg["From"] = "from@example.com"
+    msg["To"] = "to@example.com"
+    msg["Cc"] = "cc@example.com"
+    msg["Subject"] = "Test Subject"
+    msg["Date"] = "Thu, 01 Jan 1970 00:00:00 -0000"
+    msg["reply-to"] = "from@example.com"
+
+    body_part = MIMEText("This is the email body.", "plain", "utf-8")
+    msg.attach(body_part)
+
+    if has_attachments:
+        attachment_part = MIMEBase("application", "octet-stream")
+        attachment_part.set_payload(b"fake-content")
+        attachment_part.add_header(
+            "Content-Disposition", "attachment", filename="test.txt"
+        )
+        msg.attach(attachment_part)
+
+    mock_build_email.return_value = msg
+
+    instance.print_email(mock_email_params)
+
+    mock_build_email.assert_called_once_with(mock_email_params)
+
+    printed_lines = [call_args[0][0] for call_args in mock_print.call_args_list]
+    normalized_lines = [line.strip() for line in printed_lines]
+
+    assert "===== EMAIL PREVIEW =====" in normalized_lines
+    assert "From   : from@example.com" in normalized_lines
+    assert "To     : to@example.com" in normalized_lines
+    assert "Cc     : cc@example.com" in normalized_lines
+    assert "Subject: Test Subject" in normalized_lines
+    assert "Date   : Thu, 01 Jan 1970 00:00:00 -0000" in normalized_lines
+    assert "Reply-To: from@example.com" in normalized_lines
+    assert "--- Body ---" in normalized_lines
+    assert "This is the email body." in normalized_lines
+    assert "--- End of Body ---" in normalized_lines
+    assert expected_attachment_output in printed_lines
+    assert "=========================" in normalized_lines
 
 
 @patch("builtins.open", new_callable=mock_open, read_data="data")
