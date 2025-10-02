@@ -1,9 +1,9 @@
 import re
 from typing import List, Optional
 
-from openstack.connection import Connection
 from apis.openstack_api.openstack_connection import OpenstackConnection
 from apis.openstack_api.openstack_hypervisor import get_available_flavors
+from openstack.connection import Connection
 from openstackquery import HypervisorQuery, ServerQuery
 
 # pylint:disable=too-many-arguments
@@ -135,14 +135,15 @@ def find_reinstall_candidate_hypervisors(
 
     query.results_container._parsed_results = query.results_container._results
 
+    # pylint: disable=unnecessary-lambda
     return {
-        "to_html": query.to_html(),
-        "to_string": query.to_string(),
-        "to_objects": query.to_objects(),
-        "to_props": query.to_props(),
-        "to_csv": query.to_csv(),
-        "to_json": query.to_json(),
-    }[output_type]
+        "to_html": lambda: query.to_html(),
+        "to_string": lambda: query.to_string(),
+        "to_objects": lambda: query.to_objects(),
+        "to_props": lambda: query.to_props(),
+        "to_csv": lambda: query.to_csv(),
+        "to_json": lambda: query.to_json(),
+    }[output_type]()
 
 
 def filter_hypervisors_by_flavour(
