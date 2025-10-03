@@ -1,5 +1,5 @@
 description: Sends an email to inform users about VMs running on flavors scheduled for power testing or decommissioning
-enabled: true
+enabled: false
 entry_point: src/openstack_actions.py
 name: email.users.with.power.test.flavors
 parameters:
