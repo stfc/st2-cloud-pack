@@ -1,0 +1,15 @@
+---
+class_name: HostAggregateSensor
+entry_point: src/host_aggregate_metadata_sensor.py
+description: Detect changes in host aggregates
+poll_interval: 604800 # 7 days
+enabled: false
+trigger_types:
+  - name: "aggregate.metadata_mismatch"
+    description: "Triggers for aggregate metadata mismatch"
+    payload_schema:
+      type: "object"
+      properties:
+        diff:
+          type: "string"
+          description: "diff between aggregate"
