@@ -19,11 +19,5 @@ action:
       - Source Flavor ID: {{trigger.source_flavor_id}}\\
       - Target Flavor ID: {{trigger.target_flavor_id}}\\
       \\
-      Mismatch:\\
-      {{trigger.flavor_mismatch}}\\
-      \\
-      Source Flavor Properties:\\
-      {{trigger.source_flavor_properties}}\\
-      \\
-      Target Flavor Properties:\\
-      {{trigger.target_flavor_properties}}\\
+      Flavor Difference:\\
+      {{trigger.diff}}\\
