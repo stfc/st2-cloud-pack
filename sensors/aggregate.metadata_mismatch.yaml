@@ -12,4 +12,7 @@ trigger_types:
       properties:
         diff:
           type: "string"
-          description: "diff between aggregate"
+          description: "The diff between aggregates in source and target clouds"
+        aggregate_name:
+          type: "string"
+          descripion: "Name of aggregate"
