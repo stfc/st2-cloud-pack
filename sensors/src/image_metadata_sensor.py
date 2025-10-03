@@ -1,6 +1,7 @@
+import tabulate
 from apis.openstack_api.openstack_connection import OpenstackConnection
+from apis.utils.diff_utils import get_diff
 from st2reactor.sensor.base import PollingSensor
-from deepdiff import DeepDiff
 
 
 class ImageMetadataSensor(PollingSensor):
@@ -31,10 +32,8 @@ class ImageMetadataSensor(PollingSensor):
 
     def poll(self):
         """
-        Polls the source cloud images and lookup the relevant image in target for each image
-        Compare the image metadata between source and target cloud and dispatch a payload
-        containing the image's properties/metadata and the difference.
-
+        Polls the source cloud images and compares metadata with the target cloud.
+        Dispatches a payload if differences are found.
         """
         with OpenstackConnection(self.source_cloud) as source_conn, OpenstackConnection(
             self.target_cloud
@@ -54,12 +53,10 @@ class ImageMetadataSensor(PollingSensor):
                     self._log.info("Image %s doesn't exist in target cloud", image_name)
                     continue
 
-                diff = DeepDiff(
-                    source_img.properties,
-                    target_img.properties,
-                    ignore_order=True,
-                    threshold_to_diff_deeper=0,
-                    exclude_paths={
+                diff = get_diff(
+                    obj1=source_img.properties,
+                    obj2=target_img.properties,
+                    exclude_paths=[
                         "root['instance_uuid']",
                         "root['location']['project']['id']",
                         "root['location']['cloud']",
@@ -71,24 +68,25 @@ class ImageMetadataSensor(PollingSensor):
                         "root['id']",
                         "root['created_at']",
                         "root['updated_at']",
-                    },
-                )
-
-                self._log.info(
-                    "Checking for the difference between metadata %s", diff.pretty()
+                    ],
                 )
 
                 if diff:
-
                     self._log.info(
                         "Image metadata mismatch between source and target: %s",
                         image_name,
                     )
 
+                    headers = ["Path", self.source_cloud, self.target_cloud]
+
                     payload = {
                         "image_name": source_img.name,
-                        "source_metadata": source_img.properties,
                         "target_cloud": {"name": self.target_cloud},
+                        "diff": tabulate.tabulate(
+                            diff,
+                            headers=headers,
+                            tablefmt="jira",
+                        ),
                     }
 
                     self.sensor_service.dispatch(
