@@ -21,11 +21,9 @@ def aggregate_sensor_fixture():
 
 
 @patch("sensors.src.host_aggregate_metadata_sensor.tabulate")
-@patch("sensors.src.host_aggregate_metadata_sensor.diff_to_tabulate_table")
+@patch("sensors.src.host_aggregate_metadata_sensor.get_diff")
 @patch("sensors.src.host_aggregate_metadata_sensor.OpenstackConnection")
-def test_poll_mismatch(
-    mock_openstack_connection, mock_diff_to_tabulate_table, mock_tabulate, sensor
-):
+def test_poll_mismatch(mock_openstack_connection, mock_get_diff, mock_tabulate, sensor):
     """
     Test main function of sensor, polling the dev cloud aggregates and their properties.
     """
@@ -47,7 +45,7 @@ def test_poll_mismatch(
 
     mock_source_conn.compute.aggregates.return_value = [mock_source_aggregate]
     mock_target_conn.compute.aggregates.return_value = [mock_target_aggregate]
-    mock_diff = mock_diff_to_tabulate_table.return_value
+    mock_diff = mock_get_diff.return_value
 
     sensor.poll()
 

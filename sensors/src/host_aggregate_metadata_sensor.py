@@ -1,7 +1,6 @@
 import tabulate
-
 from apis.openstack_api.openstack_connection import OpenstackConnection
-from apis.utils.diff_table import diff_to_tabulate_table
+from apis.utils.diff_utils import get_diff
 from st2reactor.sensor.base import PollingSensor
 
 
@@ -61,10 +60,10 @@ class HostAggregateSensor(PollingSensor):
                     )
                     continue
 
-                diff = diff_to_tabulate_table(
+                diff = get_diff(
                     obj1=source_agg,
                     obj2=target_agg,
-                    excluded_paths=[
+                    exclude_paths=[
                         "root['hosts']",
                         "root['created_at']",
                         "root['updated_at']",
