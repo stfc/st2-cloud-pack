@@ -18,6 +18,6 @@ trigger_types:
         target_flavor_id:
           type: "string"
           description: "ID of the flavor in the target cloud"
-        mismatch:
+        diff:
           type: "string"
           descripion: "The difference between the source and target flavors"

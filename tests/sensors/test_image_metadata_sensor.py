@@ -1,5 +1,8 @@
 from unittest.mock import MagicMock, patch
+
 import pytest
+import tabulate
+
 from sensors.src.image_metadata_sensor import ImageMetadataSensor
 
 
@@ -20,10 +23,11 @@ def metadata_sensor_fixture():
     )
 
 
+@patch("sensors.src.image_metadata_sensor.get_diff")
 @patch("sensors.src.image_metadata_sensor.OpenstackConnection")
-def test_poll_metadata_mismatch(mock_openstack_connection, sensor):
+def test_poll_metadata_mismatch(mock_openstack_connection, mock_get_diff, sensor):
     """
-    Test that metadata mismatch between source and target
+    Test that metadata mismatch between source and target triggers dispatch
     """
     mock_source_conn = MagicMock()
     mock_target_conn = MagicMock()
@@ -35,20 +39,17 @@ def test_poll_metadata_mismatch(mock_openstack_connection, sensor):
 
     mock_source_image = MagicMock()
     mock_source_image.name = "ubuntu-22.04"
-    mock_source_image.properties = {
-        "os_type": "linux",
-        "version": "22.04",
-    }
+    mock_source_image.properties = {"os_type": "linux", "version": "22.04"}
 
     mock_target_image = MagicMock()
     mock_target_image.name = "ubuntu-22.04"
-    mock_target_image.properties = {
-        "os_type": "linux",
-        "version": "24.04",
-    }
+    mock_target_image.properties = {"os_type": "linux", "version": "24.04"}
 
     mock_source_conn.image.images.return_value = [mock_source_image]
     mock_target_conn.image.images.return_value = [mock_target_image]
+
+    # Simulate a diff returned by get_diff
+    mock_get_diff.return_value = [["root['version']", "22.04", "24.04"]]
 
     sensor.poll()
 
@@ -57,8 +58,12 @@ def test_poll_metadata_mismatch(mock_openstack_connection, sensor):
 
     expected_payload = {
         "image_name": mock_source_image.name,
-        "source_metadata": mock_source_image.properties,
         "target_cloud": {"name": "prod"},
+        "diff": tabulate.tabulate(
+            [["root['version']", "22.04", "24.04"]],
+            headers=["Path", "dev", "prod"],
+            tablefmt="jira",
+        ),
     }
 
     sensor.sensor_service.dispatch.assert_called_once_with(
@@ -67,10 +72,11 @@ def test_poll_metadata_mismatch(mock_openstack_connection, sensor):
     )
 
 
+@patch("sensors.src.image_metadata_sensor.get_diff")
 @patch("sensors.src.image_metadata_sensor.OpenstackConnection")
-def test_poll_image_not_in_target(mock_openstack_connection, sensor):
+def test_poll_image_not_in_target(mock_openstack_connection, mock_get_diff, sensor):
     """
-    Test that image exit in source but not in target
+    Test that image exists in source but not in target triggers no dispatch
     """
     mock_source_conn = MagicMock()
     mock_target_conn = MagicMock()
@@ -82,9 +88,7 @@ def test_poll_image_not_in_target(mock_openstack_connection, sensor):
 
     mock_source_image = MagicMock()
     mock_source_image.name = "rocky-8"
-    mock_source_image.properties = {
-        "os_type": "linux",
-    }
+    mock_source_image.properties = {"os_type": "linux"}
 
     mock_source_conn.image.images.return_value = [mock_source_image]
     mock_target_conn.image.images.return_value = []
@@ -92,12 +96,14 @@ def test_poll_image_not_in_target(mock_openstack_connection, sensor):
     sensor.poll()
 
     sensor.sensor_service.dispatch.assert_not_called()
+    mock_get_diff.assert_not_called()
 
 
+@patch("sensors.src.image_metadata_sensor.get_diff")
 @patch("sensors.src.image_metadata_sensor.OpenstackConnection")
-def test_poll_metadata_match(mock_openstack_connection, sensor):
+def test_poll_metadata_match(mock_openstack_connection, mock_get_diff, sensor):
     """
-    Test that metadata match between source and target
+    Test that metadata match between source and target triggers no dispatch
     """
     mock_source_conn = MagicMock()
     mock_target_conn = MagicMock()
@@ -113,13 +119,13 @@ def test_poll_metadata_match(mock_openstack_connection, sensor):
 
     mock_target_image = MagicMock()
     mock_target_image.name = "rocky-9"
-    mock_target_image.properties = {
-        "os_type": "linux",
-        "version": "9",
-    }
+    mock_target_image.properties = {"os_type": "linux", "version": "9"}
 
     mock_source_conn.image.images.return_value = [mock_source_image]
     mock_target_conn.image.images.return_value = [mock_target_image]
+
+    # Simulate no differences
+    mock_get_diff.return_value = []
 
     sensor.poll()
 

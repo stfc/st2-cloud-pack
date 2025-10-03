@@ -13,9 +13,9 @@ trigger_types:
         image_name:
           type: "string"
           description: "The name of the image"
-        source_metadata:
+        diff:
           type: "object"
-          description: "Metadata of the image from source cloud"
+          description: "The difference between the source and target image"
         target_cloud:
           type: "object"
           description: "Name of the Target cloud"
