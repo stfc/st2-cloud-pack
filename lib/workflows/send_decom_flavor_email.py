@@ -179,7 +179,7 @@ def send_decom_flavor_email(
     if not server_query.to_props():
         raise RuntimeError(
             f"No servers found with flavors {', '.join(flavor_name_list)} on projects "
-            f"{','.join(from_projects) if from_projects else '[all projects]'}"
+            f"{','.join(limit_by_projects)}"
         )
 
     for user_id in server_query.to_props().keys():
