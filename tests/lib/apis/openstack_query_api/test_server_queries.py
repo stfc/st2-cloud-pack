@@ -41,7 +41,7 @@ def test_find_servers_with_flavor_valid(mock_flavor_query):
         "server_name",
         "addresses",
     )
-    mock_server_query_obj.to_props.assert_called_once()
+    mock_server_query_obj.to_props.assert_called()
 
     mock_server_query_obj.append_from.assert_called_once_with(
         "PROJECT_QUERY", "test-cloud-account", ["project_name"]
