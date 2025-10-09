@@ -176,14 +176,13 @@ def send_decom_flavor_email(
         cloud_account, flavor_name_list, limit_by_projects
     )
 
-    server_query_props = server_query.to_props()
-    if not server_query_props:
+    if not server_query.to_props()
         raise RuntimeError(
             f"No servers found with flavors {', '.join(flavor_name_list)} on projects "
             f"{','.join(limit_by_projects)}"
         )
 
-    for user_id in server_query_props.keys():
+    for user_id in server_query.to_props().keys():
         # if email_address not found - send to override_email_address
         # also send to override_email_address if override_email set
         user_name, email_addr = find_user_info(
