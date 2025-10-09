@@ -176,7 +176,7 @@ def send_decom_flavor_email(
         cloud_account, flavor_name_list, limit_by_projects
     )
 
-    if not server_query.to_props()
+    if not server_query.to_props():
         raise RuntimeError(
             f"No servers found with flavors {', '.join(flavor_name_list)} on projects "
             f"{','.join(limit_by_projects)}"
