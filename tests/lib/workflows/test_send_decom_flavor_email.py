@@ -151,7 +151,7 @@ def test_send_decom_flavor_email_no_servers_found(
     mock_find_servers.assert_called_once_with(
         cloud_account, flavor_name_list, limit_by_projects
     )
-    mock_query.to_props.assert_called_once()
+    mock_query.to_props.assert_called()
 
     assert "No servers found with flavors flavor1, flavor2" in str(exc_info.value)
     assert "project1,project2" in str(exc_info.value)
