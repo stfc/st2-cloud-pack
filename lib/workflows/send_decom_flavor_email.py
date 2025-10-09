@@ -175,7 +175,7 @@ def send_decom_flavor_email(
     server_query = find_servers_with_flavors(
         cloud_account, flavor_name_list, limit_by_projects
     )
-    
+
     server_query_props = server_query.to_props()
     if not server_query_props:
         raise RuntimeError(
