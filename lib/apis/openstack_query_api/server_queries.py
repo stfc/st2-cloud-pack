@@ -42,6 +42,9 @@ def find_servers_with_flavors(
         "addresses",
     )
     server_query.append_from("PROJECT_QUERY", cloud_account, ["project_name"])
-    server_query.group_by("user_id")
 
     return server_query
+
+
+def group_by(server_query, label):
+    return server_query.group_by(label)

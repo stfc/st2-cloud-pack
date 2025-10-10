@@ -6,7 +6,7 @@ from apis.email_api.structs.email_params import EmailParams
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.openstack_api.enums.cloud_domains import CloudDomains
-from apis.openstack_query_api.server_queries import find_servers_with_flavors
+from apis.openstack_query_api.server_queries import find_servers_with_flavors, group_by
 from openstackquery import UserQuery
 from tabulate import tabulate
 
@@ -175,6 +175,7 @@ def send_decom_flavor_email(
     server_query = find_servers_with_flavors(
         cloud_account, flavor_name_list, limit_by_projects
     )
+    server_query = group_by(server_query, "user_id")
 
     if not server_query.to_props():
         raise RuntimeError(
