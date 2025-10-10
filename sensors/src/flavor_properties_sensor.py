@@ -68,20 +68,30 @@ class FlavorPropertiesSensor(PollingSensor):
                     )
                     self.log.info(mismatch)
 
+                    source_flavor_properties = source_flavor.to_dict()
+
                     dispatch_trigger(
                         flavor_name=source_flavor.name,
+                        source_cloud=self.source_cloud,
+                        target_cloud=self.target_cloud,
                         source_flavor_id=source_flavor.id,
                         target_flavor_id=None,
-                        mismatch=mismatch,
+                        flavor_mismatch=mismatch,
+                        source_flavor_properties=str(source_flavor_properties),
+                        target_flavor_properties=None,
                     )
                     continue
 
                 self.log.info(
                     f"Checking for mismatch between source and target: {flavor_name}"
                 )
+
+                source_flavor_properties = source_flavor.to_dict()
+                target_flavor_properties = target_flavor.to_dict()
+
                 diff = DeepDiff(
-                    source_flavor.to_dict(),
-                    target_flavor.to_dict(),
+                    source_flavor_properties,
+                    target_flavor_properties,
                     ignore_order=True,
                     threshold_to_diff_deeper=0,
                     exclude_paths={
@@ -96,9 +106,13 @@ class FlavorPropertiesSensor(PollingSensor):
 
                     dispatch_trigger(
                         flavor_name=source_flavor.name,
+                        source_cloud=self.source_cloud,
+                        target_cloud=self.target_cloud,
                         source_flavor_id=source_flavor.id,
                         target_flavor_id=target_flavor.id,
-                        mismatch=mismatch,
+                        flavor_mismatch=mismatch,
+                        source_flavor_properties=str(source_flavor_properties),
+                        target_flavor_properties=str(target_flavor_properties),
                     )
 
                 else:
