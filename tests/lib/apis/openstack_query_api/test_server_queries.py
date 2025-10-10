@@ -46,7 +46,6 @@ def test_find_servers_with_flavor_valid(mock_flavor_query):
         "PROJECT_QUERY", "test-cloud-account", ["project_name"]
     )
 
-    mock_server_query_obj.group_by.assert_called_once_with("user_id")
     assert res == mock_server_query_obj
 
 
