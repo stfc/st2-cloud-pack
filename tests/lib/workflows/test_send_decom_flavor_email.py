@@ -466,7 +466,7 @@ def test_send_decom_flavor_email_send_html(
     mock_find_servers.assert_called_once_with(
         cloud_account, flavor_name_list, limit_by_projects
     )
-    #mock_query.to_props.assert_called()
+    # mock_query.to_props.assert_called()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
