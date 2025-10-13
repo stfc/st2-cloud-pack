@@ -36,12 +36,12 @@ def mock_data_fixture():
     }
 
 
-Expected = {
+expected = {
     "tabular_data": [["ping6", "UNKOWN"], ["disk /", "WARNING"]],
     "headers": ["Service Name", "Service State"],
 }
 
-Expected_with_joins = {
+expected_with_joins = {
     "tabular_data": [
         ["ping6", "UNKOWN", "Host1", "DOWN"],
         ["disk /", "WARNING", "Host2", "UP"],
