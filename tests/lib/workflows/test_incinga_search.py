@@ -35,6 +35,7 @@ def mock_data_fixture():
         ]
     }
 
+
 # pylint: disable=invalid-name
 Expected = {
     "tabular_data": [["ping6", "UNKOWN"], ["disk /", "WARNING"]],
