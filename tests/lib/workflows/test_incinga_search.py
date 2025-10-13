@@ -35,12 +35,13 @@ def mock_data_fixture():
         ]
     }
 
-
+# pylint: disable=invalid-name
 Expected = {
     "tabular_data": [["ping6", "UNKOWN"], ["disk /", "WARNING"]],
     "headers": ["Service Name", "Service State"],
 }
 
+# pylint: disable=invalid-name
 Expected_with_joins = {
     "tabular_data": [
         ["ping6", "UNKOWN", "Host1", "DOWN"],
