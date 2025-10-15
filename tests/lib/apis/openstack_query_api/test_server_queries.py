@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, NonCallableMock, patch
 import pytest
 from apis.openstack_query_api.server_queries import find_server_with_flavors, group_by
 
+
 @patch("apis.openstack_query_api.server_queries.FlavorQuery")
 def test_find_server_with_flavors_valid(mock_flavor_query):
     mock_flavor_query_obj = mock_flavor_query.return_value
@@ -44,6 +45,7 @@ def test_find_server_with_flavors_valid(mock_flavor_query):
     assert mock_server_query_obj.group_by.call_count == 0
     assert res == mock_server_query_obj
 
+
 @patch("apis.openstack_query_api.server_queries.FlavorQuery")
 def test_find_server_with_flavors_no_projects(mock_flavor_query):
     mock_flavor_query_obj = mock_flavor_query.return_value
@@ -62,6 +64,7 @@ def test_find_server_with_flavors_no_projects(mock_flavor_query):
         all_projects=True,
     )
 
+
 @patch("apis.openstack_query_api.server_queries.FlavorQuery")
 def test_find_server_with_flavors_invalid_flavor(mock_flavor_query):
     mock_flavor_query_obj = mock_flavor_query.return_value
@@ -75,6 +78,7 @@ def test_find_server_with_flavors_invalid_flavor(mock_flavor_query):
     mock_flavor_query_obj.to_props.assert_called_once()
     # Check server query is never executed
     assert mock_flavor_query_obj.then.call_count == 0
+
 
 def test_group_by():
     mock_query = MagicMock()
