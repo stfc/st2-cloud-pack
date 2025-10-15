@@ -11,6 +11,7 @@ from workflows.send_decom_flavor_email import (
     validate_flavor_input,
 )
 
+
 def test_get_affected_flavors_html():
     res = get_affected_flavors_html(
         ["flavor1", "flavor2"], ["2024/06/30", "2024/06/29"]
@@ -21,7 +22,8 @@ def test_get_affected_flavors_html():
         "<tr><td>flavor1</td><td>2024/06/30</td></tr>"
         "<tr><td>flavor2</td><td>2024/06/29</td></tr>"
         "</table>"
-        )
+    )
+
 
 @patch("workflows.send_decom_flavor_email.tabulate")
 def test_get_affected_flavors_plaintext(mock_tabulate):
@@ -38,9 +40,11 @@ def test_get_affected_flavors_plaintext(mock_tabulate):
     )
     assert res == mock_tabulate.return_value
 
+
 def test_validate_flavor_input_empty_flavors():
     with pytest.raises(RuntimeError):
         validate_flavor_input([], ["2024/01/01"])
+
 
 def test_validate_flavor_input_eol_list_unequal():
     with pytest.raises(RuntimeError):
@@ -48,9 +52,11 @@ def test_validate_flavor_input_eol_list_unequal():
     with pytest.raises(RuntimeError):
         validate_flavor_input(["flavor1", "flavor2"], ["2024/01/01"])
 
+
 def test_validate_flavor_input_eol_invalid_format():
     with pytest.raises(RuntimeError):
         validate_flavor_input(["flavor1"], ["24th June 2024"])
+
 
 def test_validate_flavor_input_projects_and_all_projects():
     with pytest.raises(RuntimeError):
@@ -58,11 +64,13 @@ def test_validate_flavor_input_projects_and_all_projects():
             ["flavor1"], ["2024/01/01"], from_projects=["proj1"], all_projects=True
         )
 
+
 def test_validate_flavor_input_no_projects_or_all_projects():
     with pytest.raises(RuntimeError):
         validate_flavor_input(
             ["flavor1"], ["2024/01/01"], from_projects=None, all_projects=False
         )
+
 
 def test_validate_flavor_input_valid_all_projects():
     try:
@@ -74,6 +82,7 @@ def test_validate_flavor_input_valid_all_projects():
     except RuntimeError as e:
         pytest.fail(f"validate_flavor_input raised an unexpected error: {e}")
 
+
 def test_validate_flavor_input_valid_projects():
     try:
         validate_flavor_input(
@@ -83,6 +92,7 @@ def test_validate_flavor_input_valid_projects():
         )
     except RuntimeError as e:
         pytest.fail(f"validate_flavor_input raised an unexpected error: {e}")
+
 
 @patch("workflows.send_decom_flavor_email.UserQuery")
 def test_find_user_info_valid(mock_user_query):
@@ -108,6 +118,7 @@ def test_find_user_info_valid(mock_user_query):
     assert res[0] == "foo"
     assert res[1] == "foo@example.com"
 
+
 @patch("workflows.send_decom_flavor_email.UserQuery")
 def test_find_user_info_invalid(mock_user_query):
     mock_user_id = NonCallableMock()
@@ -128,6 +139,7 @@ def test_find_user_info_invalid(mock_user_query):
     mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
     assert res[0] == ""
     assert res[1] == mock_override_email
+
 
 @patch("workflows.send_decom_flavor_email.UserQuery")
 def test_find_user_info_no_email_address(mock_user_query):
@@ -152,6 +164,8 @@ def test_find_user_info_no_email_address(mock_user_query):
     mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
     assert res[0] == ""
     assert res[1] == mock_override_email
+
+
 @patch("workflows.send_decom_flavor_email.group_by")
 @patch("workflows.send_decom_flavor_email.find_server_with_flavors")
 def test_find_servers_with_decom_flavors_valid(
@@ -168,6 +182,7 @@ def test_find_servers_with_decom_flavors_valid(
     mock_server_query_obj.to_props.assert_called_once()
     mock_group_by.assert_called_once_with(mock_server_query_obj, "user_id")
     assert res == mock_group_by.return_value
+
 
 @patch("workflows.send_decom_flavor_email.group_by")
 @patch("workflows.send_decom_flavor_email.find_server_with_flavors")
@@ -190,6 +205,7 @@ def test_find_servers_with_decom_flavors_no_servers_found(
     mock_server_query_obj.to_props.assert_called_once()
     assert mock_group_by.call_count == 0
 
+
 def test_print_email_params():
     email_addr = "test@example.com"
     user_name = "John Doe"
@@ -205,6 +221,7 @@ def test_print_email_params():
         f"flavor table: {flavor_table}\n"
         f"decom table: {decom_table}\n"
     )
+
 
 @patch("workflows.send_decom_flavor_email.EmailTemplateDetails")
 @patch("workflows.send_decom_flavor_email.EmailParams")
@@ -236,6 +253,7 @@ def test_build_params(mock_email_params, mock_email_template_details):
         arg2="val2",
     )
     assert res == mock_email_params.return_value
+
 
 @patch("workflows.send_decom_flavor_email.validate_flavor_input")
 @patch("workflows.send_decom_flavor_email.find_servers_with_decom_flavors")
@@ -329,6 +347,7 @@ def test_send_decom_flavor_email_send_plaintext(
         ]
     )
 
+
 @patch("workflows.send_decom_flavor_email.validate_flavor_input")
 @patch("workflows.send_decom_flavor_email.find_servers_with_decom_flavors")
 @patch("workflows.send_decom_flavor_email.find_user_info")
@@ -421,6 +440,7 @@ def test_send_decom_flavor_email_send_html(
         ]
     )
 
+
 @patch("workflows.send_decom_flavor_email.validate_flavor_input")
 @patch("workflows.send_decom_flavor_email.find_servers_with_decom_flavors")
 @patch("workflows.send_decom_flavor_email.find_user_info")
@@ -492,6 +512,7 @@ def test_send_decom_flavor_email_print(
             ),
         ]
     )
+
 
 @patch("workflows.send_decom_flavor_email.validate_flavor_input")
 @patch("workflows.send_decom_flavor_email.find_servers_with_decom_flavors")
