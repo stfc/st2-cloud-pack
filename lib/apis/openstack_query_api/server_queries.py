@@ -1,5 +1,7 @@
 from typing import List, Optional
 from openstackquery import FlavorQuery
+
+
 def find_server_with_flavors(
     cloud_account: str,
     flavor_name_list: List[str],
@@ -33,6 +35,7 @@ def find_server_with_flavors(
     server_query.append_from("PROJECT_QUERY", cloud_account, ["project_name"])
     # Removed: server_query.group_by("user_id") (as per instruction 1.3)
     return server_query
+
 
 def group_by(server_query, label):
     return server_query.group_by(label)
