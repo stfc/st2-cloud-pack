@@ -36,12 +36,14 @@ def mock_data_fixture():
     }
 
 
-Expected = {
+# pylint: disable=redefined-outer-name
+expected = {
     "tabular_data": [["ping6", "UNKOWN"], ["disk /", "WARNING"]],
     "headers": ["Service Name", "Service State"],
 }
 
-Expected_with_joins = {
+# pylint: disable=redefined-outer-name
+expected_with_joins = {
     "tabular_data": [
         ["ping6", "UNKOWN", "Host1", "DOWN"],
         ["disk /", "WARNING", "Host2", "UP"],
@@ -56,8 +58,8 @@ Expected_with_joins = {
 @pytest.mark.parametrize(
     "joins, expected",
     [
-        ([], Expected),
-        (["host.name", "host.state"], Expected_with_joins),
+        ([], expected),
+        (["host.name", "host.state"], expected_with_joins),
     ],
 )
 def test_search_by_state_success(
@@ -100,8 +102,8 @@ def test_search_by_state_success(
 @pytest.mark.parametrize(
     "joins, expected",
     [
-        ([], Expected),
-        (["host.name", "host.state"], Expected_with_joins),
+        ([], expected),
+        (["host.name", "host.state"], expected_with_joins),
     ],
 )
 def test_search_by_name_success(
