@@ -9,6 +9,7 @@ from apis.openstack_query_api.server_queries import find_server_with_flavors, gr
 from openstackquery import UserQuery
 from tabulate import tabulate
 
+
 def get_affected_flavors_html(flavor_list: List[str], eol_list: List[str]):
     table_html = "<table>"
     table_html += "<tr><th>Affected Flavors</th><th>EOL Date</th></tr>"
@@ -17,12 +18,14 @@ def get_affected_flavors_html(flavor_list: List[str], eol_list: List[str]):
     table_html += "</table>"
     return table_html
 
+
 def get_affected_flavors_plaintext(flavor_list: List[str], eol_list: List[str]):
     rows = [
         {"Flavor": flavor, "EOL Date": eol}
         for flavor, eol in zip(flavor_list, eol_list)
     ]
     return tabulate(rows, headers="keys", tablefmt="plain")
+
 
 def validate_flavor_input(
     flavor_name_list: List[str],
@@ -48,6 +51,7 @@ def validate_flavor_input(
             "please provide either a list of project identifiers or the 'all_projects' flag"
         )
 
+
 def find_servers_with_decom_flavors(
     cloud_account: str,
     flavor_name_list: List[str],
@@ -63,6 +67,7 @@ def find_servers_with_decom_flavors(
         )
     return group_by(server_query, "user_id")
 
+
 def print_email_params(
     email_addr: str, user_name: str, as_html: bool, flavor_table: str, decom_table: str
 ):
@@ -73,6 +78,7 @@ def print_email_params(
         f"flavor table: {flavor_table}\n"
         f"decom table: {decom_table}\n"
     )
+
 
 def build_email_params(
     user_name: str, flavor_table: str, decom_table: str, **email_kwargs
@@ -88,6 +94,7 @@ def build_email_params(
     footer = EmailTemplateDetails(template_name="footer", template_params={})
     return EmailParams(email_templates=[body, footer], **email_kwargs)
 
+
 def find_user_info(user_id, cloud_account, override_email_address):
     user_query = UserQuery()
     user_query.select("user_name", "user_email")
@@ -97,6 +104,7 @@ def find_user_info(user_id, cloud_account, override_email_address):
     if not res or not res["user_email"][0]:
         return "", override_email_address
     return res["user_name"][0], res["user_email"][0]
+
 
 # pylint: disable=too-many-locals
 def send_decom_flavor_email(
