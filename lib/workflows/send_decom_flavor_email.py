@@ -98,6 +98,7 @@ def find_user_info(user_id, cloud_account, override_email_address):
         return "", override_email_address
     return res["user_name"][0], res["user_email"][0]
 
+# pylint: disable=too-many-locals
 def send_decom_flavor_email(
     smtp_account: SMTPAccount,
     cloud_account: Union[CloudDomains, str],
