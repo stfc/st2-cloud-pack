@@ -19,3 +19,4 @@ deepdiff
 pytest
 pytest-freezer
 munch
+eventlet
