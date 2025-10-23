@@ -15,5 +15,5 @@ action:
     description: >
       Image metadata mismatch Details:\\
       - Name: {{trigger.image_name}}\\
-      - Source Metadata: {{trigger.source_metadata}}\\
       - Target Cloud: {{trigger.target_cloud}}\\
+      - Diff: {{trigger.diff}}\\

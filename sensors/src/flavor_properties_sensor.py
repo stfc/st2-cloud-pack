@@ -1,6 +1,7 @@
+import tabulate
 from apis.openstack_api.openstack_connection import OpenstackConnection
+from apis.utils.diff_utils import get_diff
 from st2reactor.sensor.base import PollingSensor
-from deepdiff import DeepDiff
 
 
 class FlavorPropertiesSensor(PollingSensor):
@@ -20,7 +21,7 @@ class FlavorPropertiesSensor(PollingSensor):
         super().__init__(
             sensor_service=sensor_service, config=config, poll_interval=poll_interval
         )
-        self.log = self._sensor_service.get_logger(__name__)
+        self._log = self._sensor_service.get_logger(__name__)
         self.source_cloud = self.config["flavor_sensor"]["source_cloud_account"]
         self.target_cloud = self.config["flavor_sensor"]["target_cloud_account"]
 
@@ -35,22 +36,11 @@ class FlavorPropertiesSensor(PollingSensor):
         target cloud. Compares the flavor properties and, where there is a difference or
         the flavor does not exist, dispatches a payload containing the flavor name, IDs, and the mismatch.
         """
-
-        def dispatch_trigger(**kwargs):
-            """
-            Creates a payload and dispatches it alongside a trigger using the sensor service.
-            """
-            payload = {**kwargs}
-
-            self.sensor_service.dispatch(
-                trigger="stackstorm_openstack.flavor.flavor_mismatch",
-                payload=payload,
-            )
-
         with OpenstackConnection(self.source_cloud) as source_conn, OpenstackConnection(
             self.target_cloud
         ) as target_conn:
-            self.log.info("Polling for flavors.")
+
+            self._log.info("Polling for flavors.")
 
             source_flavors = {
                 flavor.name: flavor for flavor in source_conn.list_flavors()
@@ -62,61 +52,66 @@ class FlavorPropertiesSensor(PollingSensor):
             for flavor_name, source_flavor in source_flavors.items():
                 target_flavor = target_flavors.get(flavor_name)
 
+                headers = ["Path", self.source_cloud, self.target_cloud]
+
                 if not target_flavor:
-                    mismatch = (
-                        f"Flavor does not exist in target cloud: {source_flavor.name}"
+                    self._log.info(
+                        "Flavor %s does not exist in target cloud", flavor_name
                     )
-                    self.log.info(mismatch)
 
-                    source_flavor_properties = source_flavor.to_dict()
+                    payload = {
+                        "flavor_name": source_flavor.name,
+                        "source_cloud": self.source_cloud,
+                        "target_cloud": self.target_cloud,
+                        "source_flavor_id": source_flavor.id,
+                        "target_flavor_id": None,
+                        "diff": tabulate.tabulate(
+                            [
+                                [
+                                    f"Flavor missing in {self.target_cloud}",
+                                    source_flavor.id,
+                                    "N/A",
+                                ]
+                            ],
+                            headers=headers,
+                            tablefmt="jira",
+                        ),
+                    }
 
-                    dispatch_trigger(
-                        flavor_name=source_flavor.name,
-                        source_cloud=self.source_cloud,
-                        target_cloud=self.target_cloud,
-                        source_flavor_id=source_flavor.id,
-                        target_flavor_id=None,
-                        flavor_mismatch=mismatch,
-                        source_flavor_properties=str(source_flavor_properties),
-                        target_flavor_properties=None,
+                    self.sensor_service.dispatch(
+                        trigger="stackstorm_openstack.flavor.flavor_mismatch",
+                        payload=payload,
                     )
                     continue
 
-                self.log.info(
-                    f"Checking for mismatch between source and target: {flavor_name}"
-                )
-
-                source_flavor_properties = source_flavor.to_dict()
-                target_flavor_properties = target_flavor.to_dict()
-
-                diff = DeepDiff(
-                    source_flavor_properties,
-                    target_flavor_properties,
-                    ignore_order=True,
-                    threshold_to_diff_deeper=0,
-                    exclude_paths={
-                        "root['id']",
-                        "root['location']",
-                    },
+                diff = get_diff(
+                    obj1=source_flavor.to_dict(),
+                    obj2=target_flavor.to_dict(),
+                    exclude_paths=["root['id']", "root['location']"],
                 )
 
                 if diff:
-                    mismatch = f"Mismatch in properties found: {diff.pretty()}"
-                    self.log.info(mismatch)
-
-                    dispatch_trigger(
-                        flavor_name=source_flavor.name,
-                        source_cloud=self.source_cloud,
-                        target_cloud=self.target_cloud,
-                        source_flavor_id=source_flavor.id,
-                        target_flavor_id=target_flavor.id,
-                        flavor_mismatch=mismatch,
-                        source_flavor_properties=str(source_flavor_properties),
-                        target_flavor_properties=str(target_flavor_properties),
+                    self._log.info(
+                        "Mismatch in properties found for flavor: %s", flavor_name
                     )
 
+                    payload = {
+                        "flavor_name": source_flavor.name,
+                        "source_cloud": self.source_cloud,
+                        "target_cloud": self.target_cloud,
+                        "source_flavor_id": source_flavor.id,
+                        "target_flavor_id": target_flavor.id,
+                        "diff": tabulate.tabulate(
+                            diff, headers=headers, tablefmt="jira"
+                        ),
+                    }
+
+                    self.sensor_service.dispatch(
+                        trigger="stackstorm_openstack.flavor.flavor_mismatch",
+                        payload=payload,
+                    )
                 else:
-                    self.log.info("No mismatch found.")
+                    self._log.info("No mismatch found for flavor: %s", flavor_name)
 
     def cleanup(self):
         """
