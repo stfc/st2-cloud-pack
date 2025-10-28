@@ -5,8 +5,9 @@ set -e
 REPO_DIR=$(cd -- "$(dirname -- "$0")" && pwd)
 
 export ST2_REPO_PATH="/tmp/st2"
+export ST2_VERSION="v3.9"
 if [ ! -d "$ST2_REPO_PATH" ]; then
-    git clone --depth=1 https://github.com/stackstorm/st2.git "$ST2_REPO_PATH"
+    git clone --depth=1 -b "$ST2_VERSION" https://github.com/stackstorm/st2.git "$ST2_REPO_PATH"
 fi
 
 export PYTHONPATH="$PYTHONPATH:$REPO_DIR/lib"

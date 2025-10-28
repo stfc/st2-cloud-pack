@@ -36,12 +36,12 @@ def mock_data_fixture():
     }
 
 
-Expected = {
+EXPECTED = {
     "tabular_data": [["ping6", "UNKOWN"], ["disk /", "WARNING"]],
     "headers": ["Service Name", "Service State"],
 }
 
-Expected_with_joins = {
+EXPECTED_WITH_JOINS = {
     "tabular_data": [
         ["ping6", "UNKOWN", "Host1", "DOWN"],
         ["disk /", "WARNING", "Host2", "UP"],
@@ -56,8 +56,8 @@ Expected_with_joins = {
 @pytest.mark.parametrize(
     "joins, expected",
     [
-        ([], Expected),
-        (["host.name", "host.state"], Expected_with_joins),
+        ([], EXPECTED),
+        (["host.name", "host.state"], EXPECTED_WITH_JOINS),
     ],
 )
 def test_search_by_state_success(
@@ -100,8 +100,8 @@ def test_search_by_state_success(
 @pytest.mark.parametrize(
     "joins, expected",
     [
-        ([], Expected),
-        (["host.name", "host.state"], Expected_with_joins),
+        ([], EXPECTED),
+        (["host.name", "host.state"], EXPECTED_WITH_JOINS),
     ],
 )
 def test_search_by_name_success(
