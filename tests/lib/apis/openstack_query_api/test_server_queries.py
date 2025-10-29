@@ -4,7 +4,7 @@ import pytest
 from apis.openstack_query_api.server_queries import find_servers_with_flavors
 
 
-@patch("workflows.send_decom_flavor_email.FlavorQuery")
+@patch("find_servers_with_flavors")
 def test_find_servers_with_flavors(mock_flavor_query):
     """
     Tests find_servers_with_decom_flavors() function
