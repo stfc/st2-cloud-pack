@@ -5,11 +5,8 @@ from workflows.send_decom_image_email import (
     get_affected_images_html,
     get_affected_images_plaintext,
     get_image_info,
-    list_to_regex_pattern,
-    find_servers_with_decom_images,
     print_email_params,
     build_email_params,
-    find_user_info,
     send_decom_image_email,
 )
 
@@ -90,224 +87,6 @@ def test_get_image_info_valid():
     ]
 
 
-def test_list_to_regex_pattern():
-    """tests list_to_regex_pattern creates regex pattern from list"""
-    mock_list = ["img1", "img2", "img3"]
-    res = list_to_regex_pattern(mock_list)
-    assert res == "(.*img1|.*img2|.*img3)"
-
-
-# pylint:disable=too-many-locals
-@patch("workflows.send_decom_image_email.UserQuery")
-def test_find_user_info_valid(mock_user_query):
-    """
-    Tests find_user_info where query is given a valid user id
-    """
-    mock_user_id = NonCallableMock()
-    mock_cloud_account = NonCallableMock()
-    mock_override_email = NonCallableMock()
-    mock_user_query.return_value.to_props.return_value = {
-        "user_name": ["foo"],
-        "user_email": ["foo@example.com"],
-    }
-    res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
-    mock_user_query.assert_called_once()
-    mock_user_query.return_value.select.assert_called_once_with("name", "email_address")
-    mock_user_query.return_value.where.assert_called_once_with(
-        "equal_to", "id", value=mock_user_id
-    )
-    mock_user_query.return_value.run.assert_called_once_with(
-        cloud_account=mock_cloud_account
-    )
-    mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
-
-    assert res[0] == "foo"
-    assert res[1] == "foo@example.com"
-
-
-@patch("workflows.send_decom_image_email.UserQuery")
-def test_find_user_info_invalid(mock_user_query):
-    """
-    Tests find_user_info where query is given a invalid user id
-    """
-    mock_user_id = NonCallableMock()
-    mock_cloud_account = NonCallableMock()
-    mock_override_email = NonCallableMock()
-    mock_user_query.return_value.to_props.return_value = []
-    res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
-    mock_user_query.assert_called_once()
-    mock_user_query.return_value.select.assert_called_once_with("name", "email_address")
-    mock_user_query.return_value.where.assert_called_once_with(
-        "equal_to", "id", value=mock_user_id
-    )
-    mock_user_query.return_value.run.assert_called_once_with(
-        cloud_account=mock_cloud_account
-    )
-    mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
-
-    assert res[0] == ""
-    assert res[1] == mock_override_email
-
-
-@patch("workflows.send_decom_image_email.UserQuery")
-def test_find_user_info_no_email_address(mock_user_query):
-    """
-    Tests find_user_info where query result contains no email address
-    """
-    mock_user_id = NonCallableMock()
-    mock_cloud_account = NonCallableMock()
-    mock_override_email = NonCallableMock()
-    mock_user_query.return_value.to_props.return_value = {
-        "user_id": ["foo"],
-        "user_email": [None],
-    }
-    res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
-    mock_user_query.assert_called_once()
-    mock_user_query.return_value.select.assert_called_once_with("name", "email_address")
-    mock_user_query.return_value.where.assert_called_once_with(
-        "equal_to", "id", value=mock_user_id
-    )
-    mock_user_query.return_value.run.assert_called_once_with(
-        cloud_account=mock_cloud_account
-    )
-    mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
-
-    assert res[0] == ""
-    assert res[1] == mock_override_email
-
-
-@patch("workflows.send_decom_image_email.ImageQuery")
-@patch("workflows.send_decom_image_email.list_to_regex_pattern")
-def test_find_servers_with_decom_images_valid(mock_list_to_regex, mock_image_query):
-    """
-    Tests find_servers_with_decom_images() function
-    should run a complex ImageQuery query - chaining into servers and appending project name
-    """
-    mock_image_query_obj = mock_image_query.return_value
-    mock_server_query_obj = mock_image_query_obj.then.return_value
-
-    res = find_servers_with_decom_images(
-        "test-cloud-account", ["img1", "img2"], ["project1", "project2"]
-    )
-    mock_image_query.assert_called_once()
-    mock_list_to_regex.assert_called_once_with(["img1", "img2"])
-    mock_image_query_obj.where.assert_called_once_with(
-        "matches_regex",
-        "name",
-        value=mock_list_to_regex.return_value,
-    )
-
-    mock_image_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-        as_admin=True,
-        from_projects=["project1", "project2"],
-        all_projects=False,
-    )
-    mock_image_query_obj.sort_by.assert_called_once_with(
-        ("id", "ascending"), ("name", "ascending")
-    )
-    mock_image_query_obj.to_props.assert_called_once()
-    mock_image_query_obj.then.assert_called_once_with(
-        "server_query", keep_previous_results=True
-    )
-
-    mock_server_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-        as_admin=True,
-        from_projects=["project1", "project2"],
-        all_projects=False,
-    )
-    mock_server_query_obj.select.assert_called_once_with("id", "name", "addresses")
-    mock_server_query_obj.to_props.assert_called_once()
-
-    mock_server_query_obj.append_from.assert_called_once_with(
-        "PROJECT_QUERY", "test-cloud-account", ["name"]
-    )
-    mock_server_query_obj.group_by.assert_called_once_with("user_id")
-    assert res == mock_server_query_obj
-
-
-@patch("workflows.send_decom_image_email.ImageQuery")
-@patch("workflows.send_decom_image_email.list_to_regex_pattern")
-def test_find_servers_with_decom_images_invalid_images(
-    mock_list_to_regex, mock_image_query
-):
-    """
-    Tests that find_servers_with_decom_images fails when provided invalid image name
-    """
-
-    mock_image_query_obj = mock_image_query.return_value
-    mock_image_query_obj.to_props.return_value = None
-
-    with pytest.raises(RuntimeError):
-        find_servers_with_decom_images("test-cloud-account", ["invalid-img"])
-
-    mock_image_query.assert_called_once()
-    mock_image_query_obj.where.assert_called_once_with(
-        "matches_regex",
-        "name",
-        value=mock_list_to_regex.return_value,
-    )
-
-    mock_image_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-        as_admin=True,
-        from_projects=None,
-        all_projects=True,
-    )
-    mock_image_query_obj.sort_by.assert_called_once_with(
-        ("id", "ascending"), ("name", "ascending")
-    )
-    mock_image_query_obj.to_props.assert_called_once()
-
-
-@patch("workflows.send_decom_image_email.ImageQuery")
-@patch("workflows.send_decom_image_email.list_to_regex_pattern")
-def test_find_servers_with_decom_images_no_servers_found(
-    mock_list_to_regex, mock_image_query
-):
-    """
-    Tests that find_servers_with_decom_images fails when provided invalid image name
-    """
-
-    mock_image_query_obj = mock_image_query.return_value
-    mock_server_query_obj = mock_image_query_obj.then.return_value
-    mock_server_query_obj.to_props.return_value = None
-
-    with pytest.raises(RuntimeError):
-        find_servers_with_decom_images(
-            "test-cloud-account", ["img1", "img2"], ["project1", "project2"]
-        )
-
-    mock_image_query.assert_called_once()
-    mock_list_to_regex.assert_called_once_with(["img1", "img2"])
-    mock_image_query_obj.where.assert_called_once_with(
-        "matches_regex",
-        "name",
-        value=mock_list_to_regex.return_value,
-    )
-
-    mock_image_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-        as_admin=True,
-        from_projects=["project1", "project2"],
-        all_projects=False,
-    )
-    mock_image_query_obj.sort_by.assert_called_once_with(
-        ("id", "ascending"), ("name", "ascending")
-    )
-    mock_image_query_obj.to_props.assert_called_once()
-
-    mock_server_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-        as_admin=True,
-        from_projects=["project1", "project2"],
-        all_projects=False,
-    )
-    mock_server_query_obj.select.assert_called_once_with("id", "name", "addresses")
-    mock_server_query_obj.to_props.assert_called_once()
-
-
 def test_print_email_params():
     """
     Test print_email_params() function simply prints values
@@ -370,8 +149,9 @@ def test_build_params(mock_email_params, mock_email_template_details):
 
 
 # pylint:disable=too-many-arguments
+# pylint:disable=too-many-locals
 @patch("workflows.send_decom_image_email.get_image_info")
-@patch("workflows.send_decom_image_email.find_servers_with_decom_images")
+@patch("workflows.send_decom_image_email.find_servers_with_image")
 @patch("workflows.send_decom_image_email.find_user_info")
 @patch("workflows.send_decom_image_email.get_affected_images_plaintext")
 @patch("workflows.send_decom_image_email.build_email_params")
@@ -477,8 +257,9 @@ def test_send_decom_image_email_send_plaintext(
 
 
 # pylint:disable=too-many-arguments
+# pylint:disable=too-many-locals
 @patch("workflows.send_decom_image_email.get_image_info")
-@patch("workflows.send_decom_image_email.find_servers_with_decom_images")
+@patch("workflows.send_decom_image_email.find_servers_with_image")
 @patch("workflows.send_decom_image_email.find_user_info")
 @patch("workflows.send_decom_image_email.get_affected_images_html")
 @patch("workflows.send_decom_image_email.build_email_params")
@@ -585,7 +366,7 @@ def test_send_decom_image_email_send_html(
 
 
 @patch("workflows.send_decom_image_email.get_image_info")
-@patch("workflows.send_decom_image_email.find_servers_with_decom_images")
+@patch("workflows.send_decom_image_email.find_servers_with_image")
 @patch("workflows.send_decom_image_email.find_user_info")
 @patch("workflows.send_decom_image_email.get_affected_images_plaintext")
 @patch("workflows.send_decom_image_email.print_email_params")
@@ -686,8 +467,10 @@ def test_send_decom_image_email_print(
     )
 
 
+# pylint:disable=too-many-arguments
+# pylint:disable=too-many-locals
 @patch("workflows.send_decom_image_email.get_image_info")
-@patch("workflows.send_decom_image_email.find_servers_with_decom_images")
+@patch("workflows.send_decom_image_email.find_servers_with_image")
 @patch("workflows.send_decom_image_email.find_user_info")
 @patch("workflows.send_decom_image_email.get_affected_images_plaintext")
 @patch("workflows.send_decom_image_email.build_email_params")
