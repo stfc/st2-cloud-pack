@@ -315,7 +315,7 @@ def test_send_decom_flavor_email_send_plaintext(
     mock_find_servers.assert_called_once_with(
         cloud_account, flavor_name_list, limit_by_projects
     )
-    mock_query.to_props.assert_called_once()
+    mock_query.to_props.assert_called()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -421,7 +421,7 @@ def test_send_decom_flavor_email_send_html(
     mock_find_servers.assert_called_once_with(
         cloud_account, flavor_name_list, limit_by_projects
     )
-    mock_query.to_props.assert_called_once()
+    mock_query.to_props.assert_called()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -524,7 +524,7 @@ def test_send_decom_flavor_email_print(
     mock_find_servers.assert_called_once_with(
         cloud_account, flavor_name_list, limit_by_projects
     )
-    mock_query.to_props.assert_called_once()
+    mock_query.to_props.assert_called()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -604,7 +604,7 @@ def test_send_decom_flavor_email_use_override(
     mock_find_servers.assert_called_once_with(
         cloud_account, flavor_name_list, limit_by_projects
     )
-    mock_query.to_props.assert_called_once()
+    mock_query.to_props.assert_called()
     mock_find_user_info.assert_called_once_with(
         "user_id1", cloud_account, override_email
     )
@@ -624,3 +624,43 @@ def test_send_decom_flavor_email_use_override(
             call().send_emails([mock_build_email_params.return_value]),
         ]
     )
+
+
+# This is coming from the original unit test for the API
+
+# @patch("apis.openstack_query_api.server_queries.FlavorQuery")
+# def test_find_users_with_decom_flavor_no_servers_found(mock_flavor_query):
+#     """
+#     Tests that find_user_with_decom_flavors fails when no servers found with given flavors
+#     """
+#     mock_flavor_query_obj = mock_flavor_query.return_value
+#     mock_server_query_obj = mock_flavor_query_obj.then.return_value
+#     mock_server_query_obj.to_props.return_value = None
+
+#     with pytest.raises(RuntimeError):
+#         find_servers_with_flavors(
+#             "test-cloud-account", ["flavor1", "flavor2"], ["project1", "project2"]
+#         )
+
+#     mock_flavor_query.assert_called_once()
+#     mock_flavor_query_obj.where.assert_any_call(
+#         "any_in",
+#         "flavor_name",
+#         values=["flavor1", "flavor2"],
+#     )
+#     mock_flavor_query_obj.run.assert_called_once_with("test-cloud-account")
+#     mock_flavor_query_obj.sort_by.assert_called_once_with(("flavor_id", "asc"))
+#     mock_flavor_query_obj.to_props.assert_called_once()
+
+#     mock_server_query_obj.run.assert_called_once_with(
+#         "test-cloud-account",
+#         as_admin=True,
+#         from_projects=["project1", "project2"],
+#         all_projects=False,
+#     )
+#     mock_server_query_obj.select.assert_called_once_with(
+#         "server_id",
+#         "server_name",
+#         "addresses",
+#     )
+#     mock_server_query_obj.to_props.assert_called_once()

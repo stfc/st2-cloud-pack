@@ -43,12 +43,6 @@ def find_servers_with_flavors(
         "addresses",
     )
 
-    if not server_query.to_props():
-        raise RuntimeError(
-            f"No servers found with flavors {', '.join(flavor_name_list)} on projects "
-            f"{','.join(from_projects) if from_projects else '[all projects]'}"
-        )
-
     server_query.append_from("PROJECT_QUERY", cloud_account, ["project_name"])
     server_query.group_by("user_id")
 
