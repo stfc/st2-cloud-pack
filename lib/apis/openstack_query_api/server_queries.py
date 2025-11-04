@@ -11,7 +11,7 @@ def find_servers_with_flavors(
     """
     Use QueryAPI to run the query to find flavors
     :param cloud_account: string represents cloud account to use
-    :param flavor_name_list: A list of flavor names to be decommissioned
+    :param flavor_name_list: A list of flavor names
     :param from_projects: A list of project identifiers to limit search in
     """
 
