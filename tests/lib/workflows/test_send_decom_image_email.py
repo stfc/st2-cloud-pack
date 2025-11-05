@@ -152,6 +152,7 @@ def test_build_params(mock_email_params, mock_email_template_details):
 # pylint:disable=too-many-locals
 @patch("workflows.send_decom_image_email.get_image_info")
 @patch("workflows.send_decom_image_email.find_servers_with_image")
+@patch("workflows.send_decom_image_email.group_servers_by_user_id")
 @patch("workflows.send_decom_image_email.find_user_info")
 @patch("workflows.send_decom_image_email.get_affected_images_plaintext")
 @patch("workflows.send_decom_image_email.build_email_params")
@@ -161,7 +162,8 @@ def test_send_decom_image_email_send_plaintext(
     mock_build_email_params,
     mock_get_affected_images_plaintext,
     mock_find_user_info,
-    mock_find_servers,
+    mock_group_servers_by_user_id,
+    mock_find_servers_with_image,
     mock_get_image_info,
 ):
     """
@@ -176,10 +178,15 @@ def test_send_decom_image_email_send_plaintext(
     smtp_account = NonCallableMock()
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
-    mock_query = mock_find_servers.return_value
+    mock_query = mock_find_servers_with_image.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -205,10 +212,12 @@ def test_send_decom_image_email_send_plaintext(
     mock_get_image_info.assert_called_once_with(
         image_name_list, image_eol_list, image_upgrade_list
     )
-    mock_find_servers.assert_called_once_with(
+    mock_find_servers_with_image.assert_called_once_with(
         cloud_account, image_name_list, limit_by_projects
     )
     mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -221,7 +230,7 @@ def test_send_decom_image_email_send_plaintext(
             call(
                 "user1",
                 mock_get_affected_images_plaintext.return_value,
-                mock_query.to_string.return_value,
+                mock_grouped_query.to_string.return_value,
                 email_to=["user_email1"],
                 as_html=False,
                 email_cc=None,
@@ -230,7 +239,7 @@ def test_send_decom_image_email_send_plaintext(
             call(
                 "user2",
                 mock_get_affected_images_plaintext.return_value,
-                mock_query.to_string.return_value,
+                mock_grouped_query.to_string.return_value,
                 email_to=["user_email2"],
                 as_html=False,
                 email_cc=None,
@@ -239,7 +248,7 @@ def test_send_decom_image_email_send_plaintext(
         ]
     )
 
-    mock_query.to_string.assert_has_calls(
+    mock_grouped_query.to_string.assert_has_calls(
         [
             call(groups=["user_id1"], include_group_titles=False),
             call(groups=["user_id2"], include_group_titles=False),
@@ -260,6 +269,7 @@ def test_send_decom_image_email_send_plaintext(
 # pylint:disable=too-many-locals
 @patch("workflows.send_decom_image_email.get_image_info")
 @patch("workflows.send_decom_image_email.find_servers_with_image")
+@patch("workflows.send_decom_image_email.group_servers_by_user_id")
 @patch("workflows.send_decom_image_email.find_user_info")
 @patch("workflows.send_decom_image_email.get_affected_images_html")
 @patch("workflows.send_decom_image_email.build_email_params")
@@ -269,7 +279,8 @@ def test_send_decom_image_email_send_html(
     mock_build_email_params,
     mock_get_affected_images_html,
     mock_find_user_info,
-    mock_find_servers,
+    mock_group_servers_by_user_id,
+    mock_find_servers_with_image,
     mock_get_image_info,
 ):
     """
@@ -285,10 +296,15 @@ def test_send_decom_image_email_send_html(
     smtp_account = NonCallableMock()
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
-    mock_query = mock_find_servers.return_value
+    mock_query = mock_find_servers_with_image.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -314,10 +330,12 @@ def test_send_decom_image_email_send_html(
     mock_get_image_info.assert_called_once_with(
         image_name_list, image_eol_list, image_upgrade_list
     )
-    mock_find_servers.assert_called_once_with(
+    mock_find_servers_with_image.assert_called_once_with(
         cloud_account, image_name_list, limit_by_projects
     )
     mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -330,7 +348,7 @@ def test_send_decom_image_email_send_html(
             call(
                 "user1",
                 mock_get_affected_images_html.return_value,
-                mock_query.to_html.return_value,
+                mock_grouped_query.to_html.return_value,
                 email_to=["user_email1"],
                 as_html=True,
                 email_cc=None,
@@ -339,7 +357,7 @@ def test_send_decom_image_email_send_html(
             call(
                 "user2",
                 mock_get_affected_images_html.return_value,
-                mock_query.to_html.return_value,
+                mock_grouped_query.to_html.return_value,
                 email_to=["user_email2"],
                 as_html=True,
                 email_cc=None,
@@ -348,7 +366,7 @@ def test_send_decom_image_email_send_html(
         ]
     )
 
-    mock_query.to_html.assert_has_calls(
+    mock_grouped_query.to_html.assert_has_calls(
         [
             call(groups=["user_id1"], include_group_titles=False),
             call(groups=["user_id2"], include_group_titles=False),
@@ -367,6 +385,7 @@ def test_send_decom_image_email_send_html(
 
 @patch("workflows.send_decom_image_email.get_image_info")
 @patch("workflows.send_decom_image_email.find_servers_with_image")
+@patch("workflows.send_decom_image_email.group_servers_by_user_id")
 @patch("workflows.send_decom_image_email.find_user_info")
 @patch("workflows.send_decom_image_email.get_affected_images_plaintext")
 @patch("workflows.send_decom_image_email.print_email_params")
@@ -374,7 +393,8 @@ def test_send_decom_image_email_print(
     mock_print_email_params,
     mock_get_affected_images_plaintext,
     mock_find_user_info,
-    mock_find_servers,
+    mock_group_servers_by_user_id,
+    mock_find_servers_with_image,
     mock_get_image_info,
 ):
     """
@@ -390,10 +410,15 @@ def test_send_decom_image_email_print(
     smtp_account = NonCallableMock()
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
-    mock_query = mock_find_servers.return_value
+    mock_query = mock_find_servers_with_image.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -419,10 +444,12 @@ def test_send_decom_image_email_print(
     mock_get_image_info.assert_called_once_with(
         image_name_list, image_eol_list, image_upgrade_list
     )
-    mock_find_servers.assert_called_once_with(
+    mock_find_servers_with_image.assert_called_once_with(
         cloud_account, image_name_list, limit_by_projects
     )
     mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -430,16 +457,6 @@ def test_send_decom_image_email_print(
         ]
     )
 
-    mock_find_servers.assert_called_once_with(
-        cloud_account, image_name_list, limit_by_projects
-    )
-    mock_query.to_props.assert_called_once()
-    mock_find_user_info.assert_has_calls(
-        [
-            call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
-            call("user_id2", cloud_account, "cloud-support@stfc.ac.uk"),
-        ]
-    )
     mock_print_email_params.assert_has_calls(
         [
             call(
@@ -447,19 +464,19 @@ def test_send_decom_image_email_print(
                 "user1",
                 True,
                 mock_get_affected_images_plaintext.return_value,
-                mock_query.to_string.return_value,
+                mock_grouped_query.to_string.return_value,
             ),
             call(
                 "user_email2",
                 "user2",
                 True,
                 mock_get_affected_images_plaintext.return_value,
-                mock_query.to_string.return_value,
+                mock_grouped_query.to_string.return_value,
             ),
         ]
     )
 
-    mock_query.to_string.assert_has_calls(
+    mock_grouped_query.to_string.assert_has_calls(
         [
             call(groups=["user_id1"], include_group_titles=False),
             call(groups=["user_id2"], include_group_titles=False),
@@ -471,6 +488,7 @@ def test_send_decom_image_email_print(
 # pylint:disable=too-many-locals
 @patch("workflows.send_decom_image_email.get_image_info")
 @patch("workflows.send_decom_image_email.find_servers_with_image")
+@patch("workflows.send_decom_image_email.group_servers_by_user_id")
 @patch("workflows.send_decom_image_email.find_user_info")
 @patch("workflows.send_decom_image_email.get_affected_images_plaintext")
 @patch("workflows.send_decom_image_email.build_email_params")
@@ -480,7 +498,8 @@ def test_send_decom_image_email_use_override(
     mock_build_email_params,
     mock_get_affected_images_plaintext,
     mock_find_user_info,
-    mock_find_servers,
+    mock_group_servers_by_user_id,
+    mock_find_servers_with_image,
     mock_get_image_info,
 ):
     """
@@ -496,10 +515,15 @@ def test_send_decom_image_email_use_override(
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
     override_email_address = "example@example.com"
 
-    mock_query = mock_find_servers.return_value
+    mock_query = mock_find_servers_with_image.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -526,10 +550,12 @@ def test_send_decom_image_email_use_override(
     mock_get_image_info.assert_called_once_with(
         image_name_list, image_eol_list, image_upgrade_list
     )
-    mock_find_servers.assert_called_once_with(
+    mock_find_servers_with_image.assert_called_once_with(
         cloud_account, image_name_list, limit_by_projects
     )
     mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, override_email_address),
@@ -542,7 +568,7 @@ def test_send_decom_image_email_use_override(
             call(
                 "user1",
                 mock_get_affected_images_plaintext.return_value,
-                mock_query.to_string.return_value,
+                mock_grouped_query.to_string.return_value,
                 email_to=[override_email_address],
                 as_html=False,
                 email_cc=None,
@@ -551,7 +577,7 @@ def test_send_decom_image_email_use_override(
             call(
                 "user2",
                 mock_get_affected_images_plaintext.return_value,
-                mock_query.to_string.return_value,
+                mock_grouped_query.to_string.return_value,
                 email_to=[override_email_address],
                 as_html=False,
                 email_cc=None,
@@ -560,7 +586,7 @@ def test_send_decom_image_email_use_override(
         ]
     )
 
-    mock_query.to_string.assert_has_calls(
+    mock_grouped_query.to_string.assert_has_calls(
         [
             call(groups=["user_id1"], include_group_titles=False),
             call(groups=["user_id2"], include_group_titles=False),

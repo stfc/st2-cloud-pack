@@ -6,7 +6,10 @@ from apis.email_api.structs.email_params import EmailParams
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.openstack_api.enums.cloud_domains import CloudDomains
-from apis.openstack_query_api.server_queries import find_servers_with_image
+from apis.openstack_query_api.server_queries import (
+    find_servers_with_image,
+    group_servers_by_user_id,
+)
 from apis.openstack_query_api.user_queries import find_user_info
 from tabulate import tabulate
 
@@ -175,7 +178,15 @@ def send_decom_image_email(
         cloud_account, image_name_list, limit_by_projects
     )
 
-    for user_id in server_query.to_props().keys():
+    if not server_query.to_props():
+        raise RuntimeError(
+            f"No servers found with images {', '.join(image_name_list)} on projects "
+            f"{','.join(limit_by_projects) if limit_by_projects else '[all projects]'}"
+        )
+
+    grouped_query = group_servers_by_user_id(server_query)
+
+    for user_id in grouped_query.to_props().keys():
         # if email_address not found - send to override_email_address
         # also send to override_email_address if override_email set
         user_name, email_addr = find_user_info(
@@ -191,18 +202,18 @@ def send_decom_image_email(
                 user_name,
                 as_html,
                 get_affected_images_plaintext(decom_image_info),
-                server_query.to_string(groups=[user_id], include_group_titles=False),
+                grouped_query.to_string(groups=[user_id], include_group_titles=False),
             )
 
         else:
             if as_html:
                 image_list = get_affected_images_html(decom_image_info)
-                server_list = server_query.to_html(
+                server_list = grouped_query.to_html(
                     groups=[user_id], include_group_titles=False
                 )
             else:
                 image_list = get_affected_images_plaintext(decom_image_info)
-                server_list = server_query.to_string(
+                server_list = grouped_query.to_string(
                     groups=[user_id], include_group_titles=False
                 )
 

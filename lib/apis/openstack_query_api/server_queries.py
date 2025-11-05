@@ -2,6 +2,7 @@ import re
 
 from typing import List, Optional
 from openstackquery import ImageQuery
+from openstackquery.api.query_api import QueryAPI
 
 
 def find_servers_with_image(
@@ -49,16 +50,19 @@ def find_servers_with_image(
         "addresses",
     )
 
-    if not server_query.to_props():
-        raise RuntimeError(
-            f"No servers found with images {', '.join(image_name_list)} on projects "
-            f"{','.join(from_projects) if from_projects else '[all projects]'}"
-        )
-
     server_query.append_from("PROJECT_QUERY", cloud_account, ["name"])
-    server_query.group_by("user_id")
 
     return server_query
+
+
+def group_servers_by_user_id(server_query: QueryAPI):
+    """
+    Group the servers in a server query by "user_id" and return the results
+    :param server_query: QueryAPI object containing the results of a server query
+    """
+    grouped_query = server_query.group_by("user_id")
+
+    return grouped_query
 
 
 def list_to_regex_pattern(string_list):
