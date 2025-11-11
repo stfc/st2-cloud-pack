@@ -1,6 +1,6 @@
 from typing import List, Optional, Union
 
-from openstackquery import ServerQuery, UserQuery
+from openstackquery import UserQuery
 
 from apis.openstack_api.enums.cloud_domains import CloudDomains
 
@@ -8,38 +8,7 @@ from apis.email_api.structs.email_params import EmailParams
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.email_api.emailer import Emailer
-
-
-def find_servers_with_shutoff_vms(
-    cloud_account: str, from_projects: Optional[List[str]] = None
-):
-    """
-    :param cloud_account: string represents cloud account to use
-    :param from_projects: A list of project identifiers to limit search in
-    """
-
-    # Find VMs that have been in shutoff state for more than 60 days
-    server_query = ServerQuery()
-    server_query.where("any_in", "server_status", values=["SHUTOFF"])
-    server_query.run(
-        cloud_account,
-        as_admin=True,
-        from_projects=from_projects if from_projects else None,
-        all_projects=not from_projects,
-    )
-
-    server_query.select("id", "name", "addresses")
-
-    if not server_query.to_props():
-        raise RuntimeError(
-            f"No servers found in [SHUTOFF] state on projects "
-            f"{','.join(from_projects) if from_projects else '[all projects]'}"
-        )
-
-    server_query.append_from("PROJECT_QUERY", cloud_account, ["name"])
-    server_query.group_by("user_id")
-
-    return server_query
+from apis.openstack_query_api.server_queries import find_shutoff_servers
 
 
 def print_email_params(
@@ -136,7 +105,7 @@ def send_shutoff_vm_email(
             "please provide either a list of project identifiers or with flag 'all_projects' to run globally"
         )
 
-    server_query = find_servers_with_shutoff_vms(cloud_account, limit_by_projects)
+    server_query = find_shutoff_servers(cloud_account, limit_by_projects)
 
     for user_id in server_query.to_props().keys():
         user_name, email_addr = find_user_info(
