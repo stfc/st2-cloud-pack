@@ -2,167 +2,10 @@ from unittest.mock import patch, call, NonCallableMock
 import pytest
 
 from workflows.send_errored_vm_email import (
-    find_servers_with_errored_vms,
     print_email_params,
     build_email_params,
-    find_user_info,
     send_errored_vm_email,
 )
-
-
-@patch("workflows.send_errored_vm_email.UserQuery")
-def test_find_user_info_valid(mock_user_query):
-    """
-    Tests find_user_info where query is given a valid user id
-    """
-    mock_user_id = NonCallableMock()
-    mock_cloud_account = NonCallableMock()
-    mock_override_email = NonCallableMock()
-    mock_user_query.return_value.to_props.return_value = {
-        "user_name": ["foo"],
-        "user_email": ["foo@example.com"],
-    }
-    res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
-    mock_user_query.assert_called_once()
-    mock_user_query.return_value.select.assert_called_once_with("name", "email_address")
-    mock_user_query.return_value.where.assert_called_once_with(
-        "equal_to", "id", value=mock_user_id
-    )
-    mock_user_query.return_value.run.assert_called_once_with(
-        cloud_account=mock_cloud_account
-    )
-    mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
-
-    assert res[0] == "foo"
-    assert res[1] == "foo@example.com"
-
-
-@patch("workflows.send_errored_vm_email.UserQuery")
-def test_find_user_info_invalid(mock_user_query):
-    """
-    Tests find_user_info where query is given an invalid user id
-    """
-    mock_user_id = NonCallableMock()
-    mock_cloud_account = NonCallableMock()
-    mock_override_email = NonCallableMock()
-    mock_user_query.return_value.to_props.return_value = []
-    res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
-    mock_user_query.assert_called_once()
-    mock_user_query.return_value.select.assert_called_once_with("name", "email_address")
-    mock_user_query.return_value.where.assert_called_once_with(
-        "equal_to", "id", value=mock_user_id
-    )
-    mock_user_query.return_value.run.assert_called_once_with(
-        cloud_account=mock_cloud_account
-    )
-    mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
-
-    assert res[0] == ""
-    assert res[1] == mock_override_email
-
-
-@patch("workflows.send_errored_vm_email.UserQuery")
-def test_find_user_info_no_email_address(mock_user_query):
-    """
-    Tests find_user_info where query result contains no email address
-    """
-    mock_user_id = NonCallableMock()
-    mock_cloud_account = NonCallableMock()
-    mock_override_email = NonCallableMock()
-    mock_user_query.return_value.to_props.return_value = {
-        "user_id": ["foo"],
-        "user_email": [None],
-    }
-    res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
-    mock_user_query.assert_called_once()
-    mock_user_query.return_value.select.assert_called_once_with("name", "email_address")
-    mock_user_query.return_value.where.assert_called_once_with(
-        "equal_to", "id", value=mock_user_id
-    )
-    mock_user_query.return_value.run.assert_called_once_with(
-        cloud_account=mock_cloud_account
-    )
-    mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
-
-    assert res[0] == ""
-    assert res[1] == mock_override_email
-
-
-@patch("workflows.send_errored_vm_email.ServerQuery")
-def test_find_servers_with_errored_vms_valid(mock_server_query):
-    """
-    Tests find_servers_with_errored_vms() function
-    """
-    mock_server_query_obj = mock_server_query.return_value
-
-    res = find_servers_with_errored_vms(
-        "test-cloud-account", -1, ["project1", "project2"]
-    )
-
-    mock_server_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-        as_admin=True,
-        from_projects=["project1", "project2"],
-        all_projects=False,
-    )
-    mock_server_query_obj.select.assert_called_once_with("id", "name", "addresses")
-    mock_server_query_obj.to_props.assert_called_once()
-
-    mock_server_query_obj.append_from.assert_called_once_with(
-        "PROJECT_QUERY", "test-cloud-account", ["name"]
-    )
-    mock_server_query_obj.group_by.assert_called_once_with("user_id")
-    assert res == mock_server_query_obj
-
-
-@patch("workflows.send_errored_vm_email.ServerQuery")
-def test_find_servers_with_errored_vms_valid_time(mock_server_query):
-    """
-    Tests find_servers_with_errored_vms() function when filtering by time
-    """
-    mock_server_query_obj = mock_server_query.return_value
-
-    res = find_servers_with_errored_vms(
-        "test-cloud-account", 10, ["project1", "project2"]
-    )
-
-    mock_server_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-        as_admin=True,
-        from_projects=["project1", "project2"],
-        all_projects=False,
-    )
-    mock_server_query_obj.select.assert_called_once_with("id", "name", "addresses")
-    mock_server_query_obj.to_props.assert_called_once()
-
-    mock_server_query_obj.append_from.assert_called_once_with(
-        "PROJECT_QUERY", "test-cloud-account", ["name"]
-    )
-    mock_server_query_obj.group_by.assert_called_once_with("user_id")
-    assert res == mock_server_query_obj
-
-
-@patch("workflows.send_errored_vm_email.ServerQuery")
-def test_find_servers_with_errored_vms_no_servers_found(mock_server_query):
-    """
-    Tests that find_servers_with_errored_vms fails when provided
-    """
-    mock_server_query_obj = mock_server_query.return_value
-    mock_server_query_obj.to_props.return_value = None
-
-    with pytest.raises(RuntimeError):
-        find_servers_with_errored_vms(
-            "test-cloud-account", -1, ["project1", "project2"]
-        )
-
-    mock_server_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-        as_admin=True,
-        from_projects=["project1", "project2"],
-        all_projects=False,
-    )
-    mock_server_query_obj.select.assert_called_once_with("id", "name", "addresses")
-    mock_server_query_obj.to_props.assert_called_once()
 
 
 def test_print_email_params():
@@ -187,7 +30,10 @@ def test_print_email_params():
 
 @patch("workflows.send_errored_vm_email.EmailTemplateDetails")
 @patch("workflows.send_errored_vm_email.EmailParams")
-def test_build_params(mock_email_params, mock_email_template_details):
+def test_build_params(
+    mock_email_params,
+    mock_email_template_details,
+):
     """
     Test build_params() function creates email params appropriately and returns them
     """
@@ -267,7 +113,7 @@ def test_send_errored_vm_email_send_plaintext(
     )
 
     mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
-    mock_query.to_props.assert_called_once()
+    mock_query.to_props.assert_has_calls([call(), call()])
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -358,7 +204,7 @@ def test_send_errored_vm_email_send_html(
     )
 
     mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
-    mock_query.to_props.assert_called_once()
+    mock_query.to_props.assert_has_calls([call(), call()])
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -414,7 +260,7 @@ def test_send_errored_vm_email_print(
     mock_find_servers,
 ):
     """
-    Tests send_errored_vm_email() function prints when send_email=False
+    Tests send_errored_vm_email() function prints - send_email False
     """
     limit_by_projects = ["project1", "project2"]
     all_projects = False
@@ -447,7 +293,7 @@ def test_send_errored_vm_email_print(
     )
 
     mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
-    mock_query.to_props.assert_called_once()
+    mock_query.to_props.assert_has_calls([call(), call()])
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -492,7 +338,7 @@ def test_send_errored_vm_email_use_override(
     mock_find_servers,
 ):
     """
-    Tests send_errored_vm_email() function sends email to override email - when use_override set
+    Tests send_errored_vm_email() function sends email to override email - use_override True
     """
     limit_by_projects = ["project1", "project2"]
     all_projects = False
@@ -527,7 +373,7 @@ def test_send_errored_vm_email_use_override(
     )
 
     mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
-    mock_query.to_props.assert_called_once()
+    mock_query.to_props.assert_has_calls([call(), call()])
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, override_email_address),
@@ -591,3 +437,28 @@ def test_raise_error_when_neither_from_projects_all_projects():
             smtp_account="",
             cloud_account="",
         )
+
+
+@patch("workflows.send_errored_vm_email.find_servers_with_errored_vms")
+def test_raise_error_when_no_servers_found(mock_find_servers):
+    """
+    Tests that find_servers_with_errored_vms raises an error when no servers are found
+    """
+    smtp_account = ""
+    cloud_account = ""
+    limit_by_projects = ["proj1", "proj2"]
+    all_projects = False
+
+    mock_query = mock_find_servers.return_value
+    mock_query.to_props.return_value = {}
+
+    with pytest.raises(RuntimeError):
+        send_errored_vm_email(
+            smtp_account=smtp_account,
+            cloud_account=cloud_account,
+            limit_by_projects=limit_by_projects,
+            all_projects=all_projects,
+        )
+
+    mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
+    mock_query.to_props.assert_called_once()

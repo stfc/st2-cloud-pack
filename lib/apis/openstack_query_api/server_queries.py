@@ -1,19 +1,20 @@
 from typing import List, Optional
 from openstackquery import ImageQuery, ServerQuery
 from openstackquery.api.query_api import QueryAPI
-from lib.apis.utils.regex_utils import list_to_regex_pattern
+from apis.utils.regex_utils import list_to_regex_pattern
 
 
 def find_servers_with_errored_vms(
-    cloud_account: str, time_variable: int, from_projects: Optional[List[str]] = None
+    cloud_account: str,
+    time_variable: int,
+    from_projects: Optional[List[str]] = None,
 ) -> ServerQuery:
     """
-    Search for machines that are in error state and return the user id, name and email address.
-    :param cloud_account: string represents cloud account to use
-    :param from_projects: A list of project identifiers to limit search in
+    Search for machines that are in error state and returns the user id, name and email address.
+    :param cloud_account: String representing cloud account to use
     :param time_variable: An integer which specifies a minimum age of machine to search for when querying
+    :param from_projects: A list of project identifiers to limit search to
     """
-
     server_query = ServerQuery()
     if time_variable > 0:
         server_query.where(
