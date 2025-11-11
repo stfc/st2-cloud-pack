@@ -603,6 +603,44 @@ def test_send_decom_image_email_use_override(
     )
 
 
+@patch("workflows.send_decom_image_email.get_image_info")
+@patch("workflows.send_decom_image_email.find_servers_with_image")
+def test_raise_error_when_no_matching_servers_found(
+    mock_find_servers_with_image,
+    mock_get_image_info,
+):
+    """Tests that send_decom_image_email raises error if no servers are found using the listed images"""
+    smtp_account = ""
+    cloud_account = ""
+    image_name_list = []
+    image_eol_list = []
+    image_upgrade_list = []
+    all_projects = False
+    limit_by_projects = ["proj1", "proj2"]
+
+    mock_query = mock_find_servers_with_image.return_value
+    mock_query.to_props.return_value = {}
+
+    with pytest.raises(RuntimeError):
+        send_decom_image_email(
+            smtp_account=smtp_account,
+            cloud_account=cloud_account,
+            image_name_list=image_name_list,
+            image_eol_list=image_eol_list,
+            image_upgrade_list=image_upgrade_list,
+            all_projects=all_projects,
+            limit_by_projects=limit_by_projects,
+        )
+
+    mock_get_image_info.assert_called_once_with(
+        image_name_list, image_eol_list, image_upgrade_list
+    )
+    mock_find_servers_with_image.assert_called_once_with(
+        cloud_account, image_name_list, limit_by_projects
+    )
+    mock_query.to_props.assert_called_once()
+
+
 def test_raise_error_when_both_from_projects_all_projects():
     """Tests that send_decom_image_email raises error if both from_projects or all_projects given"""
     with pytest.raises(RuntimeError):
