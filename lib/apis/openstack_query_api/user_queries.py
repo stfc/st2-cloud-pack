@@ -1,7 +1,9 @@
+from typing import Tuple
+
 from openstackquery import UserQuery
 
 
-def find_user_info(user_id, cloud_account, override_email_address):
+def find_user_info(user_id, cloud_account, override_email_address) -> Tuple[str, str]:
     """
     Run a UserQuery to find the email address and user name associated with the specified user ID.
     :param user_id: The OpenStack user ID to be queried

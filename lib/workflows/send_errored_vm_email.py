@@ -1,5 +1,4 @@
-from typing import List, Optional, Union, Tuple
-from openstackquery import ServerQuery, UserQuery
+from typing import List, Optional, Union
 
 from apis.openstack_api.enums.cloud_domains import CloudDomains
 
@@ -7,45 +6,8 @@ from apis.email_api.structs.email_params import EmailParams
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.email_api.emailer import Emailer
-
-
-def find_servers_with_errored_vms(
-    cloud_account: str, time_variable: int, from_projects: Optional[List[str]] = None
-) -> ServerQuery:
-    """
-    Search for machines that are in error state and return the user id, name and email address.
-    :param cloud_account: string represents cloud account to use
-    :param from_projects: A list of project identifiers to limit search in
-    :param time_variable: An integer which specifies a minimum age of machine to search for when querying
-    """
-
-    server_query = ServerQuery()
-    if time_variable > 0:
-        server_query.where(
-            "older_than",
-            "server_last_updated_date",
-            days=time_variable,
-        )
-    server_query.where("any_in", "server_status", values=["ERROR"])
-    server_query.run(
-        cloud_account,
-        as_admin=True,
-        from_projects=from_projects if from_projects else None,
-        all_projects=not from_projects,
-    )
-
-    server_query.select("id", "name", "addresses")
-
-    if not server_query.to_props():
-        raise RuntimeError(
-            f"No servers found in [ERROR] state on projects "
-            f"{','.join(from_projects) if from_projects else '[all projects]'}"
-        )
-
-    server_query.append_from("PROJECT_QUERY", cloud_account, ["name"])
-    server_query.group_by("user_id")
-
-    return server_query
+from apis.openstack_query_api.server_queries import find_servers_with_errored_vms
+from apis.openstack_query_api.user_queries import find_user_info
 
 
 def print_email_params(
@@ -86,23 +48,6 @@ def build_email_params(user_name: str, error_table: str, **email_kwargs) -> Emai
     footer = EmailTemplateDetails(template_name="footer", template_params={})
 
     return EmailParams(email_templates=[body, footer], **email_kwargs)
-
-
-def find_user_info(user_id, cloud_account, override_email_address) -> Tuple[str, str]:
-    """
-    run a UserQuery to find the email address and username associated for a user id.
-    :param user_id: the openstack user id to find email address for
-    :param cloud_account: string represents cloud account to use
-    :param override_email_address: email address to return if no email address found via UserQuery
-    """
-    user_query = UserQuery()
-    user_query.select("name", "email_address")
-    user_query.where("equal_to", "id", value=user_id)
-    user_query.run(cloud_account=cloud_account)
-    res = user_query.to_props(flatten=True)
-    if not res or not res["user_email"][0]:
-        return "", override_email_address
-    return res["user_name"][0], res["user_email"][0]
 
 
 # pylint:disable=too-many-arguments
@@ -148,6 +93,12 @@ def send_errored_vm_email(
     server_query = find_servers_with_errored_vms(
         cloud_account, time_variable, limit_by_projects
     )
+
+    if not server_query.to_props():
+        raise RuntimeError(
+            f"No servers found in [ERROR] state on projects "
+            f"{','.join(limit_by_projects) if limit_by_projects else '[all projects]'}"
+        )
 
     for user_id in server_query.to_props().keys():
         user_name, email_addr = find_user_info(
