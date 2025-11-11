@@ -1,8 +1,7 @@
-import re
-
 from typing import List, Optional
 from openstackquery import ImageQuery
 from openstackquery.api.query_api import QueryAPI
+from lib.apis.utils.regex_utils import list_to_regex_pattern
 
 
 def find_servers_with_image(
@@ -63,13 +62,3 @@ def group_servers_by_user_id(server_query: QueryAPI):
     grouped_query = server_query.group_by("user_id")
 
     return grouped_query
-
-
-def list_to_regex_pattern(string_list):
-    """
-    converts a list of strings into a regex pattern that matches any occurrence of any string in the input list.
-    :param string_list: a list of strings
-    """
-    escaped_strings = [re.escape(s) for s in string_list]
-    regex_pattern = "|.*".join(escaped_strings)
-    return f"(.*{regex_pattern})"

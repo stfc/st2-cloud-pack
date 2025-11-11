@@ -4,18 +4,7 @@ import pytest
 from apis.openstack_query_api.server_queries import (
     find_servers_with_image,
     group_servers_by_user_id,
-    list_to_regex_pattern,
 )
-
-
-def test_list_to_regex_pattern():
-    """
-    Tests list_to_regex_pattern() function
-    Creates regex pattern from list
-    """
-    mock_list = ["img1", "img2", "img3"]
-    res = list_to_regex_pattern(mock_list)
-    assert res == "(.*img1|.*img2|.*img3)"
 
 
 @patch("apis.openstack_query_api.server_queries.QueryAPI")
