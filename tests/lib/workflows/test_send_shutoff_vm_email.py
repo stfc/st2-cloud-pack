@@ -2,7 +2,6 @@ from unittest.mock import patch, call, NonCallableMock
 import pytest
 
 from workflows.send_shutoff_vm_email import (
-    find_servers_with_shutoff_vms,
     print_email_params,
     build_email_params,
     find_user_info,
@@ -88,52 +87,6 @@ def test_find_user_info_no_email_address(mock_user_query):
     assert res[1] == mock_override_email
 
 
-@patch("workflows.send_shutoff_vm_email.ServerQuery")
-def test_find_servers_with_shutoff_vms_valid(mock_server_query):
-    """
-    Tests find_servers_with_shutoff_vms() function
-    """
-    mock_server_query_obj = mock_server_query.return_value
-
-    res = find_servers_with_shutoff_vms("test-cloud-account", ["project1", "project2"])
-
-    mock_server_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-        as_admin=True,
-        from_projects=["project1", "project2"],
-        all_projects=False,
-    )
-    mock_server_query_obj.select.assert_called_once_with("id", "name", "addresses")
-    mock_server_query_obj.to_props.assert_called_once()
-
-    mock_server_query_obj.append_from.assert_called_once_with(
-        "PROJECT_QUERY", "test-cloud-account", ["name"]
-    )
-    mock_server_query_obj.group_by.assert_called_once_with("user_id")
-    assert res == mock_server_query_obj
-
-
-@patch("workflows.send_shutoff_vm_email.ServerQuery")
-def test_find_servers_with_shutoff_vms_no_servers_found(mock_server_query):
-    """
-    Tests that find_servers_with_shutoff_vms fails when provided
-    """
-    mock_server_query_obj = mock_server_query.return_value
-    mock_server_query_obj.to_props.return_value = None
-
-    with pytest.raises(RuntimeError):
-        find_servers_with_shutoff_vms("test-cloud-account", ["project1", "project2"])
-
-    mock_server_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-        as_admin=True,
-        from_projects=["project1", "project2"],
-        all_projects=False,
-    )
-    mock_server_query_obj.select.assert_called_once_with("id", "name", "addresses")
-    mock_server_query_obj.to_props.assert_called_once()
-
-
 def test_print_email_params():
     """
     Test print_email_params() function simply prints values
@@ -192,7 +145,7 @@ def test_build_params(mock_email_params, mock_email_template_details):
 
 
 # pylint:disable=too-many-arguments
-@patch("workflows.send_shutoff_vm_email.find_servers_with_shutoff_vms")
+@patch("workflows.send_shutoff_vm_email.find_shutoff_servers")
 @patch("workflows.send_shutoff_vm_email.find_user_info")
 @patch("workflows.send_shutoff_vm_email.build_email_params")
 @patch("workflows.send_shutoff_vm_email.Emailer")
@@ -282,7 +235,7 @@ def test_send_shutoff_vm_email_send_plaintext(
 
 
 # pylint:disable=too-many-arguments
-@patch("workflows.send_shutoff_vm_email.find_servers_with_shutoff_vms")
+@patch("workflows.send_shutoff_vm_email.find_shutoff_servers")
 @patch("workflows.send_shutoff_vm_email.find_user_info")
 @patch("workflows.send_shutoff_vm_email.build_email_params")
 @patch("workflows.send_shutoff_vm_email.Emailer")
@@ -372,7 +325,7 @@ def test_send_shutoff_vm_email_send_html(
 
 
 # pylint:disable=too-many-arguments
-@patch("workflows.send_shutoff_vm_email.find_servers_with_shutoff_vms")
+@patch("workflows.send_shutoff_vm_email.find_shutoff_servers")
 @patch("workflows.send_shutoff_vm_email.find_user_info")
 @patch("workflows.send_shutoff_vm_email.print_email_params")
 def test_send_shutoff_vm_email_print(
@@ -447,7 +400,7 @@ def test_send_shutoff_vm_email_print(
 
 
 # pylint:disable=too-many-arguments
-@patch("workflows.send_shutoff_vm_email.find_servers_with_shutoff_vms")
+@patch("workflows.send_shutoff_vm_email.find_shutoff_servers")
 @patch("workflows.send_shutoff_vm_email.find_user_info")
 @patch("workflows.send_shutoff_vm_email.build_email_params")
 @patch("workflows.send_shutoff_vm_email.Emailer")

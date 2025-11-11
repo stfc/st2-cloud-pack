@@ -37,6 +37,36 @@ def find_servers_with_errored_vms(
     return server_query
 
 
+def find_shutoff_servers(cloud_account: str, from_projects: Optional[List[str]] = None):
+    """
+    :param cloud_account: string represents cloud account to use
+    :param from_projects: A list of project identifiers to limit search in
+    """
+
+    # Find VMs that have been in shutoff state for more than 60 days
+    server_query = ServerQuery()
+    server_query.where("any_in", "server_status", values=["SHUTOFF"])
+    server_query.run(
+        cloud_account,
+        as_admin=True,
+        from_projects=from_projects if from_projects else None,
+        all_projects=not from_projects,
+    )
+
+    server_query.select("id", "name", "addresses")
+
+    if not server_query.to_props():
+        raise RuntimeError(
+            f"No servers found in [SHUTOFF] state on projects "
+            f"{','.join(from_projects) if from_projects else '[all projects]'}"
+        )
+
+    server_query.append_from("PROJECT_QUERY", cloud_account, ["name"])
+    server_query.group_by("user_id")
+
+    return server_query
+
+
 def find_servers_with_image(
     cloud_account: str,
     image_name_list: List[str],
