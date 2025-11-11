@@ -6,20 +6,25 @@ from apis.email_api.structs.email_params import EmailParams
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.email_api.emailer import Emailer
-from apis.openstack_query_api.server_queries import find_servers_with_errored_vms
+from apis.openstack_query_api.server_queries import (
+    find_servers_with_errored_vms,
+    group_servers_by_user_id,
+)
 from apis.openstack_query_api.user_queries import find_user_info
 
 
 def print_email_params(
-    email_addr: str, user_name: str, as_html: bool, error_table: str
+    email_addr: str,
+    user_name: str,
+    as_html: bool,
+    error_table: str,
 ):
     """
-    Print email params instead of sending the email
-    :param email_addr: email address to send to
-    :param user_name: name of user in openstack
-    :param as_html: A boolean which if selected will send an email, otherwise prints email details only
-    :param error_table: a table representing info found in openstack
-    about VMs in error state
+    Print email params instead of sending the email.
+    :param email_addr: Email address to send to
+    :param user_name: Name of user in OpenStack
+    :param as_html: A boolean which, if True, will send an email - otherwise, prints email details only
+    :param error_table: A string table representing info found in OpenStack about VMs in error state
     """
     print(
         f"Send Email To: {email_addr}\n"
@@ -29,13 +34,16 @@ def print_email_params(
     )
 
 
-def build_email_params(user_name: str, error_table: str, **email_kwargs) -> EmailParams:
+def build_email_params(
+    user_name: str,
+    error_table: str,
+    **email_kwargs,
+) -> EmailParams:
     """
-    build email params dataclass which will be used to configure how to send the email
-    :param user_name: name of user in openstack
-    :param error_table: a table representing info found in openstack about VMs
-        that are in errored state
-    :param email_kwargs: a set of email kwargs to pass to EmailParams
+    Build email params dataclass which will be used to configure how to send the email.
+    :param user_name: Name of user in OpenStack
+    :param error_table: A string table representing info found in OpenStack about VMs that are in errored state
+    :param email_kwargs: A set of email kwargs to pass to EmailParams
     """
     body = EmailTemplateDetails(
         template_name="errored_vm",
@@ -56,7 +64,7 @@ def send_errored_vm_email(
     smtp_account: SMTPAccount,
     cloud_account: Union[CloudDomains, str],
     limit_by_projects: Optional[List[str]] = None,
-    time_variable: int = -1,
+    age_filter_value: int = -1,
     all_projects: bool = False,
     as_html: bool = False,
     send_email: bool = False,
@@ -66,20 +74,19 @@ def send_errored_vm_email(
     **email_params_kwargs,
 ):
     """
-    Sends an email to each user who owns one or more VMs that are in error state
-    This email will contain a notice to delete or rebuild the VM
-
+    Sends an email to each user who owns one or more VMs that are in error state.
+    This email will contain a notice to delete or rebuild the VM.
     :param smtp_account: (SMTPAccount): SMTP config
     :param cloud_account: string represents cloud account to use
     :param limit_by_projects: A list of project names or ids to limit search in
-    :param all_projects: A boolean which if selected will search in all projects
-    :param send_email: Actually send the email instead of printing what will be sent
+    :param age_filter_value: An integer which specifies the minimum age (in days) of the servers to be found
+    :param all_projects: A boolean which, if True, will search in all projects
     :param as_html: Send email as html
+    :param send_email: Actually send the email instead of printing what will be sent
     :param use_override: flag if set will use override email address
     :param override_email_address: an overriding email address to use if override_email set
     :param cc_cloud_support: flag if set will cc cloud-support email address to each generated email
     :param email_params_kwargs: see EmailParams dataclass class docstring
-    :param time_variable: An integer which specifies a minimum age of machine to search for when querying
     """
     if limit_by_projects and all_projects:
         raise RuntimeError(
@@ -91,7 +98,7 @@ def send_errored_vm_email(
         )
 
     server_query = find_servers_with_errored_vms(
-        cloud_account, time_variable, limit_by_projects
+        cloud_account, age_filter_value, limit_by_projects
     )
 
     if not server_query.to_props():
@@ -100,7 +107,9 @@ def send_errored_vm_email(
             f"{','.join(limit_by_projects) if limit_by_projects else '[all projects]'}"
         )
 
-    for user_id in server_query.to_props().keys():
+    grouped_query = group_servers_by_user_id(server_query)
+
+    for user_id in grouped_query.to_props().keys():
         user_name, email_addr = find_user_info(
             user_id, cloud_account, override_email_address
         )
@@ -109,11 +118,11 @@ def send_errored_vm_email(
             send_to = [override_email_address]
 
         if as_html:
-            server_list = server_query.to_html(
+            server_list = grouped_query.to_html(
                 groups=[user_id], include_group_titles=False
             )
         else:
-            server_list = server_query.to_string(
+            server_list = grouped_query.to_string(
                 groups=[user_id], include_group_titles=False
             )
 

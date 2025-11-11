@@ -6,21 +6,21 @@ from apis.utils.regex_utils import list_to_regex_pattern
 
 def find_servers_with_errored_vms(
     cloud_account: str,
-    time_variable: int,
+    age_filter_value: int,
     from_projects: Optional[List[str]] = None,
 ) -> ServerQuery:
     """
     Search for machines that are in error state and returns the user id, name and email address.
     :param cloud_account: String representing cloud account to use
-    :param time_variable: An integer which specifies a minimum age of machine to search for when querying
+    :param age_filter_value: An integer which specifies the minimum age (in days) of the servers to be found
     :param from_projects: A list of project identifiers to limit search to
     """
     server_query = ServerQuery()
-    if time_variable > 0:
+    if age_filter_value > 0:
         server_query.where(
             "older_than",
             "server_last_updated_date",
-            days=time_variable,
+            days=age_filter_value,
         )
     server_query.where("any_in", "server_status", values=["ERROR"])
     server_query.run(
@@ -33,7 +33,6 @@ def find_servers_with_errored_vms(
     server_query.select("id", "name", "addresses")
 
     server_query.append_from("PROJECT_QUERY", cloud_account, ["name"])
-    server_query.group_by("user_id")
 
     return server_query
 

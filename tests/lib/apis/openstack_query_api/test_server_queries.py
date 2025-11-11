@@ -41,14 +41,13 @@ def test_find_servers_with_errored_vms_valid(mock_server_query):
     mock_server_query_obj.append_from.assert_called_once_with(
         "PROJECT_QUERY", "test-cloud-account", ["name"]
     )
-    mock_server_query_obj.group_by.assert_called_once_with("user_id")
     assert res == mock_server_query_obj
 
 
 @patch("apis.openstack_query_api.server_queries.ServerQuery")
-def test_find_servers_with_errored_vms_valid_time(mock_server_query):
+def test_find_servers_with_errored_vms_valid_age(mock_server_query):
     """
-    Tests find_servers_with_errored_vms() function when filtering by time
+    Tests find_servers_with_errored_vms() function when filtering by minimum server age
     """
     mock_server_query_obj = mock_server_query.return_value
 
@@ -67,7 +66,6 @@ def test_find_servers_with_errored_vms_valid_time(mock_server_query):
     mock_server_query_obj.append_from.assert_called_once_with(
         "PROJECT_QUERY", "test-cloud-account", ["name"]
     )
-    mock_server_query_obj.group_by.assert_called_once_with("user_id")
     assert res == mock_server_query_obj
 
 

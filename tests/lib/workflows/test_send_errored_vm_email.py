@@ -70,6 +70,7 @@ def test_build_params(
 
 # pylint:disable=too-many-arguments
 @patch("workflows.send_errored_vm_email.find_servers_with_errored_vms")
+@patch("workflows.send_errored_vm_email.group_servers_by_user_id")
 @patch("workflows.send_errored_vm_email.find_user_info")
 @patch("workflows.send_errored_vm_email.build_email_params")
 @patch("workflows.send_errored_vm_email.Emailer")
@@ -77,6 +78,7 @@ def test_send_errored_vm_email_send_plaintext(
     mock_emailer,
     mock_build_email_params,
     mock_find_user_info,
+    mock_group_servers_by_user_id,
     mock_find_servers,
 ):
     """
@@ -89,9 +91,14 @@ def test_send_errored_vm_email_send_plaintext(
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     mock_query = mock_find_servers.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -103,7 +110,7 @@ def test_send_errored_vm_email_send_plaintext(
     send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
-        time_variable=-1,
+        age_filter_value=-1,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
         as_html=False,
@@ -113,7 +120,9 @@ def test_send_errored_vm_email_send_plaintext(
     )
 
     mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
-    mock_query.to_props.assert_has_calls([call(), call()])
+    mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -125,7 +134,7 @@ def test_send_errored_vm_email_send_plaintext(
         [
             call(
                 "user1",
-                mock_query.to_string.return_value,
+                mock_grouped_query.to_string.return_value,
                 email_to=["user_email1"],
                 as_html=False,
                 email_cc=None,
@@ -133,7 +142,7 @@ def test_send_errored_vm_email_send_plaintext(
             ),
             call(
                 "user2",
-                mock_query.to_string.return_value,
+                mock_grouped_query.to_string.return_value,
                 email_to=["user_email2"],
                 as_html=False,
                 email_cc=None,
@@ -142,7 +151,7 @@ def test_send_errored_vm_email_send_plaintext(
         ]
     )
 
-    mock_query.to_string.assert_has_calls(
+    mock_grouped_query.to_string.assert_has_calls(
         [
             call(groups=["user_id1"], include_group_titles=False),
             call(groups=["user_id2"], include_group_titles=False),
@@ -161,6 +170,7 @@ def test_send_errored_vm_email_send_plaintext(
 
 # pylint:disable=too-many-arguments
 @patch("workflows.send_errored_vm_email.find_servers_with_errored_vms")
+@patch("workflows.send_errored_vm_email.group_servers_by_user_id")
 @patch("workflows.send_errored_vm_email.find_user_info")
 @patch("workflows.send_errored_vm_email.build_email_params")
 @patch("workflows.send_errored_vm_email.Emailer")
@@ -168,6 +178,7 @@ def test_send_errored_vm_email_send_html(
     mock_emailer,
     mock_build_email_params,
     mock_find_user_info,
+    mock_group_servers_by_user_id,
     mock_find_servers,
 ):
     """
@@ -180,9 +191,14 @@ def test_send_errored_vm_email_send_html(
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     mock_query = mock_find_servers.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -194,7 +210,7 @@ def test_send_errored_vm_email_send_html(
     send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
-        time_variable=-1,
+        age_filter_value=-1,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
         as_html=True,
@@ -204,7 +220,9 @@ def test_send_errored_vm_email_send_html(
     )
 
     mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
-    mock_query.to_props.assert_has_calls([call(), call()])
+    mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -216,7 +234,7 @@ def test_send_errored_vm_email_send_html(
         [
             call(
                 "user1",
-                mock_query.to_html.return_value,
+                mock_grouped_query.to_html.return_value,
                 email_to=["user_email1"],
                 as_html=True,
                 email_cc=None,
@@ -224,7 +242,7 @@ def test_send_errored_vm_email_send_html(
             ),
             call(
                 "user2",
-                mock_query.to_html.return_value,
+                mock_grouped_query.to_html.return_value,
                 email_to=["user_email2"],
                 as_html=True,
                 email_cc=None,
@@ -233,7 +251,7 @@ def test_send_errored_vm_email_send_html(
         ]
     )
 
-    mock_query.to_html.assert_has_calls(
+    mock_grouped_query.to_html.assert_has_calls(
         [
             call(groups=["user_id1"], include_group_titles=False),
             call(groups=["user_id2"], include_group_titles=False),
@@ -252,11 +270,13 @@ def test_send_errored_vm_email_send_html(
 
 # pylint:disable=too-many-arguments
 @patch("workflows.send_errored_vm_email.find_servers_with_errored_vms")
+@patch("workflows.send_errored_vm_email.group_servers_by_user_id")
 @patch("workflows.send_errored_vm_email.find_user_info")
 @patch("workflows.send_errored_vm_email.print_email_params")
 def test_send_errored_vm_email_print(
     mock_print_email_params,
     mock_find_user_info,
+    mock_group_servers_by_user_id,
     mock_find_servers,
 ):
     """
@@ -269,9 +289,14 @@ def test_send_errored_vm_email_print(
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     mock_query = mock_find_servers.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -283,7 +308,7 @@ def test_send_errored_vm_email_print(
     send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
-        time_variable=-1,
+        age_filter_value=-1,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
         as_html=False,
@@ -293,7 +318,9 @@ def test_send_errored_vm_email_print(
     )
 
     mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
-    mock_query.to_props.assert_has_calls([call(), call()])
+    mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -307,18 +334,18 @@ def test_send_errored_vm_email_print(
                 "user_email1",
                 "user1",
                 False,
-                mock_query.to_string.return_value,
+                mock_grouped_query.to_string.return_value,
             ),
             call(
                 "user_email2",
                 "user2",
                 False,
-                mock_query.to_string.return_value,
+                mock_grouped_query.to_string.return_value,
             ),
         ]
     )
 
-    mock_query.to_string.assert_has_calls(
+    mock_grouped_query.to_string.assert_has_calls(
         [
             call(groups=["user_id1"], include_group_titles=False),
             call(groups=["user_id2"], include_group_titles=False),
@@ -328,6 +355,7 @@ def test_send_errored_vm_email_print(
 
 # pylint:disable=too-many-arguments
 @patch("workflows.send_errored_vm_email.find_servers_with_errored_vms")
+@patch("workflows.send_errored_vm_email.group_servers_by_user_id")
 @patch("workflows.send_errored_vm_email.find_user_info")
 @patch("workflows.send_errored_vm_email.build_email_params")
 @patch("workflows.send_errored_vm_email.Emailer")
@@ -335,6 +363,7 @@ def test_send_errored_vm_email_use_override(
     mock_emailer,
     mock_build_email_params,
     mock_find_user_info,
+    mock_group_servers_by_user_id,
     mock_find_servers,
 ):
     """
@@ -348,9 +377,14 @@ def test_send_errored_vm_email_use_override(
     override_email_address = "example@example.com"
 
     mock_query = mock_find_servers.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -362,7 +396,7 @@ def test_send_errored_vm_email_use_override(
     send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
-        time_variable=-1,
+        age_filter_value=-1,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
         as_html=False,
@@ -373,7 +407,9 @@ def test_send_errored_vm_email_use_override(
     )
 
     mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
-    mock_query.to_props.assert_has_calls([call(), call()])
+    mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, override_email_address),
@@ -385,7 +421,7 @@ def test_send_errored_vm_email_use_override(
         [
             call(
                 "user1",
-                mock_query.to_string.return_value,
+                mock_grouped_query.to_string.return_value,
                 email_to=[override_email_address],
                 as_html=False,
                 email_cc=None,
@@ -393,7 +429,7 @@ def test_send_errored_vm_email_use_override(
             ),
             call(
                 "user2",
-                mock_query.to_string.return_value,
+                mock_grouped_query.to_string.return_value,
                 email_to=[override_email_address],
                 as_html=False,
                 email_cc=None,
@@ -402,7 +438,7 @@ def test_send_errored_vm_email_use_override(
         ]
     )
 
-    mock_query.to_string.assert_has_calls(
+    mock_grouped_query.to_string.assert_has_calls(
         [
             call(groups=["user_id1"], include_group_titles=False),
             call(groups=["user_id2"], include_group_titles=False),
@@ -419,28 +455,8 @@ def test_send_errored_vm_email_use_override(
     )
 
 
-def test_raise_error_when_both_from_projects_all_projects():
-    """Tests that send_errored_vm_email raises error if both from_projects or all_projects given"""
-    with pytest.raises(RuntimeError):
-        send_errored_vm_email(
-            smtp_account="",
-            cloud_account="",
-            all_projects=True,
-            limit_by_projects=["proj1", "proj2"],
-        )
-
-
-def test_raise_error_when_neither_from_projects_all_projects():
-    """Tests that send_errored_vm_email raises error if neither from_projects nor all_projects given"""
-    with pytest.raises(RuntimeError):
-        send_errored_vm_email(
-            smtp_account="",
-            cloud_account="",
-        )
-
-
 @patch("workflows.send_errored_vm_email.find_servers_with_errored_vms")
-def test_raise_error_when_no_servers_found(mock_find_servers):
+def test_raise_error_when_no_matching_servers_found(mock_find_servers):
     """
     Tests that find_servers_with_errored_vms raises an error when no servers are found
     """
@@ -462,3 +478,27 @@ def test_raise_error_when_no_servers_found(mock_find_servers):
 
     mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
     mock_query.to_props.assert_called_once()
+
+
+def test_raise_error_when_both_from_projects_all_projects():
+    """
+    Tests that send_errored_vm_email raises error if both from_projects or all_projects given
+    """
+    with pytest.raises(RuntimeError):
+        send_errored_vm_email(
+            smtp_account="",
+            cloud_account="",
+            all_projects=True,
+            limit_by_projects=["proj1", "proj2"],
+        )
+
+
+def test_raise_error_when_neither_from_projects_all_projects():
+    """
+    Tests that send_errored_vm_email raises error if neither from_projects nor all_projects given
+    """
+    with pytest.raises(RuntimeError):
+        send_errored_vm_email(
+            smtp_account="",
+            cloud_account="",
+        )
