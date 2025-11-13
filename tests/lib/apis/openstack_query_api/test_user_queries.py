@@ -7,7 +7,7 @@ from apis.openstack_query_api.user_queries import find_user_info
 @patch("apis.openstack_query_api.user_queries.UserQuery")
 def test_find_user_info_valid(mock_user_query):
     """
-    Tests find_user_info where query is given an valid user ID
+    Tests find_user_info where query is given a valid user ID
     """
     mock_user_id = NonCallableMock()
     mock_cloud_account = NonCallableMock()

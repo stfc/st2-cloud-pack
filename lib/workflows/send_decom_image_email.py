@@ -16,7 +16,7 @@ from tabulate import tabulate
 
 def get_affected_images_html(image_info_list: List[Dict]):
     """
-    returns information on images that are to be decommissioned as a html table
+    Returns information on images that are to be decommissioned as a html table.
     :param image_info_list: A list of dictionaries containing information on images that are to be decommissioned
     """
     table_html = "<table>"
@@ -29,7 +29,7 @@ def get_affected_images_html(image_info_list: List[Dict]):
 
 def get_affected_images_plaintext(image_info_list: List[Dict]):
     """
-    returns information on images that are to be decommissioned as a plaintext tabulate table
+    Returns information on images that are to be decommissioned as a plaintext tabulate table
     :param image_info_list: A list of dictionaries containing information on images that are to be decommissioned
     """
     return tabulate(
@@ -49,7 +49,7 @@ def get_image_info(
     image_upgrade_list: List[str],
 ):
     """
-    function validates key-word arguments related to displaying information on images to decommission and parses it
+    Function validates key-word arguments related to displaying information on images to decommission and parses it
     into a list of dictionaries
     """
     if len(image_name_list) == 0:
@@ -83,16 +83,19 @@ def get_image_info(
 
 
 def print_email_params(
-    email_addr: str, user_name: str, as_html: bool, image_table: str, decom_table: str
+    email_addr: str,
+    user_name: str,
+    as_html: bool,
+    image_table: str,
+    decom_table: str,
 ):
     """
     Print email params instead of sending the email
-    :param email_addr: email address to send to
-    :param user_name: name of user in openstack
-    :param as_html: A boolean which if selected will send an email, otherwise prints email details only
-    :param image_table: a table representing decommissioned images
-    :param decom_table: a table representing info found in openstack
-    about VMs running with decommissioned images
+    :param email_addr: Email address to send to
+    :param user_name: Name of user in OpenStack
+    :param as_html: A boolean which, if selected, will send an email - otherwise, prints email details only
+    :param image_table: A table representing decommissioned images
+    :param decom_table: A table representing info found in OpenStack about VMs running with decommissioned images
     """
     print(
         f"Send Email To: {email_addr}\n"
@@ -104,15 +107,17 @@ def print_email_params(
 
 
 def build_email_params(
-    user_name: str, image_table: str, decom_table: str, **email_kwargs
+    user_name: str,
+    image_table: str,
+    decom_table: str,
+    **email_kwargs,
 ):
     """
-    build email params dataclass which will be used to configure how to send the email
-    :param user_name: name of user in openstack
-    :param image_table: a table representing decommissioned images
-    :param decom_table: a table representing info found in openstack about VMs
-        running with decommissioned images
-    :param email_kwargs: a set of email kwargs to pass to EmailParams
+    Builds email params dataclass which will be used to configure how to send the email
+    :param user_name: Name of user in OpenStack
+    :param image_table: A table representing decommissioned images
+    :param decom_table: A table representing info found in OpenStack about VMs running with decommissioned images
+    :param email_kwargs: A set of email kwargs to pass to EmailParams
     """
     body = EmailTemplateDetails(
         template_name="decom_image",
@@ -147,20 +152,20 @@ def send_decom_image_email(
 ):
     """
     Sends an email to each user who owns one or more VMs that are running an image that is to be decommissioned.
-    This email will contain a notice to delete or rebuild the VM
+    This email will contain a notice to delete or rebuild the VM.
     :param smtp_account: (SMTPAccount): SMTP config
-    :param cloud_account: string represents cloud account to use
+    :param cloud_account: String representing the cloud account to use
     :param image_name_list: A list of image names to be decommissioned
     :param image_eol_list: A list of End of Life (EOL) date strings (YY/MM/DD) for images to be decommissioned
     :param image_upgrade_list: A list of image names that users are recommended to upgrade to
     :param limit_by_projects: A list of project names or ids to limit search in
-    :param all_projects: A boolean which if selected will search in all projects
-    :param send_email: Actually send the email instead of printing what will be sent
-    :param as_html: Send email as html
-    :param use_override: flag if set will use override email address
-    :param override_email_address: an overriding email address to use if override_email set
-    :param cc_cloud_support: flag if set will cc cloud-support email address to each generated email
-    :param email_params_kwargs: see EmailParams dataclass class docstring
+    :param all_projects: A boolean which, if True, will search in all projects
+    :param send_email: A boolean which, if True, will send the email instead of printing what will be sent
+    :param as_html: A boolean which, if True, will send the email as html
+    :param use_override: A boolean which, if True, will use the override email address
+    :param override_email_address: An overriding email address to use if override_email set
+    :param cc_cloud_support: A boolean which, if True, will cc cloud-support email address to each generated email
+    :param email_params_kwargs: See EmailParams dataclass class docstring
     """
     if limit_by_projects and all_projects:
         raise RuntimeError(
