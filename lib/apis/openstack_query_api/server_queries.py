@@ -55,14 +55,7 @@ def find_shutoff_servers(cloud_account: str, from_projects: Optional[List[str]] 
 
     server_query.select("id", "name", "addresses")
 
-    if not server_query.to_props():
-        raise RuntimeError(
-            f"No servers found in [SHUTOFF] state on projects "
-            f"{','.join(from_projects) if from_projects else '[all projects]'}"
-        )
-
     server_query.append_from("PROJECT_QUERY", cloud_account, ["name"])
-    server_query.group_by("user_id")
 
     return server_query
 

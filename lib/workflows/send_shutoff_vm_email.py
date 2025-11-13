@@ -8,7 +8,10 @@ from apis.email_api.structs.email_params import EmailParams
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.email_api.emailer import Emailer
-from apis.openstack_query_api.server_queries import find_shutoff_servers
+from apis.openstack_query_api.server_queries import (
+    find_shutoff_servers,
+    group_servers_by_user_id,
+)
 
 
 def print_email_params(
@@ -107,7 +110,15 @@ def send_shutoff_vm_email(
 
     server_query = find_shutoff_servers(cloud_account, limit_by_projects)
 
-    for user_id in server_query.to_props().keys():
+    if not server_query.to_props():
+        raise RuntimeError(
+            f"No servers found in [SHUTOFF] state on projects "
+            f"{','.join(limit_by_projects) if limit_by_projects else '[all projects]'}"
+        )
+
+    grouped_query = group_servers_by_user_id(server_query)
+
+    for user_id in grouped_query.to_props().keys():
         user_name, email_addr = find_user_info(
             user_id, cloud_account, override_email_address
         )
@@ -116,11 +127,11 @@ def send_shutoff_vm_email(
             send_to = [override_email_address]
 
         if as_html:
-            server_list = server_query.to_html(
+            server_list = grouped_query.to_html(
                 groups=[user_id], include_group_titles=False
             )
         else:
-            server_list = server_query.to_string(
+            server_list = grouped_query.to_string(
                 groups=[user_id], include_group_titles=False
             )
 
