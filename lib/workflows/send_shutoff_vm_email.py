@@ -1,7 +1,5 @@
 from typing import List, Optional, Union
 
-from openstackquery import UserQuery
-
 from apis.openstack_api.enums.cloud_domains import CloudDomains
 
 from apis.email_api.structs.email_params import EmailParams
@@ -12,6 +10,7 @@ from apis.openstack_query_api.server_queries import (
     find_shutoff_servers,
     group_servers_by_user_id,
 )
+from apis.openstack_query_api.user_queries import find_user_info
 
 
 def print_email_params(
@@ -52,23 +51,6 @@ def build_email_params(user_name: str, shutoff_table: str, **email_kwargs):
     footer = EmailTemplateDetails(template_name="footer", template_params={})
 
     return EmailParams(email_templates=[body, footer], **email_kwargs)
-
-
-def find_user_info(user_id, cloud_account, override_email_address):
-    """
-    run a UserQuery to find the email address and username associated for a user id.
-    :param user_id: the openstack user id to find email address for
-    :param cloud_account: string represents cloud account to use
-    :param override_email_address: email address to return if no email address found via UserQuery
-    """
-    user_query = UserQuery()
-    user_query.select("name", "email_address")
-    user_query.where("equal_to", "id", value=user_id)
-    user_query.run(cloud_account=cloud_account)
-    res = user_query.to_props(flatten=True)
-    if not res or not res["user_email"][0]:
-        return "", override_email_address
-    return res["user_name"][0], res["user_email"][0]
 
 
 # pylint:disable=too-many-arguments
