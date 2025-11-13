@@ -1,4 +1,3 @@
-import re
 from datetime import datetime
 from typing import Dict, List, Optional, Union
 
@@ -7,16 +6,19 @@ from apis.email_api.structs.email_params import EmailParams
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.openstack_api.enums.cloud_domains import CloudDomains
-from openstackquery import ImageQuery, UserQuery
+from apis.openstack_query_api.server_queries import (
+    find_servers_with_image,
+    group_servers_by_user_id,
+)
+from apis.openstack_query_api.user_queries import find_user_info
 from tabulate import tabulate
 
 
 def get_affected_images_html(image_info_list: List[Dict]):
     """
-    returns information on images that are to be decommissioned as a html table
+    Returns information on images that are to be decommissioned as a html table.
     :param image_info_list: A list of dictionaries containing information on images that are to be decommissioned
     """
-
     table_html = "<table>"
     table_html += "<tr><th>Affected Images</th><th>EOL Date</th><th>Recommended Upgraded Image</th></tr>"
     for image in image_info_list:
@@ -27,7 +29,7 @@ def get_affected_images_html(image_info_list: List[Dict]):
 
 def get_affected_images_plaintext(image_info_list: List[Dict]):
     """
-    returns information on images that are to be decommissioned as a plaintext tabulate table
+    Returns information on images that are to be decommissioned as a plaintext tabulate table
     :param image_info_list: A list of dictionaries containing information on images that are to be decommissioned
     """
     return tabulate(
@@ -47,7 +49,7 @@ def get_image_info(
     image_upgrade_list: List[str],
 ):
     """
-    function validates key-word arguments related to displaying information on images to decommission and parses it
+    Function validates key-word arguments related to displaying information on images to decommission and parses it
     into a list of dictionaries
     """
     if len(image_name_list) == 0:
@@ -80,78 +82,20 @@ def get_image_info(
     return img_list
 
 
-def list_to_regex_pattern(string_list):
-    """
-    converts a list of strings into a regex pattern that matches any occurrence of any string in the input list.
-    :param string_list: a list of strings
-    """
-    escaped_strings = [re.escape(s) for s in string_list]
-    regex_pattern = "|.*".join(escaped_strings)
-    return f"(.*{regex_pattern})"
-
-
-def find_servers_with_decom_images(
-    cloud_account: str,
-    image_name_list: List[str],
-    from_projects: Optional[List[str]] = None,
-):
-    """
-    Use QueryAPI to run the query to find decom images
-    :param cloud_account: string represents cloud account to use
-    :param image_name_list: A list of image names to be decommissioned
-    :param from_projects: A list of project identifiers to limit search in
-    """
-
-    image_query = ImageQuery()
-    image_query.where(
-        "matches_regex", "name", value=list_to_regex_pattern(image_name_list)
-    )
-    image_query.run(
-        cloud_account,
-        as_admin=True,
-        from_projects=from_projects if from_projects else None,
-        all_projects=not from_projects,
-    )
-    image_query.sort_by(("id", "ascending"), ("name", "ascending"))
-    image_query.select("name")
-
-    if not image_query.to_props():
-        raise RuntimeError(
-            f"None of the Images provided {', '.join(image_name_list)} were found"
-        )
-
-    # find the VMs using images we found from the image query
-    server_query = image_query.then("server_query", keep_previous_results=True)
-    server_query.run(
-        cloud_account,
-        as_admin=True,
-        from_projects=from_projects or None,
-        all_projects=not from_projects,
-    )
-    server_query.select("id", "name", "addresses")
-
-    if not server_query.to_props():
-        raise RuntimeError(
-            f"No servers found with images {', '.join(image_name_list)} on projects "
-            f"{','.join(from_projects) if from_projects else '[all projects]'}"
-        )
-
-    server_query.append_from("PROJECT_QUERY", cloud_account, ["name"])
-    server_query.group_by("user_id")
-    return server_query
-
-
 def print_email_params(
-    email_addr: str, user_name: str, as_html: bool, image_table: str, decom_table: str
+    email_addr: str,
+    user_name: str,
+    as_html: bool,
+    image_table: str,
+    decom_table: str,
 ):
     """
     Print email params instead of sending the email
-    :param email_addr: email address to send to
-    :param user_name: name of user in openstack
-    :param as_html: A boolean which if selected will send an email, otherwise prints email details only
-    :param image_table: a table representing decommissioned images
-    :param decom_table: a table representing info found in openstack
-    about VMs running with decommissioned images
+    :param email_addr: Email address to send to
+    :param user_name: Name of user in OpenStack
+    :param as_html: A boolean which, if selected, will send an email - otherwise, prints email details only
+    :param image_table: A table representing decommissioned images
+    :param decom_table: A table representing info found in OpenStack about VMs running with decommissioned images
     """
     print(
         f"Send Email To: {email_addr}\n"
@@ -163,15 +107,17 @@ def print_email_params(
 
 
 def build_email_params(
-    user_name: str, image_table: str, decom_table: str, **email_kwargs
+    user_name: str,
+    image_table: str,
+    decom_table: str,
+    **email_kwargs,
 ):
     """
-    build email params dataclass which will be used to configure how to send the email
-    :param user_name: name of user in openstack
-    :param image_table: a table representing decommissioned images
-    :param decom_table: a table representing info found in openstack about VMs
-        running with decommissioned images
-    :param email_kwargs: a set of email kwargs to pass to EmailParams
+    Builds email params dataclass which will be used to configure how to send the email
+    :param user_name: Name of user in OpenStack
+    :param image_table: A table representing decommissioned images
+    :param decom_table: A table representing info found in OpenStack about VMs running with decommissioned images
+    :param email_kwargs: A set of email kwargs to pass to EmailParams
     """
     body = EmailTemplateDetails(
         template_name="decom_image",
@@ -185,23 +131,6 @@ def build_email_params(
     footer = EmailTemplateDetails(template_name="footer", template_params={})
 
     return EmailParams(email_templates=[body, footer], **email_kwargs)
-
-
-def find_user_info(user_id, cloud_account, override_email_address):
-    """
-    run a UserQuery to find the email address and user name associated for a user id.
-    :param user_id: the openstack user id to find email address for
-    :param cloud_account: string represents cloud account to use
-    :param override_email_address: email address to return if no email address found via UserQuery
-    """
-    user_query = UserQuery()
-    user_query.select("name", "email_address")
-    user_query.where("equal_to", "id", value=user_id)
-    user_query.run(cloud_account=cloud_account)
-    res = user_query.to_props(flatten=True)
-    if not res or not res["user_email"][0]:
-        return "", override_email_address
-    return res["user_name"][0], res["user_email"][0]
 
 
 # pylint:disable=too-many-arguments
@@ -223,20 +152,20 @@ def send_decom_image_email(
 ):
     """
     Sends an email to each user who owns one or more VMs that are running an image that is to be decommissioned.
-    This email will contain a notice to delete or rebuild the VM
+    This email will contain a notice to delete or rebuild the VM.
     :param smtp_account: (SMTPAccount): SMTP config
-    :param cloud_account: string represents cloud account to use
+    :param cloud_account: String representing the cloud account to use
     :param image_name_list: A list of image names to be decommissioned
     :param image_eol_list: A list of End of Life (EOL) date strings (YY/MM/DD) for images to be decommissioned
     :param image_upgrade_list: A list of image names that users are recommended to upgrade to
     :param limit_by_projects: A list of project names or ids to limit search in
-    :param all_projects: A boolean which if selected will search in all projects
-    :param send_email: Actually send the email instead of printing what will be sent
-    :param as_html: Send email as html
-    :param use_override: flag if set will use override email address
-    :param override_email_address: an overriding email address to use if override_email set
-    :param cc_cloud_support: flag if set will cc cloud-support email address to each generated email
-    :param email_params_kwargs: see EmailParams dataclass class docstring
+    :param all_projects: A boolean which, if True, will search in all projects
+    :param send_email: A boolean which, if True, will send the email instead of printing what will be sent
+    :param as_html: A boolean which, if True, will send the email as html
+    :param use_override: A boolean which, if True, will use the override email address
+    :param override_email_address: An overriding email address to use if override_email set
+    :param cc_cloud_support: A boolean which, if True, will cc cloud-support email address to each generated email
+    :param email_params_kwargs: See EmailParams dataclass class docstring
     """
     if limit_by_projects and all_projects:
         raise RuntimeError(
@@ -250,11 +179,19 @@ def send_decom_image_email(
     decom_image_info = get_image_info(
         image_name_list, image_eol_list, image_upgrade_list
     )
-    server_query = find_servers_with_decom_images(
+    server_query = find_servers_with_image(
         cloud_account, image_name_list, limit_by_projects
     )
 
-    for user_id in server_query.to_props().keys():
+    if not server_query.to_props():
+        raise RuntimeError(
+            f"No servers found with images {', '.join(image_name_list)} on projects "
+            f"{','.join(limit_by_projects) if limit_by_projects else '[all projects]'}"
+        )
+
+    grouped_query = group_servers_by_user_id(server_query)
+
+    for user_id in grouped_query.to_props().keys():
         # if email_address not found - send to override_email_address
         # also send to override_email_address if override_email set
         user_name, email_addr = find_user_info(
@@ -270,18 +207,18 @@ def send_decom_image_email(
                 user_name,
                 as_html,
                 get_affected_images_plaintext(decom_image_info),
-                server_query.to_string(groups=[user_id], include_group_titles=False),
+                grouped_query.to_string(groups=[user_id], include_group_titles=False),
             )
 
         else:
             if as_html:
                 image_list = get_affected_images_html(decom_image_info)
-                server_list = server_query.to_html(
+                server_list = grouped_query.to_html(
                     groups=[user_id], include_group_titles=False
                 )
             else:
                 image_list = get_affected_images_plaintext(decom_image_info)
-                server_list = server_query.to_string(
+                server_list = grouped_query.to_string(
                     groups=[user_id], include_group_titles=False
                 )
 

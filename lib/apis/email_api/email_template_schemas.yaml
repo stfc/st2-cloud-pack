@@ -76,6 +76,12 @@ decom_image:
   html_filepath: "html/decom_image.html.j2"
   plaintext_filepath: "plaintext/decom_image.txt.j2"
 
+errored_vm:
+  schema:
+    username: null
+    error_table: "No Errored VMs"
+  html_filepath: "html/errored_vm.html.j2"
+  plaintext_filepath: "plaintext/errored_vm.txt.j2"
 
 mailing_list_capi_create_image:
   schema:

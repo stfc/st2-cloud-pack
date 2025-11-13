@@ -17,7 +17,7 @@ parameters:
     default: "STFC Cloud VMs in Error State"
   smtp_account_name:
     type: string
-    description: "Name of SMTP Account to use. Must be configured in the pack settings."
+    description: "Name of SMTP Account to use - must be configured in the pack config"
     required: true
     default: "default"
   cloud_account:
@@ -30,17 +30,17 @@ parameters:
       - "prod"
   limit_by_projects:
     type: array
-    description: "comma-spaced project to limit action to - incompatible with all_projects"
+    description: "Comma-spaced project to limit action to - incompatible with all_projects"
     required: false
     default: null
-  search_by_time:
+  age_filter_value:
     type: integer
-    description: "How old a VM needs to be to qualify in days - requires search_by_time to be true"
+    description: "An integer which specifies the minimum age (in days) of the servers to be found"
     required: false
     default: -1
   all_projects:
     type: boolean
-    description: "tick to search in all projects - default True"
+    description: "Tick to search in all projects - default True"
     required: true
     default: true
   use_override:
