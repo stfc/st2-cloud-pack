@@ -4,87 +4,33 @@ import pytest
 from workflows.send_shutoff_vm_email import (
     print_email_params,
     build_email_params,
-    find_user_info,
     send_shutoff_vm_email,
 )
 
 
-@patch("workflows.send_shutoff_vm_email.UserQuery")
-def test_find_user_info_valid(mock_user_query):
+@patch("workflows.send_shutoff_vm_email.find_shutoff_servers")
+def test_raise_error_when_no_matching_servers_found(mock_find_servers):
     """
-    Tests find_user_info where query is given a valid user id
+    Tests that find_shutoff_servers raises an error when no servers are found
     """
-    mock_user_id = NonCallableMock()
-    mock_cloud_account = NonCallableMock()
-    mock_override_email = NonCallableMock()
-    mock_user_query.return_value.to_props.return_value = {
-        "user_name": ["foo"],
-        "user_email": ["foo@example.com"],
-    }
-    res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
-    mock_user_query.assert_called_once()
-    mock_user_query.return_value.select.assert_called_once_with("name", "email_address")
-    mock_user_query.return_value.where.assert_called_once_with(
-        "equal_to", "id", value=mock_user_id
-    )
-    mock_user_query.return_value.run.assert_called_once_with(
-        cloud_account=mock_cloud_account
-    )
-    mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
+    smtp_account = ""
+    cloud_account = ""
+    limit_by_projects = ["proj1", "proj2"]
+    all_projects = False
 
-    assert res[0] == "foo"
-    assert res[1] == "foo@example.com"
+    mock_query = mock_find_servers.return_value
+    mock_query.to_props.return_value = {}
 
+    with pytest.raises(RuntimeError):
+        send_shutoff_vm_email(
+            smtp_account=smtp_account,
+            cloud_account=cloud_account,
+            limit_by_projects=limit_by_projects,
+            all_projects=all_projects,
+        )
 
-@patch("workflows.send_shutoff_vm_email.UserQuery")
-def test_find_user_info_invalid(mock_user_query):
-    """
-    Tests find_user_info where query is given an invalid user id
-    """
-    mock_user_id = NonCallableMock()
-    mock_cloud_account = NonCallableMock()
-    mock_override_email = NonCallableMock()
-    mock_user_query.return_value.to_props.return_value = []
-    res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
-    mock_user_query.assert_called_once()
-    mock_user_query.return_value.select.assert_called_once_with("name", "email_address")
-    mock_user_query.return_value.where.assert_called_once_with(
-        "equal_to", "id", value=mock_user_id
-    )
-    mock_user_query.return_value.run.assert_called_once_with(
-        cloud_account=mock_cloud_account
-    )
-    mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
-
-    assert res[0] == ""
-    assert res[1] == mock_override_email
-
-
-@patch("workflows.send_shutoff_vm_email.UserQuery")
-def test_find_user_info_no_email_address(mock_user_query):
-    """
-    Tests find_user_info where query result contains no email address
-    """
-    mock_user_id = NonCallableMock()
-    mock_cloud_account = NonCallableMock()
-    mock_override_email = NonCallableMock()
-    mock_user_query.return_value.to_props.return_value = {
-        "user_id": ["foo"],
-        "user_email": [None],
-    }
-    res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
-    mock_user_query.assert_called_once()
-    mock_user_query.return_value.select.assert_called_once_with("name", "email_address")
-    mock_user_query.return_value.where.assert_called_once_with(
-        "equal_to", "id", value=mock_user_id
-    )
-    mock_user_query.return_value.run.assert_called_once_with(
-        cloud_account=mock_cloud_account
-    )
-    mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
-
-    assert res[0] == ""
-    assert res[1] == mock_override_email
+    mock_find_servers.assert_called_once_with(cloud_account, limit_by_projects)
+    mock_query.to_props.assert_called_once()
 
 
 def test_print_email_params():

@@ -6,6 +6,7 @@ from apis.openstack_query_api.server_queries import (
     find_servers_with_image,
     group_servers_by_user_id,
     list_to_regex_pattern,
+    find_shutoff_servers,
 )
 
 
@@ -54,6 +55,29 @@ def test_find_servers_with_errored_vms_valid_age(mock_server_query):
     res = find_servers_with_errored_vms(
         "test-cloud-account", 10, ["project1", "project2"]
     )
+
+    mock_server_query_obj.run.assert_called_once_with(
+        "test-cloud-account",
+        as_admin=True,
+        from_projects=["project1", "project2"],
+        all_projects=False,
+    )
+    mock_server_query_obj.select.assert_called_once_with("id", "name", "addresses")
+
+    mock_server_query_obj.append_from.assert_called_once_with(
+        "PROJECT_QUERY", "test-cloud-account", ["name"]
+    )
+    assert res == mock_server_query_obj
+
+
+@patch("apis.openstack_query_api.server_queries.ServerQuery")
+def test_find_servers_with_shutoff_vms_valid(mock_server_query):
+    """
+    Tests find_servers_with_shutoff_vms() function
+    """
+    mock_server_query_obj = mock_server_query.return_value
+
+    res = find_shutoff_servers("test-cloud-account", ["project1", "project2"])
 
     mock_server_query_obj.run.assert_called_once_with(
         "test-cloud-account",
