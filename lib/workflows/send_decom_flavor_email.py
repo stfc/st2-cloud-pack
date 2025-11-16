@@ -6,10 +6,9 @@ from apis.email_api.structs.email_params import EmailParams
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.openstack_api.enums.cloud_domains import CloudDomains
-from openstackquery import FlavorQuery, UserQuery
-from tabulate import tabulate
-
 from apis.openstack_query_api.server_queries import find_servers_with_flavors
+from apis.openstack_query_api.user_queries import find_user_info
+from tabulate import tabulate
 
 
 def get_affected_flavors_html(flavor_list: List[str], eol_list: List[str]):
@@ -119,22 +118,6 @@ def build_email_params(
     footer = EmailTemplateDetails(template_name="footer", template_params={})
 
     return EmailParams(email_templates=[body, footer], **email_kwargs)
-
-
-def find_user_info(user_id, cloud_account, override_email_address):
-    """
-    run a UserQuery to find the email address and user name associated for a user id.
-    :param user_id: the openstack user id to find email address for
-    :param override_email_address: email address to return if no email address found via UserQuery
-    """
-    user_query = UserQuery()
-    user_query.select("user_name", "user_email")
-    user_query.where("equal_to", "user_id", value=user_id)
-    user_query.run(cloud_account=cloud_account)
-    res = user_query.to_props(flatten=True)
-    if not res or not res["user_email"][0]:
-        return "", override_email_address
-    return res["user_name"][0], res["user_email"][0]
 
 
 # pylint:disable=too-many-arguments
