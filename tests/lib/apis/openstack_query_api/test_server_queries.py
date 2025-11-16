@@ -7,7 +7,6 @@ from apis.openstack_query_api.server_queries import (
     group_servers_by_user_id,
     list_to_regex_pattern,
     find_shutoff_servers,
-    find_servers_with_flavors,
 )
 
 
