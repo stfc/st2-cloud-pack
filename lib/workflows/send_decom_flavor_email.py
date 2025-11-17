@@ -6,7 +6,10 @@ from apis.email_api.structs.email_params import EmailParams
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.openstack_api.enums.cloud_domains import CloudDomains
-from apis.openstack_query_api.server_queries import find_servers_with_flavors
+from apis.openstack_query_api.server_queries import (
+    find_servers_with_flavors,
+    group_servers_by_user_id,
+)
 from apis.openstack_query_api.user_queries import find_user_info
 from tabulate import tabulate
 
@@ -160,7 +163,15 @@ def send_decom_flavor_email(
         cloud_account, flavor_name_list, limit_by_projects
     )
 
-    for user_id in server_query.to_props().keys():
+    if not server_query.to_props():
+        raise RuntimeError(
+            f"No servers found with flavors {', '.join(flavor_name_list)} on projects "
+            f"{','.join(limit_by_projects) if limit_by_projects else '[all projects]'}"
+        )
+
+    grouped_query = group_servers_by_user_id(server_query)
+
+    for user_id in grouped_query.to_props().keys():
         # if email_address not found - send to override_email_address
         # also send to override_email_address if override_email set
         user_name, email_addr = find_user_info(
@@ -183,7 +194,7 @@ def send_decom_flavor_email(
                 user_name,
                 as_html,
                 flavor_table,
-                server_query.to_string(groups=[user_id]),
+                grouped_query.to_string(groups=[user_id]),
             )
 
         else:
@@ -191,9 +202,9 @@ def send_decom_flavor_email(
                 user_name,
                 flavor_table,
                 (
-                    server_query.to_string(groups=[user_id])
+                    grouped_query.to_string(groups=[user_id])
                     if not as_html
-                    else server_query.to_html(groups=[user_id])
+                    else grouped_query.to_html(groups=[user_id])
                 ),
                 email_to=send_to,
                 as_html=as_html,
