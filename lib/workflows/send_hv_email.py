@@ -1,6 +1,6 @@
 from typing import List, Optional, Union
 
-from openstackquery import ServerQuery, UserQuery
+from openstackquery import UserQuery
 
 from apis.openstack_api.enums.cloud_domains import CloudDomains
 
@@ -9,49 +9,7 @@ from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.email_api.emailer import Emailer
 
-from workflows.to_webhook import to_webhook
-
-
-def find_servers_on_hv(
-    cloud_account: str,
-    hypervisor_name: str,
-    from_projects: Optional[List[str]] = None,
-    webhook: Optional[str] = None,
-):
-    """
-    :param cloud_account: string represents cloud account to use
-    :param from_projects: A list of project identifiers to limit search in
-    """
-
-    # Find VMs that have been on a hypervisor
-    server_query = ServerQuery()
-    server_query.where(
-        "equal_to",
-        "hypervisor_name",
-        value=hypervisor_name,
-    )
-    server_query.run(
-        cloud_account,
-        as_admin=True,
-        from_projects=from_projects if from_projects else None,
-        all_projects=not from_projects,
-    )
-
-    server_query.select("id", "name", "addresses")
-
-    if not server_query.to_props():
-        raise RuntimeError(
-            f"No servers found on {hypervisor_name} in projects "
-            f"{','.join(from_projects) if from_projects else '[all projects]'}"
-        )
-
-    if webhook:
-        to_webhook(webhook=webhook, payload=server_query.select_all().to_props())
-
-    server_query.append_from("PROJECT_QUERY", cloud_account, ["name"])
-    server_query.group_by("user_id")
-
-    return server_query
+from apis.openstack_query_api.server_queries import find_servers_on_hv
 
 
 def print_email_params(email_addr: str, user_name: str, as_html: bool, vm_table: str):

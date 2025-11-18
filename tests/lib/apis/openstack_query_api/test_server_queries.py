@@ -8,7 +8,89 @@ from apis.openstack_query_api.server_queries import (
     list_to_regex_pattern,
     find_shutoff_servers,
     find_servers_with_flavors,
+    find_servers_on_hv,
 )
+
+
+@patch("apis.openstack_query_api.server_queries.ServerQuery")
+def test_find_servers_on_hv_valid(mock_server_query):
+    """
+    Tests find_servers_on_hv() function
+    """
+    mock_server_query_obj = mock_server_query.return_value
+
+    res = find_servers_on_hv(
+        "test-cloud-account", "hv01.nubes.rl.ac.uk", ["project1", "project2"]
+    )
+
+    mock_server_query_obj.run.assert_called_once_with(
+        "test-cloud-account",
+        as_admin=True,
+        from_projects=["project1", "project2"],
+        all_projects=False,
+    )
+    mock_server_query_obj.select.assert_called_once_with("id", "name", "addresses")
+    mock_server_query_obj.to_props.assert_called_once()
+
+    mock_server_query_obj.append_from.assert_called_once_with(
+        "PROJECT_QUERY", "test-cloud-account", ["name"]
+    )
+    mock_server_query_obj.group_by.assert_called_once_with("user_id")
+    assert res == mock_server_query_obj
+
+
+@patch("apis.openstack_query_api.server_queries.to_webhook")
+@patch("apis.openstack_query_api.server_queries.ServerQuery")
+def test_find_servers_on_hv_to_webhook(mock_server_query, mock_to_webhook):
+    """
+    Tests find_servers_on_hv() function
+    """
+    mock_server_query_obj = mock_server_query.return_value
+
+    res = find_servers_on_hv(
+        "test-cloud-account", "hv01.nubes.rl.ac.uk", ["project1", "project2"], "test"
+    )
+
+    mock_server_query_obj.run.assert_called_once_with(
+        "test-cloud-account",
+        as_admin=True,
+        from_projects=["project1", "project2"],
+        all_projects=False,
+    )
+    mock_server_query_obj.select.assert_called_once_with("id", "name", "addresses")
+
+    mock_to_webhook.assert_called_once_with(
+        webhook="test", payload=mock_server_query_obj.select_all().to_props.return_value
+    )
+
+    mock_server_query_obj.append_from.assert_called_once_with(
+        "PROJECT_QUERY", "test-cloud-account", ["name"]
+    )
+    mock_server_query_obj.group_by.assert_called_once_with("user_id")
+    assert res == mock_server_query_obj
+
+
+@patch("apis.openstack_query_api.server_queries.ServerQuery")
+def test_find_servers_on_hv_no_servers_found(mock_server_query):
+    """
+    Tests that find_servers_on_hv fails when provided
+    """
+    mock_server_query_obj = mock_server_query.return_value
+    mock_server_query_obj.to_props.return_value = None
+
+    with pytest.raises(RuntimeError):
+        find_servers_on_hv(
+            "test-cloud-account", "hv01.nubes.rl.ac.uk", ["project1", "project2"]
+        )
+
+    mock_server_query_obj.run.assert_called_once_with(
+        "test-cloud-account",
+        as_admin=True,
+        from_projects=["project1", "project2"],
+        all_projects=False,
+    )
+    mock_server_query_obj.select.assert_called_once_with("id", "name", "addresses")
+    mock_server_query_obj.to_props.assert_called_once()
 
 
 @patch("apis.openstack_query_api.server_queries.FlavorQuery")
