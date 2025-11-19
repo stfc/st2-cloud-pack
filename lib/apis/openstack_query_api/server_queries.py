@@ -33,17 +33,10 @@ def find_servers_on_hv(
 
     server_query.select("id", "name", "addresses")
 
-    if not server_query.to_props():
-        raise RuntimeError(
-            f"No servers found on {hypervisor_name} in projects "
-            f"{','.join(from_projects) if from_projects else '[all projects]'}"
-        )
-
     if webhook:
         to_webhook(webhook=webhook, payload=server_query.select_all().to_props())
 
     server_query.append_from("PROJECT_QUERY", cloud_account, ["name"])
-    server_query.group_by("user_id")
 
     return server_query
 

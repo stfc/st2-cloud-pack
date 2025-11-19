@@ -8,6 +8,35 @@ from workflows.send_hv_email import (
 )
 
 
+@patch("workflows.send_hv_email.find_servers_on_hv")
+def test_find_servers_on_hv_no_servers_found(mock_find_servers_on_hv):
+    """Tests that find_servers_on_hv fails when provided"""
+    smtp_account = ""
+    email_template = ""
+    cloud_account = ""
+    hypervisor_name = ""
+    limit_by_projects = ["proj1", "proj2"]
+    webhook = None
+
+    mock_query = mock_find_servers_on_hv.return_value
+    mock_query.to_props.return_value = {}
+
+    with pytest.raises(RuntimeError):
+        send_hv_email(
+            smtp_account=smtp_account,
+            email_template=email_template,
+            cloud_account=cloud_account,
+            hypervisor_name=hypervisor_name,
+            limit_by_projects=limit_by_projects,
+            webhook=webhook,
+        )
+
+    mock_find_servers_on_hv.assert_called_once_with(
+        cloud_account, hypervisor_name, limit_by_projects, webhook
+    )
+    mock_query.to_props.assert_called_once()
+
+
 def test_print_email_params():
     """
     Test print_email_params() function simply prints values
@@ -73,6 +102,7 @@ def test_build_params(mock_email_params, mock_email_template_details):
 
 # pylint:disable=too-many-arguments
 @patch("workflows.send_hv_email.find_servers_on_hv")
+@patch("workflows.send_hv_email.group_servers_by_user_id")
 @patch("workflows.send_hv_email.find_user_info")
 @patch("workflows.send_hv_email.build_email_params")
 @patch("workflows.send_hv_email.Emailer")
@@ -80,6 +110,7 @@ def test_send_hv_email_send_plaintext(
     mock_emailer,
     mock_build_email_params,
     mock_find_user_info,
+    mock_group_servers_by_user_id,
     mock_find_servers,
 ):
     """
@@ -94,9 +125,14 @@ def test_send_hv_email_send_plaintext(
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     mock_query = mock_find_servers.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -123,6 +159,8 @@ def test_send_hv_email_send_plaintext(
         cloud_account, mock_hv_name, limit_by_projects, None
     )
     mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -172,6 +210,7 @@ def test_send_hv_email_send_plaintext(
 
 # pylint:disable=too-many-arguments
 @patch("workflows.send_hv_email.find_servers_on_hv")
+@patch("workflows.send_hv_email.group_servers_by_user_id")
 @patch("workflows.send_hv_email.find_user_info")
 @patch("workflows.send_hv_email.build_email_params")
 @patch("workflows.send_hv_email.Emailer")
@@ -179,6 +218,7 @@ def test_send_hv_email_send_html(
     mock_emailer,
     mock_build_email_params,
     mock_find_user_info,
+    mock_group_servers_by_user_id,
     mock_find_servers,
 ):
     """
@@ -193,9 +233,14 @@ def test_send_hv_email_send_html(
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     mock_query = mock_find_servers.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -222,6 +267,8 @@ def test_send_hv_email_send_html(
         cloud_account, mock_hv_name, limit_by_projects, None
     )
     mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -271,11 +318,13 @@ def test_send_hv_email_send_html(
 
 # pylint:disable=too-many-arguments
 @patch("workflows.send_hv_email.find_servers_on_hv")
+@patch("workflows.send_hv_email.group_servers_by_user_id")
 @patch("workflows.send_hv_email.find_user_info")
 @patch("workflows.send_hv_email.print_email_params")
 def test_send_hv_email_print(
     mock_print_email_params,
     mock_find_user_info,
+    mock_group_servers_by_user_id,
     mock_find_servers,
 ):
     """
@@ -290,9 +339,14 @@ def test_send_hv_email_print(
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     mock_query = mock_find_servers.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -319,6 +373,8 @@ def test_send_hv_email_print(
         cloud_account, mock_hv_name, limit_by_projects, None
     )
     mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -353,6 +409,7 @@ def test_send_hv_email_print(
 
 # pylint:disable=too-many-arguments
 @patch("workflows.send_hv_email.find_servers_on_hv")
+@patch("workflows.send_hv_email.group_servers_by_user_id")
 @patch("workflows.send_hv_email.find_user_info")
 @patch("workflows.send_hv_email.build_email_params")
 @patch("workflows.send_hv_email.Emailer")
@@ -360,6 +417,7 @@ def test_send_hv_email_use_override(
     mock_emailer,
     mock_build_email_params,
     mock_find_user_info,
+    mock_group_servers_by_user_id,
     mock_find_servers,
 ):
     """
@@ -375,9 +433,14 @@ def test_send_hv_email_use_override(
     override_email_address = "example@example.com"
 
     mock_query = mock_find_servers.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -405,6 +468,8 @@ def test_send_hv_email_use_override(
         cloud_account, mock_hv_name, limit_by_projects, None
     )
     mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, override_email_address),

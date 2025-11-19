@@ -7,7 +7,10 @@ from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.email_api.emailer import Emailer
 
-from apis.openstack_query_api.server_queries import find_servers_on_hv
+from apis.openstack_query_api.server_queries import (
+    find_servers_on_hv,
+    group_servers_by_user_id,
+)
 from apis.openstack_query_api.user_queries import find_user_info
 
 
@@ -97,7 +100,15 @@ def send_hv_email(
         cloud_account, hypervisor_name, limit_by_projects, webhook
     )
 
-    for user_id in server_query.to_props().keys():
+    if not server_query.to_props():
+        raise RuntimeError(
+            f"No servers found on {hypervisor_name} in projects "
+            f"{','.join(limit_by_projects) if limit_by_projects else '[all projects]'}"
+        )
+
+    grouped_query = group_servers_by_user_id(server_query)
+
+    for user_id in grouped_query.to_props().keys():
         user_name, email_addr = find_user_info(
             user_id, cloud_account, override_email_address
         )
