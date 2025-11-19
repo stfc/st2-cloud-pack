@@ -2,171 +2,39 @@ from unittest.mock import patch, call, NonCallableMock
 import pytest
 
 from workflows.send_hv_email import (
-    find_servers_on_hv,
     print_email_params,
     build_email_params,
-    find_user_info,
     send_hv_email,
 )
 
 
-@patch("workflows.send_hv_email.UserQuery")
-def test_find_user_info_valid(mock_user_query):
-    """
-    Tests find_user_info where query is given a valid user id
-    """
-    mock_user_id = NonCallableMock()
-    mock_cloud_account = NonCallableMock()
-    mock_override_email = NonCallableMock()
-    mock_user_query.return_value.to_props.return_value = {
-        "user_name": ["foo"],
-        "user_email": ["foo@example.com"],
-    }
-    res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
-    mock_user_query.assert_called_once()
-    mock_user_query.return_value.select.assert_called_once_with("name", "email_address")
-    mock_user_query.return_value.where.assert_called_once_with(
-        "equal_to", "id", value=mock_user_id
-    )
-    mock_user_query.return_value.run.assert_called_once_with(
-        cloud_account=mock_cloud_account
-    )
-    mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
+@patch("workflows.send_hv_email.find_servers_on_hv")
+def test_find_servers_on_hv_no_servers_found(mock_find_servers_on_hv):
+    """Tests that find_servers_on_hv fails when provided"""
+    smtp_account = ""
+    email_template = ""
+    cloud_account = ""
+    hypervisor_name = ""
+    limit_by_projects = ["proj1", "proj2"]
+    webhook = None
 
-    assert res[0] == "foo"
-    assert res[1] == "foo@example.com"
-
-
-@patch("workflows.send_hv_email.UserQuery")
-def test_find_user_info_invalid(mock_user_query):
-    """
-    Tests find_user_info where query is given an invalid user id
-    """
-    mock_user_id = NonCallableMock()
-    mock_cloud_account = NonCallableMock()
-    mock_override_email = NonCallableMock()
-    mock_user_query.return_value.to_props.return_value = []
-    res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
-    mock_user_query.assert_called_once()
-    mock_user_query.return_value.select.assert_called_once_with("name", "email_address")
-    mock_user_query.return_value.where.assert_called_once_with(
-        "equal_to", "id", value=mock_user_id
-    )
-    mock_user_query.return_value.run.assert_called_once_with(
-        cloud_account=mock_cloud_account
-    )
-    mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
-
-    assert res[0] == ""
-    assert res[1] == mock_override_email
-
-
-@patch("workflows.send_hv_email.UserQuery")
-def test_find_user_info_no_email_address(mock_user_query):
-    """
-    Tests find_user_info where query result contains no email address
-    """
-    mock_user_id = NonCallableMock()
-    mock_cloud_account = NonCallableMock()
-    mock_override_email = NonCallableMock()
-    mock_user_query.return_value.to_props.return_value = {
-        "user_id": ["foo"],
-        "user_email": [None],
-    }
-    res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
-    mock_user_query.assert_called_once()
-    mock_user_query.return_value.select.assert_called_once_with("name", "email_address")
-    mock_user_query.return_value.where.assert_called_once_with(
-        "equal_to", "id", value=mock_user_id
-    )
-    mock_user_query.return_value.run.assert_called_once_with(
-        cloud_account=mock_cloud_account
-    )
-    mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
-
-    assert res[0] == ""
-    assert res[1] == mock_override_email
-
-
-@patch("workflows.send_hv_email.ServerQuery")
-def test_find_servers_on_hv_valid(mock_server_query):
-    """
-    Tests find_servers_on_hv() function
-    """
-    mock_server_query_obj = mock_server_query.return_value
-
-    res = find_servers_on_hv(
-        "test-cloud-account", "hv01.nubes.rl.ac.uk", ["project1", "project2"]
-    )
-
-    mock_server_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-        as_admin=True,
-        from_projects=["project1", "project2"],
-        all_projects=False,
-    )
-    mock_server_query_obj.select.assert_called_once_with("id", "name", "addresses")
-    mock_server_query_obj.to_props.assert_called_once()
-
-    mock_server_query_obj.append_from.assert_called_once_with(
-        "PROJECT_QUERY", "test-cloud-account", ["name"]
-    )
-    mock_server_query_obj.group_by.assert_called_once_with("user_id")
-    assert res == mock_server_query_obj
-
-
-@patch("workflows.send_hv_email.to_webhook")
-@patch("workflows.send_hv_email.ServerQuery")
-def test_find_servers_on_hv_to_webhook(mock_server_query, mock_to_webhook):
-    """
-    Tests find_servers_on_hv() function
-    """
-    mock_server_query_obj = mock_server_query.return_value
-
-    res = find_servers_on_hv(
-        "test-cloud-account", "hv01.nubes.rl.ac.uk", ["project1", "project2"], "test"
-    )
-
-    mock_server_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-        as_admin=True,
-        from_projects=["project1", "project2"],
-        all_projects=False,
-    )
-    mock_server_query_obj.select.assert_called_once_with("id", "name", "addresses")
-
-    mock_to_webhook.assert_called_once_with(
-        webhook="test", payload=mock_server_query_obj.select_all().to_props.return_value
-    )
-
-    mock_server_query_obj.append_from.assert_called_once_with(
-        "PROJECT_QUERY", "test-cloud-account", ["name"]
-    )
-    mock_server_query_obj.group_by.assert_called_once_with("user_id")
-    assert res == mock_server_query_obj
-
-
-@patch("workflows.send_hv_email.ServerQuery")
-def test_find_servers_on_hv_no_servers_found(mock_server_query):
-    """
-    Tests that find_servers_on_hv fails when provided
-    """
-    mock_server_query_obj = mock_server_query.return_value
-    mock_server_query_obj.to_props.return_value = None
+    mock_query = mock_find_servers_on_hv.return_value
+    mock_query.to_props.return_value = {}
 
     with pytest.raises(RuntimeError):
-        find_servers_on_hv(
-            "test-cloud-account", "hv01.nubes.rl.ac.uk", ["project1", "project2"]
+        send_hv_email(
+            smtp_account=smtp_account,
+            email_template=email_template,
+            cloud_account=cloud_account,
+            hypervisor_name=hypervisor_name,
+            limit_by_projects=limit_by_projects,
+            webhook=webhook,
         )
 
-    mock_server_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-        as_admin=True,
-        from_projects=["project1", "project2"],
-        all_projects=False,
+    mock_find_servers_on_hv.assert_called_once_with(
+        cloud_account, hypervisor_name, limit_by_projects, webhook
     )
-    mock_server_query_obj.select.assert_called_once_with("id", "name", "addresses")
-    mock_server_query_obj.to_props.assert_called_once()
+    mock_query.to_props.assert_called_once()
 
 
 def test_print_email_params():
@@ -234,6 +102,7 @@ def test_build_params(mock_email_params, mock_email_template_details):
 
 # pylint:disable=too-many-arguments
 @patch("workflows.send_hv_email.find_servers_on_hv")
+@patch("workflows.send_hv_email.group_servers_by_user_id")
 @patch("workflows.send_hv_email.find_user_info")
 @patch("workflows.send_hv_email.build_email_params")
 @patch("workflows.send_hv_email.Emailer")
@@ -241,6 +110,7 @@ def test_send_hv_email_send_plaintext(
     mock_emailer,
     mock_build_email_params,
     mock_find_user_info,
+    mock_group_servers_by_user_id,
     mock_find_servers,
 ):
     """
@@ -255,9 +125,14 @@ def test_send_hv_email_send_plaintext(
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     mock_query = mock_find_servers.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -284,6 +159,8 @@ def test_send_hv_email_send_plaintext(
         cloud_account, mock_hv_name, limit_by_projects, None
     )
     mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -333,6 +210,7 @@ def test_send_hv_email_send_plaintext(
 
 # pylint:disable=too-many-arguments
 @patch("workflows.send_hv_email.find_servers_on_hv")
+@patch("workflows.send_hv_email.group_servers_by_user_id")
 @patch("workflows.send_hv_email.find_user_info")
 @patch("workflows.send_hv_email.build_email_params")
 @patch("workflows.send_hv_email.Emailer")
@@ -340,6 +218,7 @@ def test_send_hv_email_send_html(
     mock_emailer,
     mock_build_email_params,
     mock_find_user_info,
+    mock_group_servers_by_user_id,
     mock_find_servers,
 ):
     """
@@ -354,9 +233,14 @@ def test_send_hv_email_send_html(
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     mock_query = mock_find_servers.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -383,6 +267,8 @@ def test_send_hv_email_send_html(
         cloud_account, mock_hv_name, limit_by_projects, None
     )
     mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -432,11 +318,13 @@ def test_send_hv_email_send_html(
 
 # pylint:disable=too-many-arguments
 @patch("workflows.send_hv_email.find_servers_on_hv")
+@patch("workflows.send_hv_email.group_servers_by_user_id")
 @patch("workflows.send_hv_email.find_user_info")
 @patch("workflows.send_hv_email.print_email_params")
 def test_send_hv_email_print(
     mock_print_email_params,
     mock_find_user_info,
+    mock_group_servers_by_user_id,
     mock_find_servers,
 ):
     """
@@ -451,9 +339,14 @@ def test_send_hv_email_print(
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     mock_query = mock_find_servers.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -480,6 +373,8 @@ def test_send_hv_email_print(
         cloud_account, mock_hv_name, limit_by_projects, None
     )
     mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -514,6 +409,7 @@ def test_send_hv_email_print(
 
 # pylint:disable=too-many-arguments
 @patch("workflows.send_hv_email.find_servers_on_hv")
+@patch("workflows.send_hv_email.group_servers_by_user_id")
 @patch("workflows.send_hv_email.find_user_info")
 @patch("workflows.send_hv_email.build_email_params")
 @patch("workflows.send_hv_email.Emailer")
@@ -521,6 +417,7 @@ def test_send_hv_email_use_override(
     mock_emailer,
     mock_build_email_params,
     mock_find_user_info,
+    mock_group_servers_by_user_id,
     mock_find_servers,
 ):
     """
@@ -536,9 +433,14 @@ def test_send_hv_email_use_override(
     override_email_address = "example@example.com"
 
     mock_query = mock_find_servers.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -566,6 +468,8 @@ def test_send_hv_email_use_override(
         cloud_account, mock_hv_name, limit_by_projects, None
     )
     mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, override_email_address),

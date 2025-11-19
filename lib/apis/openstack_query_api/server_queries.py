@@ -3,6 +3,43 @@ from openstackquery import ImageQuery, ServerQuery, FlavorQuery
 from openstackquery.api.query_api import QueryAPI
 from apis.utils.regex_utils import list_to_regex_pattern
 
+from workflows.to_webhook import to_webhook
+
+
+def find_servers_on_hv(
+    cloud_account: str,
+    hypervisor_name: str,
+    from_projects: Optional[List[str]] = None,
+    webhook: Optional[str] = None,
+):
+    """
+    :param cloud_account: string represents cloud account to use
+    :param from_projects: A list of project identifiers to limit search in
+    """
+
+    # Find VMs that have been on a hypervisor
+    server_query = ServerQuery()
+    server_query.where(
+        "equal_to",
+        "hypervisor_name",
+        value=hypervisor_name,
+    )
+    server_query.run(
+        cloud_account,
+        as_admin=True,
+        from_projects=from_projects if from_projects else None,
+        all_projects=not from_projects,
+    )
+
+    server_query.select("id", "name", "addresses")
+
+    if webhook:
+        to_webhook(webhook=webhook, payload=server_query.select_all().to_props())
+
+    server_query.append_from("PROJECT_QUERY", cloud_account, ["name"])
+
+    return server_query
+
 
 def find_servers_with_flavors(
     cloud_account: str,
