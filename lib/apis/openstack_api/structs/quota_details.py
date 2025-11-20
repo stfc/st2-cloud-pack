@@ -8,11 +8,11 @@ class QuotaDetails:
     project_identifier: str
     floating_ips: Optional[int] = None
     security_group_rules: Optional[int] = None
-    cores: Optional[int] = None
-    gigabytes: Optional[int] = None
+    cpu_cores: Optional[int] = None
+    cinder_storage: Optional[int] = None
+    ram: Optional[int] = None
     instances: Optional[int] = None
     backups: Optional[int] = None
-    ram: Optional[int] = None
     security_groups: Optional[int] = None
     snapshots: Optional[int] = None
     volumes: Optional[int] = None
@@ -22,7 +22,7 @@ class QuotaDetails:
         return {
             key: value
             for key, value in {
-                "cores": self.cores,
+                "cpu_cores": self.cpu_cores,
                 "ram": self.ram,
                 "instances": self.instances,
             }.items()
@@ -48,7 +48,7 @@ class QuotaDetails:
             for key, value in {
                 "volumes": self.volumes,
                 "snapshots": self.snapshots,
-                "gigabytes": self.gigabytes,
+                "cinder_storage": self.cinder_storage,
                 "backups": self.backups,
             }.items()
             if value is not None

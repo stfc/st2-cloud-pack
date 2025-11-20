@@ -15,11 +15,11 @@ def test_quota_set(mock_api_set_quota):
     mock_project_identifier = "project-id"
     mock_floating_ips = 1
     mock_security_group_rules = 1
-    mock_cores = 1
-    mock_gigabytes = 1
+    mock_cpu_cores = 1
+    mock_cinder_storage = 1
+    mock_ram = 1
     mock_instances = 1
     mock_backups = 1
-    mock_ram = 1
     mock_security_groups = 1
     mock_snapshots = 1
     mock_volumes = 1
@@ -29,11 +29,11 @@ def test_quota_set(mock_api_set_quota):
         mock_project_identifier,
         mock_floating_ips,
         mock_security_group_rules,
-        mock_cores,
-        mock_gigabytes,
+        mock_cpu_cores,
+        mock_cinder_storage,
+        mock_ram,
         mock_instances,
         mock_backups,
-        mock_ram,
         mock_security_groups,
         mock_snapshots,
         mock_volumes,
@@ -45,11 +45,11 @@ def test_quota_set(mock_api_set_quota):
             mock_project_identifier,
             mock_floating_ips,
             mock_security_group_rules,
-            mock_cores,
-            mock_gigabytes,
+            mock_cpu_cores,
+            mock_cinder_storage,
+            mock_ram,
             mock_instances,
             mock_backups,
-            mock_ram,
             mock_security_groups,
             mock_snapshots,
             mock_volumes,
