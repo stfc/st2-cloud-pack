@@ -14,11 +14,11 @@ def test_set_quota_project_missing():
         project_identifier="  ",
         floating_ips=1,
         security_group_rules=1,
-        cores=1,
-        gigabytes=1,
+        cpu_cores=1,
+        cinder_storage=1,
+        ram=1,
         instances=1,
         backups=1,
-        ram=1,
         security_groups=1,
         snapshots=1,
         volumes=1,
@@ -36,11 +36,11 @@ def test_set_quota_cores():
         project_identifier="foo",
         floating_ips=None,
         security_group_rules=None,
-        cores=1,
-        gigabytes=None,
+        cpu_cores=1,
+        cinder_storage=None,
+        ram=None,
         instances=None,
         backups=None,
-        ram=None,
         security_groups=None,
         snapshots=None,
         volumes=None,
@@ -49,7 +49,7 @@ def test_set_quota_cores():
     set_quota(mock_conn, mock_details)
     mock_conn.identity.find_project.assert_called_once_with("foo", ignore_missing=False)
     mock_conn.set_compute_quotas.assert_called_once_with(
-        mock_conn.identity.find_project.return_value.id, cores=1
+        mock_conn.identity.find_project.return_value.id, cpu_cores=1
     )
     mock_conn.set_network_quotas.assert_not_called()
     mock_conn.set_volume_quotas.assert_not_called()
@@ -63,11 +63,11 @@ def test_set_quota_security_group_rules():
         project_identifier="foo",
         floating_ips=None,
         security_group_rules=1,
-        cores=None,
-        gigabytes=None,
+        cpu_cores=None,
+        cinder_storage=None,
+        ram=None,
         instances=None,
         backups=None,
-        ram=None,
         security_groups=None,
         snapshots=None,
         volumes=None,
@@ -90,11 +90,11 @@ def test_set_quota_everything():
         project_identifier="foo",
         floating_ips=10,
         security_group_rules=20,
-        cores=8,
-        gigabytes=10,
+        cpu_cores=8,
+        cinder_storage=10,
+        ram=64,
         instances=10,
         backups=4,
-        ram=64,
         security_groups=10,
         snapshots=4,
         volumes=10,
@@ -103,7 +103,10 @@ def test_set_quota_everything():
     set_quota(mock_conn, mock_details)
     mock_conn.identity.find_project.assert_called_once_with("foo", ignore_missing=False)
     mock_conn.set_compute_quotas.assert_called_once_with(
-        mock_conn.identity.find_project.return_value.id, cores=8, instances=10, ram=64
+        mock_conn.identity.find_project.return_value.id,
+        cpu_cores=8,
+        instances=10,
+        ram=64,
     )
     mock_conn.set_network_quotas.assert_called_once_with(
         mock_conn.identity.find_project.return_value.id,
@@ -115,7 +118,7 @@ def test_set_quota_everything():
         mock_conn.identity.find_project.return_value.id,
         volumes=10,
         snapshots=4,
-        gigabytes=10,
+        cinder_storage=10,
         backups=4,
     )
 

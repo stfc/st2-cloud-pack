@@ -21,47 +21,47 @@ parameters:
       - "dev"
       - "prod"
   project_identifier:
-    description: Project (Name or ID)
+    description: Project (name or ID)
     required: true
     type: string
   floating_ips:
-    description: "The maximum amount of floating IPs a project can use. 0 means no change."
+    description: The maximum number of floating IPs a project can use. Left blank means no change
     required: false
     type: integer
   security_group_rules:
-    description: "The maximum amount of security group rules you can create. 0 means no change."
+    description: The maximum number of security group rules you can create. Left blank means no change
     required: false
     type: integer
-  cores:
-      description: New value for the cores quota. 0 means no change
-      required: false
-      type: integer
-  gigabytes:
-      description: New value for the gigabytes quota. 0 means no change
-      required: false
-      type: integer
-  instances:
-      description: New value for the instances quota. 0 means no change
-      required: false
-      type: integer
-  backups:
-      description: New value for the backups quota. 0 means no change
-      required: false
-      type: integer
+  cpu_cores:
+    description: New value for the CPU cores quota. Left blank means no change
+    required: false
+    type: integer
+  cinder_storage:
+    description: New value for the Cinder shared storage quota (in GB). Left blank means no change
+    required: false
+    type: integer
   ram:
-      description: New value for the ram quota (This is in MB). 0 means no change
-      required: false
-      type: integer
+    description: New value for the ram quota (in MB). Left blank means no change
+    required: false
+    type: integer
+  instances:
+    description: New value for the instances quota. Left blank means no change
+    required: false
+    type: integer
+  backups:
+    description: New value for the backups quota. Left blank means no change
+    required: false
+    type: integer
   security_groups:
-      description: New value for the security groups quota. 0 means no change
-      required: false
-      type: integer
+    description: New value for the security groups quota. Left blank means no change
+    required: false
+    type: integer
   snapshots:
-      description: New value for the snapshots quota. 0 means no change
-      required: false
-      type: integer
+    description: New value for the snapshots quota. Left blank means no change
+    required: false
+    type: integer
   volumes:
-      description: New value for the volumes quota. 0 means no change
-      required: false
-      type: integer
+    description: New value for the volumes quota. Left blank means no change
+    required: false
+    type: integer
 runner_type: python-script
