@@ -21,16 +21,16 @@ def quota_set(
     Set a project's quota
     :param conn: Openstack connection object
     :param project_identifier: Name or ID of the Openstack Project
-    :param floating_ips: The max number of floating IPs (or 0 to skip)
-    :param security_group_rules: The max number of rules (or 0 to skip)
-    :param cpu_cores: The max number of cores (or 0 to skip)
-    :param cinder_storage: The max amount of Cinder storage, in GB (or 0 to skip)
-    :param ram: The max amount of ram, in MB (or 0 to skip)
-    :param instances: The max number of instances (or 0 to skip)
-    :param backups: The max number of backups (or 0 to skip)
-    :param security_groups: The max number of security groups (or 0 to skip)
-    :param snapshots: The max number of snapshots (or 0 to skip)
-    :param volumes: The max number of volumes (or 0 to skip)
+    :param floating_ips: The max number of floating IPs (or blank to skip)
+    :param security_group_rules: The max number of rules (or blank to skip)
+    :param cpu_cores: The max number of cores (or blank to skip)
+    :param cinder_storage: The max amount of Cinder storage, in GB (or blank to skip)
+    :param ram: The max amount of ram, in MB (or blank to skip)
+    :param instances: The max number of instances (or blank to skip)
+    :param backups: The max number of backups (or blank to skip)
+    :param security_groups: The max number of security groups (or blank to skip)
+    :param snapshots: The max number of snapshots (or blank to skip)
+    :param volumes: The max number of volumes (or blank to skip)
     :return: status
     """
     openstack_quota.set_quota(
