@@ -146,7 +146,7 @@ def test_query_hypervisor_state_servers_missing_hv_key(
     server_instance.to_props.assert_called_once()
 
 
-@patch("workflows.send_down_disabled_hypervisors_email.HypervisorQuery")
+@patch("apis.openstack_query_api.hypervisor_queries.HypervisorQuery")
 def test_find_down_hypervisors_valid(mock_hypervisor_query):
     """
     Tests find_down_hypervisors() function
@@ -169,16 +169,13 @@ def test_find_down_hypervisors_valid(mock_hypervisor_query):
     assert res == mock_hypervisor_query_obj
 
 
-@patch("workflows.send_down_disabled_hypervisors_email.HypervisorQuery")
-def test_find_down_hypervisors_no_hypervisors_found(mock_hypervisor_query):
+@patch("apis.openstack_query_api.hypervisor_queries.HypervisorQuery")
+def test_find_down_hypervisors_no_hvs_found(mock_hypervisor_query):
     """
     Tests that find_down_hypervisors fails when provided
     """
     mock_hypervisor_query_obj = mock_hypervisor_query.return_value
-    mock_hypervisor_query_obj.to_props.return_value = None
-
-    with pytest.raises(RuntimeError):
-        find_down_hypervisors("test-cloud-account")
+    mock_hypervisor_query_obj.return_value = None
 
     mock_hypervisor_query_obj.run.assert_called_once_with(
         "test-cloud-account",
@@ -192,7 +189,7 @@ def test_find_down_hypervisors_no_hypervisors_found(mock_hypervisor_query):
     mock_hypervisor_query_obj.to_props.assert_called_once()
 
 
-@patch("workflows.send_down_disabled_hypervisors_email.HypervisorQuery")
+@patch("apis.openstack_query_api.hypervisor_queries.HypervisorQuery")
 def test_find_disabled_hypervisors_valid(mock_hypervisor_query):
     """
     Tests find_down_hypervisors() function
@@ -215,8 +212,8 @@ def test_find_disabled_hypervisors_valid(mock_hypervisor_query):
     assert res == mock_hypervisor_query_obj
 
 
-@patch("workflows.send_down_disabled_hypervisors_email.HypervisorQuery")
-def test_find_disabled_hypervisors_no_hypervisors_found(mock_hypervisor_query):
+@patch("apis.openstack_query_api.hypervisor_queries.HypervisorQuery")
+def test_find_disabled_hypervisors_no_hvs_found(mock_hypervisor_query):
     """
     Tests that find_disabled_hypervisors fails when provided
     """

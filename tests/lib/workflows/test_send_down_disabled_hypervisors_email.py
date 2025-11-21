@@ -278,3 +278,28 @@ def test_send_down_disabled_hypervisors_email_use_override(
             call().send_emails([mock_build_email_params.return_value]),
         ]
     )
+
+
+@patch("workflows.send_down_disabled_hypervisors_email.find_down_hypervisors")
+@patch("workflows.send_down_disabled_hypervisors_email.find_disabled_hypervisors")
+def test_send_down_disabled_hypervisors_no_hypervisors_found(
+    mock_find_disabled_hypervisors,
+    mock_find_down_hypervisors,
+):
+
+    cloud_account = NonCallableMock()
+    smtp_account = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+
+    mock_down_query = mock_find_down_hypervisors.return_value
+    mock_disabled_query = mock_find_disabled_hypervisors.return_value
+
+    with pytest.raises(RuntimeError):
+        send_down_disabled_hypervisors_email(
+            smtp_account=smtp_account,
+            cloud_account=cloud_account,
+            as_html=False,
+            send_email=False,
+            use_override=False,
+            **mock_kwargs,
+        )
