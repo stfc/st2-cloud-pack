@@ -62,3 +62,13 @@ def group_servers_by_user_id(server_query: QueryAPI):
     grouped_query = server_query.group_by("user_id")
 
     return grouped_query
+
+
+def group_servers_by_hypervisor_name(server_query: QueryAPI):
+    """
+    Group the servers in a server query by "hypervisor_name" and return the results
+    :param server_query: QueryAPI object containing the results of a server query
+    """
+    grouped_query = server_query.group_by("hypervisor_name")
+
+    return grouped_query

@@ -1,76 +1,25 @@
 from typing import Optional, Union
-from openstackquery import HypervisorQuery
 
 from apis.openstack_api.enums.cloud_domains import CloudDomains
 from apis.email_api.structs.email_params import EmailParams
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.email_api.emailer import Emailer
-
-
-def find_down_hypervisors(cloud_account: str):
-    """
-    :param cloud_account: string represents cloud account to use
-    """
-
-    hypervisor_query_down = HypervisorQuery()
-    hypervisor_query_down.where(
-        "any_in",
-        "hypervisor_state",
-        values=["down"],
-    )
-    hypervisor_query_down.run(
-        cloud_account,
-    )
-    hypervisor_query_down.select(
-        "hypervisor_id",
-        "hypervisor_name",
-        "hypervisor_state",
-        "hypervisor_status",
-    )
-
-    if not hypervisor_query_down.to_props():
-        raise RuntimeError("No hypervisors found in [DOWN] state")
-
-    return hypervisor_query_down
-
-
-def find_disabled_hypervisors(cloud_account: str):
-    """
-    :param cloud_account: string represents cloud account to use
-    """
-
-    hypervisor_query_disabled = HypervisorQuery()
-    hypervisor_query_disabled.where(
-        "any_in",
-        "hypervisor_status",
-        values=["disabled"],
-    )
-    hypervisor_query_disabled.run(
-        cloud_account,
-    )
-    hypervisor_query_disabled.select(
-        "hypervisor_id",
-        "hypervisor_name",
-        "hypervisor_state",
-        "hypervisor_status",
-    )
-
-    if not hypervisor_query_disabled.to_props():
-        raise RuntimeError("No hypervisors found with [DISABLED] status")
-
-    return hypervisor_query_disabled
+from apis.openstack_query_api.hypervisor_queries import (
+    find_down_hypervisors,
+    find_disabled_hypervisors,
+)
 
 
 def print_email_params(
     email_addr: str, as_html: bool, down_table: str, disabled_table: str
 ):
     """
-    Print email params instead of sending the email
-    :param email_addr: email address to send to
-    :param as_html: A boolean which if selected will send an email, otherwise prints email details only
-    :param down_table: a table representing info found in openstack about HVs in down state
-    :param disabled_table: a table representing info found in openstack about HVs in disabled status
+    Print email params instead of sending the email.
+    :param email_addr: The email address to send to
+    :param as_html: A boolean which, if True, will send an email - otherwise, prints email details only
+    :param down_table: A table representing info found in OpenStack about HVs in down state
+    :param disabled_table: A table representing info found in OpenStack about HVs in disabled status
     """
     print(
         f"Send Email To: {email_addr}\n"
@@ -82,10 +31,10 @@ def print_email_params(
 
 def build_email_params(down_table: str, disabled_table: str, **email_kwargs):
     """
-    build email params dataclass which will be used to configure how to send the email
-    :param down_table: a table representing info found in openstack about HVs in down state
-    :param disabled_table: a table representing info found in openstack about HVs in disabled status
-    :param email_kwargs: a set of email kwargs to pass to EmailParams
+    Build email params dataclass which will be used to configure how to send the email.
+    :param down_table: A table representing info found in OpenStack about HVs in down state
+    :param disabled_table: A table representing info found in OpenStack about HVs in disabled status
+    :param email_kwargs: A set of email kwargs to pass to EmailParams
     """
     body = EmailTemplateDetails(
         template_name="hypervisor_down_disabled",
@@ -113,20 +62,25 @@ def send_down_disabled_hypervisors_email(
     **email_params_kwargs,
 ):
     """
-    Sends an email that shows the hypervisors in down state or have disabled status
-    This email will contain 2 tables that show down state and disabled status
+    Sends an email that shows the hypervisors in down state or have disabled status.
+    This email will contain 2 tables, showing down state and disabled status.
     :param smtp_account: (SMTPAccount): SMTP config
-    :param cloud_account: string represents cloud account to use
-    :param send_email: Actually send the email instead of printing what will be sent
-    :param as_html: Send email as html
-    :param use_override: flag if set will use override email address
-    :param override_email_address: an overriding email address to use if override_email set
-    :param cc_cloud_support: flag if set will cc cloud-support email address to each generated email
-    :param email_params_kwargs: see EmailParams dataclass class docstring
+    :param cloud_account: A string representing the cloud account to use
+    :param send_email: A boolean which, if True, will send the email instead of printing what will be sent
+    :param as_html: A boolean which, if True, will send the email as html
+    :param use_override: A boolean which, if True, will use the override email address
+    :param override_email_address: A string representing the overriding email address to use if override_email is True
+    :param cc_cloud_support: A boolean which, if True, will cc the cloud-support email address to each generated email
+    :param email_params_kwargs: See EmailParams dataclass class docstring
     """
 
     hypervisor_query_down = find_down_hypervisors(cloud_account)
+    if not hypervisor_query_down.to_props():
+        raise RuntimeError("No hypervisors found in [DOWN] state")
+
     hypervisor_query_disabled = find_disabled_hypervisors(cloud_account)
+    if not hypervisor_query_disabled.to_props():
+        raise RuntimeError("No hypervisors found with [DISABLED] status")
 
     send_to = ["ops-team"]
     if use_override:

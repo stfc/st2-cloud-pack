@@ -4,6 +4,7 @@ import pytest
 from apis.openstack_query_api.server_queries import (
     find_servers_with_image,
     group_servers_by_user_id,
+    group_servers_by_hypervisor_name,
 )
 
 
