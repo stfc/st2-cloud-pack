@@ -1,5 +1,4 @@
 from unittest.mock import MagicMock, patch
-import pytest
 
 from apis.openstack_query_api.hypervisor_queries import (
     query_hypervisor_state,
@@ -157,32 +156,8 @@ def test_find_down_hypervisors_valid(mock_hypervisor_query):
         "hypervisor_state",
         "hypervisor_status",
     )
-    mock_hypervisor_query_obj.to_props.assert_called_once()
 
     assert res == mock_hypervisor_query_obj
-
-
-@patch("apis.openstack_query_api.hypervisor_queries.HypervisorQuery")
-def test_find_down_hypervisors_no_hypervisors_found(mock_hypervisor_query):
-    """
-    Tests that find_down_hypervisors fails when provided
-    """
-    mock_hypervisor_query_obj = mock_hypervisor_query.return_value
-    mock_hypervisor_query_obj.to_props.return_value = None
-
-    with pytest.raises(RuntimeError):
-        find_down_hypervisors("test-cloud-account")
-
-    mock_hypervisor_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-    )
-    mock_hypervisor_query_obj.select.assert_called_once_with(
-        "hypervisor_id",
-        "hypervisor_name",
-        "hypervisor_state",
-        "hypervisor_status",
-    )
-    mock_hypervisor_query_obj.to_props.assert_called_once()
 
 
 @patch("apis.openstack_query_api.hypervisor_queries.HypervisorQuery")
@@ -203,29 +178,5 @@ def test_find_disabled_hypervisors_valid(mock_hypervisor_query):
         "hypervisor_state",
         "hypervisor_status",
     )
-    mock_hypervisor_query_obj.to_props.assert_called_once()
 
     assert res == mock_hypervisor_query_obj
-
-
-@patch("apis.openstack_query_api.hypervisor_queries.HypervisorQuery")
-def test_find_disabled_hypervisors_no_hypervisors_found(mock_hypervisor_query):
-    """
-    Tests that find_disabled_hypervisors fails when provided
-    """
-    mock_hypervisor_query_obj = mock_hypervisor_query.return_value
-    mock_hypervisor_query_obj.to_props.return_value = None
-
-    with pytest.raises(RuntimeError):
-        find_disabled_hypervisors("test-cloud-account")
-
-    mock_hypervisor_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-    )
-    mock_hypervisor_query_obj.select.assert_called_once_with(
-        "hypervisor_id",
-        "hypervisor_name",
-        "hypervisor_state",
-        "hypervisor_status",
-    )
-    mock_hypervisor_query_obj.to_props.assert_called_once()

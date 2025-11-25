@@ -76,7 +76,14 @@ def send_down_disabled_hypervisors_email(
     """
 
     hypervisor_query_down = find_down_hypervisors(cloud_account)
+
+    if not hypervisor_query_down.to_props():
+        raise RuntimeError("No hypervisors found in [DOWN] state")
+
     hypervisor_query_disabled = find_disabled_hypervisors(cloud_account)
+
+    if not hypervisor_query_disabled.to_props():
+        raise RuntimeError("No hypervisors found with [DISABLED] status")
 
     send_to = ["ops-team"]
     if use_override:
