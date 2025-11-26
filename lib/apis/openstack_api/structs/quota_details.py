@@ -22,7 +22,7 @@ class QuotaDetails:
         return {
             key: value
             for key, value in {
-                "cpu_cores": self.cpu_cores,
+                "cores": self.cpu_cores,
                 "ram": self.ram,
                 "instances": self.instances,
             }.items()

@@ -49,7 +49,7 @@ def test_set_quota_cores():
     set_quota(mock_conn, mock_details)
     mock_conn.identity.find_project.assert_called_once_with("foo", ignore_missing=False)
     mock_conn.set_compute_quotas.assert_called_once_with(
-        mock_conn.identity.find_project.return_value.id, cpu_cores=1
+        mock_conn.identity.find_project.return_value.id, cores=1
     )
     mock_conn.set_network_quotas.assert_not_called()
     mock_conn.set_volume_quotas.assert_not_called()
@@ -104,7 +104,7 @@ def test_set_quota_everything():
     mock_conn.identity.find_project.assert_called_once_with("foo", ignore_missing=False)
     mock_conn.set_compute_quotas.assert_called_once_with(
         mock_conn.identity.find_project.return_value.id,
-        cpu_cores=8,
+        cores=8,
         instances=10,
         ram=64,
     )
