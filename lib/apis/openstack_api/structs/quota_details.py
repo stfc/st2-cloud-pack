@@ -22,7 +22,7 @@ class QuotaDetails:
         return {
             key: value
             for key, value in {
-                "cpu_cores": self.cpu_cores,
+                "cores": self.cpu_cores,
                 "ram": self.ram,
                 "instances": self.instances,
             }.items()
@@ -48,7 +48,7 @@ class QuotaDetails:
             for key, value in {
                 "volumes": self.volumes,
                 "snapshots": self.snapshots,
-                "cinder_storage": self.cinder_storage,
+                "gigabytes": self.cinder_storage,
                 "backups": self.backups,
             }.items()
             if value is not None
