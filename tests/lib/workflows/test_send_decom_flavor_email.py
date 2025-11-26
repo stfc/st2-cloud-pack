@@ -3,8 +3,6 @@ from unittest.mock import NonCallableMock, call, patch
 import pytest
 from workflows.send_decom_flavor_email import (
     build_email_params,
-    find_servers_with_decom_flavors,
-    find_user_info,
     get_affected_flavors_html,
     get_affected_flavors_plaintext,
     print_email_params,
@@ -113,196 +111,40 @@ def test_validate_flavor_input_valid_projects():
         pytest.fail(f"validate_flavor_input raised an unexpected error: {e}")
 
 
-# pylint:disable=too-many-locals
-@patch("workflows.send_decom_flavor_email.UserQuery")
-def test_find_user_info_valid(mock_user_query):
-    """
-    Tests find_user_info where query is given a valid user id
-    """
-    mock_user_id = NonCallableMock()
-    mock_cloud_account = NonCallableMock()
-    mock_override_email = NonCallableMock()
-    mock_user_query.return_value.to_props.return_value = {
-        "user_name": ["foo"],
-        "user_email": ["foo@example.com"],
-    }
-    res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
-    mock_user_query.assert_called_once()
-    mock_user_query.return_value.select.assert_called_once_with(
-        "user_name", "user_email"
-    )
-    mock_user_query.return_value.where.assert_called_once_with(
-        "equal_to", "user_id", value=mock_user_id
-    )
-    mock_user_query.return_value.run.assert_called_once_with(
-        cloud_account=mock_cloud_account
-    )
-    mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
+@patch("workflows.send_decom_flavor_email.validate_flavor_input")
+@patch("workflows.send_decom_flavor_email.find_servers_with_flavors")
+def test_find_users_with_decom_flavor_no_servers_found(
+    mock_find_servers_with_flavors,
+    mock_validate_flavor_input,
+):
+    """Tests that send_decom_flavor_email raises error if no servers are found using the listed flavors"""
+    smtp_account = ""
+    cloud_account = ""
+    flavor_name_list = []
+    flavor_eol_list = []
+    all_projects = False
+    limit_by_projects = ["proj1", "proj2"]
 
-    assert res[0] == "foo"
-    assert res[1] == "foo@example.com"
-
-
-@patch("workflows.send_decom_flavor_email.UserQuery")
-def test_find_user_info_invalid(mock_user_query):
-    """
-    Tests find_user_info where query is given a invalid user id
-    """
-    mock_user_id = NonCallableMock()
-    mock_cloud_account = NonCallableMock()
-    mock_override_email = NonCallableMock()
-    mock_user_query.return_value.to_props.return_value = []
-    res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
-    mock_user_query.assert_called_once()
-    mock_user_query.return_value.select.assert_called_once_with(
-        "user_name", "user_email"
-    )
-    mock_user_query.return_value.where.assert_called_once_with(
-        "equal_to", "user_id", value=mock_user_id
-    )
-    mock_user_query.return_value.run.assert_called_once_with(
-        cloud_account=mock_cloud_account
-    )
-    mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
-
-    assert res[0] == ""
-    assert res[1] == mock_override_email
-
-
-@patch("workflows.send_decom_flavor_email.UserQuery")
-def test_find_user_info_no_email_address(mock_user_query):
-    """
-    Tests find_user_info where query result contains no email address
-    """
-    mock_user_id = NonCallableMock()
-    mock_cloud_account = NonCallableMock()
-    mock_override_email = NonCallableMock()
-    mock_user_query.return_value.to_props.return_value = {
-        "user_id": ["foo"],
-        "user_email": [None],
-    }
-    res = find_user_info(mock_user_id, mock_cloud_account, mock_override_email)
-    mock_user_query.assert_called_once()
-    mock_user_query.return_value.select.assert_called_once_with(
-        "user_name", "user_email"
-    )
-    mock_user_query.return_value.where.assert_called_once_with(
-        "equal_to", "user_id", value=mock_user_id
-    )
-    mock_user_query.return_value.run.assert_called_once_with(
-        cloud_account=mock_cloud_account
-    )
-    mock_user_query.return_value.to_props.assert_called_once_with(flatten=True)
-
-    assert res[0] == ""
-    assert res[1] == mock_override_email
-
-
-@patch("workflows.send_decom_flavor_email.FlavorQuery")
-def test_find_users_with_decom_flavor_valid(mock_flavor_query):
-    """
-    Tests find_servers_with_decom_flavors() function
-    should run a complex FlavorQuery query - chaining into servers, then users and return final query
-    """
-    mock_flavor_query_obj = mock_flavor_query.return_value
-    mock_server_query_obj = mock_flavor_query_obj.then.return_value
-
-    res = find_servers_with_decom_flavors(
-        "test-cloud-account", ["flavor1", "flavor2"], ["project1", "project2"]
-    )
-
-    mock_flavor_query.assert_called_once()
-    mock_flavor_query_obj.where.assert_any_call(
-        "any_in",
-        "flavor_name",
-        values=["flavor1", "flavor2"],
-    )
-    mock_flavor_query_obj.run.assert_called_once_with("test-cloud-account")
-    mock_flavor_query_obj.sort_by.assert_called_once_with(("flavor_id", "asc"))
-    mock_flavor_query_obj.to_props.assert_called_once()
-
-    mock_flavor_query_obj.then.assert_called_once_with(
-        "SERVER_QUERY", keep_previous_results=True
-    )
-    mock_server_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-        as_admin=True,
-        from_projects=["project1", "project2"],
-        all_projects=False,
-    )
-    mock_server_query_obj.select.assert_called_once_with(
-        "server_id",
-        "server_name",
-        "addresses",
-    )
-    mock_server_query_obj.to_props.assert_called_once()
-
-    mock_server_query_obj.append_from.assert_called_once_with(
-        "PROJECT_QUERY", "test-cloud-account", ["project_name"]
-    )
-
-    mock_server_query_obj.group_by.assert_called_once_with("user_id")
-    assert res == mock_server_query_obj
-
-
-@patch("workflows.send_decom_flavor_email.FlavorQuery")
-def test_find_users_with_decom_flavor_invalid_flavor(mock_flavor_query):
-    """
-    Tests that find_user_with_decom_flavors fails when provided invalid flavor name
-    """
-    mock_flavor_query_obj = mock_flavor_query.return_value
-    mock_flavor_query_obj.to_props.return_value = None
+    mock_query = mock_find_servers_with_flavors.return_value
+    mock_query.to_props.return_value = {}
 
     with pytest.raises(RuntimeError):
-        find_servers_with_decom_flavors("test-cloud-account", ["invalid-flavor"])
-
-    mock_flavor_query.assert_called_once()
-    mock_flavor_query_obj.where.assert_any_call(
-        "any_in",
-        "flavor_name",
-        values=["invalid-flavor"],
-    )
-    mock_flavor_query_obj.run.assert_called_once_with("test-cloud-account")
-    mock_flavor_query_obj.sort_by.assert_called_once_with(("flavor_id", "asc"))
-    mock_flavor_query_obj.to_props.assert_called_once()
-
-
-@patch("workflows.send_decom_flavor_email.FlavorQuery")
-def test_find_users_with_decom_flavor_no_servers_found(mock_flavor_query):
-    """
-    Tests that find_user_with_decom_flavors fails when no servers found with given flavors
-    """
-    mock_flavor_query_obj = mock_flavor_query.return_value
-    mock_server_query_obj = mock_flavor_query_obj.then.return_value
-    mock_server_query_obj.to_props.return_value = None
-
-    with pytest.raises(RuntimeError):
-        find_servers_with_decom_flavors(
-            "test-cloud-account", ["flavor1", "flavor2"], ["project1", "project2"]
+        send_decom_flavor_email(
+            smtp_account=smtp_account,
+            cloud_account=cloud_account,
+            flavor_name_list=flavor_name_list,
+            flavor_eol_list=flavor_eol_list,
+            all_projects=all_projects,
+            limit_by_projects=limit_by_projects,
         )
 
-    mock_flavor_query.assert_called_once()
-    mock_flavor_query_obj.where.assert_any_call(
-        "any_in",
-        "flavor_name",
-        values=["flavor1", "flavor2"],
+    mock_validate_flavor_input.assert_called_once_with(
+        flavor_name_list, flavor_eol_list, limit_by_projects, all_projects
     )
-    mock_flavor_query_obj.run.assert_called_once_with("test-cloud-account")
-    mock_flavor_query_obj.sort_by.assert_called_once_with(("flavor_id", "asc"))
-    mock_flavor_query_obj.to_props.assert_called_once()
-
-    mock_server_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-        as_admin=True,
-        from_projects=["project1", "project2"],
-        all_projects=False,
+    mock_validate_flavor_input.assert_called_once_with(
+        flavor_name_list, flavor_eol_list, limit_by_projects, all_projects
     )
-    mock_server_query_obj.select.assert_called_once_with(
-        "server_id",
-        "server_name",
-        "addresses",
-    )
-    mock_server_query_obj.to_props.assert_called_once()
+    mock_query.to_props.assert_called_once()
 
 
 def test_print_email_params():
@@ -366,9 +208,11 @@ def test_build_params(mock_email_params, mock_email_template_details):
     assert res == mock_email_params.return_value
 
 
+# pylint: disable=too-many-locals
 # pylint:disable=too-many-arguments
 @patch("workflows.send_decom_flavor_email.validate_flavor_input")
-@patch("workflows.send_decom_flavor_email.find_servers_with_decom_flavors")
+@patch("workflows.send_decom_flavor_email.find_servers_with_flavors")
+@patch("workflows.send_decom_flavor_email.group_servers_by_user_id")
 @patch("workflows.send_decom_flavor_email.find_user_info")
 @patch("workflows.send_decom_flavor_email.get_affected_flavors_plaintext")
 @patch("workflows.send_decom_flavor_email.build_email_params")
@@ -378,6 +222,7 @@ def test_send_decom_flavor_email_send_plaintext(
     mock_build_email_params,
     mock_get_affected_flavors_plaintext,
     mock_find_user_info,
+    mock_group_servers_by_user_id,
     mock_find_servers,
     mock_validate_flavor_input,
 ):
@@ -393,9 +238,14 @@ def test_send_decom_flavor_email_send_plaintext(
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     mock_query = mock_find_servers.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -424,6 +274,8 @@ def test_send_decom_flavor_email_send_plaintext(
         cloud_account, flavor_name_list, limit_by_projects
     )
     mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -436,7 +288,7 @@ def test_send_decom_flavor_email_send_plaintext(
             call(
                 "user1",
                 mock_get_affected_flavors_plaintext.return_value,
-                mock_query.to_string.return_value,
+                mock_grouped_query.to_string.return_value,
                 email_to=["user_email1"],
                 as_html=False,
                 email_cc=None,
@@ -445,7 +297,7 @@ def test_send_decom_flavor_email_send_plaintext(
             call(
                 "user2",
                 mock_get_affected_flavors_plaintext.return_value,
-                mock_query.to_string.return_value,
+                mock_grouped_query.to_string.return_value,
                 email_to=["user_email2"],
                 as_html=False,
                 email_cc=None,
@@ -454,7 +306,7 @@ def test_send_decom_flavor_email_send_plaintext(
         ]
     )
 
-    mock_query.to_string.assert_has_calls(
+    mock_grouped_query.to_string.assert_has_calls(
         [
             call(groups=["user_id1"]),
             call(groups=["user_id2"]),
@@ -471,9 +323,11 @@ def test_send_decom_flavor_email_send_plaintext(
     )
 
 
+# pylint: disable=too-many-locals
 # pylint:disable=too-many-arguments
 @patch("workflows.send_decom_flavor_email.validate_flavor_input")
-@patch("workflows.send_decom_flavor_email.find_servers_with_decom_flavors")
+@patch("workflows.send_decom_flavor_email.find_servers_with_flavors")
+@patch("workflows.send_decom_flavor_email.group_servers_by_user_id")
 @patch("workflows.send_decom_flavor_email.find_user_info")
 @patch("workflows.send_decom_flavor_email.get_affected_flavors_html")
 @patch("workflows.send_decom_flavor_email.build_email_params")
@@ -483,6 +337,7 @@ def test_send_decom_flavor_email_send_html(
     mock_build_email_params,
     mock_get_affected_flavors_html,
     mock_find_user_info,
+    mock_group_servers_by_user_id,
     mock_find_servers,
     mock_validate_flavor_input,
 ):
@@ -499,9 +354,14 @@ def test_send_decom_flavor_email_send_html(
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     mock_query = mock_find_servers.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -530,6 +390,8 @@ def test_send_decom_flavor_email_send_html(
         cloud_account, flavor_name_list, limit_by_projects
     )
     mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -542,7 +404,7 @@ def test_send_decom_flavor_email_send_html(
             call(
                 "user1",
                 mock_get_affected_flavors_html.return_value,
-                mock_query.to_html.return_value,
+                mock_grouped_query.to_html.return_value,
                 email_to=["user_email1"],
                 as_html=True,
                 email_cc=None,
@@ -551,7 +413,7 @@ def test_send_decom_flavor_email_send_html(
             call(
                 "user2",
                 mock_get_affected_flavors_html.return_value,
-                mock_query.to_html.return_value,
+                mock_grouped_query.to_html.return_value,
                 email_to=["user_email2"],
                 as_html=True,
                 email_cc=None,
@@ -560,7 +422,7 @@ def test_send_decom_flavor_email_send_html(
         ]
     )
 
-    mock_query.to_html.assert_has_calls(
+    mock_grouped_query.to_html.assert_has_calls(
         [
             call(groups=["user_id1"]),
             call(groups=["user_id2"]),
@@ -578,7 +440,8 @@ def test_send_decom_flavor_email_send_html(
 
 
 @patch("workflows.send_decom_flavor_email.validate_flavor_input")
-@patch("workflows.send_decom_flavor_email.find_servers_with_decom_flavors")
+@patch("workflows.send_decom_flavor_email.find_servers_with_flavors")
+@patch("workflows.send_decom_flavor_email.group_servers_by_user_id")
 @patch("workflows.send_decom_flavor_email.find_user_info")
 @patch("workflows.send_decom_flavor_email.get_affected_flavors_plaintext")
 @patch("workflows.send_decom_flavor_email.print_email_params")
@@ -586,6 +449,7 @@ def test_send_decom_flavor_email_print(
     mock_print_email_params,
     mock_get_affected_flavors_plaintext,
     mock_find_user_info,
+    mock_group_servers_by_user_id,
     mock_find_servers,
     mock_validate_flavor_input,
 ):
@@ -602,9 +466,14 @@ def test_send_decom_flavor_email_print(
     mock_kwargs = {"arg1": "val1", "arg2": "val2"}
 
     mock_query = mock_find_servers.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
 
     # doesn't matter what the values are here since we're just getting the keys
     mock_query.to_props.return_value = {
+        "user_id1": [],
+        "user_id2": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
         "user_id2": [],
     }
@@ -633,6 +502,8 @@ def test_send_decom_flavor_email_print(
         cloud_account, flavor_name_list, limit_by_projects
     )
     mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_has_calls(
         [
             call("user_id1", cloud_account, "cloud-support@stfc.ac.uk"),
@@ -647,21 +518,23 @@ def test_send_decom_flavor_email_print(
                 "user1",
                 False,
                 mock_get_affected_flavors_plaintext.return_value,
-                mock_query.to_string.return_value,
+                mock_grouped_query.to_string.return_value,
             ),
             call(
                 "user_email2",
                 "user2",
                 False,
                 mock_get_affected_flavors_plaintext.return_value,
-                mock_query.to_string.return_value,
+                mock_grouped_query.to_string.return_value,
             ),
         ]
     )
 
 
+# pylint: disable=too-many-locals
 @patch("workflows.send_decom_flavor_email.validate_flavor_input")
-@patch("workflows.send_decom_flavor_email.find_servers_with_decom_flavors")
+@patch("workflows.send_decom_flavor_email.find_servers_with_flavors")
+@patch("workflows.send_decom_flavor_email.group_servers_by_user_id")
 @patch("workflows.send_decom_flavor_email.find_user_info")
 @patch("workflows.send_decom_flavor_email.get_affected_flavors_plaintext")
 @patch("workflows.send_decom_flavor_email.build_email_params")
@@ -671,6 +544,7 @@ def test_send_decom_flavor_email_use_override(
     mock_build_email_params,
     mock_get_affected_flavors_plaintext,
     mock_find_user_info,
+    mock_group_servers_by_user_id,
     mock_find_servers,
     mock_validate_flavor_input,
 ):
@@ -687,7 +561,11 @@ def test_send_decom_flavor_email_use_override(
     override_email = "test-override@stfc.ac.uk"
 
     mock_query = mock_find_servers.return_value
+    mock_grouped_query = mock_group_servers_by_user_id.return_value
     mock_query.to_props.return_value = {
+        "user_id1": [],
+    }
+    mock_grouped_query.to_props.return_value = {
         "user_id1": [],
     }
     mock_find_user_info.return_value = ("user1", "user1@example.com")
@@ -713,6 +591,8 @@ def test_send_decom_flavor_email_use_override(
         cloud_account, flavor_name_list, limit_by_projects
     )
     mock_query.to_props.assert_called_once()
+    mock_group_servers_by_user_id.assert_called_once_with(mock_query)
+    mock_grouped_query.to_props.assert_called_once()
     mock_find_user_info.assert_called_once_with(
         "user_id1", cloud_account, override_email
     )
@@ -720,7 +600,7 @@ def test_send_decom_flavor_email_use_override(
     mock_build_email_params.assert_called_once_with(
         "user1",
         mock_get_affected_flavors_plaintext.return_value,
-        mock_query.to_string.return_value,
+        mock_grouped_query.to_string.return_value,
         email_to=[override_email],
         as_html=False,
         email_cc=None,
