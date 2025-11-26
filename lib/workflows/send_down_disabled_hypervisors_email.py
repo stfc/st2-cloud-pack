@@ -1,5 +1,4 @@
 from typing import Optional, Union
-from openstackquery import HypervisorQuery
 
 from apis.openstack_api.enums.cloud_domains import CloudDomains
 from apis.email_api.structs.email_params import EmailParams
@@ -7,59 +6,10 @@ from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.email_api.emailer import Emailer
 
-
-def find_down_hypervisors(cloud_account: str):
-    """
-    :param cloud_account: string represents cloud account to use
-    """
-
-    hypervisor_query_down = HypervisorQuery()
-    hypervisor_query_down.where(
-        "any_in",
-        "hypervisor_state",
-        values=["down"],
-    )
-    hypervisor_query_down.run(
-        cloud_account,
-    )
-    hypervisor_query_down.select(
-        "hypervisor_id",
-        "hypervisor_name",
-        "hypervisor_state",
-        "hypervisor_status",
-    )
-
-    if not hypervisor_query_down.to_props():
-        raise RuntimeError("No hypervisors found in [DOWN] state")
-
-    return hypervisor_query_down
-
-
-def find_disabled_hypervisors(cloud_account: str):
-    """
-    :param cloud_account: string represents cloud account to use
-    """
-
-    hypervisor_query_disabled = HypervisorQuery()
-    hypervisor_query_disabled.where(
-        "any_in",
-        "hypervisor_status",
-        values=["disabled"],
-    )
-    hypervisor_query_disabled.run(
-        cloud_account,
-    )
-    hypervisor_query_disabled.select(
-        "hypervisor_id",
-        "hypervisor_name",
-        "hypervisor_state",
-        "hypervisor_status",
-    )
-
-    if not hypervisor_query_disabled.to_props():
-        raise RuntimeError("No hypervisors found with [DISABLED] status")
-
-    return hypervisor_query_disabled
+from apis.openstack_query_api.hypervisor_queries import (
+    find_down_hypervisors,
+    find_disabled_hypervisors,
+)
 
 
 def print_email_params(
@@ -126,7 +76,14 @@ def send_down_disabled_hypervisors_email(
     """
 
     hypervisor_query_down = find_down_hypervisors(cloud_account)
+
+    if not hypervisor_query_down.to_props():
+        raise RuntimeError("No hypervisors found in [DOWN] state")
+
     hypervisor_query_disabled = find_disabled_hypervisors(cloud_account)
+
+    if not hypervisor_query_disabled.to_props():
+        raise RuntimeError("No hypervisors found with [DISABLED] status")
 
     send_to = ["ops-team"]
     if use_override:

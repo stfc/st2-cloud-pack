@@ -1,6 +1,10 @@
 from unittest.mock import MagicMock, patch
 
-from apis.openstack_query_api.hypervisor_queries import query_hypervisor_state
+from apis.openstack_query_api.hypervisor_queries import (
+    query_hypervisor_state,
+    find_disabled_hypervisors,
+    find_down_hypervisors,
+)
 
 
 @patch("apis.openstack_query_api.hypervisor_queries.ServerQuery")
@@ -132,3 +136,47 @@ def test_servers_missing_hypervisor_key(mock_hv_query_cls, mock_server_query_cls
 
     hv_instance.to_props.assert_called_once()
     server_instance.to_props.assert_called_once()
+
+
+@patch("apis.openstack_query_api.hypervisor_queries.HypervisorQuery")
+def test_find_down_hypervisors_valid(mock_hypervisor_query):
+    """
+    Tests find_down_hypervisors() function
+    """
+    mock_hypervisor_query_obj = mock_hypervisor_query.return_value
+
+    res = find_down_hypervisors("test-cloud-account")
+
+    mock_hypervisor_query_obj.run.assert_called_once_with(
+        "test-cloud-account",
+    )
+    mock_hypervisor_query_obj.select.assert_called_once_with(
+        "hypervisor_id",
+        "hypervisor_name",
+        "hypervisor_state",
+        "hypervisor_status",
+    )
+
+    assert res == mock_hypervisor_query_obj
+
+
+@patch("apis.openstack_query_api.hypervisor_queries.HypervisorQuery")
+def test_find_disabled_hypervisors_valid(mock_hypervisor_query):
+    """
+    Tests find_down_hypervisors() function
+    """
+    mock_hypervisor_query_obj = mock_hypervisor_query.return_value
+
+    res = find_disabled_hypervisors("test-cloud-account")
+
+    mock_hypervisor_query_obj.run.assert_called_once_with(
+        "test-cloud-account",
+    )
+    mock_hypervisor_query_obj.select.assert_called_once_with(
+        "hypervisor_id",
+        "hypervisor_name",
+        "hypervisor_state",
+        "hypervisor_status",
+    )
+
+    assert res == mock_hypervisor_query_obj
