@@ -118,7 +118,7 @@ def test_set_quota_everything():
         mock_conn.identity.find_project.return_value.id,
         volumes=10,
         snapshots=4,
-        cinder_storage=10,
+        gigabytes=10,
         backups=4,
     )
 

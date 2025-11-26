@@ -48,7 +48,7 @@ class QuotaDetails:
             for key, value in {
                 "volumes": self.volumes,
                 "snapshots": self.snapshots,
-                "cinder_storage": self.cinder_storage,
+                "gigabytes": self.cinder_storage,
                 "backups": self.backups,
             }.items()
             if value is not None
