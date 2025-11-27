@@ -83,7 +83,6 @@ actions like Orquesta but allows us to add unittests
 A set of Actions/Workflows that need to be implemented. These would be good-first issues!
 Many of them currently there are waiting to be re-implemented using the Query Library and workflows
 
-
 # Development Setup Instructions
 
 This repository uses automated testing using GitHub actions.
@@ -120,3 +119,37 @@ For actions the architecture looks something like:
 
 This makes it trivial to inject mocks and tests into files contained within `lib`,
 and allows us to re-use various API calls and functionality.
+
+# CI/CD & Testing
+
+we have several CI/CD jobs mostly on unittests and maintaining code styling and formatting. 
+We run the following tools: 
+- [black](https://github.com/psf/black) - for maintaining code formatting
+- [pylint](https://pypi.org/project/pylint/) - static code analyzer
+- [pytest](https://docs.pytest.org/en/stable/) - unittest framework 
+- [coverage](https://coverage.readthedocs.io/en/7.12.0/) - to measure code coverage
+- [codeql](https://codeql.github.com/) - static code analyzer for detecting vulnerabilities
+
+## How test CI/CD works
+
+We rely on upstream [stackstorm](https://github.com/stackstorm/st2) branch. 
+Currently we're using a dev `v3.9` branch. 
+
+To run the tests, we have to install stackstorm. 
+We use the `./run_tests.sh` script to setup stackstorm and run all the tests.
+
+## What to do if the CI/CD fails? 
+
+CI/CD can fail for a number of reasons. Most commonly:
+
+1. Tests fail - have a look at why the tests failed. 
+You should run `run_tests.sh` locally to make sure the error isn't related to the CI/CD process  
+2. Coverage fails 
+If you're adding new functionality, make sure to add unittests to cover all the new code.
+If you're removing functionality, this might be a false positive, which you can ignore
+It is up to the Code owners discretion whether this failure matters
+
+3. Dependencies can't be installed
+Usually this is because of an upstream change. Since we're using a dev branch, this is more likely
+Unfortunately there's no quick solution here, if upstream stackstorm releases a stable branch, you'll have
+to switch to that by editing the envrionment variable `ST2_VERSION` in `run_tests.sh`
