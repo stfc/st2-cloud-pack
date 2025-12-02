@@ -1,105 +1,70 @@
 from unittest.mock import patch, call, NonCallableMock
-import pytest
 
+import pytest
 from workflows.send_down_disabled_hypervisors_email import (
-    find_disabled_hypervisors,
-    find_down_hypervisors,
     print_email_params,
     build_email_params,
     send_down_disabled_hypervisors_email,
 )
 
 
-@patch("workflows.send_down_disabled_hypervisors_email.HypervisorQuery")
-def test_find_down_hypervisors_valid(mock_hypervisor_query):
-    """
-    Tests find_down_hypervisors() function
-    """
-    mock_hypervisor_query_obj = mock_hypervisor_query.return_value
-
-    res = find_down_hypervisors("test-cloud-account")
-
-    mock_hypervisor_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-    )
-    mock_hypervisor_query_obj.select.assert_called_once_with(
-        "hypervisor_id",
-        "hypervisor_name",
-        "hypervisor_state",
-        "hypervisor_status",
-    )
-    mock_hypervisor_query_obj.to_props.assert_called_once()
-
-    assert res == mock_hypervisor_query_obj
-
-
-@patch("workflows.send_down_disabled_hypervisors_email.HypervisorQuery")
-def test_find_down_hypervisors_no_hypervisors_found(mock_hypervisor_query):
+@patch("workflows.send_down_disabled_hypervisors_email.find_down_hypervisors")
+def test_send_down_disabled_hypervisors_no_hypervisors_found(
+    mock_find_down_hypervisors,
+):
     """
     Tests that find_down_hypervisors fails when provided
     """
-    mock_hypervisor_query_obj = mock_hypervisor_query.return_value
-    mock_hypervisor_query_obj.to_props.return_value = None
+    smtp_account = NonCallableMock()
+    cloud_account = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+
+    mock_down_query = mock_find_down_hypervisors.return_value
+    mock_down_query.to_props.return_value = {}
 
     with pytest.raises(RuntimeError):
-        find_down_hypervisors("test-cloud-account")
+        send_down_disabled_hypervisors_email(
+            smtp_account=smtp_account,
+            cloud_account=cloud_account,
+            as_html=False,
+            send_email=False,
+            use_override=False,
+            **mock_kwargs,
+        )
 
-    mock_hypervisor_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-    )
-    mock_hypervisor_query_obj.select.assert_called_once_with(
-        "hypervisor_id",
-        "hypervisor_name",
-        "hypervisor_state",
-        "hypervisor_status",
-    )
-    mock_hypervisor_query_obj.to_props.assert_called_once()
-
-
-@patch("workflows.send_down_disabled_hypervisors_email.HypervisorQuery")
-def test_find_disabled_hypervisors_valid(mock_hypervisor_query):
-    """
-    Tests find_down_hypervisors() function
-    """
-    mock_hypervisor_query_obj = mock_hypervisor_query.return_value
-
-    res = find_disabled_hypervisors("test-cloud-account")
-
-    mock_hypervisor_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-    )
-    mock_hypervisor_query_obj.select.assert_called_once_with(
-        "hypervisor_id",
-        "hypervisor_name",
-        "hypervisor_state",
-        "hypervisor_status",
-    )
-    mock_hypervisor_query_obj.to_props.assert_called_once()
-
-    assert res == mock_hypervisor_query_obj
+    mock_find_down_hypervisors.assert_called_once_with(cloud_account)
+    mock_down_query.to_props.assert_called_once_with()
 
 
-@patch("workflows.send_down_disabled_hypervisors_email.HypervisorQuery")
-def test_find_disabled_hypervisors_no_hypervisors_found(mock_hypervisor_query):
+# pylint: disable=unused-argument
+@patch("workflows.send_down_disabled_hypervisors_email.find_down_hypervisors")
+@patch("workflows.send_down_disabled_hypervisors_email.find_disabled_hypervisors")
+def test_send_disabled_hypervisors_no_hypervisors_found(
+    mock_find_disabled_hypervisors,
+    mock_find_down_hypervisors,
+):
     """
     Tests that find_disabled_hypervisors fails when provided
     """
-    mock_hypervisor_query_obj = mock_hypervisor_query.return_value
-    mock_hypervisor_query_obj.to_props.return_value = None
+    smtp_account = NonCallableMock()
+    cloud_account = NonCallableMock()
+    mock_kwargs = {"arg1": "val1", "arg2": "val2"}
+
+    mock_disabled_query = mock_find_disabled_hypervisors.return_value
+    mock_disabled_query.to_props.return_value = {}
 
     with pytest.raises(RuntimeError):
-        find_disabled_hypervisors("test-cloud-account")
+        send_down_disabled_hypervisors_email(
+            smtp_account=smtp_account,
+            cloud_account=cloud_account,
+            as_html=False,
+            send_email=False,
+            use_override=False,
+            **mock_kwargs,
+        )
 
-    mock_hypervisor_query_obj.run.assert_called_once_with(
-        "test-cloud-account",
-    )
-    mock_hypervisor_query_obj.select.assert_called_once_with(
-        "hypervisor_id",
-        "hypervisor_name",
-        "hypervisor_state",
-        "hypervisor_status",
-    )
-    mock_hypervisor_query_obj.to_props.assert_called_once()
+    mock_find_disabled_hypervisors.assert_called_once_with(cloud_account)
+    mock_disabled_query.to_props.assert_called_once_with()
 
 
 def test_print_email_params():
