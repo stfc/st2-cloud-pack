@@ -16,10 +16,10 @@ def send_test_email(
     """
     Function to send a test email using 'test' template - maps to email.test Action.
     :param smtp_account: (SMTPAccount): SMTP config
-    :param username: name required for test template
-    :param test_message: message body required for test template
-    :param cc_cloud_support: whether to cc in cloud support
-    :param kwargs: see EmailParams dataclass class docstring
+    :param username: Name required for test template
+    :param test_message: Message body required for test template
+    :param cc_cloud_support: A boolean which, if True, will cc cloud-support email address to each generated email
+    :param kwargs: See EmailParams dataclass class docstring
     """
 
     if cc_cloud_support:

@@ -20,7 +20,7 @@ def print_email_params(
     error_table: str,
 ):
     """
-    Print email params instead of sending the email.
+    Prints email params instead of sending the email.
     :param email_addr: Email address to send to
     :param user_name: Name of user in OpenStack
     :param as_html: A boolean which, if True, will send an email - otherwise, prints email details only
@@ -40,9 +40,9 @@ def build_email_params(
     **email_kwargs,
 ) -> EmailParams:
     """
-    Build email params dataclass which will be used to configure how to send the email.
+    Builds email params dataclass which will be used to configure how to send the email.
     :param user_name: Name of user in OpenStack
-    :param error_table: A string table representing info found in OpenStack about VMs that are in errored state
+    :param error_table: A table representing info found in OpenStack about VMs that are in errored state
     :param email_kwargs: A set of email kwargs to pass to EmailParams
     """
     body = EmailTemplateDetails(
@@ -77,16 +77,16 @@ def send_errored_vm_email(
     Sends an email to each user who owns one or more VMs that are in error state.
     This email will contain a notice to delete or rebuild the VM.
     :param smtp_account: (SMTPAccount): SMTP config
-    :param cloud_account: string represents cloud account to use
+    :param cloud_account: String representing the cloud account to use
     :param limit_by_projects: A list of project names or ids to limit search in
     :param age_filter_value: An integer which specifies the minimum age (in days) of the servers to be found
     :param all_projects: A boolean which, if True, will search in all projects
-    :param as_html: Send email as html
-    :param send_email: Actually send the email instead of printing what will be sent
-    :param use_override: flag if set will use override email address
-    :param override_email_address: an overriding email address to use if override_email set
-    :param cc_cloud_support: flag if set will cc cloud-support email address to each generated email
-    :param email_params_kwargs: see EmailParams dataclass class docstring
+    :param as_html: A boolean which, if True, will send the email as html
+    :param send_email: A boolean which, if True, will send the email instead of printing what will be sent
+    :param use_override: A boolean which, if True, will use the override email address
+    :param override_email_address: An overriding email address to use if override_email is set
+    :param cc_cloud_support: A boolean which, if True, will cc cloud-support email address to each generated email
+    :param email_params_kwargs: See EmailParams dataclass class docstring
     """
     if limit_by_projects and all_projects:
         raise RuntimeError(

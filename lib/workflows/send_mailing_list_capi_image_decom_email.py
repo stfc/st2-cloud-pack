@@ -10,7 +10,7 @@ from tabulate import tabulate
 
 def get_affected_images_html(image_info_list: List[Dict]):
     """
-    returns information on images that are to be decommissioned as a html table
+    Returns information on images that are to be decommissioned as a html table.
     :param image_info_list: A list of dictionaries containing information on images that are to be decommissioned
     """
 
@@ -24,7 +24,7 @@ def get_affected_images_html(image_info_list: List[Dict]):
 
 def get_affected_images_plaintext(image_info_list: List[Dict]):
     """
-    returns information on images that are to be decommissioned as a plaintext tabulate table
+    Returns information on images that are to be decommissioned as a plaintext tabulate table.
     :param image_info_list: A list of dictionaries containing information on images that are to be decommissioned
     """
     return tabulate(
@@ -44,8 +44,11 @@ def get_image_info(
     image_upgrade_list: List[str],
 ):
     """
-    function validates key-word arguments related to displaying information on images to decommission and parses it
-    into a list of dictionaries
+    Function validates key-word arguments related to displaying information on images to decommission and parses it
+    into a list of dictionaries.
+    :param image_name_list: A list of image names to be decommissioned
+    :param image_eol_list: A list of End of Life (EOL) date strings (YY/MM/DD) for images to be decommissioned
+    :param image_upgrade_list: A list of image names that users are recommended to upgrade to
     """
     if len(image_name_list) == 0:
         raise RuntimeError("please provide a list of image names to decommission")
@@ -79,10 +82,9 @@ def get_image_info(
 
 def print_email_params(email_addr: str, image_table: str):
     """
-    Print email params instead of sending the email
-    :param email_addr: email address to send to
-    :param image_table: a table representing decommissioned images
-    about VMs running with decommissioned images
+    Prints email params instead of sending the email.
+    :param email_addr: Email address to send to
+    :param image_table: A table representing decommissioned images about VMs running with decommissioned images
     """
 
     print(f"Send Email To: {email_addr}\n" f"affected image table: {image_table}\n")
@@ -90,9 +92,9 @@ def print_email_params(email_addr: str, image_table: str):
 
 def build_email_params(image_table: str, **email_kwargs):
     """
-    build email params dataclass which will be used to configure how to send the email
-    :param image_table: a string table representing decommissioned images (names, EoL dates, upgraded images)
-    :param email_kwargs: a set of email kwargs to pass to EmailParams
+    Builds email params dataclass which will be used to configure how to send the email.
+    :param image_table: A string table representing decommissioned images (names, EoL dates, upgraded images)
+    :param email_kwargs: A set of email kwargs to pass to EmailParams
     """
     body = EmailTemplateDetails(
         template_name="mailing_list_capi_decom_image",
@@ -115,13 +117,13 @@ def send_mailing_list_capi_image_decom_email(
     **email_params_kwargs,
 ):
     """
-    Sends an email to the mailing list with a list of decommisioned CAPI images, and their replacements
+    Sends an email to the mailing list with a list of decommisioned CAPI images, and their replacements.
     :param mailing_list: A string representing a mailing list email
     :param image_name_list: A list of image names to be decommissioned
     :param image_eol_list: A list of End of Life (EOL) date strings (YY/MM/DD) for images to be decommissioned
     :param image_upgrade_list: A list of image names that users are recommended to upgrade to
-    :param send_email: Actually send the email instead of printing what will be sent
-    :param email_params_kwargs: see EmailParams dataclass class docstring
+    :param send_email: A boolean which, if True, will send the email instead of printing what will be sent
+    :param email_params_kwargs: See EmailParams dataclass class docstring
     """
 
     image_data = get_image_info(image_name_list, image_eol_list, image_upgrade_list)

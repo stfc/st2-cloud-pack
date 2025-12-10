@@ -21,7 +21,7 @@ parameters:
     default: "STFC Cloud Hypervisor Fault"
   smtp_account_name:
     type: string
-    description: "Name of SMTP Account to use. Must be configured in the pack settings."
+    description: "Name of SMTP Account to use - must be configured in the pack config"
     required: true
     default: "default"
   hypervisor_name:
@@ -39,12 +39,12 @@ parameters:
       - "prod"
   limit_by_projects:
     type: array
-    description: "comma-spaced project to limit action to - incompatible with all_projects"
+    description: "Comma-spaced project to limit action to - incompatible with all_projects"
     required: false
     default: null
   all_projects:
     type: boolean
-    description: "tick to search in all projects - default True"
+    description: "Tick to search in all projects - default True"
     required: true
     default: true
   use_override:

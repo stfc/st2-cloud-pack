@@ -17,12 +17,11 @@ def print_email_params(
     email_addr: str, user_name: str, as_html: bool, shutoff_table: str
 ):
     """
-    Print email params instead of sending the email
-    :param email_addr: email address to send to
-    :param user_name: name of user in openstack
+    Prints email params instead of sending the email.
+    :param email_addr: Email address to send to
+    :param user_name: Name of user in OpenStack
     :param as_html: A boolean which if selected will send an email, otherwise prints email details only
-    :param shutoff_table: a table representing info found in openstack
-    about VMs in shutoff state
+    :param shutoff_table: A table representing info found in OpenStack about VMs in shutoff state
     """
     print(
         f"Send Email To: {email_addr}\n"
@@ -34,11 +33,10 @@ def print_email_params(
 
 def build_email_params(user_name: str, shutoff_table: str, **email_kwargs):
     """
-    build email params dataclass which will be used to configure how to send the email
-    :param user_name: name of user in openstack
-    :param shutoff_table: a table representing info found in openstack about VMs
-        that are in shutoff state
-    :param email_kwargs: a set of email kwargs to pass to EmailParams
+    Builds email params dataclass which will be used to configure how to send the email.
+    :param user_name: Name of user in OpenStack
+    :param shutoff_table: A table representing info found in OpenStack about VMs that are in shutoff state
+    :param email_kwargs: A set of email kwargs to pass to EmailParams
     """
     body = EmailTemplateDetails(
         template_name="shutoff_vm",
@@ -68,18 +66,18 @@ def send_shutoff_vm_email(
     **email_params_kwargs,
 ):
     """
-    Sends an email to each user who owns one or more VMs that are in shutoff state
-    This email will contain a notice to delete or rebuild the VM
+    Sends an email to each user who owns one or more VMs that are in shutoff state.
+    This email will contain a notice to delete or rebuild the VM.
     :param smtp_account: (SMTPAccount): SMTP config
-    :param cloud_account: string represents cloud account to use
+    :param cloud_account: String representing the cloud account to use
     :param limit_by_projects: A list of project names or ids to limit search in
-    :param all_projects: A boolean which if selected will search in all projects
-    :param send_email: Actually send the email instead of printing what will be sent
-    :param as_html: Send email as html
-    :param use_override: flag if set will use override email address
-    :param override_email_address: an overriding email address to use if override_email set
-    :param cc_cloud_support: flag if set will cc cloud-support email address to each generated email
-    :param email_params_kwargs: see EmailParams dataclass class docstring
+    :param all_projects: A boolean which, if True, will search in all projects
+    :param send_email: A boolean which, if True, will send the email instead of printing what will be sent
+    :param as_html: A boolean which, if True, will send the email as html
+    :param use_override: A boolean which, if True, will use the override email address
+    :param override_email_address: An overriding email address to use if override_email set
+    :param cc_cloud_support: A boolean which, if True, will cc cloud-support email address to each generated email
+    :param email_params_kwargs: See EmailParams dataclass class docstring
     """
     if limit_by_projects and all_projects:
         raise RuntimeError(
