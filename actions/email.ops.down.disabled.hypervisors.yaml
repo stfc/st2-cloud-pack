@@ -17,7 +17,7 @@ parameters:
     default: "STFC Cloud Hypervisors Down/Disabled Notice"
   smtp_account_name:
     type: string
-    description: "Name of SMTP Account to use. Must be configured in in the pack settings."
+    description: "Name of SMTP Account to use - must be configured in the pack config"
     required: true
     default: "default"
   cloud_account:

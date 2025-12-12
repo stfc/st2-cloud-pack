@@ -29,7 +29,7 @@ def get_affected_images_html(image_info_list: List[Dict]):
 
 def get_affected_images_plaintext(image_info_list: List[Dict]):
     """
-    Returns information on images that are to be decommissioned as a plaintext tabulate table
+    Returns information on images that are to be decommissioned as a plaintext tabulate table.
     :param image_info_list: A list of dictionaries containing information on images that are to be decommissioned
     """
     return tabulate(
@@ -50,7 +50,11 @@ def get_image_info(
 ):
     """
     Function validates key-word arguments related to displaying information on images to decommission and parses it
-    into a list of dictionaries
+    into a list of dictionaries.
+    :param image_name_list: A list of image names to be decommissioned
+    :param image_eol_list: A list of End of Life (EOL) date strings (YY/MM/DD) for images to be decommissioned
+    :param image_upgrade_list: A list of image names that users are recommended to upgrade to
+
     """
     if len(image_name_list) == 0:
         raise RuntimeError("please provide a list of image names to decommission")
@@ -90,7 +94,7 @@ def print_email_params(
     decom_table: str,
 ):
     """
-    Print email params instead of sending the email
+    Print email params instead of sending the email.
     :param email_addr: Email address to send to
     :param user_name: Name of user in OpenStack
     :param as_html: A boolean which, if selected, will send an email - otherwise, prints email details only
@@ -113,7 +117,7 @@ def build_email_params(
     **email_kwargs,
 ):
     """
-    Builds email params dataclass which will be used to configure how to send the email
+    Builds email params dataclass which will be used to configure how to send the email.
     :param user_name: Name of user in OpenStack
     :param image_table: A table representing decommissioned images
     :param decom_table: A table representing info found in OpenStack about VMs running with decommissioned images

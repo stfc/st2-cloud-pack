@@ -12,7 +12,7 @@ parameters:
     type: string
   email_to:
     type: array
-    description: "comma-spaced email addresses to send email to"
+    description: "Comma-spaced email addresses to send email to"
     required: true
   email_from:
     type: string
@@ -39,7 +39,7 @@ parameters:
     default: "Test Message"
   smtp_account_name:
     type: string
-    description: "Name of SMTP Account to use. Must be configured in in the pack settings."
+    description: "Name of SMTP Account to use - must be configured in the pack config"
     required: true
     default: "default"
   as_html:

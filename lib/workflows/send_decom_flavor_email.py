@@ -16,9 +16,9 @@ from tabulate import tabulate
 
 def get_affected_flavors_html(flavor_list: List[str], eol_list: List[str]):
     """
-    Return HTML table for decommissioned flavors with their EOL dates.
-    :parma flavor_list a list of flavor strings
-    :parma eol_list: a list of flavor EOL dates
+    Returns HTML table for decommissioned flavors with their EOL dates.
+    :param flavor_list: A list of flavor strings
+    :param eol_list: A list of flavor EOL dates
     """
     table_html = "<table>"
     table_html += "<tr><th>Affected Flavors</th><th>EOL Date</th></tr>"
@@ -30,9 +30,9 @@ def get_affected_flavors_html(flavor_list: List[str], eol_list: List[str]):
 
 def get_affected_flavors_plaintext(flavor_list: List[str], eol_list: List[str]):
     """
-    Return plain text table for decommissioned flavors with their EOL dates.
-    :parma flavor_list a list of flavor strings
-    :parma eol_list: a list of flavor EOL dates
+    Returns plain text table for decommissioned flavors with their EOL dates.
+    :param flavor_list: A list of flavor strings
+    :param eol_list: A list of flavor EOL dates
     """
     rows = [
         {"Flavor": flavor, "EOL Date": eol}
@@ -48,11 +48,11 @@ def validate_flavor_input(
     all_projects: bool = False,
 ):
     """
-    Validate incoming inputs
-    :param flavor_name_list: list of flavor names to limit query by
-    :param flavor_eol_list: list of flavor EOL dates
-    :param from_projects: list of projects to limit query by
-    :param all_projects: a flag which if set, will run the query on all projects
+    Validate incoming inputs.
+    :param flavor_name_list: A List of flavor names to limit query by
+    :param flavor_eol_list: A List of flavor EOL dates
+    :param from_projects: A List of projects to limit query by
+    :param all_projects: A boolean which, if set, will run the query on all projects
     """
     if not flavor_name_list:
         raise RuntimeError("please provide a list of flavor names to decommission")
@@ -82,12 +82,11 @@ def print_email_params(
 ):
     """
     Print email params instead of sending the email
-    :param email_addr: email address to send to
-    :param user_name: name of user in openstack
-    :param as_html: A boolean which if selected will send an email, otherwise prints email details only
-    :param flavor_table: a table representing decommissioned flavors (names and EOL dates)
-    :param decom_table: a table representing info found in openstack
-    about VMs running with decommissioned flavors
+    :param email_addr: Email address to send to
+    :param user_name: Name of user in OpenStack
+    :param as_html: A boolean which, if selected, will send an email - otherwise, prints email details only
+    :param flavor_table: A table representing decommissioned flavors (names and EOL dates)
+    :param decom_table: A table representing info found in OpenStack about VMs running with decommissioned flavors
     """
     print(
         f"Send Email To: {email_addr}\n"
@@ -102,12 +101,11 @@ def build_email_params(
     user_name: str, flavor_table: str, decom_table: str, **email_kwargs
 ):
     """
-    build email params dataclass which will be used to configure how to send the email
-    :param user_name: name of user in openstack
-    :param flavor_table: a table representing decommissioned flavors (names and EOL dates)
-    :param decom_table: a table representing info found in openstack about VMs
-        running with decommissioned flavors
-    :param email_kwargs: a set of email kwargs to pass to EmailParams
+    Builds email params dataclass which will be used to configure how to send the email
+    :param user_name: Name of user in OpenStack
+    :param flavor_table: A table representing decommissioned flavors (names and EOL dates)
+    :param decom_table: A table representing info found in OpenStack about VMs running with decommissioned flavors
+    :param email_kwargs: A set of email kwargs to pass to EmailParams
     """
     body = EmailTemplateDetails(
         template_name="decom_flavor",
@@ -141,19 +139,19 @@ def send_decom_flavor_email(
 ):
     """
     Sends an email to each user who owns one or more VMs that have a flavor that is to be decommissioned.
-    This email will contain a notice to delete or rebuild the VM
+    This email will contain a notice to delete or rebuild the VM.
     :param smtp_account: (SMTPAccount): SMTP config
-    :param cloud_account: string represents cloud account to use
+    :param cloud_account: String representing the cloud account to use
     :param flavor_name_list: A list of flavor names to be decommissioned
     :param flavor_eol_list: A list of EOL dates for decommisioned flavors
     :param limit_by_projects: A list of project names or ids to limit search in
-    :param all_projects: A boolean which if selected will search in all projects
-    :param send_email: Actually send the email instead of printing what will be sent
-    :param as_html: Send email as html
-    :param use_override: flag if set will use override email address
-    :param override_email_address: an overriding email address to use if override_email set
-    :param cc_cloud_support: flag if set will cc cloud-support email address to each generated email
-    :param email_params_kwargs: see EmailParams dataclass class docstring
+    :param all_projects: A boolean which, if selected, will search in all projects
+    :param send_email: A boolean which, if True, will send the email instead of printing what will be sent
+    :param as_html: A boolean which, if True, will send the email as html
+    :param use_override: A boolean which, if True, will use the override email address
+    :param override_email_address: An overriding email address to use if override_email set
+    :param cc_cloud_support: A boolean which, if True, will cc cloud-support email address to each generated email
+    :param email_params_kwargs: See EmailParams dataclass class docstring
     """
     validate_flavor_input(
         flavor_name_list, flavor_eol_list, limit_by_projects, all_projects

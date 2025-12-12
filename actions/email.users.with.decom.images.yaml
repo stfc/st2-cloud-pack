@@ -17,7 +17,7 @@ parameters:
     default: "STFC Cloud Operating System Decommissioning Notice"
   smtp_account_name:
     type: string
-    description: "Name of SMTP Account to use. Must be configured in the pack settings."
+    description: "Name of SMTP Account to use - must be configured in the pack config"
     required: true
     default: "default"
   cloud_account:
@@ -30,25 +30,26 @@ parameters:
       - "prod"
   image_name_list:
     type: array
-    description: "comma-spaced list of Openstack Images names to decommission"
+    description: "Comma-spaced list of Openstack Images names to decommission"
     required: True
   image_eol_list:
     type: array
-    description: "comma-spaced list of End of Life (YY/MM/DD) for each Image in image-name-list"
+    description: "Comma-spaced list of End of Life (YY/MM/DD) for each Image in image-name-list"
     required: True
   image_upgrade_list:
     type: array
-    description: "comma-spaced list of images to upgrade to for each Image in image-name-list.
+    description:
+      "Comma-spaced list of images to upgrade to for each Image in image-name-list.
       Use empty string '' to specify no upgraded image available"
     required: True
   limit_by_projects:
     type: array
-    description: "comma-spaced project to limit action to - incompatible with all_projects"
+    description: "Comma-spaced project to limit action to - incompatible with all_projects"
     required: false
     default: null
   all_projects:
     type: boolean
-    description: "tick to search in all projects - default True"
+    description: "Tick to search in all projects - default True"
     required: true
     default: true
   use_override:
