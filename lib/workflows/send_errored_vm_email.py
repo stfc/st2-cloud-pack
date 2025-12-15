@@ -18,6 +18,7 @@ def print_email_params(
     user_name: str,
     as_html: bool,
     error_table: str,
+    days_threshold: int,
 ):
     """
     Prints email params instead of sending the email.
@@ -31,12 +32,14 @@ def print_email_params(
         f"email_templates errored-email: username {user_name}\n"
         f"send as html: {as_html}\n"
         f"error table: {error_table}\n"
+        f"days_threshold: {days_threshold}\n"
     )
 
 
 def build_email_params(
     user_name: str,
     error_table: str,
+    days_threshold: int,
     **email_kwargs,
 ) -> EmailParams:
     """
@@ -50,6 +53,7 @@ def build_email_params(
         template_params={
             "username": user_name,
             "error_table": error_table,
+            "days_threshold": days_threshold,
         },
     )
 
@@ -64,7 +68,7 @@ def send_errored_vm_email(
     smtp_account: SMTPAccount,
     cloud_account: Union[CloudDomains, str],
     limit_by_projects: Optional[List[str]] = None,
-    age_filter_value: int = -1,
+    days_threshold: int = 60,
     all_projects: bool = False,
     as_html: bool = False,
     send_email: bool = False,
@@ -79,7 +83,7 @@ def send_errored_vm_email(
     :param smtp_account: (SMTPAccount): SMTP config
     :param cloud_account: String representing the cloud account to use
     :param limit_by_projects: A list of project names or ids to limit search in
-    :param age_filter_value: An integer which specifies the minimum age (in days) of the servers to be found
+    :param days_threshold: An integer which specifies the minimum age (in days) of the servers to be found
     :param all_projects: A boolean which, if True, will search in all projects
     :param as_html: A boolean which, if True, will send the email as html
     :param send_email: A boolean which, if True, will send the email instead of printing what will be sent
@@ -98,7 +102,7 @@ def send_errored_vm_email(
         )
 
     server_query = find_servers_with_errored_vms(
-        cloud_account, age_filter_value, limit_by_projects
+        cloud_account, days_threshold, limit_by_projects
     )
 
     if not server_query.to_props():
@@ -127,7 +131,9 @@ def send_errored_vm_email(
             )
 
         if not send_email:
-            print_email_params(send_to[0], user_name, as_html, server_list)
+            print_email_params(
+                send_to[0], user_name, as_html, server_list, days_threshold
+            )
             continue
 
         email_params = build_email_params(
@@ -135,6 +141,7 @@ def send_errored_vm_email(
             server_list,
             email_to=send_to,
             as_html=as_html,
+            days_threshold=days_threshold,
             email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
             **email_params_kwargs,
         )
