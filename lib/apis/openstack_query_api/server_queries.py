@@ -13,6 +13,7 @@ def find_servers_on_hv(
     webhook: Optional[str] = None,
 ):
     """
+    Use QueryAPI to find VMs on a hypervisor.
     :param cloud_account: string represents cloud account to use
     :param from_projects: A list of project identifiers to limit search in
     """
@@ -47,7 +48,7 @@ def find_servers_with_flavors(
     from_projects: Optional[List[str]] = None,
 ):
     """
-    Use QueryAPI to run the query to find decom flavors
+    Use QueryAPI to run the query to find decom flavors.
     :param cloud_account: string represents cloud account to use
     :param flavor_name_list: A list of flavor names to be decommissioned
     :param from_projects: A list of project identifiers to limit search in
@@ -88,21 +89,22 @@ def find_servers_with_flavors(
 
 def find_servers_with_errored_vms(
     cloud_account: str,
-    age_filter_value: int,
+    days_threshold: int = 0,
     from_projects: Optional[List[str]] = None,
 ) -> ServerQuery:
     """
     Search for machines that are in error state and returns the user id, name and email address.
+    if days_threshold is 0, then all of the servers are searched for errored vms.
     :param cloud_account: String representing cloud account to use
-    :param age_filter_value: An integer which specifies the minimum age (in days) of the servers to be found
+    :param days_threshold: An integer which specifies the minimum age (in days) of the servers to be found
     :param from_projects: A list of project identifiers to limit search to
     """
     server_query = ServerQuery()
-    if age_filter_value > 0:
+    if days_threshold > 0:
         server_query.where(
             "older_than",
             "server_last_updated_date",
-            days=age_filter_value,
+            days=days_threshold,
         )
     server_query.where("any_in", "server_status", values=["ERROR"])
     server_query.run(
@@ -119,14 +121,27 @@ def find_servers_with_errored_vms(
     return server_query
 
 
-def find_shutoff_servers(cloud_account: str, from_projects: Optional[List[str]] = None):
+def find_shutoff_servers(
+    cloud_account: str,
+    days_threshold: int = 0,
+    from_projects: Optional[List[str]] = None,
+):
     """
+    Use QueryAPI to find machines that are in shutoff state.
+    if days_threshold is 0, then all of the servers are searched that are in shutoff state.
     :param cloud_account: string represents cloud account to use
+    :param days_threshold: An integer which specifies the minimum age (in days) of the servers to be found
     :param from_projects: A list of project identifiers to limit search in
     """
 
-    # Find VMs that have been in shutoff state for more than 60 days
+    # Find VMs that have been in shutoff state for more than 0 day
     server_query = ServerQuery()
+    if days_threshold > 0:
+        server_query.where(
+            "older_than",
+            "server_last_updated_date",
+            days=days_threshold,
+        )
     server_query.where("any_in", "server_status", values=["SHUTOFF"])
     server_query.run(
         cloud_account,

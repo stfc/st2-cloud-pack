@@ -14,7 +14,11 @@ from apis.openstack_query_api.user_queries import find_user_info
 
 
 def print_email_params(
-    email_addr: str, user_name: str, as_html: bool, shutoff_table: str
+    email_addr: str,
+    user_name: str,
+    as_html: bool,
+    shutoff_table: str,
+    days_threshold: int,
 ):
     """
     Prints email params instead of sending the email.
@@ -22,16 +26,20 @@ def print_email_params(
     :param user_name: Name of user in OpenStack
     :param as_html: A boolean which if selected will send an email, otherwise prints email details only
     :param shutoff_table: A table representing info found in OpenStack about VMs in shutoff state
+    :param days_threshold: An integer which specifies the minimum age (in days) of the servers to be found
     """
     print(
         f"Send Email To: {email_addr}\n"
         f"email_templates shutoff-email: username {user_name}\n"
         f"send as html: {as_html}\n"
         f"shutoff table: {shutoff_table}\n"
+        f"days threshold: {days_threshold}\n"
     )
 
 
-def build_email_params(user_name: str, shutoff_table: str, **email_kwargs):
+def build_email_params(
+    user_name: str, shutoff_table: str, days_threshold: int, **email_kwargs
+):
     """
     Builds email params dataclass which will be used to configure how to send the email.
     :param user_name: Name of user in OpenStack
@@ -43,6 +51,7 @@ def build_email_params(user_name: str, shutoff_table: str, **email_kwargs):
         template_params={
             "username": user_name,
             "shutoff_table": shutoff_table,
+            "days_threshold": days_threshold,
         },
     )
 
@@ -57,6 +66,7 @@ def send_shutoff_vm_email(
     smtp_account: SMTPAccount,
     cloud_account: Union[CloudDomains, str],
     limit_by_projects: Optional[List[str]] = None,
+    days_threshold: int = 0,
     all_projects: bool = False,
     as_html: bool = False,
     send_email: bool = False,
@@ -71,6 +81,7 @@ def send_shutoff_vm_email(
     :param smtp_account: (SMTPAccount): SMTP config
     :param cloud_account: String representing the cloud account to use
     :param limit_by_projects: A list of project names or ids to limit search in
+    :param days_threshold: An integer which specifies the minimum age (in days) of the servers to be found
     :param all_projects: A boolean which, if True, will search in all projects
     :param send_email: A boolean which, if True, will send the email instead of printing what will be sent
     :param as_html: A boolean which, if True, will send the email as html
@@ -88,7 +99,9 @@ def send_shutoff_vm_email(
             "please provide either a list of project identifiers or with flag 'all_projects' to run globally"
         )
 
-    server_query = find_shutoff_servers(cloud_account, limit_by_projects)
+    server_query = find_shutoff_servers(
+        cloud_account, days_threshold, limit_by_projects
+    )
 
     if not server_query.to_props():
         raise RuntimeError(
@@ -116,7 +129,9 @@ def send_shutoff_vm_email(
             )
 
         if not send_email:
-            print_email_params(send_to[0], user_name, as_html, server_list)
+            print_email_params(
+                send_to[0], user_name, as_html, server_list, days_threshold
+            )
             continue
 
         email_params = build_email_params(
@@ -124,6 +139,7 @@ def send_shutoff_vm_email(
             server_list,
             email_to=send_to,
             as_html=as_html,
+            days_threshold=days_threshold,
             email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
             **email_params_kwargs,
         )

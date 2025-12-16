@@ -488,7 +488,7 @@ def test_raise_error_when_no_matching_servers_found(mock_find_servers):
             all_projects=all_projects,
         )
 
-    mock_find_servers.assert_called_once_with(cloud_account, 60, limit_by_projects)
+    mock_find_servers.assert_called_once_with(cloud_account, 0, limit_by_projects)
     mock_query.to_props.assert_called_once()
 
 
