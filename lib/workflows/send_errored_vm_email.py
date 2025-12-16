@@ -68,7 +68,7 @@ def send_errored_vm_email(
     smtp_account: SMTPAccount,
     cloud_account: Union[CloudDomains, str],
     limit_by_projects: Optional[List[str]] = None,
-    days_threshold: int = 60,
+    days_threshold: int = 0,
     all_projects: bool = False,
     as_html: bool = False,
     send_email: bool = False,
