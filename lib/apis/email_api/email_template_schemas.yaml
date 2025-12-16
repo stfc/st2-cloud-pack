@@ -43,6 +43,7 @@ shutoff_vm:
   schema:
     username: null
     shutoff_table: "No Shutoff VMs"
+    days_threshold: 60
   html_filepath: "html/shutoff_vm.html.j2"
   plaintext_filepath: "plaintext/shutoff_vm.txt.j2"
 
@@ -80,7 +81,7 @@ errored_vm:
   schema:
     username: null
     error_table: "No Errored VMs"
-    days_threshold: "No days"
+    days_threshold: 60
   html_filepath: "html/errored_vm.html.j2"
   plaintext_filepath: "plaintext/errored_vm.txt.j2"
 
