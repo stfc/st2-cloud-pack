@@ -33,6 +33,11 @@ parameters:
     description: "Comma-spaced project to limit action to - incompatible with all_projects"
     required: false
     default: null
+  days_threshold:
+    type: integer
+    description: "An integer which specifies the minimum age (in days) of the servers to be found"
+    required: false
+    default: 60
   all_projects:
     type: boolean
     description: "Tick to search in all projects - default True"
