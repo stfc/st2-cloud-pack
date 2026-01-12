@@ -16,15 +16,17 @@ def test_print_email_params():
     user_name = "John Doe"
     as_html = True
     error_table = "Error Table Content"
+    days_threshold = "Days Threshold"
 
     with patch("builtins.print") as mock_print:
-        print_email_params(email_addr, user_name, as_html, error_table)
+        print_email_params(email_addr, user_name, as_html, error_table, days_threshold)
 
     mock_print.assert_called_once_with(
         f"Send Email To: {email_addr}\n"
         f"email_templates errored-email: username {user_name}\n"
         f"send as html: {as_html}\n"
         f"error table: {error_table}\n"
+        f"days_threshold: {days_threshold}\n"
     )
 
 
@@ -40,9 +42,10 @@ def test_build_params(
 
     user_name = "John Doe"
     error_table = "Error Table Content"
+    days_threshold = "Days Threshold"
     email_kwargs = {"arg1": "val1", "arg2": "val2"}
 
-    res = build_email_params(user_name, error_table, **email_kwargs)
+    res = build_email_params(user_name, error_table, days_threshold, **email_kwargs)
     mock_email_template_details.assert_has_calls(
         [
             call(
@@ -50,6 +53,7 @@ def test_build_params(
                 template_params={
                     "username": user_name,
                     "error_table": error_table,
+                    "days_threshold": days_threshold,
                 },
             ),
             call(template_name="footer", template_params={}),
@@ -110,7 +114,7 @@ def test_send_errored_vm_email_send_plaintext(
     send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
-        age_filter_value=-1,
+        days_threshold=60,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
         as_html=False,
@@ -119,7 +123,7 @@ def test_send_errored_vm_email_send_plaintext(
         **mock_kwargs,
     )
 
-    mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
+    mock_find_servers.assert_called_once_with(cloud_account, 60, limit_by_projects)
     mock_query.to_props.assert_called_once()
     mock_group_servers_by_user_id.assert_called_once_with(mock_query)
     mock_grouped_query.to_props.assert_called_once()
@@ -137,6 +141,7 @@ def test_send_errored_vm_email_send_plaintext(
                 mock_grouped_query.to_string.return_value,
                 email_to=["user_email1"],
                 as_html=False,
+                days_threshold=60,
                 email_cc=None,
                 **mock_kwargs,
             ),
@@ -145,6 +150,7 @@ def test_send_errored_vm_email_send_plaintext(
                 mock_grouped_query.to_string.return_value,
                 email_to=["user_email2"],
                 as_html=False,
+                days_threshold=60,
                 email_cc=None,
                 **mock_kwargs,
             ),
@@ -210,7 +216,7 @@ def test_send_errored_vm_email_send_html(
     send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
-        age_filter_value=-1,
+        days_threshold=60,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
         as_html=True,
@@ -219,7 +225,7 @@ def test_send_errored_vm_email_send_html(
         **mock_kwargs,
     )
 
-    mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
+    mock_find_servers.assert_called_once_with(cloud_account, 60, limit_by_projects)
     mock_query.to_props.assert_called_once()
     mock_group_servers_by_user_id.assert_called_once_with(mock_query)
     mock_grouped_query.to_props.assert_called_once()
@@ -237,6 +243,7 @@ def test_send_errored_vm_email_send_html(
                 mock_grouped_query.to_html.return_value,
                 email_to=["user_email1"],
                 as_html=True,
+                days_threshold=60,
                 email_cc=None,
                 **mock_kwargs,
             ),
@@ -245,6 +252,7 @@ def test_send_errored_vm_email_send_html(
                 mock_grouped_query.to_html.return_value,
                 email_to=["user_email2"],
                 as_html=True,
+                days_threshold=60,
                 email_cc=None,
                 **mock_kwargs,
             ),
@@ -308,7 +316,7 @@ def test_send_errored_vm_email_print(
     send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
-        age_filter_value=-1,
+        days_threshold=60,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
         as_html=False,
@@ -317,7 +325,7 @@ def test_send_errored_vm_email_print(
         **mock_kwargs,
     )
 
-    mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
+    mock_find_servers.assert_called_once_with(cloud_account, 60, limit_by_projects)
     mock_query.to_props.assert_called_once()
     mock_group_servers_by_user_id.assert_called_once_with(mock_query)
     mock_grouped_query.to_props.assert_called_once()
@@ -335,12 +343,14 @@ def test_send_errored_vm_email_print(
                 "user1",
                 False,
                 mock_grouped_query.to_string.return_value,
+                60,
             ),
             call(
                 "user_email2",
                 "user2",
                 False,
                 mock_grouped_query.to_string.return_value,
+                60,
             ),
         ]
     )
@@ -396,7 +406,7 @@ def test_send_errored_vm_email_use_override(
     send_errored_vm_email(
         smtp_account=smtp_account,
         cloud_account=cloud_account,
-        age_filter_value=-1,
+        days_threshold=60,
         limit_by_projects=limit_by_projects,
         all_projects=all_projects,
         as_html=False,
@@ -406,7 +416,7 @@ def test_send_errored_vm_email_use_override(
         **mock_kwargs,
     )
 
-    mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
+    mock_find_servers.assert_called_once_with(cloud_account, 60, limit_by_projects)
     mock_query.to_props.assert_called_once()
     mock_group_servers_by_user_id.assert_called_once_with(mock_query)
     mock_grouped_query.to_props.assert_called_once()
@@ -424,6 +434,7 @@ def test_send_errored_vm_email_use_override(
                 mock_grouped_query.to_string.return_value,
                 email_to=[override_email_address],
                 as_html=False,
+                days_threshold=60,
                 email_cc=None,
                 **mock_kwargs,
             ),
@@ -432,6 +443,7 @@ def test_send_errored_vm_email_use_override(
                 mock_grouped_query.to_string.return_value,
                 email_to=[override_email_address],
                 as_html=False,
+                days_threshold=60,
                 email_cc=None,
                 **mock_kwargs,
             ),
@@ -476,7 +488,7 @@ def test_raise_error_when_no_matching_servers_found(mock_find_servers):
             all_projects=all_projects,
         )
 
-    mock_find_servers.assert_called_once_with(cloud_account, -1, limit_by_projects)
+    mock_find_servers.assert_called_once_with(cloud_account, 0, limit_by_projects)
     mock_query.to_props.assert_called_once()
 
 
