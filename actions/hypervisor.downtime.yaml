@@ -8,9 +8,9 @@ parameters:
     type: string
     description: Hostname of the hypervisor, e.g. hvxyz.nubes.rl.ac.uk
     required: true
-  duration_hours:
-    type: integer
-    description: Duration of downtime in hours, CANNOT be a decimal
+  end_time:
+    type: str 
+    description: "Enter the end date either as a UTC timestamp in the format YYYY-MM-DD HH:MM, or as a relative duration from now using days (d) and/or hours (h) (examples: 2d, 24h, 3d 12h)"
     required: true
   comment:
     type: string
