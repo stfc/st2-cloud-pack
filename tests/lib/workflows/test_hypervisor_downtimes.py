@@ -11,6 +11,7 @@ from workflows.hypervisor_downtime import schedule_hypervisor_downtime
 from workflows.hypervisor_downtime import (
     _get_number_of_hours,
     _get_number_of_hours_from_absolute_datetime,
+    _get_number_of_hours_from_duration,
 )
 
 
@@ -499,3 +500,212 @@ def test_absolute_datetime_with_minutes_rounds_down():
     )
     result = _get_number_of_hours_from_absolute_datetime(start_dt, "2024-01-01 11:59")
     assert result == 1
+
+
+# ===============================================
+# unit test function _get_number_of_hours_from_duration()
+# ===============================================
+
+
+def test_duration_empty_string_raises_exception():
+    """Test that an empty string raises ValueError"""
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_duration("")
+
+
+def test_duration_single_space_raises_exception():
+    """Test that a single space raises ValueError"""
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_duration(" ")
+
+
+def test_duration_multiple_spaces_raises_exception():
+    """Test that multiple spaces raise ValueError"""
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_duration("   ")
+
+
+def test_duration_tabs_and_spaces_raises_exception():
+    """Test that tabs and spaces raise ValueError"""
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_duration("\t  \t")
+
+
+def test_duration_invalid_format_random_text():
+    """Test that random text raises ValueError"""
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_duration("random text")
+
+
+def test_duration_invalid_format_only_number():
+    """Test that a plain number without unit raises ValueError"""
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_duration("123")
+
+
+def test_duration_invalid_format_wrong_unit():
+    """Test that invalid duration units raise ValueError"""
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_duration("5m")
+
+
+def test_duration_invalid_format_multiple_wrong_units():
+    """Test that multiple invalid units raise ValueError"""
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_duration("5m 30s")
+
+
+def test_duration_invalid_format_datetime_string():
+    """Test that datetime string raises ValueError"""
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_duration("2024-01-01 10:00")
+
+
+def test_duration_invalid_format_only_units_no_numbers():
+    """Test that units without numbers raise ValueError"""
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_duration("d h")
+
+
+def test_duration_invalid_format_only_d():
+    """Test that only 'd' without number raises ValueError"""
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_duration("d")
+
+
+def test_duration_invalid_format_only_h():
+    """Test that only 'h' without number raises ValueError"""
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_duration("h")
+
+
+def test_duration_zero_days_zero_hours():
+    """Test that 0d 0h raises ValueError"""
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_duration("0d 0h")
+
+
+def test_duration_zero_days_only():
+    """Test that 0d raises ValueError"""
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_duration("0d")
+
+
+def test_duration_zero_hours_only():
+    """Test that 0h raises ValueError"""
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_duration("0h")
+
+
+def test_duration_single_day():
+    """Test valid duration with single day"""
+    result = _get_number_of_hours_from_duration("1d")
+    assert result == 24
+
+
+def test_duration_multiple_days():
+    """Test valid duration with multiple days"""
+    result = _get_number_of_hours_from_duration("5d")
+    assert result == 120
+
+
+def test_duration_single_hour():
+    """Test valid duration with single hour"""
+    result = _get_number_of_hours_from_duration("1h")
+    assert result == 1
+
+
+def test_duration_multiple_hours():
+    """Test valid duration with multiple hours"""
+    result = _get_number_of_hours_from_duration("12h")
+    assert result == 12
+
+
+def test_duration_twenty_four_hours():
+    """Test valid duration with exactly 24 hours"""
+    result = _get_number_of_hours_from_duration("24h")
+    assert result == 24
+
+
+def test_duration_days_and_hours():
+    """Test valid duration with both days and hours"""
+    result = _get_number_of_hours_from_duration("5d 12h")
+    assert result == 132
+
+
+def test_duration_hours_and_days_reversed():
+    """Test valid duration with hours before days"""
+    result = _get_number_of_hours_from_duration("12h 5d")
+    assert result == 132
+
+
+def test_duration_days_and_hours_multiple_spaces():
+    """Test valid duration with multiple spaces between units"""
+    result = _get_number_of_hours_from_duration("2d   6h")
+    assert result == 54
+
+
+def test_duration_days_and_hours_no_space():
+    """Test valid duration with no space between units"""
+    result = _get_number_of_hours_from_duration("2d6h")
+    assert result == 54
+
+
+def test_duration_case_insensitive_lowercase():
+    """Test that duration format accepts lowercase units"""
+    result = _get_number_of_hours_from_duration("2d 6h")
+    assert result == 54
+
+
+def test_duration_case_insensitive_uppercase():
+    """Test that duration format accepts uppercase units"""
+    result = _get_number_of_hours_from_duration("2D 6H")
+    assert result == 54
+
+
+def test_duration_case_insensitive_mixed_case():
+    """Test that duration format accepts mixed case units"""
+    result = _get_number_of_hours_from_duration("2D 6h")
+    assert result == 54
+
+
+def test_duration_large_number_of_days():
+    """Test valid duration with large number of days"""
+    result = _get_number_of_hours_from_duration("100d")
+    assert result == 2400
+
+
+def test_duration_large_number_of_hours():
+    """Test valid duration with large number of hours"""
+    result = _get_number_of_hours_from_duration("1000h")
+    assert result == 1000
+
+
+def test_duration_with_leading_spaces():
+    """Test valid duration with leading spaces"""
+    result = _get_number_of_hours_from_duration("  5d 12h")
+    assert result == 132
+
+
+def test_duration_with_trailing_spaces():
+    """Test valid duration with trailing spaces"""
+    result = _get_number_of_hours_from_duration("5d 12h  ")
+    assert result == 132
+
+
+def test_duration_with_leading_and_trailing_spaces():
+    """Test valid duration with leading and trailing spaces"""
+    result = _get_number_of_hours_from_duration("  5d 12h  ")
+    assert result == 132
+
+
+def test_duration_one_day_one_hour():
+    """Test valid duration with one day and one hour"""
+    result = _get_number_of_hours_from_duration("1d 1h")
+    assert result == 25
+
+
+def test_duration_ten_days():
+    """Test valid duration with ten days"""
+    result = _get_number_of_hours_from_duration("10d")
+    assert result == 240
