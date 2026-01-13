@@ -86,7 +86,7 @@ def _get_number_of_hours_from_absolute_datetime(start_dt, datetime_str):
         raise ValueError(
             f"Invalid datetime format. Expected 'YYYY-MM-DD HH:MM', got '{datetime_str}'"
         )
-    if start_dt > end_dt:
+    if start_dt >= end_dt:
         raise ValueError("end time cannot be earlier than now")
     duration = end_dt - start_dt
     # Convert total seconds to hours

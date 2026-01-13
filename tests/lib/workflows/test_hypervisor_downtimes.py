@@ -8,7 +8,10 @@ from apis.icinga_api.structs.downtime_details import DowntimeDetails
 import pytest
 import pytz
 from workflows.hypervisor_downtime import schedule_hypervisor_downtime
-from workflows.hypervisor_downtime import _get_number_of_hours
+from workflows.hypervisor_downtime import (
+    _get_number_of_hours,
+    _get_number_of_hours_from_absolute_datetime,
+)
 
 
 # pylint:disable=too-many-locals
@@ -311,3 +314,188 @@ def test_valid_duration_case_insensitive():
     )
     result = _get_number_of_hours(start_dt, "2D 6H")
     assert result == 54
+
+
+# ===============================================
+# unit test function _get_number_of_hours()
+# ===============================================
+
+
+def test_absolute_datetime_empty_string_raises_exception():
+    """Test that an empty string raises ValueError"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_absolute_datetime(start_dt, "")
+
+
+def test_absolute_datetime_invalid_format_no_time():
+    """Test that date without time raises ValueError"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_absolute_datetime(start_dt, "2024-01-01")
+
+
+def test_absolute_datetime_invalid_format_wrong_separator():
+    """Test that wrong separator (T instead of space) raises ValueError"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_absolute_datetime(start_dt, "2024-01-01T10:00")
+
+
+def test_absolute_datetime_invalid_format_wrong_date_separator():
+    """Test that wrong date separator (slashes) raises ValueError"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_absolute_datetime(start_dt, "2024/01/01 10:00")
+
+
+def test_absolute_datetime_invalid_format_random_text():
+    """Test that random text raises ValueError"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_absolute_datetime(start_dt, "random text")
+
+
+def test_absolute_datetime_invalid_month():
+    """Test that invalid month raises ValueError"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_absolute_datetime(start_dt, "2024-13-01 10:00")
+
+
+def test_absolute_datetime_invalid_day():
+    """Test that invalid day raises ValueError"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_absolute_datetime(start_dt, "2024-01-32 10:00")
+
+
+def test_absolute_datetime_invalid_hour():
+    """Test that invalid hour raises ValueError"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_absolute_datetime(start_dt, "2024-01-01 25:00")
+
+
+def test_absolute_datetime_invalid_minute():
+    """Test that invalid minute raises ValueError"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_absolute_datetime(start_dt, "2024-01-01 10:60")
+
+
+def test_absolute_datetime_end_before_start():
+    """Test that end time before start time raises ValueError"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_absolute_datetime(start_dt, "2024-01-01 09:00")
+
+
+def test_absolute_datetime_end_day_before_start():
+    """Test that end date before start date raises ValueError"""
+    start_dt = datetime.datetime.strptime("2024-01-02 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_absolute_datetime(start_dt, "2024-01-01 10:00")
+
+
+def test_absolute_datetime_same_time():
+    """Test that same start and end time raises ValueError"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    with pytest.raises(ValueError):
+        _get_number_of_hours_from_absolute_datetime(start_dt, "2024-01-01 10:00")
+
+
+def test_absolute_datetime_one_hour_later():
+    """Test one hour difference"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    result = _get_number_of_hours_from_absolute_datetime(start_dt, "2024-01-01 11:00")
+    assert result == 1
+
+
+def test_absolute_datetime_same_day_multiple_hours():
+    """Test multiple hours on same day"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    result = _get_number_of_hours_from_absolute_datetime(start_dt, "2024-01-01 15:00")
+    assert result == 5
+
+
+def test_absolute_datetime_exactly_one_day():
+    """Test exactly 24 hours (one day)"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    result = _get_number_of_hours_from_absolute_datetime(start_dt, "2024-01-02 10:00")
+    assert result == 24
+
+
+def test_absolute_datetime_multiple_days():
+    """Test multiple days"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    result = _get_number_of_hours_from_absolute_datetime(start_dt, "2024-01-05 10:00")
+    assert result == 96
+
+
+def test_absolute_datetime_days_and_hours():
+    """Test combination of days and hours"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    result = _get_number_of_hours_from_absolute_datetime(start_dt, "2024-01-03 14:00")
+    assert result == 52
+
+
+def test_absolute_datetime_across_month_boundary():
+    """Test datetime across month boundary"""
+    start_dt = datetime.datetime.strptime("2024-01-30 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    result = _get_number_of_hours_from_absolute_datetime(start_dt, "2024-02-01 10:00")
+    assert result == 48
+
+
+def test_absolute_datetime_across_year_boundary():
+    """Test datetime across year boundary"""
+    start_dt = datetime.datetime.strptime("2024-12-31 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    result = _get_number_of_hours_from_absolute_datetime(start_dt, "2025-01-01 10:00")
+    assert result == 24
+
+
+def test_absolute_datetime_with_minutes_rounds_down():
+    """Test that minutes are truncated when converting to hours"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    result = _get_number_of_hours_from_absolute_datetime(start_dt, "2024-01-01 11:59")
+    assert result == 1
