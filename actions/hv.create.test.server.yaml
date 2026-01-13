@@ -22,10 +22,10 @@ parameters:
     enum:
       - "dev"
       - "prod"
-  hypervisor_name:
+  hypervisor_names:
     type: string
     required: true
-    description: Name of server
+    description: Name of the server or servers. If more than one is passed, split then by either comma (,) or colon (:) 
   test_all_flavors:
     type: boolean
     description: Test all avaliable flavors for the hypervisor, otherwise test random flavor
