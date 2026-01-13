@@ -8,10 +8,14 @@ parameters:
     type: string
     description: Hostname of the hypervisor, e.g. hvxyz.nubes.rl.ac.uk
     required: true
-  duration_hours:
-    type: integer
-    description: Duration of downtime in hours, CANNOT be a decimal
-    required: true
+  end_time:
+    type: string
+    description: "Enter the end date of the downtime period, starting now, as a UTC timestamp in the format YYYY-MM-DD HH:MM. NOTE: if this field is left empty, then field 'duration' is required."
+    required: false
+  duration:
+    type: string
+    description: "Enter the duration of the downtime, starting now, as a number of days (d) and/or hours (h) (examples: 2d, 24h, 3d 12h). NOTE: if this field is left empty, then field 'end_time' is required."
+    required: false
   comment:
     type: string
     description: Downtime reason
