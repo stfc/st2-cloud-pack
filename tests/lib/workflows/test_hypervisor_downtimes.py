@@ -150,6 +150,18 @@ def test_both_single_space_raise_exception():
         get_number_of_hours(start_dt, " ", " ")
 
 
+def test_none_types_handled_too():
+    """Test that both parameters as None in either field does not raise a ValueError"""
+    start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(
+        tzinfo=pytz.utc
+    )
+    result = get_number_of_hours(start_dt, "2024-01-01 11:00", None)
+    assert result == 1
+
+    result = get_number_of_hours(start_dt, None, "1h")
+    assert result == 1
+
+
 def test_both_multiple_spaces_raise_exception():
     """Test that both parameters as multiple spaces raise ValueError"""
     start_dt = datetime.datetime.strptime("2024-01-01 10:00", "%Y-%m-%d %H:%M").replace(

@@ -31,8 +31,10 @@ def get_number_of_hours(start_dt, end_time_str, duration):
 
     :raises ValueError: if the input string is invalid or contains negative values
     """
-    end_time_str = end_time_str.strip()
-    duration = duration.strip()
+    if end_time_str is not None:
+        end_time_str = end_time_str.strip()
+    if duration is not None:
+        duration = duration.strip()
     if not end_time_str and not duration:
         raise ValueError("Input strings cannot be both empty at the same time")
 
