@@ -67,6 +67,22 @@ def delete_project(conn: Connection, project_identifier: str) -> bool:
     return result is None  # Where None == success
 
 
+def add_flavor_to_project(
+    conn: Connection, project_identifier: str, flavor_identifier: str
+) -> bool:
+    """
+    Add a flavor to the given project
+    :param conn: openstack connection object
+    :param project_identifier: The name or Openstack ID for the project
+    :param flavor_identifier: The name or Openstack ID for the flavor
+    :return:
+    """
+    project = conn.identity.find_project(project_identifier, ignore_missing=False)
+    flavor = conn.compute.find_flavor(flavor_identifier, ignore_missing=False)
+    res = conn.compute.flavor_add_tenant_access(flavor, project.id)
+    return res is None
+
+
 def _is_project_safe_to_delete(project: Project) -> bool:
     """
     Returns true if the project is safe to delete - avoid deleting admin project for instance

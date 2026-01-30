@@ -3,7 +3,11 @@ import pytest
 
 from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from openstack.exceptions import ConflictException
-from apis.openstack_api.openstack_project import create_project, delete_project
+from apis.openstack_api.openstack_project import (
+    create_project,
+    delete_project,
+    add_flavor_to_project,
+)
 
 
 def test_create_project_name_missing_throws():
@@ -204,3 +208,53 @@ def test_delete_protected_project_fails(protected_project_id):
         mock_project_identifier, ignore_missing=False
     )
     mock_conn.identity.delete_project.assert_not_called()
+
+
+def test_add_flavor_to_project_success():
+    """tests that add flavor to project calls appropriate API functions with correct args"""
+    mock_conn = MagicMock()
+    mock_project_identifier = NonCallableMock()
+    mock_flavor_identifier = NonCallableMock()
+
+    res = add_flavor_to_project(
+        mock_conn, mock_project_identifier, mock_flavor_identifier
+    )
+
+    mock_conn.identity.find_project.assert_called_once_with(
+        mock_project_identifier, ignore_missing=False
+    )
+    mock_conn.compute.find_flavor.assert_called_once_with(
+        mock_flavor_identifier, ignore_missing=False
+    )
+    mock_conn.compute.flavor_add_tenant_access(
+        mock_conn.compute.find_flavor.return_value,
+        mock_conn.compute.find_project.return_value.id,
+    )
+    assert res is False  # mock is not None
+
+
+def test_add_flavor_to_project_fail():
+    """tests that add flavor to project calls appropriate API functions with correct args"""
+    mock_conn = MagicMock()
+    mock_project_identifier = NonCallableMock()
+    mock_flavor_identifier = NonCallableMock()
+
+    mock_conn.compute.flavor_add_tenant_access.return_value = (
+        None  # to mock failure of adding flavor to project
+    )
+
+    res = add_flavor_to_project(
+        mock_conn, mock_project_identifier, mock_flavor_identifier
+    )
+
+    mock_conn.identity.find_project.assert_called_once_with(
+        mock_project_identifier, ignore_missing=False
+    )
+    mock_conn.compute.find_flavor.assert_called_once_with(
+        mock_flavor_identifier, ignore_missing=False
+    )
+    mock_conn.compute.flavor_add_tenant_access(
+        mock_conn.compute.find_flavor.return_value,
+        mock_conn.compute.find_project.return_value.id,
+    )
+    assert res is True  # mock is not None
