@@ -102,12 +102,14 @@ def create_project(
     refresh_security_groups(conn, project["id"])
 
     network_type = Networks.from_string(network)
+
+    set_floating_ips(conn, project, network_type, number_of_floating_ips)
+
     if network_type in (Networks.EXTERNAL, Networks.JASMIN):
         setup_external_networking(
             conn,
             project,
             network_type,
-            number_of_floating_ips,
             number_of_security_group_rules,
         )
     elif network_type == Networks.INTERNAL:
@@ -148,7 +150,6 @@ def setup_external_networking(
     conn: Connection,
     project: Project,
     external_network: Networks,
-    number_of_floating_ips: int,
     number_of_security_group_rules: int,
 ):
     """
@@ -159,8 +160,6 @@ def setup_external_networking(
     :type project: Project
     :param external_network: External Cloud network
     :type external_network: Networks
-    :param number_of_floating_ips: Floating IP quota for project
-    :type number_of_floating_ips: int
     :param number_of_security_group_rules: Security group quota for project
     :type number_of_security_group_rules: int
     """
@@ -234,7 +233,6 @@ def setup_external_networking(
         conn,
         QuotaDetails(
             project_identifier=project.id,
-            floating_ips=number_of_floating_ips,
             security_group_rules=number_of_security_group_rules,
         ),
     )
@@ -252,15 +250,6 @@ def setup_external_networking(
         raise NotImplementedError(f"Unknown external network type {external_network}")
 
     logger.info("Created default security group")
-
-    allocate_floating_ips(
-        conn,
-        network_identifier=external_network.value,
-        project_identifier=project.id,
-        number_to_create=number_of_floating_ips,
-    )
-
-    logger.info("Allocated %s floating ips", number_of_floating_ips)
 
 
 def setup_internal_networking(conn: Connection, project: Project):
@@ -282,3 +271,37 @@ def setup_internal_networking(conn: Connection, project: Project):
 
     # create default security group rules
     create_internal_security_group_rules(conn, project["id"], "default")
+
+
+def set_floating_ips(
+    conn: Connection,
+    project: Project,
+    network: Networks,
+    number_of_floating_ips: int,
+):
+    """
+    Set the Floating IPs
+
+    :param conn: OpenStack connection object
+    :type conn: Connection
+    :param project: OpenStack project object
+    :type project: Project
+    :param network: type of network
+    :type network: Networks
+    :param number_of_floating_ips: Floating IP quota for project
+    :type number_of_floating_ips: int
+    """
+    set_quota(
+        conn,
+        QuotaDetails(
+            project_identifier=project.id,
+            floating_ips=number_of_floating_ips,
+        ),
+    )
+    allocate_floating_ips(
+        conn,
+        network_identifier=network.value,
+        project_identifier=project.id,
+        number_to_create=number_of_floating_ips,
+    )
+    logger.info("Allocated %s floating ips", number_of_floating_ips)
