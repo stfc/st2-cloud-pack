@@ -17,6 +17,7 @@ from workflows.create_project import (
     create_project,
     setup_external_networking,
     setup_internal_networking,
+    set_floating_ips,
 )
 
 
@@ -24,6 +25,7 @@ from workflows.create_project import (
 # pylint: disable=too-many-locals
 @patch("workflows.create_project.create_openstack_project")
 @patch("workflows.create_project.refresh_security_groups")
+@patch("workflows.create_project.set_floating_ips")
 @patch("workflows.create_project.setup_external_networking")
 @patch("workflows.create_project.create_http_security_group")
 @patch("workflows.create_project.create_https_security_group")
@@ -33,6 +35,7 @@ def test_create_project_external(
     mock_create_https_security_group,
     mock_create_http_security_group,
     mock_setup_external_networking,
+    mock_set_floating_ips,
     mock_refresh_security_groups,
     mock_create_openstack_project,
 ):
@@ -90,11 +93,19 @@ def test_create_project_external(
 
     mock_refresh_security_groups.assert_called_once_with(mock_conn, "project-id")
 
-    mock_setup_external_networking.assert_called_once_with(
+    # New assertion for set_floating_ips
+    mock_set_floating_ips.assert_called_once_with(
         mock_conn,
         mock_project,
         Networks.EXTERNAL,
         number_of_floating_ips,
+    )
+
+    # Updated assertion - setup_external_networking no longer receives number_of_floating_ips
+    mock_setup_external_networking.assert_called_once_with(
+        mock_conn,
+        mock_project,
+        Networks.EXTERNAL,
         number_of_security_group_rules,
     )
 
@@ -155,6 +166,7 @@ def test_create_project_external(
 
 @patch("workflows.create_project.create_openstack_project")
 @patch("workflows.create_project.refresh_security_groups")
+@patch("workflows.create_project.set_floating_ips")
 @patch("workflows.create_project.setup_internal_networking")
 @patch("workflows.create_project.create_http_security_group")
 @patch("workflows.create_project.create_https_security_group")
@@ -164,6 +176,7 @@ def test_create_project_internal(
     mock_create_https_security_group,
     mock_create_http_security_group,
     mock_setup_internal_networking,
+    mock_set_floating_ips,
     mock_refresh_security_groups,
     mock_create_openstack_project,
 ):
@@ -220,6 +233,14 @@ def test_create_project_internal(
     )
 
     mock_refresh_security_groups.assert_called_once_with(mock_conn, "project-id")
+
+    # New assertion for set_floating_ips
+    mock_set_floating_ips.assert_called_once_with(
+        mock_conn,
+        mock_project,
+        Networks.INTERNAL,
+        number_of_floating_ips,
+    )
 
     mock_setup_internal_networking.assert_called_once_with(mock_conn, mock_project)
 
@@ -280,6 +301,7 @@ def test_create_project_internal(
 
 @patch("workflows.create_project.create_openstack_project")
 @patch("workflows.create_project.refresh_security_groups")
+@patch("workflows.create_project.set_floating_ips")
 @patch("workflows.create_project.setup_external_networking")
 @patch("workflows.create_project.create_http_security_group")
 @patch("workflows.create_project.create_https_security_group")
@@ -289,6 +311,7 @@ def test_create_project_jasmin(
     mock_create_https_security_group,
     mock_create_http_security_group,
     mock_setup_external_networking,
+    mock_set_floating_ips,
     mock_refresh_security_groups,
     mock_create_openstack_project,
 ):
@@ -346,11 +369,19 @@ def test_create_project_jasmin(
 
     mock_refresh_security_groups.assert_called_once_with(mock_conn, "project-id")
 
-    mock_setup_external_networking.assert_called_once_with(
+    # New assertion for set_floating_ips
+    mock_set_floating_ips.assert_called_once_with(
         mock_conn,
         mock_project,
         Networks.JASMIN,
         number_of_floating_ips,
+    )
+
+    # Updated assertion - setup_external_networking no longer receives number_of_floating_ips
+    mock_setup_external_networking.assert_called_once_with(
+        mock_conn,
+        mock_project,
+        Networks.JASMIN,
         number_of_security_group_rules,
     )
 
@@ -411,6 +442,7 @@ def test_create_project_jasmin(
 
 @patch("workflows.create_project.create_openstack_project")
 @patch("workflows.create_project.refresh_security_groups")
+@patch("workflows.create_project.set_floating_ips")
 @patch("workflows.create_project.setup_external_networking")
 @patch("workflows.create_project.create_http_security_group")
 @patch("workflows.create_project.create_https_security_group")
@@ -420,6 +452,7 @@ def test_create_project_jasmin_no_users(
     mock_create_https_security_group,
     mock_create_http_security_group,
     mock_setup_external_networking,
+    mock_set_floating_ips,
     mock_refresh_security_groups,
     mock_create_openstack_project,
 ):
@@ -477,11 +510,19 @@ def test_create_project_jasmin_no_users(
 
     mock_refresh_security_groups.assert_called_once_with(mock_conn, "project-id")
 
-    mock_setup_external_networking.assert_called_once_with(
+    # New assertion for set_floating_ips
+    mock_set_floating_ips.assert_called_once_with(
         mock_conn,
         mock_project,
         Networks.JASMIN,
         number_of_floating_ips,
+    )
+
+    # Updated assertion - setup_external_networking no longer receives number_of_floating_ips
+    mock_setup_external_networking.assert_called_once_with(
+        mock_conn,
+        mock_project,
+        Networks.JASMIN,
         number_of_security_group_rules,
     )
 
@@ -504,9 +545,7 @@ def test_create_project_jasmin_no_users(
 @patch("workflows.create_project.set_quota")
 @patch("workflows.create_project.create_network_rbac")
 @patch("workflows.create_project.create_external_security_group_rules")
-@patch("workflows.create_project.allocate_floating_ips")
 def test_setup_external_networking(
-    mock_allocate_floating_ips,
     mock_create_external_security_group_rules,
     mock_create_network_rbac,
     mock_set_quota,
@@ -529,15 +568,13 @@ def test_setup_external_networking(
     mock_project = MagicMock()
     mock_project.name = "Test Project"
     mock_network = "External"
-    number_of_floating_ips = 2
     number_of_security_group_rules = 200
 
-    # Call the function
+    # Call the function - NOTE: number_of_floating_ips parameter removed
     setup_external_networking(
         mock_conn,
         mock_project,
         Networks.EXTERNAL,
-        number_of_floating_ips,
         number_of_security_group_rules,
     )
 
@@ -601,11 +638,11 @@ def test_setup_external_networking(
         subnet_identifier=mock_create_subnet.return_value.id,
     )
 
+    # Updated assertion - set_quota now only sets security_group_rules
     mock_set_quota.assert_called_once_with(
         mock_conn,
         QuotaDetails(
             project_identifier=mock_project.id,
-            floating_ips=number_of_floating_ips,
             security_group_rules=number_of_security_group_rules,
         ),
     )
@@ -616,12 +653,7 @@ def test_setup_external_networking(
         security_group_identifier="default",
     )
 
-    mock_allocate_floating_ips.assert_called_once_with(
-        mock_conn,
-        network_identifier="External",
-        project_identifier=mock_project.id,
-        number_to_create=number_of_floating_ips,
-    )
+    # Note: allocate_floating_ips is no longer called in setup_external_networking
 
 
 @patch("workflows.create_project.create_network")
@@ -632,9 +664,7 @@ def test_setup_external_networking(
 @patch("workflows.create_project.create_network_rbac")
 @patch("workflows.create_project.create_external_security_group_rules")
 @patch("workflows.create_project.create_jasmin_security_group_rules")
-@patch("workflows.create_project.allocate_floating_ips")
 def test_setup_jasmin_networking(
-    mock_allocate_floating_ips,
     mock_create_jasmin_security_group_rules,
     mock_create_external_security_group_rules,
     mock_create_network_rbac,
@@ -645,7 +675,7 @@ def test_setup_jasmin_networking(
     mock_create_network,
 ):
     """
-    Test the setup of networking for external projects.
+    Test the setup of networking for JASMIN projects.
     """
     logging.disable()  # Don't need to test logging
     # Mock the return values for network, router, and subnet
@@ -657,15 +687,13 @@ def test_setup_jasmin_networking(
     mock_conn = MagicMock()
     mock_project = MagicMock()
     mock_project.name = "Test Project"
-    number_of_floating_ips = 2
     number_of_security_group_rules = 200
 
-    # Call the function
+    # Call the function - NOTE: number_of_floating_ips parameter removed
     setup_external_networking(
         mock_conn,
         mock_project,
         Networks.JASMIN,
-        number_of_floating_ips,
         number_of_security_group_rules,
     )
 
@@ -729,11 +757,11 @@ def test_setup_jasmin_networking(
         subnet_identifier=mock_create_subnet.return_value.id,
     )
 
+    # Updated assertion - set_quota now only sets security_group_rules
     mock_set_quota.assert_called_once_with(
         mock_conn,
         QuotaDetails(
             project_identifier=mock_project.id,
-            floating_ips=number_of_floating_ips,
             security_group_rules=number_of_security_group_rules,
         ),
     )
@@ -746,12 +774,7 @@ def test_setup_jasmin_networking(
         security_group_identifier="default",
     )
 
-    mock_allocate_floating_ips.assert_called_once_with(
-        mock_conn,
-        network_identifier="JASMIN External Cloud Network",
-        project_identifier=mock_project.id,
-        number_to_create=number_of_floating_ips,
-    )
+    # Note: allocate_floating_ips is no longer called in setup_external_networking
 
 
 def test_setup_external_networking_unsupported_enum():
@@ -772,7 +795,6 @@ def test_setup_external_networking_unsupported_enum():
             mock_conn,
             mock_project,
             external_network=UnsupportedNetwork.INVALID,  # enum value, but unsupported
-            number_of_floating_ips=1,
             number_of_security_group_rules=100,
         )
 
@@ -812,6 +834,92 @@ def test_setup_internal_networking(
     )
 
 
+@patch("workflows.create_project.set_quota")
+@patch("workflows.create_project.allocate_floating_ips")
+def test_set_floating_ips(
+    mock_allocate_floating_ips,
+    mock_set_quota,
+):
+    """
+    Test the set_floating_ips function.
+    """
+    logging.disable()  # Don't need to test logging
+
+    # Test data
+    mock_conn = MagicMock()
+    mock_project = MagicMock()
+    mock_project.id = "project-id"
+    network = Networks.EXTERNAL
+    number_of_floating_ips = 5
+
+    # Call the function
+    set_floating_ips(
+        mock_conn,
+        mock_project,
+        network,
+        number_of_floating_ips,
+    )
+
+    # Assertions
+    mock_set_quota.assert_called_once_with(
+        mock_conn,
+        QuotaDetails(
+            project_identifier=mock_project.id,
+            floating_ips=number_of_floating_ips,
+        ),
+    )
+
+    mock_allocate_floating_ips.assert_called_once_with(
+        mock_conn,
+        network_identifier=network.value,
+        project_identifier=mock_project.id,
+        number_to_create=number_of_floating_ips,
+    )
+
+
+@patch("workflows.create_project.set_quota")
+@patch("workflows.create_project.allocate_floating_ips")
+def test_set_floating_ips_internal(
+    mock_allocate_floating_ips,
+    mock_set_quota,
+):
+    """
+    Test the set_floating_ips function with Internal network.
+    """
+    logging.disable()  # Don't need to test logging
+
+    # Test data
+    mock_conn = MagicMock()
+    mock_project = MagicMock()
+    mock_project.id = "project-id"
+    network = Networks.INTERNAL
+    number_of_floating_ips = 3
+
+    # Call the function
+    set_floating_ips(
+        mock_conn,
+        mock_project,
+        network,
+        number_of_floating_ips,
+    )
+
+    # Assertions
+    mock_set_quota.assert_called_once_with(
+        mock_conn,
+        QuotaDetails(
+            project_identifier=mock_project.id,
+            floating_ips=number_of_floating_ips,
+        ),
+    )
+
+    mock_allocate_floating_ips.assert_called_once_with(
+        mock_conn,
+        network_identifier=network.value,
+        project_identifier=mock_project.id,
+        number_to_create=number_of_floating_ips,
+    )
+
+
 def test_project_create_raise_unknown_network_type():
     """
     Test project creation with an unknown network type.
@@ -837,7 +945,7 @@ def test_project_create_raise_unknown_network_type():
 @patch("workflows.create_project.Networks.from_string")
 def test_project_create_raise_unknown_network_type_enum(mock_from_string):
     """
-    Test project creation with an unknown network type.
+    Test project creation with an unknown network type enum.
     """
     mock_conn = MagicMock()
     mock_project = "mock_project"
