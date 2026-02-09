@@ -6,7 +6,6 @@ from apis.openstack_api.enums.networks import Networks
 from apis.openstack_api.enums.rbac_network_actions import RbacNetworkActions
 from apis.openstack_api.enums.user_domains import UserDomains
 from apis.openstack_api.openstack_network import (
-    allocate_floating_ips,
     create_network,
     create_network_rbac,
 )
@@ -117,7 +116,6 @@ def create_project(
             conn,
             project,
             network_type,
-            number_of_floating_ips,
         )
     elif network_type == Networks.INTERNAL:
         setup_internal_networking(conn, project)
@@ -157,7 +155,6 @@ def setup_external_networking(
     conn: Connection,
     project: Project,
     external_network: Networks,
-    number_of_floating_ips: int,
 ):
     """
     Setup the project's external networking.
@@ -167,8 +164,6 @@ def setup_external_networking(
     :type project: Project
     :param external_network: External Cloud network
     :type external_network: Networks
-    :param number_of_floating_ips: Floating IP quota for project
-    :type number_of_floating_ips: int
     """
     network = create_network(
         conn,
@@ -249,15 +244,6 @@ def setup_external_networking(
         raise NotImplementedError(f"Unknown external network type {external_network}")
 
     logger.info("Created default security group")
-
-    allocate_floating_ips(
-        conn,
-        network_identifier=external_network.value,
-        project_identifier=project.id,
-        number_to_create=number_of_floating_ips,
-    )
-
-    logger.info("Allocated %s floating ips", number_of_floating_ips)
 
 
 def setup_internal_networking(conn: Connection, project: Project):
