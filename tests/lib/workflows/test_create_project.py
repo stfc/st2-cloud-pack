@@ -24,6 +24,7 @@ from workflows.create_project import (
 # pylint: disable=too-many-locals
 @patch("workflows.create_project.create_openstack_project")
 @patch("workflows.create_project.refresh_security_groups")
+@patch("workflows.create_project.set_quota")
 @patch("workflows.create_project.setup_external_networking")
 @patch("workflows.create_project.create_http_security_group")
 @patch("workflows.create_project.create_https_security_group")
@@ -33,6 +34,7 @@ def test_create_project_external(
     mock_create_https_security_group,
     mock_create_http_security_group,
     mock_setup_external_networking,
+    mock_set_quota,
     mock_refresh_security_groups,
     mock_create_openstack_project,
 ):
@@ -42,6 +44,7 @@ def test_create_project_external(
     # Mock the return value for project
     mock_project = MagicMock()
     mock_project.name = "Test Project"
+    mock_project.id = "project-id"
     mock_project.__getitem__.side_effect = lambda key: {"id": "project-id"}[key]
     mock_create_openstack_project.return_value = mock_project
 
@@ -90,12 +93,21 @@ def test_create_project_external(
 
     mock_refresh_security_groups.assert_called_once_with(mock_conn, "project-id")
 
+    # Assert set_quota is called BEFORE setup_external_networking
+    mock_set_quota.assert_called_once_with(
+        mock_conn,
+        QuotaDetails(
+            project_identifier=mock_project.id,
+            floating_ips=number_of_floating_ips,
+            security_group_rules=number_of_security_group_rules,
+        ),
+    )
+
+    # Assert setup_external_networking is called WITHOUT number_of_floating_ips
     mock_setup_external_networking.assert_called_once_with(
         mock_conn,
         mock_project,
         Networks.EXTERNAL,
-        number_of_floating_ips,
-        number_of_security_group_rules,
     )
 
     mock_create_http_security_group.assert_called_once_with(
@@ -155,6 +167,7 @@ def test_create_project_external(
 
 @patch("workflows.create_project.create_openstack_project")
 @patch("workflows.create_project.refresh_security_groups")
+@patch("workflows.create_project.set_quota")
 @patch("workflows.create_project.setup_internal_networking")
 @patch("workflows.create_project.create_http_security_group")
 @patch("workflows.create_project.create_https_security_group")
@@ -164,6 +177,7 @@ def test_create_project_internal(
     mock_create_https_security_group,
     mock_create_http_security_group,
     mock_setup_internal_networking,
+    mock_set_quota,
     mock_refresh_security_groups,
     mock_create_openstack_project,
 ):
@@ -173,6 +187,7 @@ def test_create_project_internal(
     # Mock the return value for project
     mock_project = MagicMock()
     mock_project.name = "Test Project"
+    mock_project.id = "project-id"
     mock_project.__getitem__.side_effect = lambda key: {"id": "project-id"}[key]
     mock_create_openstack_project.return_value = mock_project
 
@@ -220,6 +235,16 @@ def test_create_project_internal(
     )
 
     mock_refresh_security_groups.assert_called_once_with(mock_conn, "project-id")
+
+    # Assert set_quota is called for internal networks too
+    mock_set_quota.assert_called_once_with(
+        mock_conn,
+        QuotaDetails(
+            project_identifier=mock_project.id,
+            floating_ips=number_of_floating_ips,
+            security_group_rules=number_of_security_group_rules,
+        ),
+    )
 
     mock_setup_internal_networking.assert_called_once_with(mock_conn, mock_project)
 
@@ -280,6 +305,7 @@ def test_create_project_internal(
 
 @patch("workflows.create_project.create_openstack_project")
 @patch("workflows.create_project.refresh_security_groups")
+@patch("workflows.create_project.set_quota")
 @patch("workflows.create_project.setup_external_networking")
 @patch("workflows.create_project.create_http_security_group")
 @patch("workflows.create_project.create_https_security_group")
@@ -289,6 +315,7 @@ def test_create_project_jasmin(
     mock_create_https_security_group,
     mock_create_http_security_group,
     mock_setup_external_networking,
+    mock_set_quota,
     mock_refresh_security_groups,
     mock_create_openstack_project,
 ):
@@ -298,6 +325,7 @@ def test_create_project_jasmin(
     # Mock the return value for project
     mock_project = MagicMock()
     mock_project.name = "Test Project"
+    mock_project.id = "project-id"
     mock_project.__getitem__.side_effect = lambda key: {"id": "project-id"}[key]
     mock_create_openstack_project.return_value = mock_project
 
@@ -346,12 +374,21 @@ def test_create_project_jasmin(
 
     mock_refresh_security_groups.assert_called_once_with(mock_conn, "project-id")
 
+    # Assert set_quota is called BEFORE setup_external_networking
+    mock_set_quota.assert_called_once_with(
+        mock_conn,
+        QuotaDetails(
+            project_identifier=mock_project.id,
+            floating_ips=number_of_floating_ips,
+            security_group_rules=number_of_security_group_rules,
+        ),
+    )
+
+    # Assert setup_external_networking is called WITHOUT number_of_floating_ips
     mock_setup_external_networking.assert_called_once_with(
         mock_conn,
         mock_project,
         Networks.JASMIN,
-        number_of_floating_ips,
-        number_of_security_group_rules,
     )
 
     mock_create_http_security_group.assert_called_once_with(
@@ -411,6 +448,7 @@ def test_create_project_jasmin(
 
 @patch("workflows.create_project.create_openstack_project")
 @patch("workflows.create_project.refresh_security_groups")
+@patch("workflows.create_project.set_quota")
 @patch("workflows.create_project.setup_external_networking")
 @patch("workflows.create_project.create_http_security_group")
 @patch("workflows.create_project.create_https_security_group")
@@ -420,6 +458,7 @@ def test_create_project_jasmin_no_users(
     mock_create_https_security_group,
     mock_create_http_security_group,
     mock_setup_external_networking,
+    mock_set_quota,
     mock_refresh_security_groups,
     mock_create_openstack_project,
 ):
@@ -429,6 +468,7 @@ def test_create_project_jasmin_no_users(
     # Mock the return value for project
     mock_project = MagicMock()
     mock_project.name = "Test Project"
+    mock_project.id = "project-id"
     mock_project.__getitem__.side_effect = lambda key: {"id": "project-id"}[key]
     mock_create_openstack_project.return_value = mock_project
 
@@ -477,12 +517,21 @@ def test_create_project_jasmin_no_users(
 
     mock_refresh_security_groups.assert_called_once_with(mock_conn, "project-id")
 
+    # Assert set_quota is called
+    mock_set_quota.assert_called_once_with(
+        mock_conn,
+        QuotaDetails(
+            project_identifier=mock_project.id,
+            floating_ips=number_of_floating_ips,
+            security_group_rules=number_of_security_group_rules,
+        ),
+    )
+
+    # Assert setup_external_networking is called WITHOUT number_of_floating_ips
     mock_setup_external_networking.assert_called_once_with(
         mock_conn,
         mock_project,
         Networks.JASMIN,
-        number_of_floating_ips,
-        number_of_security_group_rules,
     )
 
     mock_create_http_security_group.assert_called_once_with(
@@ -501,15 +550,11 @@ def test_create_project_jasmin_no_users(
 @patch("workflows.create_project.create_router")
 @patch("workflows.create_project.create_subnet")
 @patch("workflows.create_project.add_interface_to_router")
-@patch("workflows.create_project.set_quota")
 @patch("workflows.create_project.create_network_rbac")
 @patch("workflows.create_project.create_external_security_group_rules")
-@patch("workflows.create_project.allocate_floating_ips")
 def test_setup_external_networking(
-    mock_allocate_floating_ips,
     mock_create_external_security_group_rules,
     mock_create_network_rbac,
-    mock_set_quota,
     mock_add_interface_to_router,
     mock_create_subnet,
     mock_create_router,
@@ -529,16 +574,12 @@ def test_setup_external_networking(
     mock_project = MagicMock()
     mock_project.name = "Test Project"
     mock_network = "External"
-    number_of_floating_ips = 2
-    number_of_security_group_rules = 200
 
-    # Call the function
+    # Call the function (WITHOUT number_of_floating_ips parameter)
     setup_external_networking(
         mock_conn,
         mock_project,
         Networks.EXTERNAL,
-        number_of_floating_ips,
-        number_of_security_group_rules,
     )
 
     # Assertions to ensure the functions were called with correct parameters
@@ -601,14 +642,7 @@ def test_setup_external_networking(
         subnet_identifier=mock_create_subnet.return_value.id,
     )
 
-    mock_set_quota.assert_called_once_with(
-        mock_conn,
-        QuotaDetails(
-            project_identifier=mock_project.id,
-            floating_ips=number_of_floating_ips,
-            security_group_rules=number_of_security_group_rules,
-        ),
-    )
+    # NOTE: set_quota is NO LONGER called in setup_external_networking
 
     mock_create_external_security_group_rules.assert_called_once_with(
         mock_conn,
@@ -616,29 +650,20 @@ def test_setup_external_networking(
         security_group_identifier="default",
     )
 
-    mock_allocate_floating_ips.assert_called_once_with(
-        mock_conn,
-        network_identifier="External",
-        project_identifier=mock_project.id,
-        number_to_create=number_of_floating_ips,
-    )
+    # NOTE: allocate_floating_ips is NO LONGER called
 
 
 @patch("workflows.create_project.create_network")
 @patch("workflows.create_project.create_router")
 @patch("workflows.create_project.create_subnet")
 @patch("workflows.create_project.add_interface_to_router")
-@patch("workflows.create_project.set_quota")
 @patch("workflows.create_project.create_network_rbac")
 @patch("workflows.create_project.create_external_security_group_rules")
 @patch("workflows.create_project.create_jasmin_security_group_rules")
-@patch("workflows.create_project.allocate_floating_ips")
 def test_setup_jasmin_networking(
-    mock_allocate_floating_ips,
     mock_create_jasmin_security_group_rules,
     mock_create_external_security_group_rules,
     mock_create_network_rbac,
-    mock_set_quota,
     mock_add_interface_to_router,
     mock_create_subnet,
     mock_create_router,
@@ -657,16 +682,12 @@ def test_setup_jasmin_networking(
     mock_conn = MagicMock()
     mock_project = MagicMock()
     mock_project.name = "Test Project"
-    number_of_floating_ips = 2
-    number_of_security_group_rules = 200
 
-    # Call the function
+    # Call the function (WITHOUT number_of_floating_ips parameter)
     setup_external_networking(
         mock_conn,
         mock_project,
         Networks.JASMIN,
-        number_of_floating_ips,
-        number_of_security_group_rules,
     )
 
     # Assertions to ensure the functions were called with correct parameters
@@ -729,14 +750,7 @@ def test_setup_jasmin_networking(
         subnet_identifier=mock_create_subnet.return_value.id,
     )
 
-    mock_set_quota.assert_called_once_with(
-        mock_conn,
-        QuotaDetails(
-            project_identifier=mock_project.id,
-            floating_ips=number_of_floating_ips,
-            security_group_rules=number_of_security_group_rules,
-        ),
-    )
+    # NOTE: set_quota is NO LONGER called in setup_external_networking
 
     mock_create_external_security_group_rules.assert_not_called()
 
@@ -746,12 +760,7 @@ def test_setup_jasmin_networking(
         security_group_identifier="default",
     )
 
-    mock_allocate_floating_ips.assert_called_once_with(
-        mock_conn,
-        network_identifier="JASMIN External Cloud Network",
-        project_identifier=mock_project.id,
-        number_to_create=number_of_floating_ips,
-    )
+    # NOTE: allocate_floating_ips is NO LONGER called
 
 
 def test_setup_external_networking_unsupported_enum():
@@ -772,8 +781,6 @@ def test_setup_external_networking_unsupported_enum():
             mock_conn,
             mock_project,
             external_network=UnsupportedNetwork.INVALID,  # enum value, but unsupported
-            number_of_floating_ips=1,
-            number_of_security_group_rules=100,
         )
 
     assert "Unknown external network type" in str(exc_info.value)
