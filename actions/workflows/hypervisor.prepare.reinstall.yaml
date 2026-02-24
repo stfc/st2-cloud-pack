@@ -1,0 +1,102 @@
+version: 1.0
+
+description: Workflow to prepare hypervisor for reinstall to RL9.
+
+input:
+  - cloud_account
+  - hypervisor_name
+
+vars:
+  - reason: Reinstall <% now() %> - <% ctx().st2.user %>
+  - netbox_id: null
+  - ipmi_address: null
+
+tasks:
+  find_hypervisor_in_netbox:
+    action: netbox.get.dcim.devices
+    input:
+      name__ic:
+        - <% ctx().hypervisor_name %>
+    next:
+      - do:
+          - create_issue
+        publish:
+          - netbox_id: <% result().result.raw.results.id %>
+        when: <% succeeded() %>
+
+  set_hypervisor_to_planned:
+    action: netbox.patch.dcim.devices
+    input:
+      id: <% ctx().netbox_id[0] %>
+      status: planned
+      log_level: DEBUG
+    next:
+      - do:
+          - downtime_hypervisor
+        when: <% succeeded() %>
+
+  drain_hypervisor:
+    action: stackstorm_openstack.hypervisor.drain
+    input:
+      cloud_account: <% ctx().cloud_account %>
+      hypervisor_name: <% ctx().hypervisor_name %>
+      disabled_reason: <% ctx().reason %>
+    next:
+      - do:
+          - set_hypervisor_to_planned
+        when: <% succeeded() %>
+
+  downtime_hypervisor:
+    action: stackstorm_openstack.hypervisor.downtime
+    input:
+      hypervisor_name: <% ctx().hypervisor_name %>
+      duration_hours: 672 # 4 weeks
+      comment: <% ctx().reason %>
+      icinga_account_name: default
+      alertmanager_account_name: default
+      set_silence: True
+      set_downtime: <% not ctx().cloud_account = "prod" %>
+    next:
+      - do:
+          - update_issue_to_ready_to_start
+        when: <% succeeded() %>
+
+  create_issue:
+    action: jira.create_issue
+    input:
+      log_level: DEBUG
+      summary: "<% ctx().hypervisor_name %>"
+      type: HyperVisor
+      project: MH
+    next:
+      - do:
+          - update_issue_to_draining
+
+  update_issue_to_draining:
+    action: jira.transition_issue
+    next:
+      - do:
+          - drain_hypervisor
+        when: <% succeeded() %>
+    input:
+      log_level: DEBUG
+      issue_key: <% ctx().jira_issue %>
+      transition: Drain
+
+  update_issue_to_ready_to_start:
+    action: jira.transition_issue
+    next:
+      - do:
+          - update_issue_to_pre_bios
+        when: <% succeeded() %>
+    input:
+      log_level: DEBUG
+      issue_key: <% ctx().jira_issue %>
+      transition: Select For Reinstall
+
+  update_issue_to_pre_bios:
+    action: jira.transition_issue
+    input:
+      log_level: DEBUG
+      issue_key: <% ctx().jira_issue %>
+      transition: Start Process
