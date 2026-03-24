@@ -2,11 +2,11 @@ from unittest.mock import patch, MagicMock
 
 from apis.openstack_api.enums.user_domains import UserDomains
 from apis.openstack_api.structs.role_details import RoleDetails
-from workflows.role_actions import role_add, role_remove
+from workflows.role_actions import role_add_single_user, role_remove
 
 
 @patch("workflows.role_actions.assign_role_to_user")
-def test_role_add(mock_api_assign_role_to_user):
+def test_role_add_single_user(mock_api_assign_role_to_user):
     """
     Tests that role_add function forwards on request to openstack API role_add function
     and returns the correct status (True)
@@ -19,7 +19,7 @@ def test_role_add(mock_api_assign_role_to_user):
     mock_role_identifier = "user"
     mock_user_domain = "stfc"
 
-    status = role_add(
+    status = role_add_single_user(
         mock_conn,
         mock_user_identifier,
         mock_project_identifier,
