@@ -28,9 +28,9 @@ parameters:
     description: Role to add (Name or ID)
     required: true
     type: string
-  user_identifier:
-    description: User to add to (Name or ID)
-    type: string
+  user_identifiers:
+    description: one or more Users, split by comma, to add to (Names or IDs)
+    type: array
     required: true
   user_domain:
     description: Authentication realm to search

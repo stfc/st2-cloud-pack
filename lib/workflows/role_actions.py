@@ -1,3 +1,5 @@
+from typing import List
+
 from openstack.connection import Connection
 
 from apis.openstack_api.enums.user_domains import UserDomains
@@ -8,7 +10,7 @@ from apis.openstack_api.openstack_roles import (
 from apis.openstack_api.structs.role_details import RoleDetails
 
 
-def role_add(
+def role_add_single_user(
     conn: Connection,
     user_identifier: str,
     project_identifier: str,
@@ -32,6 +34,29 @@ def role_add(
     )
     assign_role_to_user(conn, details=details)
     return True  # the above method always returns None
+
+
+def role_add(
+    conn: Connection,
+    user_identifiers: List[str],
+    project_identifier: str,
+    role_identifier: str,
+    user_domain: str,
+) -> bool:
+    """
+    Add a given user a project role
+    :param conn: Openstack connection object
+    :param user_identifiers: list of Names or IDs of the users to assign a role to
+    :param project_identifier: Name or ID of the project this applies to
+    :param role_identifier: Name or ID of the role to assign
+    :param user_domain: The domain the user is associated with
+    :return: status
+    """
+    for user in user_identifiers:
+        role_add_single_user(
+            conn, user, project_identifier, role_identifier, user_domain
+        )
+    return True
 
 
 def role_remove(
