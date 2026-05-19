@@ -203,3 +203,40 @@ def delete_server(
 
     conn.compute.wait_for_delete(server, interval=5, wait=3600)
     logger.info("Deleted server: %s", server.id)
+
+
+def shutoff_server(conn: Connection, server_id: str) -> None:
+    """
+    Shutoff a server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: ID of server to delete
+    :type server_id: str
+    :return: None
+    :rtype: None
+    """
+    server = conn.compute.find_server(server_id)
+    logger.info("Attempt to shutoff server %s", server.id)
+    if server.status.upper() == "ACTIVE":
+        logger.info("Shutting off server: %s", server.id)
+        conn.compute.stop_server(server)
+        logger.info("Waiting for server to shut off: %s", server.id)
+        try:
+            conn.compute.wait_for_status(server, status="SHUTOFF")
+        except ResourceFailure as ex:
+            logger.error("server %s is in ERROR status : %s", server.id, ex)
+            raise ex
+        logger.info("server is shut off: %s", server.id)
+    elif server.status.upper() in ["SHUTOFF", "STOPPED"]:
+        logger.info(
+            "Server %s is in status %s, nothing to do",
+            server.id,
+            server.status,
+        )
+    else:
+        logger.info(
+            "Server %s is in status %s, cannot perform standard shutdown",
+            server.id,
+            server.status,
+        )
