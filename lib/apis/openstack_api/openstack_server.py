@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 import time
-from typing import Optional
+from typing import Optional, List
 from openstack.connection import Connection
 from openstack.compute.v2.image import Image
 from openstack.compute.v2.server import Server
@@ -240,3 +240,18 @@ def shutoff_server(conn: Connection, server_id: str) -> None:
             server.id,
             server.status,
         )
+
+
+def shutoff_server_list(conn: Connection, server_id_list: List[str]) -> None:
+    """
+    Shutoff a list of servers
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id_list: List of ID of servers to delete
+    :type server_id: List[str]
+    :return: None
+    :rtype: None
+    """
+    for server_id in server_id_list:
+        shutoff_server(conn, server_id)
