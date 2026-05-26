@@ -10,6 +10,7 @@ from apis.openstack_api.openstack_server import (
     snapshot_server,
     wait_for_image_status,
     wait_for_migration_status,
+    shutoff_server,
 )
 from openstack.exceptions import ResourceFailure, ResourceTimeout
 
@@ -530,3 +531,25 @@ def test_force_delete_server():
     mock_conn.compute.wait_for_delete.assert_called_once_with(
         mock_server, interval=5, wait=3600
     )
+
+
+def test_shutoff_server_propagates_resource_failure():
+    """
+    test that an Exception is raised when the servers goes
+    into ERROR status
+    """
+    mock_server = MagicMock()
+    mock_server.id = "server-123"
+    mock_server.status = "ACTIVE"
+
+    expected_exception = ResourceFailure("Any generic error message can go here")
+
+    mock_conn = MagicMock()
+    mock_conn.compute.find_server.return_value = mock_server
+
+    mock_conn.compute.wait_for_status.side_effect = expected_exception
+
+    with pytest.raises(ResourceFailure) as exc_info:
+        shutoff_server(mock_conn, "server-123")
+
+    assert exc_info.value is expected_exception
