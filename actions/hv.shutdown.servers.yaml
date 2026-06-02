@@ -1,0 +1,27 @@
+---
+description: Shutdown all servers in a given hypervisor
+enabled: true
+entry_point: src/openstack_actions.py
+name: hv.shutdown.servers
+parameters:
+  lib_entry_point:
+    default: workflows.hv_shutdown_servers.shutdown_all_servers_in_hypervisor
+    immutable: true
+    type: string
+  requires_openstack:
+    default: true
+    immutable: true
+    type: boolean
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  hypervisor_name:
+    type: string
+    required: true
+    description: Name of the hypervisor hosting all servers to be shut off
+runner_type: python-script
