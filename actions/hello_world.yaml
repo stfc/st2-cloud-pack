@@ -1,0 +1,11 @@
+---
+description: Test st2 can execute actions
+enabled: true
+entry_point: src/openstack_actions.py
+name: hello_world
+parameters:
+  lib_entry_point:
+    default: workflows.hello_world.salute
+    immutable: true
+    type: string
+runner_type: python-script
