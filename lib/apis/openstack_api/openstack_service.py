@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from openstack.connection import Connection
 from openstack.compute.v2.service import Service
 
@@ -26,6 +26,29 @@ def disable_service(
         service=service.id,
         disabled_reason=disabled_reason,
     )
+
+def disable_service_multiple_hypervisors(
+    conn: Connection,
+    hypervisor_names: List[str],
+    service_binary: str,
+    disabled_reason: str,
+) -> Optional[Service]:
+    """
+    Disables an Openstack service
+    :param conn: Openstack connection
+    :param service: The instance of the service class.
+    :param hypervisor_names: The name or ID of the hypervisors.
+    :param service_binary: The name of the service.
+    :param disabled_reason: The reason for disabling the service.
+    :return: Returns the Service object.
+    """
+    for hypervisor_name in hypervisor_names:
+        disable_service(
+            conn,
+            hypervisor_name,
+            service_binary,
+            disabled_reason,
+        )
 
 
 def enable_service(

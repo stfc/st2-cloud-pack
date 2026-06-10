@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import time
 from typing import Optional, List
@@ -255,3 +255,32 @@ def shutoff_server_list(conn: Connection, server_id_list: List[str]) -> None:
     """
     for server_id in server_id_list:
         shutoff_server(conn, server_id)
+
+
+def get_event_list(conn: Connection, server_id: str) -> int:
+    """
+    Get for how long (in seconds) this server has been in the current status
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: ID of server to delete
+    :type server_id: str
+    :return: for how long (in seconds) this server has been in the current status
+    :rtype: int
+    """
+    logger.info("getting the events list for server %s", server_id)
+    events = conn.compute.server_actions(server_id)
+    # the last change of status is the first item in the events generator
+    last_event = next(events)
+    # timestamp of the last change of status
+    last_event_t = last_event.start_time
+    # timestamp has format like "2026-06-02T09:46:39.000000"
+    # we calculate how many seconds ago was that
+    timestamp_dt = datetime.fromisoformat(last_event_t).replace(tzinfo=timezone.utc)
+    now_utc = datetime.now(timezone.utc)
+    seconds_until_now = (now_utc - timestamp_dt).total_seconds()
+    seconds_until_now = int(seconds_until_now)
+    logger.info(
+        "server %s changed status last time % seconds ago", server_id, seconds_until_now
+    )
+    return seconds_until_now
