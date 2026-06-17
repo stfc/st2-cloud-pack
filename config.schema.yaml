@@ -207,6 +207,16 @@ hypervisor_sensor:
       type: "integer"
       description: "Number of seconds before forcefully deleting previous state to update hypervisors stuck in a state"
 
+openstack_server_sensor:
+  description: "OpenStack Server sensors specific settings"
+  type: "object"
+  required: false
+  additionalProperties: false
+  properties:
+    shutoff_limit:
+      type: "number"
+      description: "Number of days a StackStorm server can be in SHUTOFF state before triggering the sensor"
+
 flavor_sensor:
   description: "Flavor sensor specific settings."
   type: "object"
