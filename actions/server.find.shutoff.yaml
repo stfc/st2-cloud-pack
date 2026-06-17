@@ -1,0 +1,29 @@
+---
+description: Find Servers in SHUTOFF state
+enabled: true
+entry_point: src/openstack_actions.py
+name: server.find.shutoff
+parameters:
+  lib_entry_point:
+    default: workflows.find_shutdown_servers.find_shutdown_servers
+    immutable: true
+    type: string
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  minimum_days:
+    description: minimum number of days a server needs to be in SHUTOFF state to be included
+    required: true
+    type: integer
+    default: 30
+  requires_openstack:
+    default: true
+    immutable: true
+    type: boolean
+
+runner_type: python-script
