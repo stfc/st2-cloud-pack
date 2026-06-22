@@ -1,6 +1,6 @@
 ---
 description: Show the current quota for project
-enabled: false
+enabled: true
 entry_point: src/openstack_actions.py
 name: quota.show
 parameters:
