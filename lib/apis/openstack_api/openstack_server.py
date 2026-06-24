@@ -10,18 +10,19 @@ from openstack.exceptions import ResourceFailure, ResourceTimeout
 logger = logging.getLogger(__name__)
 
 
-def can_be_migrated(server: Server):
-    if server.flavor.name.startswith("g-") or server.flavor.name.startswith("f-"):
-        raise ValueError(
-            f"Attempted to move GPU or FPGA flavor, {server.flavor.name}, which is not allowed!"
-        )
+def can_be_migrated(server: Server, check_flavor: bool):
+    if check_flavor:
+        if server.flavor.name.startswith("g-") or server.flavor.name.startswith("f-"):
+            raise ValueError(
+                f"Attempted to move GPU or FPGA flavor, {server.flavor.name}, which is not allowed!"
+            )
+        if server.flavor.vcpus > 60:
+            raise ValueError(
+                f"Attempted to move flavor with greater than 60 cores, {server.flavor.name}, which is not allowed!"
+            )
     if server.status not in ["ACTIVE", "SHUTOFF"]:
         raise ValueError(
             f"Server status: {server.status}. The server must be ACTIVE or SHUTOFF to be migrated"
-        )
-    if server.flavor.vcpus > 60:
-        raise ValueError(
-            f"Attempted to move flavor with greater than 60 cores, {server.flavor.name}, which is not allowed!"
         )
 
 
@@ -29,6 +30,7 @@ def snapshot_and_migrate_server(
     conn: Connection,
     server_id: str,
     snapshot: bool,
+    check_flavor: bool,
     dest_host: Optional[str] = None,
 ) -> None:
     """
@@ -38,9 +40,10 @@ def snapshot_and_migrate_server(
     :param server_status: Status of machine to migrate - must be ACTIVE or SHUTOFF
     :param flavor_name: Server flavor name
     :param dest_host: Optional host to migrate to, otherwise chosen by scheduler
+    :param check_flavor: boolean. When value is True, GPUs, FPGAs and Flavors with many CPUs will not be migrated
     """
     server = conn.compute.get_server(server_id)
-    can_be_migrated(server)
+    can_be_migrated(server, check_flavor)
     if snapshot:
         snapshot_server(conn=conn, server_id=server_id)
         time.sleep(10)  # Ensure server task status has updated after snapshot

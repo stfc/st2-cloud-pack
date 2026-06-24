@@ -48,3 +48,4 @@ tasks:
       cloud_account: <% ctx().cloud_account %>
       server_id: <% item(server_id) %>
       snapshot: <% not item(server_name).startsWith("amphora-") %>
+      check_flavor: true

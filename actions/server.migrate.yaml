@@ -34,4 +34,9 @@ parameters:
     type: boolean
     required: true
     default: true
+  check_flavor:
+    description: "Check the Flavor of the Server to decide if migration is feasible. When set as True, GPUs, FPGAs, and Flavors with more than 60 CPUs will NOT be migrated."
+    type: boolean
+    required: true
+    default: true
 runner_type: python-script
