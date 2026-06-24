@@ -43,6 +43,7 @@ def test_active_migration(
         server_id=mock_server_id,
         dest_host=dest_host,
         snapshot=True,
+        check_flavor=True,
     )
     mock_snapshot_server.assert_called_once_with(
         conn=mock_connection, server_id=mock_server_id
@@ -79,6 +80,7 @@ def test_shutoff_migration(
         server_id=mock_server_id,
         dest_host=dest_host,
         snapshot=True,
+        check_flavor=True,
     )
     mock_snapshot_server.assert_called_once_with(
         conn=mock_connection, server_id=mock_server_id
@@ -119,6 +121,7 @@ def test_active_migration_failed_wait_for_status(
             server_id=mock_server_id,
             dest_host=None,
             snapshot=True,
+            check_flavor=True,
         )
     mock_snapshot_server.assert_called_once_with(
         conn=mock_connection, server_id=mock_server_id
@@ -150,6 +153,7 @@ def test_no_snapshot_migration(mock_wait_for_migration_status, mock_snapshot_ser
         conn=mock_connection,
         server_id=mock_server_id,
         snapshot=False,
+        check_flavor=True,
     )
     mock_snapshot_server.assert_not_called()
     mock_connection.compute.live_migrate_server.assert_called_once_with(
@@ -181,6 +185,7 @@ def test_migration_fail(mock_snapshot_server):
             conn=mock_connection,
             server_id=mock_server_id,
             snapshot=True,
+            check_flavor=True,
         )
     mock_snapshot_server.assert_not_called()
     mock_connection.compute.live_migrate_server.assert_not_called()
@@ -242,6 +247,7 @@ def test_raise_invalid_migration(flavor_name, flavor_vcpu):
             server_id=mock_server_id,
             dest_host=None,
             snapshot=True,
+            check_flavor=True,
         )
 
 
