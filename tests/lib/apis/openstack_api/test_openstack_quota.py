@@ -128,8 +128,8 @@ def test_show_quota_calls_get_compute_quotas():
     Tests that show_quota correctly calls get_compute_quotas with project ID
     """
     mock_conn = MagicMock()
-    project_id = "test-project-id"
+    project_identifier = "test-project-id"
 
-    show_quota(mock_conn, project_id)
+    show_quota(mock_conn, project_identifier)
 
-    mock_conn.get_compute_quotas.assert_called_once_with(project_id)
+    mock_conn.get_compute_quotas.assert_called_once_with(project_identifier)

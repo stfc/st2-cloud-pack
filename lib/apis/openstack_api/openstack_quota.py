@@ -31,5 +31,5 @@ def set_quota(conn: Connection, details: QuotaDetails):
             quota_method(project_id, **service_quotas)
 
 
-def show_quota(conn: Connection, project_id: str):
-    conn.get_compute_quotas(project_id)
+def show_quota(conn: Connection, project_identifier: str):
+    conn.get_compute_quotas(project_identifier)
