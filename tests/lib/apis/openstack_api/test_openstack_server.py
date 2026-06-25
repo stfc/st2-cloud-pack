@@ -34,6 +34,7 @@ def test_active_migration(
     mock_connection = MagicMock()
     mock_server_id = "server1"
     mock_server = MagicMock()
+    mock_server.id = mock_server_id
     mock_server.flavor.name = "l3.nano"
     mock_server.flavor.vcpus = 2
     mock_server.status = "ACTIVE"
@@ -43,6 +44,7 @@ def test_active_migration(
         server_id=mock_server_id,
         dest_host=dest_host,
         snapshot=True,
+        live_migration=True,
     )
     mock_snapshot_server.assert_called_once_with(
         conn=mock_connection, server_id=mock_server_id
@@ -69,6 +71,7 @@ def test_shutoff_migration(
     mock_connection = MagicMock()
     mock_server_id = "server1"
     mock_server = MagicMock()
+    mock_server.id = mock_server_id
     mock_server.status = "SHUTOFF"
     mock_server.flavor.name = "l3.nano"
     mock_server.flavor.vcpus = 2
@@ -79,6 +82,7 @@ def test_shutoff_migration(
         server_id=mock_server_id,
         dest_host=dest_host,
         snapshot=True,
+        live_migration=False,
     )
     mock_snapshot_server.assert_called_once_with(
         conn=mock_connection, server_id=mock_server_id
@@ -90,7 +94,9 @@ def test_shutoff_migration(
     mock_connection.compute.wait_for_server.assert_called_once_with(
         mock_server, status="VERIFY_RESIZE", wait=3600
     )
-    mock_connection.compute.confirm_server_resize(mock_server_id)
+    mock_connection.compute.confirm_server_resize.assert_called_once_with(
+        mock_server_id
+    )
     mock_wait_for_migration_status.assert_called_once_with(
         mock_connection, mock_server_id, "confirmed"
     )
@@ -107,6 +113,7 @@ def test_active_migration_failed_wait_for_status(
     mock_connection = MagicMock()
     mock_server_id = "server1"
     mock_server = MagicMock()
+    mock_server.id = mock_server_id
     mock_server.flavor.name = "l3.nano"
     mock_server.flavor.vcpus = 2
     mock_server.status = "ACTIVE"
@@ -119,6 +126,7 @@ def test_active_migration_failed_wait_for_status(
             server_id=mock_server_id,
             dest_host=None,
             snapshot=True,
+            live_migration=True,
         )
     mock_snapshot_server.assert_called_once_with(
         conn=mock_connection, server_id=mock_server_id
@@ -141,6 +149,7 @@ def test_no_snapshot_migration(mock_wait_for_migration_status, mock_snapshot_ser
     mock_connection = MagicMock()
     mock_server_id = "server1"
     mock_server = MagicMock()
+    mock_server.id = mock_server_id
     mock_server.flavor.name = "l3.nano"
     mock_server.flavor.vcpus = 2
     mock_server.status = "ACTIVE"
@@ -150,6 +159,7 @@ def test_no_snapshot_migration(mock_wait_for_migration_status, mock_snapshot_ser
         conn=mock_connection,
         server_id=mock_server_id,
         snapshot=False,
+        live_migration=True,
     )
     mock_snapshot_server.assert_not_called()
     mock_connection.compute.live_migrate_server.assert_called_once_with(
@@ -168,6 +178,7 @@ def test_migration_fail(mock_snapshot_server):
     mock_connection = MagicMock()
     mock_server_id = "server1"
     mock_server = MagicMock()
+    mock_server.id = mock_server_id
     mock_server.flavor.name = "l3.nano"
     mock_server.flavor.vcpus = 2
     mock_server.status = "ERROR"
@@ -180,7 +191,8 @@ def test_migration_fail(mock_snapshot_server):
         snapshot_and_migrate_server(
             conn=mock_connection,
             server_id=mock_server_id,
-            snapshot=True,
+            snapshot=False,
+            live_migration=True,
         )
     mock_snapshot_server.assert_not_called()
     mock_connection.compute.live_migrate_server.assert_not_called()
@@ -231,6 +243,7 @@ def test_raise_invalid_migration(flavor_name, flavor_vcpu):
     mock_connection = MagicMock()
     mock_server_id = "server1"
     mock_server = MagicMock()
+    mock_server.id = mock_server_id
     mock_server.flavor.name = flavor_name
     mock_server.flavor.vcpus = flavor_vcpu
     mock_server.status = "ACTIVE"
@@ -241,7 +254,8 @@ def test_raise_invalid_migration(flavor_name, flavor_vcpu):
             conn=mock_connection,
             server_id=mock_server_id,
             dest_host=None,
-            snapshot=True,
+            snapshot=False,
+            live_migration=True,
         )
 
 

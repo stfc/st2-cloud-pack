@@ -15,20 +15,39 @@ def can_be_migrated(server: Server):
         raise ValueError(
             f"Attempted to move GPU or FPGA flavor, {server.flavor.name}, which is not allowed!"
         )
-    if server.status not in ["ACTIVE", "SHUTOFF"]:
-        raise ValueError(
-            f"Server status: {server.status}. The server must be ACTIVE or SHUTOFF to be migrated"
-        )
     if server.flavor.vcpus > 60:
         raise ValueError(
             f"Attempted to move flavor with greater than 60 cores, {server.flavor.name}, which is not allowed!"
         )
 
 
+def _cold_migration(
+    conn: Connection,
+    server: Server,
+    dest_host: Optional[str] = None,
+) -> None:
+    conn.compute.migrate_server(server=server.id, host=dest_host)
+    conn.compute.wait_for_server(server, status="VERIFY_RESIZE", wait=3600)
+    conn.compute.confirm_server_resize(server.id)
+    wait_for_migration_status(conn, server.id, "confirmed")
+
+
+def _live_migration(
+    conn: Connection,
+    server: Server,
+    dest_host: Optional[str] = None,
+) -> None:
+    conn.compute.live_migrate_server(
+        server=server.id, host=dest_host, block_migration=True
+    )
+    wait_for_migration_status(conn, server.id, "completed")
+
+
 def snapshot_and_migrate_server(
     conn: Connection,
     server_id: str,
     snapshot: bool,
+    live_migration: bool,
     dest_host: Optional[str] = None,
 ) -> None:
     """
@@ -37,24 +56,26 @@ def snapshot_and_migrate_server(
     :param server_id: Server ID to migrate
     :param server_status: Status of machine to migrate - must be ACTIVE or SHUTOFF
     :param flavor_name: Server flavor name
+    :param live_migration: decides if an ACTIVE Server should go under Cold Migration or Live Migration
     :param dest_host: Optional host to migrate to, otherwise chosen by scheduler
     """
     server = conn.compute.get_server(server_id)
-    can_be_migrated(server)
     if snapshot:
         snapshot_server(conn=conn, server_id=server_id)
         time.sleep(10)  # Ensure server task status has updated after snapshot
     logger.info("Migrating server: %s", server.id)
     if server.status == "SHUTOFF":
-        conn.compute.migrate_server(server=server_id, host=dest_host)
-        conn.compute.wait_for_server(server, status="VERIFY_RESIZE", wait=3600)
-        conn.compute.confirm_server_resize(server_id)
-        wait_for_migration_status(conn, server_id, "confirmed")
-    if server.status == "ACTIVE":
-        conn.compute.live_migrate_server(
-            server=server_id, host=dest_host, block_migration=True
+        _cold_migration(conn, server, dest_host)
+    elif server.status == "ACTIVE":
+        if live_migration:
+            can_be_migrated(server)
+            _live_migration(conn, server, dest_host)
+        else:
+            _cold_migration(conn, server, dest_host)
+    else:
+        raise ValueError(
+            f"Server status: {server.status}. The server must be ACTIVE or SHUTOFF to be migrated"
         )
-        wait_for_migration_status(conn, server_id, "completed")
     logger.info("Migration completed of server: %s", server.id)
 
 
