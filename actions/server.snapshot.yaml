@@ -1,0 +1,27 @@
+---
+description: Snapshots an existing server into the admin project with the prefix `admin` and current time
+enabled: true
+entry_point: src/openstack_actions.py
+name: server.snapshot
+parameters:
+  lib_entry_point:
+    default: apis.openstack_api.openstack_server.snapshot_server
+    immutable: true
+    type: string
+  requires_openstack:
+    default: true
+    immutable: true
+    type: boolean
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  server_id:
+    type: string
+    required: true
+    description: ID of server
+runner_type: python-script
