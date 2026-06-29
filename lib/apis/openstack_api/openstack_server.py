@@ -75,34 +75,15 @@ def snapshot_server(conn: Connection, server_id: str) -> Image:
         wait=True,
         timeout=21600,  # 6 Hours
     )
-    wait_for_image_status(conn, image, "active")
+
+    assert isinstance(image.status, str)
+    if image.status.casefold() != "active".casefold(): # Wait flag implies image should be active from the start
+        raise ResourceFailure(f"Image {image.name} failed to upload.")
+
     # Make VM's project image owner
     conn.image.update_image(image, owner=server.project_id)
     logger.info("Completed snapshot of server: %s", server.id)
     return image
-
-
-def wait_for_image_status(conn: Connection, image, status, interval=5, timeout=3600):
-    """
-    Waits for the status of the image to be the selected status
-    :param conn: Openstack connection
-    :param image: The Image object
-    :param status: The status of the image that is required
-    :param interval:How long to wait between checks
-    :param timeout: Timeout of the function
-    """
-    if image.status == status:
-        return image
-    start_time = time.time()
-    while time.time() - start_time < timeout:
-        logger.info("Status of image %s: %s", image.id, image.status)
-        image = conn.image.get_image(image.id)
-        if image.status == status:
-            return image
-        if image.status == "error":
-            raise ResourceFailure(f"Image {image.name} failed to upload.")
-        time.sleep(interval)
-    raise ResourceTimeout(f"Timeout waiting for image {image.name} to become {status}.")
 
 
 def wait_for_migration_status(
