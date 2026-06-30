@@ -27,9 +27,23 @@ def _cold_migration(
     dest_host: Optional[str] = None,
 ) -> None:
     conn.compute.migrate_server(server=server.id, host=dest_host)
-    conn.compute.wait_for_server(server, status="VERIFY_RESIZE", wait=3600)
+
+    # Using conn.compute.wait_for_server will wait even if our migration transitions to error
+    # causing a hang until timeout so we must wait for the migration then wait for OpenStack
+    # to update the status after....
+    wait_for_migration_status(conn, server.id, "finished")
+
+    # We're just waiting for Nova to update as the migration has completed here
+    conn.compute.wait_for_server(server, status="VERIFY_RESIZE", wait=10)
+
+    if server.status.casefold() != "VERIFY_RESIZE".casefold():
+        raise RuntimeError(
+            f"Migration caused VM to enter unexpected state {server.status}"
+            " instead of 'VERIFY_RESIZE'."
+        )
+
+    logger.info("Confirming resize for %s", server.id)
     conn.compute.confirm_server_resize(server.id)
-    wait_for_migration_status(conn, server.id, "confirmed")
 
 
 def _live_migration(
@@ -64,18 +78,22 @@ def snapshot_and_migrate_server(
         snapshot_server(conn=conn, server_id=server_id)
         time.sleep(10)  # Ensure server task status has updated after snapshot
     logger.info("Migrating server: %s", server.id)
-    if server.status == "SHUTOFF":
-        _cold_migration(conn, server, dest_host)
-    elif server.status == "ACTIVE":
-        if live_migration:
-            can_be_migrated(server)
-            _live_migration(conn, server, dest_host)
-        else:
+
+    server_status = server.status.casefold()
+
+    match server_status:
+        case "shutoff":
             _cold_migration(conn, server, dest_host)
-    else:
-        raise ValueError(
-            f"Server status: {server.status}. The server must be ACTIVE or SHUTOFF to be migrated"
-        )
+        case "active":
+            if live_migration:
+                can_be_migrated(server)
+                _live_migration(conn, server, dest_host)
+            else:
+                _cold_migration(conn, server, dest_host)
+        case _:
+            raise ValueError(
+                f"Server status: {server.status}. The server must be ACTIVE or SHUTOFF to be migrated"
+            )
     logger.info("Migration completed of server: %s", server.id)
 
 

@@ -1,6 +1,7 @@
 import itertools
 from datetime import datetime
-from unittest.mock import MagicMock, patch
+from typing import Tuple, Any
+from unittest.mock import MagicMock, patch, PropertyMock
 
 import pytest
 from apis.openstack_api.openstack_server import (
@@ -59,6 +60,55 @@ def test_active_migration(
     mock_connection.compute.migrate_server.assert_not_called()
 
 
+def _migration_side_effect_generator(
+    mock_server, mock_connection, return_values: Tuple[Any, Any]
+) -> None:
+    """
+    Instruments a fake server to always return the first value of a tuple until migrate is called
+    after it will always return the second value of the tuple
+    """
+
+    class MigrateAPIFake:
+        def __init__(self):
+            self.called = False
+
+        def callable_migration(self, *_, **__):
+            self.called = True
+
+        def return_val(self, *_, **__):
+            return return_values[0] if not self.called else return_values[1]
+
+    api_fake = MigrateAPIFake()
+
+    # Patch in a side effect of calling migrate_server will cause mock_server.status to update to VERIFY_RESIZE
+    mock_connection.compute.migrate_server.side_effect = api_fake.callable_migration
+    type(mock_server).status = PropertyMock(side_effect=api_fake.return_val)
+    mock_connection.compute.get_server.return_value = mock_server
+
+
+@patch("apis.openstack_api.openstack_server.snapshot_server")
+@patch("apis.openstack_api.openstack_server.wait_for_migration_status")
+def test_active_cold_migration(_, __):
+    """
+    Tests that active VMs are also be migratable
+    """
+    mock_connection = MagicMock()
+    mock_server = MagicMock()
+
+    _migration_side_effect_generator(
+        mock_server, mock_connection, return_values=("ACTIVE", "VERIFY_RESIZE")
+    )
+    snapshot_and_migrate_server(
+        conn=mock_connection,
+        server_id="",
+        snapshot=False,
+        live_migration=False,
+    )
+
+    # If we see migrate server called we can assume it's done the same calls as shutoff any rely on that unit test
+    mock_connection.compute.migrate_server.assert_called_once()
+
+
 @pytest.mark.parametrize("dest_host", [None, "hv01"])
 @patch("apis.openstack_api.openstack_server.snapshot_server")
 @patch("apis.openstack_api.openstack_server.wait_for_migration_status")
@@ -72,11 +122,16 @@ def test_shutoff_migration(
     mock_server_id = "server1"
     mock_server = MagicMock()
     mock_server.id = mock_server_id
-    mock_server.status = "SHUTOFF"
     mock_server.flavor.name = "l3.nano"
     mock_server.flavor.vcpus = 2
 
-    mock_connection.compute.get_server.return_value = mock_server
+    _migration_side_effect_generator(
+        mock_server,
+        mock_connection,
+        # Mixed case intentional
+        return_values=("SHUToff", "VERIFY_RESIZE"),
+    )
+
     snapshot_and_migrate_server(
         conn=mock_connection,
         server_id=mock_server_id,
@@ -84,6 +139,7 @@ def test_shutoff_migration(
         snapshot=True,
         live_migration=False,
     )
+
     mock_snapshot_server.assert_called_once_with(
         conn=mock_connection, server_id=mock_server_id
     )
@@ -92,14 +148,50 @@ def test_shutoff_migration(
         server=mock_server_id, host=dest_host
     )
     mock_connection.compute.wait_for_server.assert_called_once_with(
-        mock_server, status="VERIFY_RESIZE", wait=3600
+        mock_server, status="VERIFY_RESIZE", wait=10
     )
     mock_connection.compute.confirm_server_resize.assert_called_once_with(
         mock_server_id
     )
     mock_wait_for_migration_status.assert_called_once_with(
-        mock_connection, mock_server_id, "confirmed"
+        mock_connection, mock_server_id, "finished"
     )
+
+
+@patch("apis.openstack_api.openstack_server.snapshot_server")
+@patch("apis.openstack_api.openstack_server.wait_for_migration_status")
+def test_invalid_status_after_migration(_, __):
+    """
+    Tests if the migration is marked finished but the VM moves into an error or unknown state instead of VERIFY_RESIZE
+    """
+    mock_connection = MagicMock()
+    mock_server = MagicMock()
+
+    _migration_side_effect_generator(
+        mock_server, mock_connection, return_values=("ACTIVE", "ERROR")
+    )
+    with pytest.raises(RuntimeError):
+        snapshot_and_migrate_server(
+            conn=mock_connection,
+            server_id="",
+            snapshot=False,
+            live_migration=False,
+        )
+
+    mock_connection.compute.migrate_server.assert_called_once()
+    mock_connection.compute.confirm_resize.assert_not_called()
+
+    # Also confirm we error on a weird state like ACTIVE which migrate should not go to
+    _migration_side_effect_generator(
+        mock_server, mock_connection, return_values=("ACTIVE", "ACTIVE")
+    )
+    with pytest.raises(RuntimeError):
+        snapshot_and_migrate_server(
+            conn=mock_connection,
+            server_id="",
+            snapshot=False,
+            live_migration=False,
+        )
 
 
 @patch("apis.openstack_api.openstack_server.snapshot_server")
@@ -108,7 +200,7 @@ def test_active_migration_failed_wait_for_status(
     mock_wait_for_migration_status, mock_snapshot_server
 ):
     """
-    Test migration when the the status of migration raises an error
+    Test migration when the status of migration raises an error
     """
     mock_connection = MagicMock()
     mock_server_id = "server1"
