@@ -659,3 +659,17 @@ def test_shutoff_server_propagates_resource_failure():
         shutoff_server(mock_conn, "server-123")
 
     assert exc_info.value is expected_exception
+
+
+def test_with_empty_migration_list():
+    """
+    Tests that the code can handle an empty list of migrations e.g. when we
+    ask before nova gets the message we're migrating
+    """
+    mock_conn = MagicMock()
+    mock_conn.compute.migrations.side_effect = []  # Return nothing intentionally
+
+    with pytest.raises(ResourceTimeout):
+        wait_for_migration_status(
+            mock_conn, "test-server-id", "should-timeout", interval=1, timeout=1
+        )
