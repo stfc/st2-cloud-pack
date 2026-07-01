@@ -34,4 +34,9 @@ parameters:
     type: boolean
     required: true
     default: true
+  live_migration:
+    description: Decides if an ACTIVE Server should go under Live Migration (default) or Cold Migration. A Cold Migration will shutdown ACTIVE Servers, and therefore this flag does not affect SHUTOFF Servers.
+    required: true
+    type: boolean
+    default: true
 runner_type: python-script

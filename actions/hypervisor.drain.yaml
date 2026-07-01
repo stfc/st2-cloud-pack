@@ -21,3 +21,8 @@ parameters:
     description: Reason for draining the hypervisor
     required: true
     type: string
+  live_migration:
+    description: Decides if an ACTIVE Server should go under Live Migration (default) or Cold Migration. A Cold Migration will shutdown ACTIVE Servers, and therefore ths flag does not affect SHUTOFF Servers. 
+    required: true
+    type: boolean
+    default: true
