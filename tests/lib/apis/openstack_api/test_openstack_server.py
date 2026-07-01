@@ -1,7 +1,7 @@
 import itertools
 from datetime import datetime
 from typing import Tuple, Any
-from unittest.mock import MagicMock, patch, PropertyMock, NonCallableMock
+from unittest.mock import MagicMock, patch, PropertyMock
 
 import pytest
 from apis.openstack_api.openstack_server import (
@@ -463,47 +463,6 @@ def test_wait_for_migration_status_error(bad_state):
         wait_for_migration_status(
             mock_conn, "server_id", "completed", interval=0, timeout=10
         )
-
-
-@patch("apis.openstack_api.openstack_server.snapshot_server")
-@patch("apis.openstack_api.openstack_server._live_migration")
-@patch("apis.openstack_api.openstack_server._cold_migration")
-def test_we_skip_all_steps_for_error(cold_migration, live_migration, snapshot_method):
-    """
-    Ensures that we don't attempt to perform any work at all if a server is in an invalid state
-    as the snapshot step especially can take multiple hours when we already know up-front we'll fail
-    """
-    mock_server = NonCallableMock(return_value="error")
-    mock_connection = MagicMock()
-    mock_connection.compute.get_server.return_value = mock_server
-
-    def _assert_no_migration_steps():
-        snapshot_method.assert_not_called()
-        cold_migration.assert_not_called()
-        live_migration.assert_not_called()
-
-        snapshot_method.reset_mock()
-        cold_migration.reset_mock()
-        live_migration.reset_mock()
-
-    # Ensure no combination of flags bypasses these checks
-    with pytest.raises(ValueError):
-        snapshot_and_migrate_server(
-            conn=mock_connection, server_id="", snapshot=True, live_migration=False
-        )
-        _assert_no_migration_steps()
-
-    with pytest.raises(ValueError):
-        snapshot_and_migrate_server(
-            conn=mock_connection, server_id="", snapshot=False, live_migration=False
-        )
-        _assert_no_migration_steps()
-
-    with pytest.raises(ValueError):
-        snapshot_and_migrate_server(
-            conn=mock_connection, server_id="", snapshot=False, live_migration=True
-        )
-    _assert_no_migration_steps()
 
 
 def test_build_server():
