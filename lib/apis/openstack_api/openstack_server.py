@@ -10,7 +10,7 @@ from openstack.exceptions import ResourceFailure, ResourceTimeout
 logger = logging.getLogger(__name__)
 
 
-def can_be_migrated(server: Server):
+def check_can_be_live_migrated(server: Server):
     if server.flavor.name.startswith("g-") or server.flavor.name.startswith("f-"):
         raise ValueError(
             f"Attempted to move GPU or FPGA flavor, {server.flavor.name}, which is not allowed!"
@@ -74,26 +74,30 @@ def snapshot_and_migrate_server(
     :param dest_host: Optional host to migrate to, otherwise chosen by scheduler
     """
     server = conn.compute.get_server(server_id)
+    server_status = server.status.casefold()
+
+    match server_status:
+        case "shutoff":
+            # Can't live migrate something that isn't 'alive'
+            logger.info("Server %s is shutoff, forcing cold migration", server.id)
+            live_migration = False
+        case "active":
+            if live_migration:
+                check_can_be_live_migrated(server)
+        case _:
+            raise ValueError(
+                f"Server status: {server.status}. The server must be ACTIVE or SHUTOFF to be migrated"
+            )
+
     if snapshot:
         snapshot_server(conn=conn, server_id=server_id)
         time.sleep(10)  # Ensure server task status has updated after snapshot
     logger.info("Migrating server: %s", server.id)
 
-    server_status = server.status.casefold()
-
-    match server_status:
-        case "shutoff":
-            _cold_migration(conn, server, dest_host)
-        case "active":
-            if live_migration:
-                can_be_migrated(server)
-                _live_migration(conn, server, dest_host)
-            else:
-                _cold_migration(conn, server, dest_host)
-        case _:
-            raise ValueError(
-                f"Server status: {server.status}. The server must be ACTIVE or SHUTOFF to be migrated"
-            )
+    if live_migration:
+        _live_migration(conn, server, dest_host)
+    else:
+        _cold_migration(conn, server, dest_host)
     logger.info("Migration completed of server: %s", server.id)
 
 
