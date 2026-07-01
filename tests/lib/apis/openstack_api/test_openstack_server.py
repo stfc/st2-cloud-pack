@@ -9,7 +9,6 @@ from apis.openstack_api.openstack_server import (
     delete_server,
     snapshot_and_migrate_server,
     snapshot_server,
-    wait_for_image_status,
     wait_for_migration_status,
     shutoff_server,
 )
@@ -291,8 +290,7 @@ def test_migration_fail(mock_snapshot_server):
     mock_connection.compute.migrate_server.assert_not_called()
 
 
-@patch("apis.openstack_api.openstack_server.wait_for_image_status")
-def test_snapshot_server(mock_wait_for_image_status):
+def test_snapshot_server():
     """
     Test server snapshot
     """
@@ -304,6 +302,7 @@ def test_snapshot_server(mock_wait_for_image_status):
     mock_connection.compute.find_server.return_value.project_id = mock_project_id
 
     mock_image = MagicMock()
+    mock_image.status = "aCTive" # Case-insensitivity check
     mock_connection.compute.create_server_image.return_value = mock_image
 
     snapshot_server(conn=mock_connection, server_id=mock_server_id)
@@ -316,12 +315,28 @@ def test_snapshot_server(mock_wait_for_image_status):
         wait=True,
         timeout=21600,  # 6 Hours
     )
-    mock_wait_for_image_status.assert_called_once_with(
-        mock_connection, mock_image, "active"
-    )
+
     mock_connection.image.update_image.assert_called_once_with(
         mock_image, owner=mock_project_id
     )
+
+def test_snapshot_server_image_not_active():
+    """
+    Tests the snapshot server functionality checks the resulting image status is active
+    and will produce an error if not
+    """
+    mock_connection = MagicMock()
+    mock_server_id = "server1"
+    mock_project_id = "project1"
+    mock_connection.compute.find_server.return_value.project_id = mock_project_id
+
+    mock_image = MagicMock()
+    mock_connection.compute.create_server_image.return_value = mock_image
+
+    for returned in ["error", "", " ", "pending"]:
+        mock_image.status = returned
+        with pytest.raises(ResourceFailure):
+            snapshot_server(conn=mock_connection, server_id=mock_server_id)
 
 
 @pytest.mark.parametrize(
@@ -349,66 +364,6 @@ def test_raise_invalid_migration(flavor_name, flavor_vcpu):
             snapshot=False,
             live_migration=True,
         )
-
-
-def test_wait_for_image_status_success():
-    """
-    Test wait_for_image_status when it is a success
-    """
-    mock_conn = MagicMock()
-    image = MagicMock(id="123", name="test-image", status="pending")
-    image_final = MagicMock(id="123", name="test-image", status="active")
-
-    mock_conn.image.get_image.side_effect = [
-        MagicMock(id="123", name="test-image", status="pending"),
-        MagicMock(id="123", name="test-image", status="pending"),
-        image_final,
-    ]
-    result = wait_for_image_status(mock_conn, image, "active", interval=0, timeout=10)
-    mock_conn.image.get_image.assert_called_with(image.id)
-    assert result == image_final
-
-
-def test_wait_for_image_status_timeout():
-    """
-    Test wait_for_image_status when it hits the timeout
-    """
-    mock_conn = MagicMock()
-    image = MagicMock(id="123", name="test-image", status="pending")
-    mock_conn.image.get_image.side_effect = itertools.cycle([image])
-    with pytest.raises(
-        ResourceTimeout,
-        match=f"Timeout waiting for image {image.name} to become active.",
-    ):
-        wait_for_image_status(mock_conn, image, "active", interval=0, timeout=0)
-
-
-def test_wait_for_image_status_immediate_success():
-    """
-    Test wait_for_image_status when the image already has the desired status.
-    """
-    mock_conn = MagicMock()
-    image = MagicMock(id="123", name="test-image", status="active")
-    result = wait_for_image_status(mock_conn, image, "active", interval=0, timeout=10)
-    assert result == image
-    mock_conn.image.get_image.assert_not_called()
-
-
-def test_wait_for_image_status_error():
-    """
-    Test wait_for_image_status when the image status becomes error
-    """
-    mock_conn = MagicMock()
-    image_pending = MagicMock(id="123", name="test-image", status="pending")
-    image_error = MagicMock(id="123", name="test-image", status="error")
-    mock_conn.image.get_image.side_effect = [
-        image_pending,
-        image_error,
-    ]
-    with pytest.raises(
-        ResourceFailure, match=f"Image {image_error.name} failed to upload."
-    ):
-        wait_for_image_status(mock_conn, image_error, "active", interval=0, timeout=10)
 
 
 def test_wait_for_migration_status_success():
