@@ -157,7 +157,13 @@ def wait_for_migration_status(
     """
     start_time = time.time()
     while time.time() - start_time < timeout:
-        migration = next(conn.compute.migrations(instance_uuid=server_id))
+        try:
+            migration = next(conn.compute.migrations(instance_uuid=server_id))
+        except StopIteration:
+            logger.info("No migration details available for %s yet", server_id)
+            time.sleep(interval)
+            continue
+
         logger.info("Status of migration of server %s: %s", server_id, migration.status)
         if migration.status == status:
             return migration
