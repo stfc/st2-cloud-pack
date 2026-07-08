@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from apis.email_api.emailer import Emailer
+from apis.email_api.send_emails import send_email as send_it
 from apis.email_api.structs.email_params import EmailParams
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
@@ -109,4 +109,4 @@ def send_mailing_list_capi_image_create_email(
             as_html=as_html,
             **email_params_kwargs,
         )
-        Emailer(smtp_account).send_emails([email_params])
+        send_it(smtp_account, email_params)
