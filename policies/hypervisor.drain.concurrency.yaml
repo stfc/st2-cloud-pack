@@ -8,4 +8,6 @@ parameters:
   action: delay
   # Three HVs can be drained concurrently, this does not affect the number of
   # VMs draining per HV
-  threshold: 3
+  # Limit needed as drain disables the HV so needed to prevent the entire cloud being disabled
+  # all at once
+  threshold: 10
