@@ -3,15 +3,11 @@ from openstack.connection import Connection
 from apis.openstack_api.openstack_service import enable_service
 from apis.alertmanager_api.silence import get_hv_silences, remove_silence
 from apis.alertmanager_api.structs.alertmanager_account import AlertManagerAccount
-from apis.icinga_api.enums.icinga_objects import IcingaObject
-from apis.icinga_api.structs.icinga_account import IcingaAccount
-from apis.icinga_api import downtime
 from workflows.hv_create_test_server import create_test_server
 
 
 def post_reboot(
     alertmanager_account: AlertManagerAccount,
-    icinga_account: IcingaAccount,
     hypervisor_hostname: str,
     conn: Connection,
 ):
@@ -22,11 +18,6 @@ def post_reboot(
     :param alertmanager_account: Alertmanager Account to use
     :param conn: Openstack Connection
     """
-    downtime.remove_downtime(
-        icinga_account=icinga_account,
-        object_type=IcingaObject.HOST,
-        object_name=hypervisor_hostname,
-    )
     enable_service(
         conn=conn, hypervisor_name=hypervisor_hostname, service_binary="nova-compute"
     )

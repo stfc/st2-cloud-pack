@@ -1,8 +1,6 @@
 from unittest.mock import MagicMock, patch, call
 import pytest
 
-from apis.icinga_api.enums.icinga_objects import IcingaObject
-
 from workflows.hv_post_reboot import post_reboot
 
 
@@ -10,9 +8,7 @@ from workflows.hv_post_reboot import post_reboot
 @patch("workflows.hv_post_reboot.get_hv_silences")
 @patch("workflows.hv_post_reboot.enable_service")
 @patch("workflows.hv_post_reboot.create_test_server")
-@patch("workflows.hv_post_reboot.downtime.remove_downtime")
 def test_successful_post_reboot(
-    mock_remove_downtime,
     mock_create_test_server,
     mock_enable_service,
     mock_get_hv_silences,
@@ -21,7 +17,6 @@ def test_successful_post_reboot(
     """
     Test successfull running of the post reboot workflow.
     """
-    mock_icinga_account = MagicMock()
     mock_hv_name = "hvxyz"
     mock_conn = MagicMock()
     alertmanager_account = MagicMock()
@@ -33,14 +28,8 @@ def test_successful_post_reboot(
 
     post_reboot(
         alertmanager_account,
-        icinga_account=mock_icinga_account,
         hypervisor_hostname=mock_hv_name,
         conn=mock_conn,
-    )
-    mock_remove_downtime.assert_called_once_with(
-        icinga_account=mock_icinga_account,
-        object_type=IcingaObject.HOST,
-        object_name=mock_hv_name,
     )
     mock_create_test_server.assert_called_once_with(
         conn=mock_conn,
@@ -62,9 +51,7 @@ def test_successful_post_reboot(
 @patch("workflows.hv_post_reboot.get_hv_silences")
 @patch("workflows.hv_post_reboot.enable_service")
 @patch("workflows.hv_post_reboot.create_test_server")
-@patch("workflows.hv_post_reboot.downtime.remove_downtime")
 def test_failed_post_reboot(
-    mock_remove_downtime,
     mock_create_test_server,
     mock_enable_service,
     mock_get_hv_silences,
@@ -73,7 +60,6 @@ def test_failed_post_reboot(
     """
     Test unsuccessful running of the post reboot workflow, where create_test_server fails
     """
-    mock_icinga_account = MagicMock()
     mock_hv_name = "hvxyz"
     mock_conn = MagicMock()
     alertmanager_account = MagicMock()
@@ -87,15 +73,9 @@ def test_failed_post_reboot(
     with pytest.raises(Exception):
         post_reboot(
             alertmanager_account,
-            icinga_account=mock_icinga_account,
             hypervisor_hostname=mock_hv_name,
             conn=mock_conn,
         )
-    mock_remove_downtime.assert_called_once_with(
-        icinga_account=mock_icinga_account,
-        object_type=IcingaObject.HOST,
-        object_name=mock_hv_name,
-    )
     mock_enable_service.assert_called_once_with(
         conn=mock_conn, hypervisor_name=mock_hv_name, service_binary="nova-compute"
     )

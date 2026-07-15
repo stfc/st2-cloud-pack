@@ -12,11 +12,6 @@ parameters:
     type: string
     default: workflows.hv_post_reboot.post_reboot
     immutable: true
-  icinga_account_name:
-    type: string
-    description: "Name of Icinga Account to use. Must be configured in in the pack settings."
-    required: true
-    default: "default"
   alertmanager_account_name:
     type: string
     description: Name of Alertmanager Account to use. Must be configured in the pack settings.

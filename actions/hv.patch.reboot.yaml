@@ -8,11 +8,6 @@ parameters:
     type: string
     default: workflows.hv_patch_and_reboot.patch_and_reboot
     immutable: true
-  icinga_account_name:
-    type: string
-    description: Name of Icinga Account to use. Must be configured in the pack settings.
-    required: true
-    default: "default"
   hypervisor_name:
     description: Hypervisor to run action on, this should also be the host name on icinga.
     required: true

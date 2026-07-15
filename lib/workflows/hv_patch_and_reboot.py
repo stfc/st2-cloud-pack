@@ -2,11 +2,6 @@ import datetime
 
 from paramiko import SSHException
 
-from apis.icinga_api.enums.icinga_objects import IcingaObject
-from apis.icinga_api.downtime import schedule_downtime, remove_downtime
-from apis.icinga_api.structs.downtime_details import DowntimeDetails
-from apis.icinga_api.structs.icinga_account import IcingaAccount
-
 from apis.alertmanager_api.silence import remove_silence, schedule_silence
 from apis.alertmanager_api.structs.alert_matcher_details import AlertMatcherDetails
 from apis.alertmanager_api.structs.alertmanager_account import AlertManagerAccount
@@ -19,7 +14,6 @@ from apis.ssh_api.exec_command import SSHConnection
 # pylint:disable=too-many-locals
 def patch_and_reboot(
     alertmanager_account: AlertManagerAccount,
-    icinga_account: IcingaAccount,
     hypervisor_name: str,
     private_key_path: str,
 ) -> None:
@@ -36,20 +30,6 @@ def patch_and_reboot(
         host=hypervisor_name, username="stackstorm", private_key_path=private_key_path
     )
     ssh_client = SSHConnection(connection_details)
-    start_time = datetime.datetime.utcnow()
-    end_time = start_time + datetime.timedelta(hours=6)
-    start_timestamp = int(start_time.timestamp())
-    end_timestamp = int(end_time.timestamp())
-    downtime_details = DowntimeDetails(
-        object_type=IcingaObject.HOST,
-        object_name=hypervisor_name,
-        start_time=start_timestamp,
-        end_time=end_timestamp,
-        comment=f"starting downtime to patch and reboot host: {hypervisor_name}",
-        is_fixed=True,
-        duration=end_timestamp - start_timestamp,
-    )
-    schedule_downtime(icinga_account=icinga_account, details=downtime_details)
     matcher_instance = AlertMatcherDetails(name="instance", value=hypervisor_name)
     silence_details_instance = SilenceDetails(
         matchers=[matcher_instance],
@@ -76,11 +56,6 @@ def patch_and_reboot(
         ssh_client.run_command_on_host("patch")
         ssh_client.run_command_on_host("reboot")
     except SSHException as exc:
-        remove_downtime(
-            icinga_account=icinga_account,
-            object_type=IcingaObject.HOST,
-            object_name=hypervisor_name,
-        )
         remove_silence(alertmanager_account, scheduled_silence_id_instance)
         remove_silence(alertmanager_account, scheduled_silence_id_hostname)
         raise exc
