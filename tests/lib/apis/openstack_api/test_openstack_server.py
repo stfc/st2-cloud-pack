@@ -326,7 +326,7 @@ def test_snapshot_server(mock_wait_for_image_status):
 
 @pytest.mark.parametrize(
     "flavor_name,flavor_vcpu",
-    [("g-a100-80gb-2022.x2", 30), ("f-xilinxu200.x1", 28), ("l3.large", 124)],
+    [("g-a100-80gb-2022.x2", 30), ("f-xilinxu200.x1", 28)],
 )
 def test_raise_invalid_migration(flavor_name, flavor_vcpu):
     """

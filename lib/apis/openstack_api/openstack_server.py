@@ -15,10 +15,6 @@ def can_be_migrated(server: Server):
         raise ValueError(
             f"Attempted to move GPU or FPGA flavor, {server.flavor.name}, which is not allowed!"
         )
-    if server.flavor.vcpus > 60:
-        raise ValueError(
-            f"Attempted to move flavor with greater than 60 cores, {server.flavor.name}, which is not allowed!"
-        )
 
 
 def _cold_migration(
