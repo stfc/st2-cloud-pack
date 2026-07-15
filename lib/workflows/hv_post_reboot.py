@@ -32,7 +32,7 @@ def post_reboot(
     )
     create_test_server(
         conn=conn,
-        hypervisor_name=hypervisor_hostname,
+        hypervisor_names=hypervisor_hostname,
         test_all_flavors=False,
         delete_on_failure=True,
     )
