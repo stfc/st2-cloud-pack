@@ -21,6 +21,7 @@ parameters:
     description: Private key to authenticate with
     required: true
     type: string
+    default: "/home/stanley/.ssh/id_rsa"
   alertmanager_account_name:
     type: string
     description: Name of Alertmanager Account to use. Must be configured in the pack settings.
