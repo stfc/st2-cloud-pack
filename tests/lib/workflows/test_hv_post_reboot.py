@@ -44,7 +44,7 @@ def test_successful_post_reboot(
     )
     mock_create_test_server.assert_called_once_with(
         conn=mock_conn,
-        hypervisor_name=mock_hv_name,
+        hypervisor_names=mock_hv_name,
         test_all_flavors=False,
         delete_on_failure=True,
     )
@@ -101,7 +101,7 @@ def test_failed_post_reboot(
     )
     mock_create_test_server.assert_called_once_with(
         conn=mock_conn,
-        hypervisor_name=mock_hv_name,
+        hypervisor_names=mock_hv_name,
         test_all_flavors=False,
         delete_on_failure=True,
     )
