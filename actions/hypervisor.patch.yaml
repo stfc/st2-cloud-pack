@@ -1,0 +1,19 @@
+---
+description: Patches a given hypervisor(s)
+enabled: true
+entry_point: "workflows/hypervisor.patch.workflow.yaml"
+name: hypervisor.patch
+runner_type: orquesta
+parameters:
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  hypervisor_hostname:
+    description: Hostname of hypervisor to drain
+    required: true
+    type: string
