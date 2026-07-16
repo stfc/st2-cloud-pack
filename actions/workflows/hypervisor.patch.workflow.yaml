@@ -1,0 +1,37 @@
+version: 1.0
+
+description: A sequential workflow to patch a Hypervisor.
+
+input:
+  - hypervisor_hostname
+  - cloud_account
+
+tasks:
+  patch_machine:
+    action: stackstorm_openstack.hv.patch.reboot
+    input:
+      hypervisor_name: <% ctx().hypervisor_hostname %>
+    next:
+      - when: <% succeeded() %>
+        do: wait_for_reboot
+
+  wait_for_reboot:
+    action: linux.wait_for_ssh
+    delay: 90 # patch script on hv reboots after 60 secs
+    input:
+      hostname: <% ctx().hypervisor_hostname %>
+      port: 22
+      username: stackstorm
+      keyfile: "/home/stanley/.ssh/id_rsa"
+      timeout: 600 # 10 mins
+      retries: 30
+      sleep_delay: 20 # seconds
+    next:
+      - when: <% succeeded() %>
+        do: test_and_enable_hypervisor
+
+  test_and_enable_hypervisor:
+    action: stackstorm_openstack.hv.post.reboot
+    input:
+      cloud_account: <% ctx().cloud_account %>
+      hypervisor_hostname: <% ctx().hypervisor_hostname %>
