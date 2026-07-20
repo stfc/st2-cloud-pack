@@ -32,6 +32,7 @@ tasks:
 
   test_and_enable_hypervisor:
     action: stackstorm_openstack.hv.post.reboot
+    delay: 30 # Avoid race conditions when waiting for ssh
     input:
       cloud_account: <% ctx().cloud_account %>
       hypervisor_hostname: <% ctx().hypervisor_hostname %>
