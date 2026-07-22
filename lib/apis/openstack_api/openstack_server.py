@@ -296,3 +296,54 @@ def shutoff_server_list(conn: Connection, server_id_list: List[str]) -> None:
     """
     for server_id in server_id_list:
         shutoff_server(conn, server_id)
+
+
+def set_metadata(conn, server_id, properties):
+    """
+    Add new key:values pair to the Server metadata
+
+    The metadata is the field displayed as "properties"
+    when running "openstack server show" commands
+
+    Note, if a key in properties already exists in the Servers metadata,
+    it will be overridden with the new value
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server object
+    :type server_id: str
+    :param properties: the new properties to add to the server metadata
+    :type properties: dictionary
+    """
+    logger.info(
+        "calling function add_metadata for server %s to add properties %s",
+        server_id,
+        properties,
+    )
+    server = conn.compute.find_server(server_id, all_projects=True)
+    conn.compute.set_server_metadata(server, **properties)
+    logger.info("new properties added to server")
+
+
+def delete_metadata(conn, server_id, properties):
+    """
+    Remove some key:values pair from the Server metadata
+
+    The metadata is the field displayed as "properties"
+    when running "openstack server show" commands
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server object
+    :type server_id: str
+    :param properties: the properties to remove from the server metadata
+    :type properties: list
+    """
+    logger.info(
+        "calling function delete_metadata for server %s to remove properties %s",
+        server_id,
+        properties,
+    )
+    server = conn.compute.find_server(server_id, all_projects=True)
+    conn.compute.delete_server_metadata(server, keys=properties)
+    logger.info("properties removed from server")
