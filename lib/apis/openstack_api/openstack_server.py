@@ -5,7 +5,12 @@ from typing import Optional, List
 from openstack.connection import Connection
 from openstack.compute.v2.image import Image
 from openstack.compute.v2.server import Server
-from openstack.exceptions import ResourceFailure, ResourceTimeout
+from openstack.exceptions import (
+    ResourceFailure,
+    ResourceTimeout,
+    ResourceNotFound,
+    SDKException,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -296,3 +301,42 @@ def shutoff_server_list(conn: Connection, server_id_list: List[str]) -> None:
     """
     for server_id in server_id_list:
         shutoff_server(conn, server_id)
+
+
+def get_owner_email(conn, server_id):
+    """
+    Returns, when possible, the email of User who instantiated a Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :return: the email of the User
+    :rtype: str
+    :raises ResourceNotFound: if the Server does not have User information
+        or the user does not exist
+    :raises openstack.exceptions.SDKException:
+        if the User exists but does not expose a valid name attribute
+    """
+    server = conn.compute.get_server(server_id)
+
+    user_id = getattr(server, "user_id", None)
+    if not user_id:
+        raise ResourceNotFound(
+            f"Server '{server_id}' does not have an associated user_id."
+        )
+
+    user = conn.identity.get_user(user_id)
+    if user is None:
+        raise ResourceNotFound(
+            f"User '{user_id}' referenced by server '{server_id}' was not found."
+        )
+
+    user_email = getattr(user, "email", None)
+    if not user_email:
+        raise SDKException(
+            f"User '{user_id}' referenced by server '{server_id}' "
+            "does not provide for an email."
+        )
+
+    return user_email
