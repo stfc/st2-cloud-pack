@@ -6,14 +6,22 @@ from apis.alertmanager_api.structs.alertmanager_account import AlertManagerAccou
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.icinga_api.structs.icinga_account import IcingaAccount
 from apis.jira_api.structs.jira_account import JiraAccount
+from apis.wazuh_api.wazuh import WazuhClient
 
 
 class OpenstackActions(Action):
-    def run(self, lib_entry_point: str, requires_openstack: bool = False, **kwargs):
+    def run(
+        self,
+        lib_entry_point: str,
+        requires_openstack: bool = False,
+        requires_wazuh: bool = False,
+        **kwargs,
+    ):
         """
         Dynamically dispatches to the function wanted
         :param lib_entry_point: path to function that handles action in lib layer
         :param requires_openstack: if action requires connection to openstack
+        :param requires_wazuh: if action requires querying the Wazuh server
         :param kwargs: all user-defined kwargs to pass to the function
         """
         module, fn_name = lib_entry_point.rsplit(".", 1)
@@ -25,6 +33,19 @@ class OpenstackActions(Action):
             "\n".join([f"{key}: {val}" for key, val in kwargs.items()]),
         )
         kwargs = self.parse_configs(**kwargs)
+
+        # in some automations we may need to query the Wazuh server
+        # however, we may not need any field in the web form related to Wazuh
+        # therefore, it will not be possible to handle the creation of
+        # the wazuh client object inside function parse_config()
+        # as there is no configuration parameter related to it that can
+        # be parsed
+        # we trigger the creation of the wazuh client object with an immutable
+        # parameter, the same way we do for OpenStack
+        if requires_wazuh:
+            wazuh = WazuhClient(self.config)
+            kwargs["wazuh"] = wazuh
+
         if not requires_openstack:
             return action_func(**kwargs)
         # setup openstack connection
