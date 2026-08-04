@@ -14,6 +14,7 @@ ACCOUNT_CONFIGS = {
     "alertmanager_account_name": ("alertmanager_account", AlertManagerAccount),
 }
 
+
 class OpenstackActions(Action):
     def run(self, lib_entry_point: str, **kwargs):
         """

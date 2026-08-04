@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, NonCallableMock, patch
 import pytest
 from src.openstack_actions import ACCOUNT_CONFIGS, OpenstackActions
 
+
 @pytest.fixture(name="action")
 def action_fixture():
     """OpenstackActions with a stubbed pack config and a silenced logger."""
@@ -63,9 +64,7 @@ def test_run_parse_results_propagate(mock_import, action):
 
 @patch("src.openstack_actions.OpenstackConnection")
 @patch("src.openstack_actions.import_module")
-def test_run_parses_cloud_account_when_given(
-    mock_import, mock_conn_cls, action
-):
+def test_run_parses_cloud_account_when_given(mock_import, mock_conn_cls, action):
     """when cloud_account is given, test that it is consumed and open connection passed as conn."""
     action_func = mock_import.return_value.fn1
 
@@ -73,7 +72,7 @@ def test_run_parses_cloud_account_when_given(
         lib_entry_point="fake.module.fn1",
         cloud_account="dev",
         kwarg1="kept",
-        kwarg2="kept"
+        kwarg2="kept",
     )
 
     mock_conn_cls.assert_called_once_with("dev")
@@ -81,7 +80,7 @@ def test_run_parses_cloud_account_when_given(
     action_func.assert_called_once_with(
         conn=mock_conn_cls.return_value.__enter__.return_value,
         kwarg1="kept",
-        kwarg2="kept"
+        kwarg2="kept",
     )
     assert result == action_func.return_value
 
@@ -109,8 +108,7 @@ def test_parse_configs_parses_multiple_accounts(action):
     with patch.object(smtp_cls, "from_pack_config") as mock_smtp:
         with patch.object(jira_cls, "from_pack_config") as mock_jira:
             result = action.parse_configs(
-                smtp_account_name="default",
-                jira_account_name="default"
+                smtp_account_name="default", jira_account_name="default"
             )
 
     assert result == {
