@@ -55,39 +55,19 @@ class TestOpenstackActions(OpenstackActionTestBase):
 
     @patch("src.openstack_actions.import_module")
     @patch("src.openstack_actions.OpenstackConnection")
-    def test_run_with_openstack(self, mock_openstack_connection, mock_import):
-        """
-        Tests that run method can dispatch to workflow methods
-        and sets up openstack connection when requires_openstack is True
-        """
-        mock_action_module_name = "workflow.submodule.module.fn1"
-        mock_conn = MagicMock()
-        mock_openstack_connection.return_value.__enter__.return_value = mock_conn
-
-        with patch.object(self.action, "parse_configs") as mock_parse_configs:
-            mock_parse_configs.return_value = {
-                "kwarg1": "foo",
-                "kwarg2": "bar",
-                "cloud_account": "prod",
-            }
-
-            self.action.run(
-                lib_entry_point=mock_action_module_name,
-                requires_openstack=True,
-                kwarg1="foo",
-                kwarg2="bar",
-                cloud_account="prod",
-            )
-
-        mock_openstack_connection.assert_called_once_with("prod")
-        mock_parse_configs.assert_called_once_with(
-            kwarg1="foo", kwarg2="bar", cloud_account="prod"
+    def test_parse_configs_with_cloud_account(self, mock_openstack_connection, mock_import):
+        """ tests that parse_configs parses smtp_account_name properly if provided """
+        mock_cloud_account = NonCallableMock()
+        res = self.action.parse_configs(**{"cloud_account": mock_cloud_account})
+        mock_cloud_account.from_pack_config.assert_called_once_with(
+            self.config, mock_cloud_account
         )
-        mock_import.assert_called_once_with("workflow.submodule.module")
 
-        mock_import.return_value.fn1.assert_called_once_with(
-            conn=mock_conn, kwarg1="foo", kwarg2="bar"
-        )
+        # the results are key "conn" mapped to output of context manager
+        # method __enter__() for OpenstackConnection object
+        assert res == {"conn": mock_openstack_connection.__enter__.return_value}
+        mock_openstack_connection.assert_called_once_with(mock_cloud_account)
+
 
     @patch("src.openstack_actions.SMTPAccount")
     def test_parse_configs_with_smtp_account(self, mock_smtp_account):

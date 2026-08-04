@@ -8,10 +8,6 @@ parameters:
     default: workflows.create_project.create_project
     immutable: true
     type: string
-  requires_openstack:
-    default: true
-    immutable: true
-    type: boolean
   cloud_account:
     description: The clouds.yaml account to use whilst performing this action
     required: true
