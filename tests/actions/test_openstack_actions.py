@@ -65,7 +65,7 @@ def test_run_parse_results_propagate(mock_import, action):
 @patch("src.openstack_actions.OpenstackConnection")
 @patch("src.openstack_actions.import_module")
 def test_run_parses_cloud_account_when_given(mock_import, mock_conn_cls, action):
-    """when cloud_account is given, test that it is consumed and open connection passed as conn."""
+    """when cloud_account is given, test that connection passed as conn."""
     action_func = mock_import.return_value.fn1
 
     result = action.run(
@@ -79,6 +79,7 @@ def test_run_parses_cloud_account_when_given(mock_import, mock_conn_cls, action)
     # equality on the full call also proves cloud_account was removed
     action_func.assert_called_once_with(
         conn=mock_conn_cls.return_value.__enter__.return_value,
+        cloud_account="dev",
         kwarg1="kept",
         kwarg2="kept",
     )

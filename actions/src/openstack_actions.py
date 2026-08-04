@@ -33,7 +33,8 @@ class OpenstackActions(Action):
         kwargs = self.parse_configs(**kwargs)
 
         if "cloud_account" in kwargs:
-            with OpenstackConnection(kwargs.pop("cloud_account")) as conn:
+            # some actions require cloud_account to passed down - i.e. those that use the query library
+            with OpenstackConnection(kwargs["cloud_account"]) as conn:
                 kwargs["conn"] = conn
                 return action_func(**kwargs)
         return action_func(**kwargs)
