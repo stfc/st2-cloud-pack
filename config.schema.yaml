@@ -126,6 +126,35 @@ icinga_accounts:
         secret: false
         default: ""
 
+wazuh_accounts:
+  type: "array"
+  required: true
+  description: Wazuh account
+  items:
+    type: "object"
+    required: true
+    properties:
+      name:
+        description: "Name of the wazuh account"
+        type: "string"
+        secret: false
+        required: true
+      username:
+        type: "string"
+        description: "Username for wazuh"
+        required: true
+      password:
+        type: "string"
+        description: "Password for wazuh"
+        required: true
+        secret: true
+      icinga_endpoint:
+        type: "string"
+        description: "wazuh endpoint"
+        required: true
+        secret: false
+        default: ""
+
 alertmanager_accounts:
   type: "array"
   required: true
