@@ -112,11 +112,10 @@ class WazuhClient:
             os_name,
             os_version,
         )
-        query = f"os.platform={os_name};os.major={os_version};status=active;group!=kolla;group!=quattor"
+        query = f"os.platform={os_name};os.major={os_version};status=active;group!=kolla"
         # we ensure we only get information about Servers and not Hypervisors
         # by adding conditions
         #   group!=kolla
-        #   group!=quattor
         # to the query string
         data = self._query_agents(values=["name"], query=query)
 

@@ -162,7 +162,7 @@ class TestWazuhClient(unittest.TestCase):
             Mocks `_query_agents` to return sample server names (some valid OpenStack names, some malformed).
 
         WHY IT PREVENTS BUGS:
-            1. Verifies exact query parameters (`group!=kolla;group!=quattor`) are preserved to exclude hypervisors.
+            1. Verifies exact query parameters (`group!=kolla`) are preserved to exclude hypervisors.
             2. Ensures regex correctly extracts UUID suffixes and silently filters out non-matching names.
         """
         # Mock raw Wazuh API return data with valid and invalid OpenStack server names
@@ -188,5 +188,5 @@ class TestWazuhClient(unittest.TestCase):
         self.assertEqual(server_ids, expected_ids)
 
         # Verify underlying _query_agents was called with the exact required query string
-        expected_query = "os.platform=ubuntu;os.major=22.04;status=active;group!=kolla;group!=quattor"
+        expected_query = "os.platform=ubuntu;os.major=22.04;status=active;group!=kolla"
         mock_query.assert_called_once_with(values=["name"], query=expected_query)
