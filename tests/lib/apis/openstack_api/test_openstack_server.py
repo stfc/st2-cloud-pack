@@ -12,8 +12,11 @@ from apis.openstack_api.openstack_server import (
     wait_for_image_status,
     wait_for_migration_status,
     shutoff_server,
+    add_tag,
+    remove_tag,
+    find_servers_with_tag,
 )
-from openstack.exceptions import ResourceFailure, ResourceTimeout
+from openstack.exceptions import ResourceFailure, ResourceTimeout, NotFoundException
 
 
 @pytest.fixture(autouse=True)
@@ -673,3 +676,68 @@ def test_with_empty_migration_list():
         wait_for_migration_status(
             mock_conn, "test-server-id", "should-timeout", interval=1, timeout=1
         )
+
+
+def test_add_tag():
+    """
+    Test adding a tag to a server temporarily changes the NOVA microversion
+    and restores it afterwards.
+    """
+    mock_connection = MagicMock()
+    mock_connection.compute.default_microversion = "2.90"
+
+    add_tag(mock_connection, "server1", "test-tag")
+
+    mock_connection.compute.add_tag_to_server.assert_called_once_with(
+        "server1", "test-tag"
+    )
+    assert mock_connection.compute.default_microversion == "2.90"
+
+
+def test_remove_tag():
+    """
+    Test removing a tag restores the NOVA microversion.
+    """
+    mock_connection = MagicMock()
+    mock_connection.compute.default_microversion = "2.90"
+
+    remove_tag(mock_connection, "server1", "test-tag")
+
+    mock_connection.compute.add_tag_to_server.assert_called_once_with(
+        "server1", "test-tag"
+    )
+    assert mock_connection.compute.default_microversion == "2.90"
+
+
+def test_remove_tag_not_found():
+    """
+    Test removing a non-existent tag does not raise and restores the microversion.
+    """
+    mock_connection = MagicMock()
+    mock_connection.compute.default_microversion = "2.90"
+    mock_connection.compute.add_tag_to_server.side_effect = NotFoundException()
+
+    remove_tag(mock_connection, "server1", "test-tag")
+
+    assert mock_connection.compute.default_microversion == "2.90"
+
+
+def test_find_servers_with_tag():
+    """
+    Test finding servers with a given tag.
+    """
+    mock_connection = MagicMock()
+
+    server1 = MagicMock()
+    server1.id = "server1"
+    server2 = MagicMock()
+    server2.id = "server2"
+
+    mock_connection.compute.servers.return_value = [server1, server2]
+
+    result = find_servers_with_tag(mock_connection, "test-tag")
+
+    mock_connection.compute.servers.assert_called_once_with(
+        all_projects=True, tags="test-tag"
+    )
+    assert result == ["server1", "server2"]
