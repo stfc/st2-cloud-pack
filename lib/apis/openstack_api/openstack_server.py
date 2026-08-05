@@ -313,7 +313,7 @@ def add_tag(conn: Connection, server_id: str, tag: str) -> None:
     """
     logger.info("adding tag %s to server %s", tag, server_id)
     current_microversion = conn.compute.default_microversion
-    # we need a very specifict NOVA version for this action
+    # we need a very specific NOVA version for this action
     logger.info("setting temporarily NOVA microversion")
     conn.compute.default_microversion = "2.26"
     conn.compute.add_tag_to_server(server_id, tag)
@@ -338,11 +338,11 @@ def remove_tag(conn: Connection, server_id: str, tag: str) -> None:
     """
     logger.info("removing tag %s from server %s", tag, server_id)
     current_microversion = conn.compute.default_microversion
-    # we need a very specifict NOVA version for this action
+    # we need a very specific NOVA version for this action
     logger.info("setting temporarily NOVA microversion")
     conn.compute.default_microversion = "2.26"
     try:
-        conn.compute.add_tag_to_server(server_id, tag)
+        conn.compute.remove_tag_from_server(server_id, tag)
     except NotFoundException:
         logger.error("server %s does not have tag %s", server_id, tag)
     # restore the NOVA version
@@ -363,9 +363,7 @@ def find_servers_with_tag(conn: Connection, tag: str) -> List[str]:
     :rtype: List[str]
     """
     logger.info("searching for all servers with tag %s", tag)
-    out = []
     servers = conn.compute.servers(all_projects=True, tags=tag)
-    for server in servers:
-        out.append(server.id)
+    out = [server.id for server in servers]
     logger.info("found %s servers with tag %s", len(out), tag)
     return out

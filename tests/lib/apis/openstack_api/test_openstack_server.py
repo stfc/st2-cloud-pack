@@ -703,7 +703,7 @@ def test_remove_tag():
 
     remove_tag(mock_connection, "server1", "test-tag")
 
-    mock_connection.compute.add_tag_to_server.assert_called_once_with(
+    mock_connection.compute.remove_tag_from_server.assert_called_once_with(
         "server1", "test-tag"
     )
     assert mock_connection.compute.default_microversion == "2.90"
@@ -715,7 +715,7 @@ def test_remove_tag_not_found():
     """
     mock_connection = MagicMock()
     mock_connection.compute.default_microversion = "2.90"
-    mock_connection.compute.add_tag_to_server.side_effect = NotFoundException()
+    mock_connection.compute.remove_tag_from_server.side_effect = NotFoundException()
 
     remove_tag(mock_connection, "server1", "test-tag")
 
