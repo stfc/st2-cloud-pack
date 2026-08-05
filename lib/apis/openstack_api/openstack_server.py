@@ -5,7 +5,7 @@ from typing import Optional, List
 from openstack.connection import Connection
 from openstack.compute.v2.image import Image
 from openstack.compute.v2.server import Server
-from openstack.exceptions import ResourceFailure, ResourceTimeout
+from openstack.exceptions import ResourceFailure, ResourceTimeout, NotFoundException
 
 logger = logging.getLogger(__name__)
 
@@ -296,3 +296,76 @@ def shutoff_server_list(conn: Connection, server_id_list: List[str]) -> None:
     """
     for server_id in server_id_list:
         shutoff_server(conn, server_id)
+
+
+def add_tag(conn: Connection, server_id: str, tag: str) -> None:
+    """
+    Adds a tag to a Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: ID of the Server
+    :type server_id: str
+    :param tag: the tag to be added to the Server
+    :type tag: str
+    :return: None
+    :rtype: None
+    """
+    logger.info("adding tag %s to server %s", tag, server_id)
+    current_microversion = conn.compute.default_microversion
+    # we need a very specifict NOVA version for this action
+    logger.info("setting temporarily NOVA microversion")
+    conn.compute.default_microversion = "2.26"
+    conn.compute.add_tag_to_server(server_id, tag)
+    # restore the NOVA version
+    conn.compute.default_microversion = current_microversion
+    logger.info("restoring NOVA microversion")
+    logger.info("tag %s added to server %s", tag, server_id)
+
+
+def remove_tag(conn: Connection, server_id: str, tag: str) -> None:
+    """
+    Removes a tag from a Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: ID of the Server
+    :type server_id: str
+    :param tag: the tag to be removed from the Server
+    :type tag: str
+    :return: None
+    :rtype: None
+    """
+    logger.info("removing tag %s from server %s", tag, server_id)
+    current_microversion = conn.compute.default_microversion
+    # we need a very specifict NOVA version for this action
+    logger.info("setting temporarily NOVA microversion")
+    conn.compute.default_microversion = "2.26"
+    try:
+        conn.compute.add_tag_to_server(server_id, tag)
+    except NotFoundException:
+        logger.error("server %s does not have tag %s", server_id, tag)
+    # restore the NOVA version
+    conn.compute.default_microversion = current_microversion
+    logger.info("restoring NOVA microversion")
+    logger.info("tag %s removed from server %s", tag, server_id)
+
+
+def find_servers_with_tag(conn: Connection, tag: str) -> List[str]:
+    """
+    find the list of Servers including a given tag
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param tag: the tag to be removed from the Server
+    :type tag: str
+    :return: the list of Servers including the tag
+    :rtype: List[str]
+    """
+    logger.info("searching for all servers with tag %s", tag)
+    out = []
+    servers = conn.compute.servers(all_projects=True, tags=tag)
+    for server in servers:
+        out.append(server.id)
+    logger.info("found %s servers with tag %s", len(out), tag)
+    return out
