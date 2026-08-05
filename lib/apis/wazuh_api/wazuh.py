@@ -112,7 +112,9 @@ class WazuhClient:
             os_name,
             os_version,
         )
-        query = f"os.platform={os_name};os.major={os_version};status=active;group!=kolla"
+        query = (
+            f"os.platform={os_name};os.major={os_version};status=active;group!=kolla"
+        )
         # we ensure we only get information about Servers and not Hypervisors
         # by adding conditions
         #   group!=kolla
