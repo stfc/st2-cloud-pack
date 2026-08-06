@@ -150,7 +150,7 @@ wazuh_accounts:
         secret: true
       wazuh_endpoint:
         type: "string"
-        description: "wazuh endpoint"
+        description: "Wazuh endpoint"
         required: true
         secret: false
         default: ""
