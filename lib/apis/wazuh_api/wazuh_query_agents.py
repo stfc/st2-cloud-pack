@@ -83,7 +83,7 @@ def wazuh_list_servers_by_os(
     # by adding conditions
     #   group!=kolla
     # to the query string
-    data = query_agents(wazuh_token, wazuh_account.url, values=["name"], query=query)
+    data = _query_agents(wazuh_token, wazuh_account.url, values=["name"], query=query)
 
     # extract the Server ID from the fetched data
     # the variable "name" for OpenStack Servers looks like this:
