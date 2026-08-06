@@ -4,6 +4,7 @@ from apis.wazuh_api.wazuh_query_agents import _query_agents, wazuh_list_servers_
 
 
 # pylint: disable=protected-access
+# pylint: disable=unused-argument
 @patch("apis.wazuh_api.wazuh_query_agents.requests.get")
 def test_query_agents_pagination(mock_get):
     """
@@ -120,12 +121,7 @@ def test_wazuh_list_servers_by_os(mock_query):
 
     wazuh_account.get_wazuh_token.assert_called_once_with()
 
-    expected_query = (
-        "os.platform=ubuntu;"
-        "os.major=22.04;"
-        "status=active;"
-        "group!=kolla"
-    )
+    expected_query = "os.platform=ubuntu;os.major=22.04;status=active;group!=kolla"
     mock_query.assert_called_once_with(
         "jwt-token",
         "https://wazuh.example.com",
