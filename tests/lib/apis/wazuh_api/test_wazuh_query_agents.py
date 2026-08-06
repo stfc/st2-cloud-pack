@@ -88,7 +88,7 @@ def test_wazuh_list_servers_by_os(mock_query):
         Verifies the exact query parameters and ensures valid UUIDs are extracted.
     """
     wazuh_account = Mock()
-    wazuh_account.url = "https://wazuh.example.com"
+    wazuh_account.wazuh_endpoint = "https://wazuh.example.com"
     wazuh_account.get_wazuh_token.return_value = "jwt-token"
 
     mock_query.return_value = [
