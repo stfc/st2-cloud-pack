@@ -148,7 +148,7 @@ wazuh_accounts:
         description: "Password for wazuh"
         required: true
         secret: true
-      icinga_endpoint:
+      wazuh_endpoint:
         type: "string"
         description: "wazuh endpoint"
         required: true
