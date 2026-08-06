@@ -48,7 +48,7 @@ def _query_agents(
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            raise RuntimeError("Failed to fetch data for all agents: %s") from e
+            raise RuntimeError("Failed to fetch data for all agents") from e
         data = response.json()
         items = data.get("data", {}).get("affected_items", [])
         # finished pagination loop
@@ -56,7 +56,7 @@ def _query_agents(
             break
         out.extend(items)
         # restart pagination loop with new offset
-        params["offset"] += params["BATCH_SIZE"]
+        params["offset"] += params["limit"]
     logger.info("Data for all agents fetched correctly")
     return out
 
