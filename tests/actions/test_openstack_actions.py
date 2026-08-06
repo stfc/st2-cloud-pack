@@ -1,177 +1,152 @@
-from importlib import import_module
 from unittest.mock import MagicMock, NonCallableMock, patch
-
 import pytest
-from src.openstack_actions import OpenstackActions
-
-from tests.actions.openstack_action_test_base import OpenstackActionTestBase
+from src.openstack_actions import ACCOUNT_CONFIGS, OpenstackActions
 
 
-@pytest.mark.parametrize("action_name", ["send_decom_flavor_email", "send_test_email"])
-def test_module_exists(action_name):
-    """
-    Test that each action's entry-point module exists
-    """
-    workflow_module = import_module(f"workflows.{action_name}")
-
-    assert hasattr(workflow_module, action_name)
+@pytest.fixture(name="action")
+def action_fixture():
+    """OpenstackActions with a stubbed pack config and a silenced logger."""
+    action = OpenstackActions(config={})
+    action.logger = MagicMock()
+    return action
 
 
-class TestOpenstackActions(OpenstackActionTestBase):
-    """
-    Unit tests for actions that use workflow modules
-    """
+@patch("src.openstack_actions.import_module")
+def test_run_dispatches(mock_import, action):
+    """Test action dispatch - test path is split into module and attribute correctly."""
+    action_func = mock_import.return_value.fn1
+    result = action.run(lib_entry_point="fake.module.fn1", foo="bar")
+    mock_import.assert_called_once_with("fake.module")
+    action_func.assert_called_once_with(foo="bar")
+    assert result == action_func.return_value
 
-    config = {}
-    action_cls = OpenstackActions
-    # pylint: disable=invalid-name
 
-    def setUp(self):
-        """setup for tests"""
-        super().setUp()
-        self.action: OpenstackActions = self.get_action_instance()
-        self.mock_kwargs = {
-            "kwarg1": NonCallableMock(),
-            "kwarg2": NonCallableMock(),
-        }
+@patch("src.openstack_actions.import_module")
+def test_run_nested_module(mock_import, action):
+    """Test action dispatch for deeply nested module."""
+    action.run(lib_entry_point="a.b.c.d.fn2")
+    mock_import.assert_called_once_with("a.b.c.d")
+    mock_import.return_value.fn2.assert_called_once_with()
 
-    @patch("src.openstack_actions.import_module")
-    def test_run(self, mock_import):
-        """
-        Tests that run method can dispatch to workflow methods
-        """
-        mock_action_module_name = "workflow.submodule.module.fn1"
-        with patch.object(self.action, "parse_configs") as mock_parse_configs:
-            self.action.run(
-                lib_entry_point=mock_action_module_name,
-                **self.mock_kwargs,
+
+@patch("src.openstack_actions.import_module")
+def test_run_dispatches_no_kwargs(mock_import, action):
+    """Test action dispatch with no user-defined params."""
+    action.run(lib_entry_point="fake.module.fn3")
+    mock_import.return_value.fn3.assert_called_once_with()
+
+
+def test_run_dispatch_fails_when_module_not_given(action):
+    """Test action dispatch raises error where no module path provided."""
+    with pytest.raises(ValueError):
+        action.run(lib_entry_point="some_func")
+
+
+@patch("src.openstack_actions.import_module")
+def test_run_dispatch_fails_when_function_not_found(mock_import, action):
+    """Test action raises error when function name doesn't exist in module spec."""
+    mock_import.return_value = NonCallableMock(spec=[])
+
+    with pytest.raises(AttributeError):
+        action.run(lib_entry_point="fake.module.does_not_exist")
+
+
+@patch("src.openstack_actions.import_module")
+def test_run_parse_results_propagate(mock_import, action):
+    """Test that whatever parse_configs returns reaches the lib function."""
+    with patch.object(action, "parse_configs") as mock_parse:
+        mock_parse.return_value = {"parsed": True}
+        action.run(lib_entry_point="fake.module.fn1", raw="value")
+
+    mock_parse.assert_called_once_with(raw="value")
+    mock_import.return_value.fn1.assert_called_once_with(parsed=True)
+
+
+@patch("src.openstack_actions.OpenstackConnection")
+@patch("src.openstack_actions.import_module")
+def test_run_parses_cloud_account_when_given(mock_import, mock_conn_cls, action):
+    """when cloud_account is given, test that connection passed as conn."""
+    action_func = mock_import.return_value.fn1
+
+    result = action.run(
+        lib_entry_point="fake.module.fn1",
+        cloud_account="dev",
+        kwarg1="kept",
+        kwarg2="kept",
+    )
+
+    mock_conn_cls.assert_called_once_with("dev")
+    # equality on the full call also proves cloud_account was removed
+    action_func.assert_called_once_with(
+        conn=mock_conn_cls.return_value.__enter__.return_value,
+        cloud_account="dev",
+        kwarg1="kept",
+        kwarg2="kept",
+    )
+    assert result == action_func.return_value
+
+
+@pytest.mark.parametrize(
+    "name_key,obj_key,loader",
+    [(key, val[0], val[1]) for key, val in ACCOUNT_CONFIGS.items()],
+    ids=list(ACCOUNT_CONFIGS),
+)
+def test_parse_configs_parses_accounts(action, name_key, obj_key, loader):
+    """Tests that parse_config converts each *_name key in ACCOUNT_CONFIGS into respective dataclasses"""
+    with patch.object(loader, "from_pack_config") as mock_loader:
+        result = action.parse_configs(**{name_key: "prod"})
+
+    mock_loader.assert_called_once_with(action.config, "prod")
+    # equality on the whole dict also proves the *_name key was removed
+    assert result == {obj_key: mock_loader.return_value}
+
+
+def test_parse_configs_parses_multiple_accounts(action):
+    """Tests that parse_config converts multiple *_name keys in ACCOUNT_CONFIGS when given"""
+    smtp_obj, smtp_cls = ACCOUNT_CONFIGS["smtp_account_name"]
+    jira_obj, jira_cls = ACCOUNT_CONFIGS["jira_account_name"]
+
+    with patch.object(smtp_cls, "from_pack_config") as mock_smtp:
+        with patch.object(jira_cls, "from_pack_config") as mock_jira:
+            result = action.parse_configs(
+                smtp_account_name="default", jira_account_name="default"
             )
 
-        mock_parse_configs.assert_called_once_with(**self.mock_kwargs)
-        mock_import.assert_called_once_with("workflow.submodule.module")
-        mock_import.return_value.fn1.assert_called_once_with(
-            **mock_parse_configs.return_value
-        )
+    assert result == {
+        smtp_obj: mock_smtp.return_value,
+        jira_obj: mock_jira.return_value,
+    }
 
-    @patch("src.openstack_actions.import_module")
-    @patch("src.openstack_actions.OpenstackConnection")
-    def test_run_with_openstack(self, mock_openstack_connection, mock_import):
-        """
-        Tests that run method can dispatch to workflow methods
-        and sets up openstack connection when requires_openstack is True
-        """
-        mock_action_module_name = "workflow.submodule.module.fn1"
-        mock_conn = MagicMock()
-        mock_openstack_connection.return_value.__enter__.return_value = mock_conn
 
-        with patch.object(self.action, "parse_configs") as mock_parse_configs:
-            mock_parse_configs.return_value = {
-                "kwarg1": "foo",
-                "kwarg2": "bar",
-                "cloud_account": "prod",
-            }
+# ---------------------------------------------------------------------------
+# parse_configs() - chatops
+# ---------------------------------------------------------------------------
+# TODO: REMOVE THIS AND USE A DATACLASS AND from_pack_config() LIKE ALL OTHERS
 
-            self.action.run(
-                lib_entry_point=mock_action_module_name,
-                requires_openstack=True,
-                kwarg1="foo",
-                kwarg2="bar",
-                cloud_account="prod",
-            )
 
-        mock_openstack_connection.assert_called_once_with("prod")
-        mock_parse_configs.assert_called_once_with(
-            kwarg1="foo", kwarg2="bar", cloud_account="prod"
-        )
-        mock_import.assert_called_once_with("workflow.submodule.module")
-
-        mock_import.return_value.fn1.assert_called_once_with(
-            conn=mock_conn, kwarg1="foo", kwarg2="bar"
-        )
-
-    @patch("src.openstack_actions.SMTPAccount")
-    def test_parse_configs_with_smtp_account(self, mock_smtp_account):
-        """
-        tests that parse_configs parses smtp_account_name properly if provided
-        """
-        mock_smtp_account_name = NonCallableMock()
-        res = self.action.parse_configs(**{"smtp_account_name": mock_smtp_account_name})
-        mock_smtp_account.from_pack_config.assert_called_once_with(
-            self.config, mock_smtp_account_name
-        )
-        assert res == {"smtp_account": mock_smtp_account.from_pack_config.return_value}
-
-    @patch("src.openstack_actions.JiraAccount")
-    def test_parse_configs_with_jira_account(self, mock_jira_account):
-        """
-        tests that parse_configs parses jira_account_name properly if provided
-        """
-        mock_jira_account_name = NonCallableMock()
-        res = self.action.parse_configs(**{"jira_account_name": mock_jira_account_name})
-        mock_jira_account.from_pack_config.assert_called_once_with(
-            self.config, mock_jira_account_name
-        )
-        assert res == {"jira_account": mock_jira_account.from_pack_config.return_value}
-
-    @patch("src.openstack_actions.IcingaAccount")
-    def test_parse_configs_with_icinga_account(self, mock_icinga_account):
-        """
-        tests that parse_configs parses icinga_account_name properly if provided
-        """
-        mock_icinga_account_name = NonCallableMock()
-        res = self.action.parse_configs(
-            **{"icinga_account_name": mock_icinga_account_name}
-        )
-        mock_icinga_account.from_pack_config.assert_called_once_with(
-            self.config, mock_icinga_account_name
-        )
-        assert res == {
-            "icinga_account": mock_icinga_account.from_pack_config.return_value
-        }
-
-    @patch("src.openstack_actions.AlertManagerAccount")
-    def test_parse_configs_with_alertmanager_account(self, mock_alertmanager_account):
-        """
-        tests that parse_configs parses alertmanager_account_name properly if provided
-        """
-        mock_alertmanager_account_name = NonCallableMock()
-        res = self.action.parse_configs(
-            **{"alertmanager_account_name": mock_alertmanager_account_name}
-        )
-        mock_alertmanager_account.from_pack_config.assert_called_once_with(
-            self.config, mock_alertmanager_account_name
-        )
-        assert res == {
-            "alertmanager_account": mock_alertmanager_account.from_pack_config.return_value
-        }
-
-    def test_parse_configs_with_no_accounts(self):
-        """
-        tests that parse_configs doesn't do anything if no stackstorm config names given
-        """
-        mock_kwargs = {"arg1": "val1", "arg2": "val2"}
-        res = self.action.parse_configs(**mock_kwargs)
-        assert res == mock_kwargs
-
-    def test_parse_configs_with_chatops(self):
-        """
-        tests that parse_configs parses chatops config properly if reminder_type is provided
-        """
-        # Set the config properly
-        self.action.config = {
+@pytest.fixture(name="chatops_action")
+def chatops_action_fixture():
+    action = OpenstackActions(
+        config={
             "chatops_sensor": {
-                "token": "mock_token",
-                "endpoint": "mock_endpoint",
-                "channel": "mock_channel",
+                "token": "a-token",
+                "endpoint": "https://chat.example.com",
+                "channel": "#alerts",
             }
         }
+    )
+    action.logger = MagicMock()
+    return action
 
-        # Call parse_configs with reminder_type
-        result = self.action.parse_configs(chatops_reminder_type="mock_reminder_type")
 
-        assert result == {
-            "token": "mock_token",
-            "endpoint": "mock_endpoint",
-            "channel": "mock_channel",
-            "reminder_type": "mock_reminder_type",
-        }
+def test_parse_configs_parses_chatops_config(chatops_action):
+    """Test that parse_config pulls relevant chatops data from pack config and returns it"""
+    result = chatops_action.parse_configs(chatops_reminder_type="daily", extra=1)
+
+    assert result == {
+        "token": "a-token",
+        "endpoint": "https://chat.example.com",
+        "channel": "#alerts",
+        "reminder_type": "daily",
+        "extra": 1,
+    }

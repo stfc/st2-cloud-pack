@@ -8,10 +8,6 @@ parameters:
     default: workflows.hv_shutdown_servers.shutdown_all_servers_in_hypervisor
     immutable: true
     type: string
-  requires_openstack:
-    default: true
-    immutable: true
-    type: boolean
   cloud_account:
     description: "The clouds.yaml account to use whilst performing this action"
     required: true
