@@ -1,6 +1,8 @@
 from typing import Optional, List
 import logging
+import re
 import requests
+from apis.wazuh_api.structs.wazuh_account import WazuhAccount
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +59,7 @@ def _query_agents(
         params["offset"] += params["BATCH_SIZE"]
     logger.info("Data for all agents fetched correctly")
     return out
+
 
 def wazuh_list_servers_by_os(
     wazuh_account: WazuhAccount, os_name: str, os_version: str
