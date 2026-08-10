@@ -1,13 +1,19 @@
+import logging
+from apis.wazuh_api.wazuh_query_agents import wazuh_list_servers_by_os
+from apis.openstack_api.openstack_server import find_servers_with_tag, shutofff_server, add_tag, remove_tag, set_metadata, delete_metadata
+from apis.openstack_query_api.user_queries import find_user_info
+from apis.elog_api.elog import add_record
+from datetime import datetime, timezone
+
+logger = logging.getLogger(__name__)
 
 # ------------------------------------------------------------------------------ 
 
-def find_eol_servers(wazuh_client, os_name, os_version):
-    out = wazuh_client.get_servers_for_os(os_name, os_version)
-    return out
+def _timestamp():
+    n = datetime.now(timezone.utc)
+    return n.strftime("%Y-%m-%d %H:%M:%S (UTC)")
 
-def find_tagged_servers(conn):
-    out = get_tagged_server_foo_fixme()
-    return out
+# ------------------------------------------------------------------------------ 
 
 def _compare_lists(wazuh_l, tagged_l):
     wazuh_s = set(wazuh_l)
@@ -20,13 +26,16 @@ def _compare_lists(wazuh_l, tagged_l):
 # ------------------------------------------------------------------------------ 
 
 def manage_new_eol_server(conn, server_id):
-    set_tag_foo_fixme()
-    set_metadata_foo_fixme() 
-    username, email = find_user_info(server_id, conn._cloud_name)
+    add_tag(conn, server_id, "tag_fixme")
+    set_metadata(conn, server_id, properties_fixme) 
+    #FIXME
+    user_id = ...
+    username, email = find_user_info(user_id, conn._cloud_name)
     if not email:
         logger.error("there is no avaible information regarding the owner of Server %s", server_id)
     else:
-        email 
+        #FIXME
+        send_email ...
 
 def manage_new_eol_server_list(conn, only_wazuh_list):
     for server_id in only_wazuh_list:
@@ -34,45 +43,46 @@ def manage_new_eol_server_list(conn, only_wazuh_list):
 
 # ------------------------------------------------------------------------------ 
 
-def manage_old_eol_server(conn, elog_client, server_id):
+def manage_old_eol_server(conn, elog_account, server_id):
     metadata = get_metadata_foo_fixme()
     metadata_age = get_metadata_age_foo_fixme()
     if metadata_age < minimum_age: 
         logger.info("the user of server %s was notified %s ago, nothing to do yet", server_id, metadata_age)
     else:
-        shutoff_server(server_id) 
-        notify_user() 
-        elog() 
+        shutoff_server(conn, server_id) 
+        # FIXME
+        send_email ... 
+        add_record(elog_account, "subject_fixme", "body_fixme") 
 
-def manage_old_eol_server_list(conn, elog_client, server_l):
+def manage_old_eol_server_list(conn, elog_account, server_l):
     for server in server_l:
-        manage_old_eol_server(conn, elog_client, server):
+        manage_old_eol_server(conn, elog_account, server):
 
 # ------------------------------------------------------------------------------ 
 
-def manage_fixed_server(conn, elog_client, server_id):
-    remove_metadata_foo_fixme()
-    remove_tag_foo_fixme()
-    elog()
+def manage_fixed_server(conn, elog_account, server_id):
+    delete_metadata(conn, server_id, properties_fixme)
+    remove_tag(conn, server_id, "tag_fixme")
+    add_record(elog_account, "subject_fixme", "body_fixme") 
 
-def manage_fixed_server_list(conn, elog_client, server_l):
+def manage_fixed_server_list(conn, elog_account, server_l):
     for server in server_l:
-        manage_fixed_server(conn, elog_client, server):
+        manage_fixed_server(conn, elog_account, server):
+
 
 # ------------------------------------------------------------------------------ 
 #
 # main function
 #
-def eol_servers_workflow(conn, wazuh_client, elog_client, os_name, os_version):
-    wazuh_server_list = find_eol_servers(wazuh_client, os_name, os_version)
-    tagged_server_list = find_tagged_servers(conn)
-    only_wazuh_list, only_tagged_list, both_list = _compare_list(wazuh_server_list, tagged_server_list)
+# ------------------------------------------------------------------------------ 
+
+def eol_servers_workflow(conn, wazuh_account, elog_account, os_name, os_version):
+
+    wazuh_server_list = wazuh_list_servers_by_os(wazuh_account, os_name, os_version)
+    tagged_server_list = find_servers_with_tag(conn, "tag_fixme")
+    only_wazuh_list, only_tagged_list, both_list = _compare_lists(wazuh_server_list, tagged_server_list)
     manage_new_eol_server_list(conn, only_wazuh_list)
-    manage_old_eol_server_list(conn, elog_client, both_list)
-    manage_fixed_server_list(conn, elog_client, only_tagged_list)
-    
-
-
-
+    manage_old_eol_server_list(conn, elog_account, both_list)
+    manage_fixed_server_list(conn, elog_account, only_tagged_list)
 
 
