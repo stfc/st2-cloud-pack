@@ -5,7 +5,13 @@ from typing import Optional, List, Dict
 from openstack.connection import Connection
 from openstack.compute.v2.image import Image
 from openstack.compute.v2.server import Server
-from openstack.exceptions import ResourceFailure, ResourceTimeout, NotFoundException
+from openstack.exceptions import (
+    ResourceFailure,
+    ResourceTimeout,
+    NotFoundException,
+    ResourceNotFound,
+    SDKException,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -430,3 +436,52 @@ def find_servers_with_tag(conn: Connection, tag: str) -> List[str]:
     out = [server.id for server in servers]
     logger.info("found %s servers with tag %s", len(out), tag)
     return out
+
+
+# ------------------------------------------------------------------------------
+#   functions related the Server's owner
+# ------------------------------------------------------------------------------
+
+
+def get_server_owner_email(conn: Connection, server_id: str) -> str:
+    """
+    Returns, when possible, the email of User who instantiated a Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :return: the email of the User
+    :rtype: str
+    :raises ResourceNotFound: if the Server does not have User information
+        or the user does not exist
+    :raises openstack.exceptions.SDKException:
+        if the User exists but does not expose a valid name attribute
+    """
+    logger.info("fetching the email of the owner of server %s", server_id)
+    server = conn.compute.get_server(server_id)
+
+    user_id = getattr(server, "user_id", None)
+    if not user_id:
+        error_msg = f"Server '{server_id}' does not have an associated user_id."
+        logger.critical(error_msg)
+        raise ResourceNotFound(error_msg)
+
+    user = conn.identity.get_user(user_id)
+    if not user:
+        error_msg = (
+            f"User '{user_id}' referenced by server '{server_id}' was not found."
+        )
+        logger.critical(error_msg)
+        raise ResourceNotFound(error_msg)
+
+    user_email = getattr(user, "email", None)
+    if not user_email:
+        error_msg = f"User '{user_id}' referenced by server '{server_id}' does not provide for an email."
+        logger.critical(error_msg)
+        raise SDKException(error_msg)
+
+    logger.info(
+        "returning email address %s for the owner of server %s", user_email, server_id
+    )
+    return user_email
