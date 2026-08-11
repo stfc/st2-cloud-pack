@@ -34,7 +34,9 @@ def _timestamp() -> str:
 # ------------------------------------------------------------------------------
 
 
-def _compare_lists(wazuh_l: List[str], tagged_l: List[str]):
+def _compare_lists(
+    wazuh_l: List[str], tagged_l: List[str]
+) -> tuple[List[str], List[str], List[str]]:
     """
     compares 2 lists (A and B) and returns 3:
     * one with items only in list A
@@ -53,6 +55,10 @@ def _compare_lists(wazuh_l: List[str], tagged_l: List[str]):
 
 
 def manage_new_eol_server(conn: Connection, server_id: str) -> None:
+    """
+    performs the actions to handle a Server we have just
+    discovered is running an EOL version of the OS
+    """
     add_tag_to_server(conn, server_id, "tag_fixme")
     add_metadata_to_server(conn, server_id, properties_fixme)
     try:
@@ -66,6 +72,10 @@ def manage_new_eol_server(conn: Connection, server_id: str) -> None:
 
 
 def manage_new_eol_server_list(conn: Connection, only_wazuh_list: List[str]) -> None:
+    """
+    performs the actions to handle a list of Servers we have just
+    discovered is running an EOL version of the OS
+    """
     for server_id in only_wazuh_list:
         manage_new_eol_server(conn, server_id)
 
@@ -76,6 +86,10 @@ def manage_new_eol_server_list(conn: Connection, only_wazuh_list: List[str]) -> 
 def manage_old_eol_server(
     conn: Connection, elog_account: ElogAccount, server_id: str
 ) -> None:
+    """
+    performs the actions to handle a Server that we spotted as running
+    an EOL version of the OS, and still is
+    """
     metadata = get_metadata_foo_fixme()
     metadata_age = get_metadata_age_foo_fixme()
     if metadata_age < minimum_age:
@@ -93,6 +107,10 @@ def manage_old_eol_server(
 def manage_old_eol_server_list(
     conn: Connection, elog_account: ElogAccount, server_l: List[str]
 ) -> None:
+    """
+    performs the actions to handle a list of Servers that we spotted as running
+    an EOL version of the OS, and still are
+    """
     for server in server_l:
         manage_old_eol_server(conn, elog_account, server)
 
@@ -103,6 +121,10 @@ def manage_old_eol_server_list(
 def manage_fixed_server(
     conn: Connection, elog_account: ElogAccount, server_id: str
 ) -> None:
+    """
+    performs the actions to handle a Server that we spotted as running
+    an EOL version of the OS but has been fixed by the User
+    """
     delete_metadata_from_server(conn, server_id, properties_fixme)
     remove_tag_from_server(conn, server_id, "tag_fixme")
     add_record_to_elog(elog_account, "subject_fixme", "body_fixme")
@@ -111,6 +133,10 @@ def manage_fixed_server(
 def manage_fixed_server_list(
     conn: Connection, elog_account: ElogAccount, server_l: List[str]
 ) -> None:
+    """
+    performs the actions to handle a list of Servers that we spotted as running
+    an EOL version of the OS but has been fixed by the User
+    """
     for server in server_l:
         manage_fixed_server(conn, elog_account, server)
 
