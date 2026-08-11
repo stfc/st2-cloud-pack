@@ -17,8 +17,15 @@ from apis.openstack_api.openstack_server import (
     add_tag_to_server,
     remove_tag_from_server,
     find_servers_with_tag,
+    get_server_owner_email,
 )
-from openstack.exceptions import ResourceFailure, ResourceTimeout, NotFoundException
+from openstack.exceptions import (
+    ResourceFailure,
+    ResourceTimeout,
+    NotFoundException,
+    ResourceNotFound,
+    SDKException,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -792,3 +799,67 @@ def test_find_servers_with_tag():
         all_projects=True, tags="test-tag"
     )
     assert result == ["server1", "server2"]
+
+
+def test_get_server_owner_email():
+    # Create a mocked OpenStack connection.
+    conn = MagicMock()
+
+    # Mock the server returned by OpenStack.
+    conn.compute.get_server.return_value.user_id = "user-123"
+
+    # Mock the corresponding user.
+    conn.identity.get_user.return_value.email = "owner@example.com"
+
+    # Call the function under test.
+    result = get_server_owner_email(conn, "server-123")
+
+    # Verify the expected email is returned.
+    assert result == "owner@example.com"
+
+
+def test_get_server_owner_email_raises_when_server_has_no_user_id():
+    conn = MagicMock()
+
+    # Server exists but has no associated user_id.
+    conn.compute.get_server.return_value.user_id = None
+
+    with pytest.raises(
+        ResourceNotFound,
+        match="does not have an associated user_id",
+    ):
+        get_server_owner_email(conn, "server-123")
+
+
+def test_get_server_owner_email_raises_when_user_does_not_exist():
+    conn = MagicMock()
+
+    # Server references a user.
+    conn.compute.get_server.return_value.user_id = "user-123"
+
+    # The referenced user cannot be found.
+    conn.identity.get_user.return_value = None
+
+    with pytest.raises(
+        ResourceNotFound,
+        match="was not found",
+    ):
+        get_server_owner_email(conn, "server-123")
+
+
+def test_get_server_owner_email_raises_when_user_has_no_email():
+    conn = MagicMock()
+
+    # Server references a valid user.
+    conn.compute.get_server.return_value.user_id = "user-123"
+
+    # User exists but does not expose an email.
+    user = MagicMock()
+    user.email = None
+    conn.identity.get_user.return_value = user
+
+    with pytest.raises(
+        SDKException,
+        match="does not provide for an email",
+    ):
+        get_server_owner_email(conn, "server-123")
