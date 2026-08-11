@@ -12,6 +12,8 @@ from apis.openstack_api.openstack_server import (
     wait_for_image_status,
     wait_for_migration_status,
     shutoff_server,
+    add_metadata_to_server,
+    delete_metadata_from_server,
 )
 from openstack.exceptions import ResourceFailure, ResourceTimeout
 
@@ -673,3 +675,52 @@ def test_with_empty_migration_list():
         wait_for_migration_status(
             mock_conn, "test-server-id", "should-timeout", interval=1, timeout=1
         )
+
+
+def test_add_metadata_to_server():
+    """
+    ensures that the Server object found is the one passed
+    as argument to add_server_metadata()
+    ensures all_projects is set to True
+    """
+    mock_conn = MagicMock()
+    mock_server = MagicMock()
+    mock_conn.compute.find_server.return_value = mock_server
+
+    server_id = "srv-12345"
+    properties_to_add = {"env": "production", "tier": "frontend"}
+
+    add_metadata_to_server(mock_conn, server_id, properties_to_add)
+
+    mock_conn.compute.find_server.assert_called_once_with(
+        "srv-12345", all_projects=True
+    )
+
+    mock_conn.compute.set_server_metadata.assert_called_once_with(
+        mock_server, env="production", tier="frontend"
+    )
+
+
+def test_delete_metadata_from_server():
+    """
+    ensures that the Server object found is the one passed
+    as argument to delete_server_metadata()
+    ensures all_projects is set to True
+    """
+    mock_conn = MagicMock()
+    mock_server = MagicMock()
+
+    mock_conn.compute.find_server.return_value = mock_server
+
+    server_id = "srv-12345"
+    properties_to_delete = ["environment", "temporary_flag"]
+
+    delete_metadata_from_server(mock_conn, server_id, properties_to_delete)
+
+    mock_conn.compute.find_server.assert_called_once_with(
+        "srv-12345", all_projects=True
+    )
+
+    mock_conn.compute.delete_server_metadata.assert_called_once_with(
+        mock_server, keys=["environment", "temporary_flag"]
+    )
