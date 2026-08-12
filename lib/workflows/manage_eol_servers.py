@@ -6,7 +6,7 @@ from apis.elog_api.structs.elog_account import ElogAccount
 from apis.wazuh_api.wazuh_query_agents import wazuh_list_servers_by_os
 from apis.openstack_api.openstack_server import (
     find_servers_with_tag,
-    shutofff_server,
+    shutoff_server,
     add_tag_to_server,
     remove_tag_from_server,
     add_metadata_to_server,
