@@ -13,6 +13,9 @@ from openstack.exceptions import (
     SDKException,
 )
 
+DEFAULT_NOVA_MICROVERSION = "2.26"
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -384,7 +387,7 @@ def add_tag_to_server(conn: Connection, server_id: str, tag: str) -> None:
     current_microversion = conn.compute.default_microversion
     # we need a very specific NOVA version for this action
     logger.info("setting temporarily NOVA microversion")
-    conn.compute.default_microversion = "2.26"
+    conn.compute.default_microversion = DEFAULT_NOVA_MICROVERSION
     conn.compute.add_tag_to_server(server_id, tag)
     # restore the NOVA version
     conn.compute.default_microversion = current_microversion
@@ -409,7 +412,7 @@ def remove_tag_from_server(conn: Connection, server_id: str, tag: str) -> None:
     current_microversion = conn.compute.default_microversion
     # we need a very specific NOVA version for this action
     logger.info("setting temporarily NOVA microversion")
-    conn.compute.default_microversion = "2.26"
+    conn.compute.default_microversion = DEFAULT_NOVA_MICROVERSION
     try:
         conn.compute.remove_tag_from_server(server_id, tag)
     except NotFoundException:
