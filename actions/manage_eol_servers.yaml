@@ -1,0 +1,16 @@
+---
+description: finds and handles OpenStack Servers running an EOL version of the Operating System
+enabled: true
+entry_point: src/openstack_actions.py
+name: cron.eol_servers
+runner_type: python-script
+parameters:
+  lib_entry_point:
+    type: string
+    default: workflows.manage_eol_servers.eol_servers_workflow
+    immutable: true
+  os_list:
+    type: "array"
+    description: "List of OS name and version pairs. Example: [{'os': 'ubuntu', 'version': '20'}, {'os': 'scientific', 'version': '7'}]"
+    required: true
+
