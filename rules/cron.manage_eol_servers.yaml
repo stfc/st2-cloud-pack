@@ -1,0 +1,23 @@
+---
+name: cron_eol_servers
+pack: stackstorm_openstack
+description: finds and handles OpenStack Servers running an EOL version of the Operating System
+enabled: true
+
+trigger:
+  type: core.st2.CronTimer
+  parameters:
+    timezone: "Europe/London"
+    day_of_week: mon,tue,wed,thu,fri
+    hour: 10
+    minute: 00
+
+
+action:
+  ref: stackstorm_openstack.manage_eol_servers
+  parameters:
+    os_list:
+      - os: "ubuntu"
+        version: "20"
+      - os: "scientific"
+        version: "7"
