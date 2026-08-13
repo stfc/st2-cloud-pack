@@ -1,4 +1,7 @@
+import inspect
 from importlib import import_module
+from typing import Dict, Callable
+
 from st2common.runners.base_action import Action
 
 from apis.openstack_api.openstack_connection import OpenstackConnection
@@ -36,8 +39,27 @@ class OpenstackActions(Action):
             # some actions require cloud_account to passed down - i.e. those that use the query library
             with OpenstackConnection(kwargs["cloud_account"]) as conn:
                 kwargs["conn"] = conn
-                return action_func(**kwargs)
-        return action_func(**kwargs)
+                return self.run_func(action_func, kwargs)
+        return self.run_func(action_func, kwargs)
+
+    @staticmethod
+    def run_func(action_func: Callable, kwargs: Dict) -> int:
+        """
+        apply given function with appropriate kwargs by filtering out those that are not needed
+        :param kwargs: kwargs to filter
+        :param action_func: function to call
+        :return: filtered kwargs
+        """
+        params = inspect.signature(action_func).parameters
+
+        accepted = {
+            name
+            for name, p in params.items()
+            if p.kind
+            in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
+        }
+        filtered = {k: v for k, v in kwargs.items() if k in accepted}
+        return action_func(**filtered)
 
     def parse_configs(self, **kwargs):
         """
