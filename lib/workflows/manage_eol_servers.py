@@ -152,15 +152,28 @@ def eol_servers_workflow(
     conn: Connection,
     wazuh_account: WazuhAccount,
     elog_account: ElogAccount,
-    os_name: str,
-    os_version: str,
+    os_list: List
 ) -> None:
+    """
+    main function to find and manage OpenStack Servers
+    running an EOL version of the OS
 
-    wazuh_server_list = wazuh_list_servers_by_os(wazuh_account, os_name, os_version)
-    tagged_server_list = find_servers_with_tag(conn, "tag_fixme")
-    only_wazuh_list, only_tagged_list, both_list = _compare_lists(
-        wazuh_server_list, tagged_server_list
-    )
-    manage_new_eol_server_list(conn, only_wazuh_list)
-    manage_old_eol_server_list(conn, elog_account, both_list)
-    manage_fixed_server_list(conn, elog_account, only_tagged_list)
+    :param os_list: a list of dictionaries, it looks like this
+                    [{'os': 'ubuntu', 'version': '20'}, 
+                     {'os': 'scientific', 'version': '7'}
+                    ]
+    """
+    logger.info("starting automation to manage EOL VMs")
+    for item in os_list:
+        os_name = item["os"]
+        os_version = item["version"]
+        logger.info("starting work for OS %s version %s", os_name, os_version)
+        wazuh_server_list = wazuh_list_servers_by_os(wazuh_account, os_name, os_version)
+        tagged_server_list = find_servers_with_tag(conn, "tag_fixme")
+        only_wazuh_list, only_tagged_list, both_list = _compare_lists(
+            wazuh_server_list, tagged_server_list
+        )
+        manage_new_eol_server_list(conn, only_wazuh_list)
+        manage_old_eol_server_list(conn, elog_account, both_list)
+        manage_fixed_server_list(conn, elog_account, only_tagged_list)
+    logger.info("automation to manage EOL VMs ends")
