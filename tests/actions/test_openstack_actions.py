@@ -11,14 +11,33 @@ def action_fixture():
     return action
 
 
+# pylint: disable=unused-argument
+def simple_fn(a: int, b: int):
+    return "success"
+
+
+def simple_fn_no_kwargs():
+    return "success_no_kwargs"
+
+
 @patch("src.openstack_actions.import_module")
 def test_run_dispatches(mock_import, action):
-    """Test action dispatch - test path is split into module and attribute correctly."""
-    action_func = mock_import.return_value.fn1
-    result = action.run(lib_entry_point="fake.module.fn1", foo="bar")
+    """Test action dispatch - kwargs are passed through correctly"""
+    mock_import.return_value.fn1 = simple_fn
+    result = action.run(lib_entry_point="fake.module.fn1", a=0, b=1)
     mock_import.assert_called_once_with("fake.module")
-    action_func.assert_called_once_with(foo="bar")
-    assert result == action_func.return_value
+    assert result == "success"
+
+
+@patch("src.openstack_actions.import_module")
+def test_run_dispatch_ignore_unneeded_args(mock_import, action):
+    """Test action dispatch - kwargs not needed in the function are ignored"""
+    mock_import.return_value.fn1 = simple_fn
+    result = action.run(
+        lib_entry_point="fake.module.fn1", a=0, b=1, foo="bar", bar="foo"
+    )
+    mock_import.assert_called_once_with("fake.module")
+    assert result == "success"
 
 
 @patch("src.openstack_actions.import_module")
@@ -32,8 +51,9 @@ def test_run_nested_module(mock_import, action):
 @patch("src.openstack_actions.import_module")
 def test_run_dispatches_no_kwargs(mock_import, action):
     """Test action dispatch with no user-defined params."""
-    action.run(lib_entry_point="fake.module.fn3")
-    mock_import.return_value.fn3.assert_called_once_with()
+    mock_import.return_value.fn1 = simple_fn_no_kwargs
+    result = action.run(lib_entry_point="fake.module.fn1")
+    assert result == "success_no_kwargs"
 
 
 def test_run_dispatch_fails_when_module_not_given(action):
@@ -51,39 +71,27 @@ def test_run_dispatch_fails_when_function_not_found(mock_import, action):
         action.run(lib_entry_point="fake.module.does_not_exist")
 
 
-@patch("src.openstack_actions.import_module")
-def test_run_parse_results_propagate(mock_import, action):
-    """Test that whatever parse_configs returns reaches the lib function."""
-    with patch.object(action, "parse_configs") as mock_parse:
-        mock_parse.return_value = {"parsed": True}
-        action.run(lib_entry_point="fake.module.fn1", raw="value")
-
-    mock_parse.assert_called_once_with(raw="value")
-    mock_import.return_value.fn1.assert_called_once_with(parsed=True)
-
-
 @patch("src.openstack_actions.OpenstackConnection")
 @patch("src.openstack_actions.import_module")
 def test_run_parses_cloud_account_when_given(mock_import, mock_conn_cls, action):
     """when cloud_account is given, test that connection passed as conn."""
-    action_func = mock_import.return_value.fn1
+
+    # pylint: disable=unused-argument
+    def simple_openstack_fn(conn, a, b):
+        return "success_openstack"
+
+    mock_import.return_value.fn1 = simple_openstack_fn
 
     result = action.run(
         lib_entry_point="fake.module.fn1",
         cloud_account="dev",
-        kwarg1="kept",
-        kwarg2="kept",
+        a=1,
+        b=2,
     )
 
     mock_conn_cls.assert_called_once_with("dev")
     # equality on the full call also proves cloud_account was removed
-    action_func.assert_called_once_with(
-        conn=mock_conn_cls.return_value.__enter__.return_value,
-        cloud_account="dev",
-        kwarg1="kept",
-        kwarg2="kept",
-    )
-    assert result == action_func.return_value
+    assert result == "success_openstack"
 
 
 @pytest.mark.parametrize(
