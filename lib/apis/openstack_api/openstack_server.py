@@ -416,13 +416,13 @@ def remove_tag_from_server(conn: Connection, server_id: str, tag: str) -> None:
 
 def find_servers_with_tag(conn: Connection, tag: str) -> List[str]:
     """
-    find the list of Servers including a given tag
+    find the list of Servers with a given tag
 
     :param conn: openstack connection object
     :type conn: Connection
-    :param tag: the tag to be removed from the Server
+    :param tag: the tag to search for servers by
     :type tag: str
-    :return: the list of Servers including the tag
+    :return: the list of Servers with the tag
     :rtype: List[str]
     """
     logger.info("searching for all servers with tag %s", tag)
