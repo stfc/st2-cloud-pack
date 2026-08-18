@@ -18,6 +18,7 @@ from apis.openstack_api.openstack_server import (
     remove_tag_from_server,
     find_servers_with_tag,
     get_server_owner_email,
+    admin_lock_server,
     DEFAULT_NOVA_MICROVERSION,
 )
 from openstack.exceptions import (
@@ -26,6 +27,7 @@ from openstack.exceptions import (
     NotFoundException,
     ResourceNotFound,
     SDKException,
+    BadRequestException,
 )
 
 
@@ -864,3 +866,77 @@ def test_get_server_owner_email_raises_when_user_has_no_email():
         match="does not provide for an email",
     ):
         get_server_owner_email(conn, "server-123")
+
+
+def test_admin_lock_server_locks_server_when_reason_is_valid():
+    # Create a mocked OpenStack connection.
+    conn = MagicMock()
+
+    # Define the server to lock.
+    server_id = "server-123"
+
+    # Define a valid lock reason.
+    reason = "Server locked for maintenance"
+
+    # Call the function under test.
+    result = admin_lock_server(conn, server_id, reason)
+
+    # Verify that OpenStack was asked to lock the correct server
+    # and that the reason was passed through unchanged.
+    conn.compute.lock_server.assert_called_once_with(server_id, reason)
+
+    # The current implementation does not explicitly return anything.
+    assert result is None
+
+
+def test_admin_lock_server_accepts_reason_with_254_characters():
+    # Create a mocked OpenStack connection.
+    conn = MagicMock()
+
+    # Create the longest reason accepted by the current implementation.
+    reason = "a" * 254
+
+    # Call the function under test.
+    admin_lock_server(conn, "server-123", reason)
+
+    # Verify the server was locked.
+    conn.compute.lock_server.assert_called_once_with("server-123", reason)
+
+
+def test_admin_lock_server_rejects_reason_with_255_characters():
+    # Create a mocked OpenStack connection.
+    conn = MagicMock()
+
+    # The implementation uses `len(reason) < 255`, so 255 characters
+    # must raise BadRequestException.
+    reason = "a" * 255
+
+    # Verify that the expected exception is raised.
+    with pytest.raises(
+        BadRequestException,
+        match="exceeds the limit of 255 characters",
+    ):
+        admin_lock_server(conn, "server-123", reason)
+
+    # Verify OpenStack was not called when validation failed.
+    conn.compute.lock_server.assert_not_called()
+
+
+def test_admin_lock_server_rejects_reason_longer_than_255_characters():
+    # Create a mocked OpenStack connection.
+    conn = MagicMock()
+
+    # Create an invalid reason.
+    reason = "a" * 256
+
+    # Call the function and capture the exception.
+    with pytest.raises(BadRequestException) as exc_info:
+        admin_lock_server(conn, "server-123", reason)
+
+    # Verify the exception contains the expected message.
+    assert str(exc_info.value) == (
+        f"reason '{reason}' exceeds the limit of 255 characters"
+    )
+
+    # Verify the server was never locked.
+    conn.compute.lock_server.assert_not_called()
