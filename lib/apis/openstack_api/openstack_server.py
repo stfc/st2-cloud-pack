@@ -308,11 +308,6 @@ def shutoff_server_list(conn: Connection, server_id_list: List[str]) -> None:
         shutoff_server(conn, server_id)
 
 
-# ------------------------------------------------------------------------------
-#   functions to manage Servers Metadata
-# ------------------------------------------------------------------------------
-
-
 def add_metadata_to_server(conn: Connection, server_id: str, properties: Dict) -> None:
     """
     Add new key:values pair to the Server metadata
@@ -364,11 +359,6 @@ def delete_metadata_from_server(
     server = conn.compute.find_server(server_id, all_projects=True)
     conn.compute.delete_server_metadata(server, keys=properties)
     logger.info("properties removed from server")
-
-
-# ------------------------------------------------------------------------------
-#   functions to manage Servers Tags
-# ------------------------------------------------------------------------------
 
 
 def add_tag_to_server(conn: Connection, server_id: str, tag: str) -> None:
@@ -442,11 +432,6 @@ def find_servers_with_tag(conn: Connection, tag: str) -> List[str]:
     return out
 
 
-# ------------------------------------------------------------------------------
-#   functions related the Server's owner
-# ------------------------------------------------------------------------------
-
-
 def get_server_owner_email(conn: Connection, server_id: str) -> str:
     """
     Returns, when possible, the email of User who instantiated a Server
@@ -489,11 +474,6 @@ def get_server_owner_email(conn: Connection, server_id: str) -> str:
         "returning email address %s for the owner of server %s", user_email, server_id
     )
     return user_email
-
-
-# ------------------------------------------------------------------------------
-#   functions to lock/unlock servers
-# ------------------------------------------------------------------------------
 
 
 def admin_lock_server(conn: Connection, server_id: str, reason: str) -> str:
