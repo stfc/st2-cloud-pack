@@ -478,8 +478,8 @@ def get_server_owner_email(conn: Connection, server_id: str) -> str:
 
 def admin_lock_server(conn: Connection, server_id: str, reason: str) -> str:
     """
-    lock admin a Server so users cannot change its state.
-    For example, when we want to SHUTOFF the Server and only and admin
+    admin lock a Server so the User cannot change its state.
+    For example, when we want to SHUTOFF the Server and only an admin
     should be able to restart it.
 
     :param conn: openstack connection object
