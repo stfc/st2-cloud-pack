@@ -19,7 +19,7 @@ from apis.openstack_api.openstack_server import (
     find_servers_with_tag,
     get_server_owner_email,
     admin_lock_server,
-    DEFAULT_NOVA_MICROVERSION,
+    NOVA_MICROVERSION_FOR_TAGS,
 )
 from openstack.exceptions import (
     ResourceFailure,
@@ -745,14 +745,14 @@ def test_add_tag():
     and restores it afterwards.
     """
     mock_connection = MagicMock()
-    mock_connection.compute.default_microversion = DEFAULT_NOVA_MICROVERSION
+    mock_connection.compute.default_microversion = NOVA_MICROVERSION_FOR_TAGS
 
     add_tag_to_server(mock_connection, "server1", "test-tag")
 
     mock_connection.compute.add_tag_to_server.assert_called_once_with(
         "server1", "test-tag"
     )
-    assert mock_connection.compute.default_microversion == DEFAULT_NOVA_MICROVERSION
+    assert mock_connection.compute.default_microversion == NOVA_MICROVERSION_FOR_TAGS
 
 
 def test_remove_tag():
@@ -760,14 +760,14 @@ def test_remove_tag():
     Test removing a tag restores the NOVA microversion.
     """
     mock_connection = MagicMock()
-    mock_connection.compute.default_microversion = DEFAULT_NOVA_MICROVERSION
+    mock_connection.compute.default_microversion = NOVA_MICROVERSION_FOR_TAGS
 
     remove_tag_from_server(mock_connection, "server1", "test-tag")
 
     mock_connection.compute.remove_tag_from_server.assert_called_once_with(
         "server1", "test-tag"
     )
-    assert mock_connection.compute.default_microversion == DEFAULT_NOVA_MICROVERSION
+    assert mock_connection.compute.default_microversion == NOVA_MICROVERSION_FOR_TAGS
 
 
 def test_remove_tag_not_found():
@@ -775,12 +775,12 @@ def test_remove_tag_not_found():
     Test removing a non-existent tag does not raise and restores the microversion.
     """
     mock_connection = MagicMock()
-    mock_connection.compute.default_microversion = DEFAULT_NOVA_MICROVERSION
+    mock_connection.compute.default_microversion = NOVA_MICROVERSION_FOR_TAGS
     mock_connection.compute.remove_tag_from_server.side_effect = NotFoundException()
 
     remove_tag_from_server(mock_connection, "server1", "test-tag")
 
-    assert mock_connection.compute.default_microversion == DEFAULT_NOVA_MICROVERSION
+    assert mock_connection.compute.default_microversion == NOVA_MICROVERSION_FOR_TAGS
 
 
 def test_find_servers_with_tag():
