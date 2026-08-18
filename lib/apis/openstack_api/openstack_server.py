@@ -6,6 +6,7 @@ from openstack.connection import Connection
 from openstack.compute.v2.image import Image
 from openstack.compute.v2.server import Server
 from openstack.exceptions import (
+    BadRequestException,
     ResourceFailure,
     ResourceTimeout,
     NotFoundException,
@@ -488,3 +489,45 @@ def get_server_owner_email(conn: Connection, server_id: str) -> str:
         "returning email address %s for the owner of server %s", user_email, server_id
     )
     return user_email
+
+
+# ------------------------------------------------------------------------------
+#   functions to lock/unlock servers
+# ------------------------------------------------------------------------------
+
+
+def admin_lock_server(conn: Connection, server_id: str, reason: str) -> str:
+    """
+    lock admin a Server so users cannot change its state.
+    For example, when we want to SHUTOFF the Server and only and admin
+    should be able to restart it.
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :param reason: the reason for the admin lock
+    :type reason: str
+    """
+    logger.info("admin locking server %s for reason %s", server_id, reason)
+    if len(reason) < 255:
+        conn.compute.lock_server(server_id, reason)
+    else:
+        error_msg = f"reason '{reason}' exceeds the limit of 255 characters"
+        logger.critical(error_msg)
+        raise BadRequestException(error_msg)
+    logger.info("server %s admin locked", server_id)
+
+
+def admin_unlock_server(conn: Connection, server_id: str) -> str:
+    """
+    remove the admin lock set to a  Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    """
+    logger.info("admin unlocking server %s", server_id)
+    conn.compute.unlock_server(server_id)
+    logger.info("server %s admin unlocked", server_id)
