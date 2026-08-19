@@ -1,6 +1,4 @@
-import inspect
 from importlib import import_module
-from typing import Dict, Callable
 
 from st2common.runners.base_action import Action
 
@@ -19,15 +17,18 @@ ACCOUNT_CONFIGS = {
 
 
 class OpenstackActions(Action):
-    def run(self, lib_entry_point: str, **kwargs):
+    def run(
+        self, lib_entry_point: str, create_openstack_connection: bool = False, **kwargs
+    ):
         """
         Dynamically dispatches to the function wanted
         :param lib_entry_point: path to function that handles action in lib layer
+        :param create_openstack_connection: if action requires opening a connection openstack before running it
         :param kwargs: all user-defined kwargs to pass to the function
         """
         module, fn_name = lib_entry_point.rsplit(".", 1)
-        action_func = getattr(import_module(module), fn_name)
-
+        action_module = import_module(module)
+        action_func = getattr(action_module, fn_name)
         self.logger.info("Action Received - %s", lib_entry_point)
         self.logger.debug(
             "with Parameters: %s",
@@ -35,31 +36,23 @@ class OpenstackActions(Action):
         )
         kwargs = self.parse_configs(**kwargs)
 
-        if "cloud_account" in kwargs:
-            # some actions require cloud_account to passed down - i.e. those that use the query library
-            with OpenstackConnection(kwargs["cloud_account"]) as conn:
-                kwargs["conn"] = conn
-                return self.run_func(action_func, kwargs)
-        return self.run_func(action_func, kwargs)
+        # the query library accepts only "cloud_account" at the moment,
+        # so we need to passthrough "cloud_account" without creating a connection object
+        # TODO: modify the query library to accept both a conn object and cloud_account str
+        # so we can pass conn instead of cloud_account and remove the need for
+        # flag "create_openstack_connection"
+        if "cloud_account" not in kwargs or not create_openstack_connection:
+            return action_func(**kwargs)
 
-    @staticmethod
-    def run_func(action_func: Callable, kwargs: Dict) -> int:
-        """
-        apply given function with appropriate kwargs by filtering out those that are not needed
-        :param kwargs: kwargs to filter
-        :param action_func: function to call
-        :return: filtered kwargs
-        """
-        params = inspect.signature(action_func).parameters
-
-        accepted = {
-            name
-            for name, p in params.items()
-            if p.kind
-            in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
-        }
-        filtered = {k: v for k, v in kwargs.items() if k in accepted}
-        return action_func(**filtered)
+        # this is a helper that will create a conn object before running the action
+        # saves from having to do it in the workflows/ layer
+        # At the moment we open a connection object for all actions because all our actions
+        # involve running openstack commands.
+        # TODO: revisit this mechanism as we add more actions that don't interact with openstack
+        with OpenstackConnection(kwargs["cloud_account"]) as conn:
+            kwargs["conn"] = conn
+            del kwargs["cloud_account"]
+            return action_func(**kwargs)
 
     def parse_configs(self, **kwargs):
         """

@@ -18,6 +18,11 @@ parameters:
     enum:
       - "dev"
       - "prod"
+  create_openstack_connection:
+    description: "flag that when set, will create and open a openstack connection object before running action"
+    default: true
+    immutable: true
+    type: boolean
   hypervisor_names:
     type: string
     required: true

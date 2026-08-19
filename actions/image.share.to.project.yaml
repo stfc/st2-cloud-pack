@@ -10,6 +10,11 @@ parameters:
     default: apis.openstack_api.openstack_image.share_image_to_project
     immutable: true
     type: string
+  create_openstack_connection:
+    description: "flag that when set, will create and open a openstack connection object before running action"
+    default: true
+    immutable: true
+    type: boolean
   cloud_account:
     description: "The clouds.yaml account to use whilst performing this action"
     required: true

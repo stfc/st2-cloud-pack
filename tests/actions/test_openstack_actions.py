@@ -30,17 +30,6 @@ def test_run_dispatches(mock_import, action):
 
 
 @patch("src.openstack_actions.import_module")
-def test_run_dispatch_ignore_unneeded_args(mock_import, action):
-    """Test action dispatch - kwargs not needed in the function are ignored"""
-    mock_import.return_value.fn1 = simple_fn
-    result = action.run(
-        lib_entry_point="fake.module.fn1", a=0, b=1, foo="bar", bar="foo"
-    )
-    mock_import.assert_called_once_with("fake.module")
-    assert result == "success"
-
-
-@patch("src.openstack_actions.import_module")
 def test_run_nested_module(mock_import, action):
     """Test action dispatch for deeply nested module."""
     action.run(lib_entry_point="a.b.c.d.fn2")
@@ -73,8 +62,8 @@ def test_run_dispatch_fails_when_function_not_found(mock_import, action):
 
 @patch("src.openstack_actions.OpenstackConnection")
 @patch("src.openstack_actions.import_module")
-def test_run_parses_cloud_account_when_given(mock_import, mock_conn_cls, action):
-    """when cloud_account is given, test that connection passed as conn."""
+def test_run_create_conn_when_valid(mock_import, mock_conn_cls, action):
+    """when cloud_account and create_openstack_connection is passed conn is created and passed."""
 
     # pylint: disable=unused-argument
     def simple_openstack_fn(conn, a, b):
@@ -85,11 +74,36 @@ def test_run_parses_cloud_account_when_given(mock_import, mock_conn_cls, action)
     result = action.run(
         lib_entry_point="fake.module.fn1",
         cloud_account="dev",
+        create_openstack_connection=True,
         a=1,
         b=2,
     )
 
     mock_conn_cls.assert_called_once_with("dev")
+    # equality on the full call also proves cloud_account was removed
+    assert result == "success_openstack"
+
+
+@patch("src.openstack_actions.OpenstackConnection")
+@patch("src.openstack_actions.import_module")
+def test_run_doesnt_create_conn_when_valid(mock_import, mock_conn_cls, action):
+    """when cloud_account is passed with no create_openstack_connection conn is NOT created"""
+
+    # pylint: disable=unused-argument
+    def simple_openstack_fn(cloud_account, a, b):
+        return "success_openstack"
+
+    mock_import.return_value.fn1 = simple_openstack_fn
+
+    result = action.run(
+        lib_entry_point="fake.module.fn1",
+        cloud_account="dev",
+        create_openstack_connection=False,
+        a=1,
+        b=2,
+    )
+
+    mock_conn_cls.assert_not_called()
     # equality on the full call also proves cloud_account was removed
     assert result == "success_openstack"
 
