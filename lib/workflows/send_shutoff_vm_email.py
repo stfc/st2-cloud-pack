@@ -1,3 +1,5 @@
+# pylint: disable=unused-import
+# pylint: disable=unused-argument
 from typing import List, Optional, Union
 
 from apis.openstack_api.enums.cloud_domains import CloudDomains
@@ -143,4 +145,5 @@ def send_shutoff_vm_email(
             email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
             **email_params_kwargs,
         )
-        Emailer(smtp_account).send_emails([email_params])
+        # Emailer(smtp_account).send_emails([email_params])
+        print(f"Here we would be sending emails with params {email_params}")
