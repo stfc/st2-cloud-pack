@@ -2,4 +2,4 @@ from openstack.connection import Connection
 
 
 def test_tags(conn):
-    print("hi")
+    print(dir(conn))
