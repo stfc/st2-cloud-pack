@@ -12,6 +12,11 @@ parameters:
     type: string
     default: workflows.hv_post_reboot.post_reboot
     immutable: true
+  create_openstack_connection:
+    description: "flag that when set, will create and open a openstack connection object before running action"
+    default: true
+    immutable: true
+    type: boolean
   alertmanager_account_name:
     type: string
     description: Name of Alertmanager Account to use. Must be configured in the pack settings.
