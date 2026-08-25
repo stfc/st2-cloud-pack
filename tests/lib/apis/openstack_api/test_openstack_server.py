@@ -12,8 +12,23 @@ from apis.openstack_api.openstack_server import (
     wait_for_image_status,
     wait_for_migration_status,
     shutoff_server,
+    add_metadata_to_server,
+    delete_metadata_from_server,
+    add_tag_to_server,
+    remove_tag_from_server,
+    find_servers_with_tag,
+    get_server_owner_email,
+    admin_lock_server,
+    NOVA_MICROVERSION_FOR_TAGS,
 )
-from openstack.exceptions import ResourceFailure, ResourceTimeout
+from openstack.exceptions import (
+    ResourceFailure,
+    ResourceTimeout,
+    NotFoundException,
+    ResourceNotFound,
+    SDKException,
+    BadRequestException,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -673,3 +688,255 @@ def test_with_empty_migration_list():
         wait_for_migration_status(
             mock_conn, "test-server-id", "should-timeout", interval=1, timeout=1
         )
+
+
+def test_add_metadata_to_server():
+    """
+    ensures that the Server object found is the one passed
+    as argument to add_server_metadata()
+    ensures all_projects is set to True
+    """
+    mock_conn = MagicMock()
+    mock_server = MagicMock()
+    mock_conn.compute.find_server.return_value = mock_server
+
+    server_id = "srv-12345"
+    properties_to_add = {"env": "production", "tier": "frontend"}
+
+    add_metadata_to_server(mock_conn, server_id, properties_to_add)
+
+    mock_conn.compute.find_server.assert_called_once_with(
+        "srv-12345", all_projects=True
+    )
+
+    mock_conn.compute.set_server_metadata.assert_called_once_with(
+        mock_server, env="production", tier="frontend"
+    )
+
+
+def test_delete_metadata_from_server():
+    """
+    ensures that the Server object found is the one passed
+    as argument to delete_server_metadata()
+    ensures all_projects is set to True
+    """
+    mock_conn = MagicMock()
+    mock_server = MagicMock()
+
+    mock_conn.compute.find_server.return_value = mock_server
+
+    server_id = "srv-12345"
+    properties_to_delete = ["environment", "temporary_flag"]
+
+    delete_metadata_from_server(mock_conn, server_id, properties_to_delete)
+
+    mock_conn.compute.find_server.assert_called_once_with(
+        "srv-12345", all_projects=True
+    )
+
+    mock_conn.compute.delete_server_metadata.assert_called_once_with(
+        mock_server, keys=["environment", "temporary_flag"]
+    )
+
+
+def test_add_tag():
+    """
+    Test adding a tag to a server temporarily changes the NOVA microversion
+    and restores it afterwards.
+    """
+    mock_connection = MagicMock()
+    mock_connection.compute.default_microversion = NOVA_MICROVERSION_FOR_TAGS
+
+    add_tag_to_server(mock_connection, "server1", "test-tag")
+
+    mock_connection.compute.add_tag_to_server.assert_called_once_with(
+        "server1", "test-tag"
+    )
+    assert mock_connection.compute.default_microversion == NOVA_MICROVERSION_FOR_TAGS
+
+
+def test_remove_tag():
+    """
+    Test removing a tag restores the NOVA microversion.
+    """
+    mock_connection = MagicMock()
+    mock_connection.compute.default_microversion = NOVA_MICROVERSION_FOR_TAGS
+
+    remove_tag_from_server(mock_connection, "server1", "test-tag")
+
+    mock_connection.compute.remove_tag_from_server.assert_called_once_with(
+        "server1", "test-tag"
+    )
+    assert mock_connection.compute.default_microversion == NOVA_MICROVERSION_FOR_TAGS
+
+
+def test_remove_tag_not_found():
+    """
+    Test removing a non-existent tag does not raise and restores the microversion.
+    """
+    mock_connection = MagicMock()
+    mock_connection.compute.default_microversion = NOVA_MICROVERSION_FOR_TAGS
+    mock_connection.compute.remove_tag_from_server.side_effect = NotFoundException()
+
+    remove_tag_from_server(mock_connection, "server1", "test-tag")
+
+    assert mock_connection.compute.default_microversion == NOVA_MICROVERSION_FOR_TAGS
+
+
+def test_find_servers_with_tag():
+    """
+    Test finding servers with a given tag.
+    """
+    mock_connection = MagicMock()
+
+    server1 = MagicMock()
+    server1.id = "server1"
+    server2 = MagicMock()
+    server2.id = "server2"
+
+    mock_connection.compute.servers.return_value = [server1, server2]
+
+    result = find_servers_with_tag(mock_connection, "test-tag")
+
+    mock_connection.compute.servers.assert_called_once_with(
+        all_projects=True, tags="test-tag"
+    )
+    assert result == ["server1", "server2"]
+
+
+def test_get_server_owner_email():
+    # Create a mocked OpenStack connection.
+    conn = MagicMock()
+
+    # Mock the server returned by OpenStack.
+    conn.compute.get_server.return_value.user_id = "user-123"
+
+    # Mock the corresponding user.
+    conn.identity.get_user.return_value.email = "owner@example.com"
+
+    # Call the function under test.
+    result = get_server_owner_email(conn, "server-123")
+
+    # Verify the expected email is returned.
+    assert result == "owner@example.com"
+
+
+def test_get_server_owner_email_raises_when_server_has_no_user_id():
+    conn = MagicMock()
+
+    # Server exists but has no associated user_id.
+    conn.compute.get_server.return_value.user_id = None
+
+    with pytest.raises(
+        ResourceNotFound,
+        match="does not have an associated user_id",
+    ):
+        get_server_owner_email(conn, "server-123")
+
+
+def test_get_server_owner_email_raises_when_user_does_not_exist():
+    conn = MagicMock()
+
+    # Server references a user.
+    conn.compute.get_server.return_value.user_id = "user-123"
+
+    # The referenced user cannot be found.
+    conn.identity.get_user.return_value = None
+
+    with pytest.raises(
+        ResourceNotFound,
+        match="was not found",
+    ):
+        get_server_owner_email(conn, "server-123")
+
+
+def test_get_server_owner_email_raises_when_user_has_no_email():
+    conn = MagicMock()
+
+    # Server references a valid user.
+    conn.compute.get_server.return_value.user_id = "user-123"
+
+    # User exists but does not expose an email.
+    user = MagicMock()
+    user.email = None
+    conn.identity.get_user.return_value = user
+
+    with pytest.raises(
+        SDKException,
+        match="does not provide for an email",
+    ):
+        get_server_owner_email(conn, "server-123")
+
+
+def test_admin_lock_server_locks_server_when_reason_is_valid():
+    # Create a mocked OpenStack connection.
+    conn = MagicMock()
+
+    # Define the server to lock.
+    server_id = "server-123"
+
+    # Define a valid lock reason.
+    reason = "Server locked for maintenance"
+
+    # Call the function under test.
+    result = admin_lock_server(conn, server_id, reason)
+
+    # Verify that OpenStack was asked to lock the correct server
+    # and that the reason was passed through unchanged.
+    conn.compute.lock_server.assert_called_once_with(server_id, reason)
+
+    # The current implementation does not explicitly return anything.
+    assert result is None
+
+
+def test_admin_lock_server_accepts_reason_with_254_characters():
+    # Create a mocked OpenStack connection.
+    conn = MagicMock()
+
+    # Create the longest reason accepted by the current implementation.
+    reason = "a" * 254
+
+    # Call the function under test.
+    admin_lock_server(conn, "server-123", reason)
+
+    # Verify the server was locked.
+    conn.compute.lock_server.assert_called_once_with("server-123", reason)
+
+
+def test_admin_lock_server_rejects_reason_with_255_characters():
+    # Create a mocked OpenStack connection.
+    conn = MagicMock()
+
+    # The implementation uses `len(reason) < 255`, so 255 characters
+    # must raise BadRequestException.
+    reason = "a" * 255
+
+    # Verify that the expected exception is raised.
+    with pytest.raises(
+        BadRequestException,
+        match="exceeds the limit of 255 characters",
+    ):
+        admin_lock_server(conn, "server-123", reason)
+
+    # Verify OpenStack was not called when validation failed.
+    conn.compute.lock_server.assert_not_called()
+
+
+def test_admin_lock_server_rejects_reason_longer_than_255_characters():
+    # Create a mocked OpenStack connection.
+    conn = MagicMock()
+
+    # Create an invalid reason.
+    reason = "a" * 256
+
+    # Call the function and capture the exception.
+    with pytest.raises(BadRequestException) as exc_info:
+        admin_lock_server(conn, "server-123", reason)
+
+    # Verify the exception contains the expected message.
+    assert str(exc_info.value) == (
+        f"reason '{reason}' exceeds the limit of 255 characters"
+    )
+
+    # Verify the server was never locked.
+    conn.compute.lock_server.assert_not_called()

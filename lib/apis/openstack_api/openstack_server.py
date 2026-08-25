@@ -1,11 +1,21 @@
 from datetime import datetime
 import logging
 import time
-from typing import Optional, List
+from typing import Optional, List, Dict
 from openstack.connection import Connection
 from openstack.compute.v2.image import Image
 from openstack.compute.v2.server import Server
-from openstack.exceptions import ResourceFailure, ResourceTimeout
+from openstack.exceptions import (
+    BadRequestException,
+    ResourceFailure,
+    ResourceTimeout,
+    NotFoundException,
+    ResourceNotFound,
+    SDKException,
+)
+
+NOVA_MICROVERSION_FOR_TAGS = "2.26"
+
 
 logger = logging.getLogger(__name__)
 
@@ -296,3 +306,208 @@ def shutoff_server_list(conn: Connection, server_id_list: List[str]) -> None:
     """
     for server_id in server_id_list:
         shutoff_server(conn, server_id)
+
+
+def add_metadata_to_server(conn: Connection, server_id: str, properties: Dict) -> None:
+    """
+    Add new key:values pair to the Server metadata
+
+    The metadata is the field displayed as "properties"
+    when running "openstack server show" commands
+
+    Note, if a key in properties already exists in the Servers metadata,
+    it will be overridden with the new value
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server object
+    :type server_id: str
+    :param properties: the new properties to add to the server metadata
+    :type properties: dictionary
+    """
+    logger.info(
+        "calling function add_metadata for server %s to add properties %s",
+        server_id,
+        properties,
+    )
+    server = conn.compute.find_server(server_id, all_projects=True)
+    conn.compute.set_server_metadata(server, **properties)
+    logger.info("new properties added to server")
+
+
+def delete_metadata_from_server(
+    conn: Connection, server_id: str, properties: List
+) -> None:
+    """
+    Remove some key:values pair from the Server metadata
+
+    The metadata is the field displayed as "properties"
+    when running "openstack server show" commands
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server object
+    :type server_id: str
+    :param properties: the properties to remove from the server metadata
+    :type properties: list
+    """
+    logger.info(
+        "calling function delete_metadata for server %s to remove properties %s",
+        server_id,
+        properties,
+    )
+    server = conn.compute.find_server(server_id, all_projects=True)
+    conn.compute.delete_server_metadata(server, keys=properties)
+    logger.info("properties removed from server")
+
+
+def add_tag_to_server(conn: Connection, server_id: str, tag: str) -> None:
+    """
+    Adds a tag to a Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: ID of the Server
+    :type server_id: str
+    :param tag: the tag to be added to the Server
+    :type tag: str
+    :return: None
+    :rtype: None
+    """
+    logger.info("adding tag %s to server %s", tag, server_id)
+    current_microversion = conn.compute.default_microversion
+    # we need a very specific NOVA version for this action
+    logger.info("setting temporarily NOVA microversion")
+    conn.compute.default_microversion = NOVA_MICROVERSION_FOR_TAGS
+    conn.compute.add_tag_to_server(server_id, tag)
+    # restore the NOVA version
+    conn.compute.default_microversion = current_microversion
+    logger.info("restoring NOVA microversion")
+    logger.info("tag %s added to server %s", tag, server_id)
+
+
+def remove_tag_from_server(conn: Connection, server_id: str, tag: str) -> None:
+    """
+    Removes a tag from a Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: ID of the Server
+    :type server_id: str
+    :param tag: the tag to be removed from the Server
+    :type tag: str
+    :return: None
+    :rtype: None
+    """
+    logger.info("removing tag %s from server %s", tag, server_id)
+    current_microversion = conn.compute.default_microversion
+    # we need a very specific NOVA version for this action
+    logger.info("setting temporarily NOVA microversion")
+    conn.compute.default_microversion = NOVA_MICROVERSION_FOR_TAGS
+    try:
+        conn.compute.remove_tag_from_server(server_id, tag)
+    except NotFoundException:
+        logger.error("server %s does not have tag %s", server_id, tag)
+    # restore the NOVA version
+    conn.compute.default_microversion = current_microversion
+    logger.info("restoring NOVA microversion")
+    logger.info("tag %s removed from server %s", tag, server_id)
+
+
+def find_servers_with_tag(conn: Connection, tag: str) -> List[str]:
+    """
+    find the list of Servers with a given tag
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param tag: the tag to search for servers by
+    :type tag: str
+    :return: the list of Servers with the tag
+    :rtype: List[str]
+    """
+    logger.info("searching for all servers with tag %s", tag)
+    servers = conn.compute.servers(all_projects=True, tags=tag)
+    out = [server.id for server in servers]
+    logger.info("found %s servers with tag %s", len(out), tag)
+    return out
+
+
+def get_server_owner_email(conn: Connection, server_id: str) -> str:
+    """
+    Returns, when possible, the email of User who instantiated a Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :return: the email of the User
+    :rtype: str
+    :raises ResourceNotFound: if the Server does not have User information
+        or the user does not exist
+    :raises openstack.exceptions.SDKException:
+        if the User exists but does not expose a valid name attribute
+    """
+    logger.info("fetching the email of the owner of server %s", server_id)
+    server = conn.compute.get_server(server_id)
+
+    user_id = getattr(server, "user_id", None)
+    if not user_id:
+        error_msg = f"Server '{server_id}' does not have an associated user_id."
+        logger.critical(error_msg)
+        raise ResourceNotFound(error_msg)
+
+    user = conn.identity.get_user(user_id)
+    if not user:
+        error_msg = (
+            f"User '{user_id}' referenced by server '{server_id}' was not found."
+        )
+        logger.critical(error_msg)
+        raise ResourceNotFound(error_msg)
+
+    user_email = getattr(user, "email", None)
+    if not user_email:
+        error_msg = f"User '{user_id}' referenced by server '{server_id}' does not provide for an email."
+        logger.critical(error_msg)
+        raise SDKException(error_msg)
+
+    logger.info(
+        "returning email address %s for the owner of server %s", user_email, server_id
+    )
+    return user_email
+
+
+def admin_lock_server(conn: Connection, server_id: str, reason: str) -> str:
+    """
+    admin lock a Server so the User cannot change its state.
+    For example, when we want to SHUTOFF the Server and only an admin
+    should be able to restart it.
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :param reason: the reason for the admin lock
+    :type reason: str
+    """
+    logger.info("admin locking server %s for reason %s", server_id, reason)
+    if len(reason) < 255:
+        conn.compute.lock_server(server_id, reason)
+    else:
+        error_msg = f"reason '{reason}' exceeds the limit of 255 characters"
+        logger.critical(error_msg)
+        raise BadRequestException(error_msg)
+    logger.info("server %s admin locked", server_id)
+
+
+def admin_unlock_server(conn: Connection, server_id: str) -> str:
+    """
+    remove the admin lock set to a  Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    """
+    logger.info("admin unlocking server %s", server_id)
+    conn.compute.unlock_server(server_id)
+    logger.info("server %s admin unlocked", server_id)
