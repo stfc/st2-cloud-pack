@@ -1,0 +1,14 @@
+name: Staging into main
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check_staging_to_main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if source is staging
+        if: github.head_ref == 'staging'
+        run: echo "PR is from staging to main"
