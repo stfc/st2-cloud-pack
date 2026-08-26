@@ -1,4 +1,9 @@
 openstacksdk
+
+# 5.14.0 is the latest version that we can use for st2
+# but some dependency packages are incompatible,
+# pin to previous version so sensors work
+keystoneauth1 == 5.13.1
 # 5.8+ replaces tenant_id support which train still relies on
 # for various "side-effects" such as creating "default" security
 # groups....don't ask...
