@@ -1,0 +1,27 @@
+---
+description: Removes the network agent, compute service and resource provider of a hypervisor from openstack
+enabled: true
+entry_point: src/openstack_actions.py
+name: hypervisor.removal.from.openstack
+runner_type: python-script
+parameters:
+  action_name: 
+    default: hypervisor_removal_from_openstack
+    immutable: true
+    type: string
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  hypervisor_name:
+    description: Hostname of hypervisor to remove
+    required: true
+    type: string
+  removal_reason:
+    description: Reason for removing the hypervisor
+    required: true
+    type: string
