@@ -6,7 +6,7 @@ smtp_accounts:
   items:
     type: "object"
     required: true
-    properties:
+    properties:m,.n,mn
       name:
         description: "Name of the account"
         type: "string"
