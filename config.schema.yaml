@@ -108,6 +108,36 @@ icinga_accounts:
         secret: false
         default: ""
 
+wazuh_accounts:
+  type: "array"
+  required: true
+  description: Wazuh account
+  items:
+    type: "object"
+    required: true
+    properties:
+      name:
+        description: "Name of the wazuh account"
+        type: "string"
+        secret: false
+        required: true
+      username:
+        type: "string"
+        description: "Username for wazuh"
+        secret: false
+        required: true
+      password:
+        type: "string"
+        description: "Password for wazuh"
+        required: true
+        secret: true
+      wazuh_endpoint:
+        type: "string"
+        description: "Wazuh endpoint (URL and port). E.g. https://wazuh.matrix.net:55000/"
+        required: true
+        secret: false
+        default: ""
+
 alertmanager_accounts:
   type: "array"
   required: true
@@ -133,6 +163,35 @@ alertmanager_accounts:
       alertmanager_endpoint:
         type: "string"
         description: "alertmanager endpoint"
+        required: true
+        secret: false
+        default: ""
+
+elog_accounts:
+  type: "array"
+  required: true
+  description: ELOG account
+  items:
+    type: "object"
+    required: true
+    properties:
+      name:
+        description: "Name of the ELOG account"
+        type: "string"
+        secret: false
+        required: true
+      username:
+        type: "string"
+        description: "Username for ELOG"
+        required: true
+      password:
+        type: "string"
+        description: "Password for ELOG"
+        required: true
+        secret: true
+      elog_endpoint:
+        type: "string"
+        description: "ELOG endpoint"
         required: true
         secret: false
         default: ""
