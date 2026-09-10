@@ -17,7 +17,7 @@ ACCOUNT_CONFIGS = {
 
 
 class OpenstackActions(Action):
-    def run(
+    def run(  # pylint: disable=arguments-differ
         self, lib_entry_point: str, create_openstack_connection: bool = False, **kwargs
     ):
         """
