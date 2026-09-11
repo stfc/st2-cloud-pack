@@ -1,7 +1,8 @@
 from openstack.connection import Connection
 
 from apis.openstack_api.openstack_service import enable_service
-from apis.alertmanager_api.silence import get_hv_silences, remove_silence
+from apis.alertmanager_api.structs.silence_details import SilenceDetails
+from apis.alertmanager_api.silence import get_hv_silences, update_silence
 from apis.alertmanager_api.structs.alertmanager_account import AlertManagerAccount
 from workflows.hv_create_test_server import create_test_server
 
@@ -28,5 +29,14 @@ def post_reboot(
         delete_on_failure=True,
     )
     silences = get_hv_silences(alertmanager_account, hypervisor_hostname)
-    for silence_id in silences:
-        remove_silence(alertmanager_account, silence_id)
+    for silence in silences:
+        details = silences[silence]["details"]
+        new_details = SilenceDetails(
+            matchers=details.matchers,
+            author="stackstorm",
+            start_time_dt=details.start_time_dt,
+            comment="Stackstorm: HV Patched",
+            duration_hours=3,
+        )
+
+        update_silence(alertmanager_account, silence, new_details)
