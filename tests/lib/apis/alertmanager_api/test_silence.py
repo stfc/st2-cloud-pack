@@ -8,6 +8,7 @@ from apis.alertmanager_api.structs.silence_details import SilenceDetails
 from apis.alertmanager_api.silence import (
     schedule_silence,
     remove_silence,
+    update_silence,
     remove_silences,
     get_silences,
     get_active_silences,
@@ -318,6 +319,47 @@ def test_remove_silence_exception_is_raised_rc_is_not_200(mock_delete):
         remove_silence(mock_alertmanager_account, mock_silence_id)
 
     mock_delete.assert_called_once()
+    mock_response.raise_for_status.assert_called_once()
+
+
+@patch("apis.alertmanager_api.silence.requests.post")
+def test_update_silence_success(mock_post, mock_silence_details):
+    """
+    use case: the call to remove_silence() works fine
+    """
+    mock_alertmanager_account = MagicMock()
+    mock_silence_id = "silence_id"
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_post.return_value = mock_response
+    update_silence(mock_alertmanager_account, mock_silence_id, mock_silence_details)
+    mock_post.assert_called_once()
+    mock_response.raise_for_status.assert_called_once()
+
+
+@patch("apis.alertmanager_api.silence.requests.post")
+def test_update_silence_exception_is_raised_rc_is_not_200(
+    mock_post, mock_silence_details
+):
+    """
+    use case: the call to requests to remove a silence
+              raised an HTTPError and logs the correct error message.
+    """
+    mock_alertmanager_account = MagicMock()
+    mock_silence_id = "silence_id"
+
+    # Simulate an HTTPError with a specific response
+    mock_response = MagicMock()
+    mock_response.status_code = 500
+    mock_response.raise_for_status.side_effect = requests.HTTPError(
+        response=mock_response
+    )
+    mock_post.return_value = mock_response
+    with pytest.raises(requests.HTTPError):
+        update_silence(mock_alertmanager_account, mock_silence_id, mock_silence_details)
+
+    mock_post.assert_called_once()
     mock_response.raise_for_status.assert_called_once()
 
 
