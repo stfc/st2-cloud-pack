@@ -1,6 +1,8 @@
 from openstack.connection import Connection
+from openstack.exceptions import ResourceFailure
 
 from apis.openstack_api.openstack_service import enable_service
+from apis.openstack_api.openstack_service import disable_service
 from apis.alertmanager_api.structs.silence_details import SilenceDetails
 from apis.alertmanager_api.silence import get_hv_silences, update_silence
 from apis.alertmanager_api.structs.alertmanager_account import AlertManagerAccount
@@ -22,12 +24,21 @@ def post_reboot(
     enable_service(
         conn=conn, hypervisor_name=hypervisor_hostname, service_binary="nova-compute"
     )
-    create_test_server(
-        conn=conn,
-        hypervisor_names=hypervisor_hostname,
-        test_all_flavors=False,
-        delete_on_failure=True,
-    )
+    try:
+        create_test_server(
+            conn=conn,
+            hypervisor_names=hypervisor_hostname,
+            test_all_flavors=False,
+            delete_on_failure=True,
+        )
+    except ResourceFailure as exc:
+        disable_service(
+            conn=conn,
+            hypervisor_name=hypervisor_hostname,
+            service_binary="nova-compute",
+            disabled_reason="Failed to schedule after patching",
+        )
+        raise exc
     silences = get_hv_silences(alertmanager_account, hypervisor_hostname)
     for silence in silences:
         details = silences[silence]["details"]
