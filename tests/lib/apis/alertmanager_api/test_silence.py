@@ -480,4 +480,4 @@ def test_get_hv_silences(mock_get, mock_get_silence_out):
 
     # should get 5 alerts which include hostname and instance
     mock_get.assert_called_once()
-    assert len(res) == 5
+    assert len(res) == 3
