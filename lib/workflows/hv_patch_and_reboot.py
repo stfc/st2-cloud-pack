@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 
 from paramiko import SSHException
 
@@ -31,12 +31,25 @@ def patch_and_reboot(
     )
     ssh_client = SSHConnection(connection_details)
     matcher_instance = AlertMatcherDetails(name="instance", value=hypervisor_name)
+
+    start_time_dt = dt.datetime.now(dt.timezone.utc)
+    weekday = start_time_dt.weekday()
+
+    if weekday in [4, 5]:
+        delta = dt.timedelta(days=7 - weekday)
+        end_date = start_time_dt + delta
+        end_time_dt = end_date.replace(hour=10, minute=10)
+    else:
+        delta = dt.timedelta(days=1)
+        end_date = start_time_dt + delta
+        end_time_dt = end_date.replace(hour=10, minute=10)
+
     silence_details_instance = SilenceDetails(
         matchers=[matcher_instance],
         author="stackstorm",
         comment="Stackstorm: HV Patching",
-        start_time_dt=datetime.datetime.utcnow(),
-        duration_hours=6,
+        start_time_dt=start_time_dt,
+        end_time_dt=end_time_dt,
     )
     scheduled_silence_id_instance = schedule_silence(
         alertmanager_account, silence_details_instance
@@ -46,8 +59,8 @@ def patch_and_reboot(
         matchers=[matcher_hostname],
         author="stackstorm",
         comment="Stackstorm: HV Patching",
-        start_time_dt=datetime.datetime.utcnow(),
-        duration_hours=6,
+        start_time_dt=start_time_dt,
+        end_time_dt=end_time_dt,
     )
     scheduled_silence_id_hostname = schedule_silence(
         alertmanager_account, silence_details_hostname
