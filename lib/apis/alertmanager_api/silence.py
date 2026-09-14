@@ -53,6 +53,53 @@ def schedule_silence(
     return response.json()["silenceID"]
 
 
+def update_silence(
+    alertmanager_account: AlertManagerAccount,
+    silence_id: str,
+    silence_details: SilenceDetails,
+) -> str:
+    """
+    Updates a silence in alertmanager
+        :param alertmanager_account: dataclass for holding alertmanager connection specs
+        :type: AlertManagerAccount dataclass object:
+        :param silence_id: ID of silence to update
+        :type silence_id: string
+        :param silence_details: object with the specs to update a silence
+        :type: SilenceDetails dataclass object
+        :return: ID of new silence created in Alertmanager
+        :rtype: string
+        :raises requests.RequestException or requests.HTTPError:
+            when the request to the AlertManager failed
+    """
+    payload = {
+        "id": silence_id,
+        "matchers": silence_details.matchers_raw,
+        "startsAt": silence_details.start_time_str,
+        "endsAt": silence_details.end_time_str,
+        "createdBy": silence_details.author,
+        "comment": silence_details.comment,
+    }
+    api_url = f"{alertmanager_account.alertmanager_endpoint}/api/v2/silences"
+    try:
+        response = requests.post(
+            api_url,
+            auth=alertmanager_account.auth,
+            headers={"Accept": "application/json"},
+            json=payload,
+            timeout=10,
+        )
+        response.raise_for_status()
+    except (requests.HTTPError, requests.RequestException) as req_ex:
+        logger.critical(
+            "Failed to update silence in Alertmanager: %s\n\tResponse status code: %s\n\tResponse text: %s",
+            req_ex,
+            req_ex.response.status_code if req_ex.response else "null",
+            req_ex.response.text if req_ex.response else "null",
+        )
+        raise req_ex
+    return response.json()["silenceID"]
+
+
 def remove_silence(alertmanager_account: AlertManagerAccount, silence_id: str) -> None:
     """
     Removes a previously scheduled silence in alertmanager
@@ -76,7 +123,7 @@ def remove_silence(alertmanager_account: AlertManagerAccount, silence_id: str) -
         response.raise_for_status()
     except (requests.HTTPError, requests.RequestException) as req_ex:
         logger.critical(
-            "Failed to create silence in Alertmanager: %s\n\tResponse status code: %s\n\tResponse text: %s",
+            "Failed to remove silence in Alertmanager: %s\n\tResponse status code: %s\n\tResponse text: %s",
             req_ex,
             req_ex.response.status_code if req_ex.response else "null",
             req_ex.response.text if req_ex.response else "null",
@@ -121,7 +168,7 @@ def get_silences(alertmanager_account: AlertManagerAccount) -> dict:
         response.raise_for_status()
     except (requests.HTTPError, requests.RequestException) as req_ex:
         logger.critical(
-            "Failed to create silence in Alertmanager: %s\n\tResponse status code: %s\n\tResponse text: %s",
+            "Failed to get silences in Alertmanager: %s\n\tResponse status code: %s\n\tResponse text: %s",
             req_ex,
             req_ex.response.status_code if req_ex.response else "null",
             req_ex.response.text if req_ex.response else "null",
@@ -202,7 +249,7 @@ def get_valid_silences(alertmanager_account: AlertManagerAccount) -> dict:
 
 def get_hv_silences(alertmanager_account: AlertManagerAccount, hostname: str):
     """
-    get silences pertaining to a hv, where:
+    get active silences pertaining to a hv, where:
     - the silence has a "matcher" where the "name" is "instance" and the "value" matches the given hostname
     :param alertmanager_account: dataclass for holding alertmanager connection specs
     :type alertmanager_account: AlertManagerAccount datclass object
@@ -245,7 +292,7 @@ def get_hv_silences(alertmanager_account: AlertManagerAccount, hostname: str):
             for condition_set in hv_matcher_conditions
         )
 
-    for silence_id, silence_values in get_silences(alertmanager_account).items():
+    for silence_id, silence_values in get_active_silences(alertmanager_account).items():
         if check_matchers(silence_values["details"].matchers):
             hv_silences[silence_id] = silence_values
     return hv_silences
