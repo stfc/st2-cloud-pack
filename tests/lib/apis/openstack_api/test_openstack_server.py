@@ -701,25 +701,23 @@ def test_with_empty_migration_list():
 
 def test_add_metadata_to_server():
     """
-    ensures that the Server object found is the one passed
-    as argument to add_server_metadata()
-    ensures all_projects is set to True
+    Tests adding new metadata to a server calls the SDK as expected
     """
     mock_conn = MagicMock()
     mock_server = MagicMock()
     mock_conn.compute.find_server.return_value = mock_server
 
     server_id = "srv-12345"
-    properties_to_add = {"env": "production", "tier": "frontend"}
+    properties_to_add = {"foo": "bar", "baz": "bang"}
 
     add_metadata_to_server(mock_conn, server_id, properties_to_add)
 
     mock_conn.compute.find_server.assert_called_once_with(
-        "srv-12345", all_projects=True
+        "srv-12345", ignore_missing=False
     )
 
     mock_conn.compute.set_server_metadata.assert_called_once_with(
-        mock_server, env="production", tier="frontend"
+        mock_server, foo="bar", baz="bang"
     )
 
 
@@ -727,7 +725,6 @@ def test_delete_metadata_from_server():
     """
     ensures that the Server object found is the one passed
     as argument to delete_server_metadata()
-    ensures all_projects is set to True
     """
     mock_conn = MagicMock()
     mock_server = MagicMock()
@@ -740,7 +737,7 @@ def test_delete_metadata_from_server():
     delete_metadata_from_server(mock_conn, server_id, properties_to_delete)
 
     mock_conn.compute.find_server.assert_called_once_with(
-        "srv-12345", all_projects=True
+        "srv-12345", ignore_missing=False
     )
 
     mock_conn.compute.delete_server_metadata.assert_called_once_with(
