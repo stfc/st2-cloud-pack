@@ -39,6 +39,9 @@ def patch_and_reboot(
     start_time_dt = dt.datetime.now(dt.timezone.utc)
     weekday = start_time_dt.weekday()
 
+    # Set the silences to a fixed end time of 10:10am
+    # If starting patching on a Friday(4) or Saturday(5) set
+    # the silence to expire on the following Monday
     if weekday in [4, 5]:
         delta = dt.timedelta(days=7 - weekday)
         end_date = start_time_dt + delta
