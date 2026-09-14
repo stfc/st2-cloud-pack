@@ -101,6 +101,7 @@ def test_successful_post_reboot(
     )
 
 
+@pytest.mark.freeze_time("2026-09-11 15:00:01")
 @patch("workflows.hv_post_reboot.update_silence")
 @patch("workflows.hv_post_reboot.get_hv_silences")
 @patch("workflows.hv_post_reboot.disable_service")
@@ -143,7 +144,7 @@ def test_failed_post_reboot(
         conn=mock_conn,
         hypervisor_name=mock_hv_name,
         service_binary="nova-compute",
-        disabled_reason="Failed to schedule after patching",
+        disabled_reason="2026-09-11 - Failed to schedule after patching - ST2",
     )
     mock_get_hv_silences.assert_not_called()
     mock_update_silence.assert_not_called()
