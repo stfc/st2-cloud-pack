@@ -33,6 +33,7 @@ def mock_get_silence_out_fixture():
     return {"foo": {"details": silence1}, "bar": {"details": silence2}}
 
 
+@pytest.mark.freeze_time("2026-09-11 15:00:01")
 @patch("workflows.hv_post_reboot.update_silence")
 @patch("workflows.hv_post_reboot.get_hv_silences")
 @patch("workflows.hv_post_reboot.enable_service")
@@ -79,7 +80,7 @@ def test_successful_post_reboot(
                     ],
                     author="stackstorm",
                     comment="Stackstorm: HV Patched",
-                    start_time_dt=mock_silences["foo"]["details"].start_time_dt,
+                    start_time_dt=dt.datetime.now(dt.timezone.utc),
                     duration_hours=3,
                 ),
             ),
@@ -92,7 +93,7 @@ def test_successful_post_reboot(
                     ],
                     author="stackstorm",
                     comment="Stackstorm: HV Patched",
-                    start_time_dt=mock_silences["bar"]["details"].start_time_dt,
+                    start_time_dt=dt.datetime.now(dt.timezone.utc),
                     duration_hours=3,
                 ),
             ),
