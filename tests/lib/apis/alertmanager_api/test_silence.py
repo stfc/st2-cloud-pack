@@ -478,6 +478,6 @@ def test_get_hv_silences(mock_get, mock_get_silence_out):
     mock_get.return_value = mock_response
     res = get_hv_silences(mock_alertmanager_account, hostname)
 
-    # should get 5 alerts which include hostname and instance
+    # should get 3 alerts which include hostname and instance
     mock_get.assert_called_once()
     assert len(res) == 3
