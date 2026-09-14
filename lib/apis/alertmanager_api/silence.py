@@ -62,7 +62,7 @@ def update_silence(
     Updates a silence in alertmanager
         :param alertmanager_account: dataclass for holding alertmanager connection specs
         :type: AlertManagerAccount dataclass object:
-        :param silence_id: ID of silence to remove
+        :param silence_id: ID of silence to update
         :type silence_id: string
         :param silence_details: object with the specs to update a silence
         :type: SilenceDetails dataclass object
