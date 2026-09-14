@@ -1,7 +1,7 @@
 import itertools
 from datetime import datetime
 from typing import Tuple, Any
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, NonCallableMock, patch, PropertyMock
 
 import pytest
 from apis.openstack_api.openstack_server import (
@@ -692,25 +692,26 @@ def test_with_empty_migration_list():
 
 def test_add_metadata_to_server():
     """
-    ensures that the Server object found is the one passed
-    as argument to add_server_metadata()
-    ensures all_projects is set to True
+    Tests adding new metadata to a server calls the SDK as expected
     """
     mock_conn = MagicMock()
     mock_server = MagicMock()
     mock_conn.compute.find_server.return_value = mock_server
+    all_projects = NonCallableMock()
 
     server_id = "srv-12345"
-    properties_to_add = {"env": "production", "tier": "frontend"}
+    properties_to_add = {"foo": "bar", "baz": "bang"}
 
-    add_metadata_to_server(mock_conn, server_id, properties_to_add)
+    add_metadata_to_server(
+        mock_conn, server_id, properties_to_add, all_projects=all_projects
+    )
 
     mock_conn.compute.find_server.assert_called_once_with(
-        "srv-12345", all_projects=True
+        "srv-12345", ignore_missing=False, all_projects=all_projects
     )
 
     mock_conn.compute.set_server_metadata.assert_called_once_with(
-        mock_server, env="production", tier="frontend"
+        mock_server, foo="bar", baz="bang"
     )
 
 
@@ -718,20 +719,22 @@ def test_delete_metadata_from_server():
     """
     ensures that the Server object found is the one passed
     as argument to delete_server_metadata()
-    ensures all_projects is set to True
     """
     mock_conn = MagicMock()
     mock_server = MagicMock()
 
     mock_conn.compute.find_server.return_value = mock_server
+    all_projects = NonCallableMock()
 
     server_id = "srv-12345"
     properties_to_delete = ["environment", "temporary_flag"]
 
-    delete_metadata_from_server(mock_conn, server_id, properties_to_delete)
+    delete_metadata_from_server(
+        mock_conn, server_id, properties_to_delete, all_projects=all_projects
+    )
 
     mock_conn.compute.find_server.assert_called_once_with(
-        "srv-12345", all_projects=True
+        "srv-12345", ignore_missing=False, all_projects=all_projects
     )
 
     mock_conn.compute.delete_server_metadata.assert_called_once_with(
