@@ -14,13 +14,18 @@ def post_reboot(
     alertmanager_account: AlertManagerAccount,
     hypervisor_hostname: str,
     conn: Connection,
-):
+) -> None:
     """
     Action to run after a successful reboot
-    :param icinga_account: Icinga account to use
-    :param hypervisor_hostname: Hostname of hypervisor to run action against
+
     :param alertmanager_account: Alertmanager Account to use
+    :type alertmanager_account: AlertManagerAccount datclass object
+    :param hypervisor_hostname: the name of the hypervisor
+    :type hypervisor_hostname: str
     :param conn: Openstack Connection
+    :type conn: openstack.connection.Connection
+
+    return: None
     """
     enable_service(
         conn=conn, hypervisor_name=hypervisor_hostname, service_binary="nova-compute"
