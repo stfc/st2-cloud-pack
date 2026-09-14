@@ -1,3 +1,4 @@
+import datetime as dt
 from openstack.connection import Connection
 from openstack.exceptions import ResourceFailure
 
@@ -32,11 +33,12 @@ def post_reboot(
             delete_on_failure=True,
         )
     except ResourceFailure as exc:
+        date = dt.datetime.now(dt.timezone.utc).date().isoformat()
         disable_service(
             conn=conn,
             hypervisor_name=hypervisor_hostname,
             service_binary="nova-compute",
-            disabled_reason="Failed to schedule after patching",
+            disabled_reason=f"{date} - Failed to schedule after patching - ST2",
         )
         raise exc
     silences = get_hv_silences(alertmanager_account, hypervisor_hostname)
