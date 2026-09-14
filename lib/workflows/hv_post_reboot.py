@@ -47,7 +47,7 @@ def post_reboot(
         new_details = SilenceDetails(
             matchers=details.matchers,
             author="stackstorm",
-            start_time_dt=details.start_time_dt,
+            start_time_dt=dt.datetime.now(dt.timezone.utc),
             comment="Stackstorm: HV Patched",
             duration_hours=3,
         )
