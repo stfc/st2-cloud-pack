@@ -7,6 +7,38 @@ input:
   - cloud_account
 
 tasks:
+  is_ready_to_patch:
+    action: core.ask
+    input:
+      schema:
+        type: object
+        properties:
+          next_action:
+            type: string
+            description: "Select next action"
+            enum:
+              - patch
+              - reinstall
+              - cancel
+            required: True
+    next:
+      - when: <% task(is_ready_to_patch).result.response.next_action = patch %>
+        do: patch_machine
+      - when: <% task(is_ready_to_patch).result.response.next_action = reinstall %>
+        do: stop_for_reinstall
+      - when: <% task(is_ready_to_patch).result.response.next_action = cancel %>
+        do: cancel
+
+  stop_for_reinstall:
+    action: core.echo message="Automatic patch of <% ctx().hypervisor_hostname %> stopped for reinstall."
+    next:
+      - do: fail
+
+  cancel:
+    action: core.echo message="Automatic patch of <% ctx().hypervisor_hostname %> cancelled by user."
+    next:
+      - do: fail
+
   patch_machine:
     action: stackstorm_openstack.hv.patch.reboot
     input:
