@@ -196,6 +196,29 @@ elog_accounts:
         secret: false
         default: ""
 
+netbox_accounts:
+  type: "array"
+  required: true
+  description: Netbox account
+  items:
+    type: "object"
+    required: true
+    properties:
+      name:
+        description: "Name of Netbox account"
+        type: "string"
+        secret: false
+        required: true
+      api_token:
+        type: "string"
+        description: "netbox API token"
+        required: true
+      netbox_endpoint:
+        type: "string"
+        description: "netbox endpoint"
+        secret: false
+        default: ""
+
 sensor_cloud_account:
   description: Which cloud account sensors requiring an openstack connection will use
   type: "string"
