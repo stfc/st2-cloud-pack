@@ -13,6 +13,10 @@ from openstack.exceptions import (
     ResourceNotFound,
     SDKException,
 )
+from apis.openstack_api.enums.server_event import ServerEvent
+from apis.openstack_api.enums.server_status import ServerStatus
+from apis.openstack_api.structs.server_event_details import ServerEventDetails
+from apis.utils.time_utils import parse_iso_utc
 
 NOVA_MICROVERSION_FOR_TAGS = "2.26"
 
@@ -192,19 +196,12 @@ def build_server(
     Builds a server, with option to specify a hypervisor
 
     :param conn: openstack connection object
-    :type conn: Connection
     :param server_name: Name of server
-    :type server_name: str
     :param flavor_name: Flavor to use for server
-    :type flavor_name: str
     :param image_name: Image to use for server
-    :type image_name: str
     :param network_name: Network name for server
-    :type network_name: str
     :param hypervisor_hostname: Optional, hypervisor to build server on
-    :type hypervisor_hostname:
     :return: Server instance
-    :rtype: Server
     """
     flavor = conn.compute.find_flavor(flavor_name)
     image = conn.image.find_image(image_name)
@@ -240,13 +237,9 @@ def delete_server(
     Delete a server
 
     :param conn: openstack connection object
-    :type conn: Connection
     :param server_id: ID of server to delete
-    :type server_id: str
     :param force: Option to force delete server
-    :type force: bool
     :return: None
-    :rtype: None
     """
     server = conn.compute.find_server(server_id)
     logger.info("Deleting server: %s", server.id)
@@ -261,11 +254,8 @@ def shutoff_server(conn: Connection, server_id: str) -> None:
     Shutoff a server
 
     :param conn: openstack connection object
-    :type conn: Connection
     :param server_id: ID of server to delete
-    :type server_id: str
     :return: None
-    :rtype: None
     """
     server = conn.compute.find_server(server_id)
     logger.info("Attempt to shutoff server %s", server.id)
@@ -298,65 +288,204 @@ def shutoff_server_list(conn: Connection, server_id_list: List[str]) -> None:
     Shutoff a list of servers
 
     :param conn: openstack connection object
-    :type conn: Connection
     :param server_id_list: List of ID of servers to delete
-    :type server_id: List[str]
     :return: None
-    :rtype: None
     """
     for server_id in server_id_list:
         shutoff_server(conn, server_id)
 
 
-def add_metadata_to_server(conn: Connection, server_id: str, properties: Dict) -> None:
+def _wait_for_shelve(
+    conn: Connection,
+    server: Server,
+    timeout: int = 3600,
+) -> None:
     """
-    Add new key:values pair to the Server metadata
+    Wait for the server to reach SHELVED or SHELVED_OFFLOADED state,
+    polling the server status every 10 seconds
+
+    :param conn: openstack connection object
+    :param server: the Server to wait for
+    :param timeout: maximum seconds to wait. Default is 1 hour
+    :raises ResourceFailure: if the server reaches ERROR state
+    :raises ResourceTimeout: if the action times out
+    """
+    poll_interval = 10  # seconds between status checks
+    start_time = time.time()
+    while time.time() < start_time + timeout:
+        current = conn.compute.get_server(server.id)
+        status = ServerStatus.from_string(str(current.status))
+        logger.debug(
+            "Wait for shelve to complete. Server state %s : %s",
+            server.id,
+            current.status,
+        )
+
+        match status:
+            case ServerStatus.ERROR:
+                raise ResourceFailure(
+                    f"Server {server.id} reached ERROR state while shelving"
+                )
+            case ServerStatus.SHELVED | ServerStatus.SHELVED_OFFLOADED:
+                return
+
+        # Wait to see if we get to the state we need
+        time.sleep(poll_interval)
+
+    raise ResourceTimeout(
+        f"Timeout waiting for server {server.id} to become "
+        f"SHELVED or SHELVED_OFFLOADED"
+    )
+
+
+def shelve_server(conn: Connection, server_id: str, all_projects: bool = True) -> None:
+    """
+    Shelve a server which is in SHUTOFF state
+
+    :param conn: openstack connection object
+    :param server_id: the ID of the Server
+    :param all_projects: True requires admin to search in all_projects
+    :raises ValueError: if the server is neither SHUTOFF nor already shelved
+    :raises ResourceFailure: if the server fails to reach a shelved state
+    :raises ResourceNotFound: if the server does not exist
+    """
+    server = conn.compute.find_server(
+        server_id, ignore_missing=False, all_projects=all_projects
+    )
+    logger.info(
+        "Attempting to shelve server %s (current status: %s)",
+        server.id,
+        server.status,
+    )
+
+    status = ServerStatus.from_string(server.status)
+    if status in (ServerStatus.SHELVED, ServerStatus.SHELVED_OFFLOADED):
+        logger.info(
+            "Server %s is already %s, skipping shelve", server.id, server.status
+        )
+        return
+    if status is not ServerStatus.SHUTOFF:
+        raise ValueError(
+            f"Server {server.id} is in status {server.status}, cannot shelve - "
+            "the server must be SHUTOFF"
+        )
+
+    logger.info("Shelving server: %s", server.id)
+    conn.compute.shelve_server(server)
+    _wait_for_shelve(conn, server)
+    logger.info("Shelved: %s", server.id)
+
+
+def get_server_event_list(conn: Connection, server: Server) -> List[ServerEventDetails]:
+    """
+    Parses events from the event list, if any exist, into an enum
+    of events
+
+    :param conn: openstack connection object
+    :param server: the Server to get the event list for
+    :return: the list of ServerEventDetails objects, most recent first
+    """
+    logger.info("getting the event list for server %s", server.id)
+    server_events: List[ServerEventDetails] = []
+    for action in conn.compute.server_actions(server.id):
+        event_type = ServerEvent.from_string(action.action)
+        if event_type is None:
+            logger.debug(
+                "ignoring event %s for server %s - not tracked in ServerEvent",
+                action.action,
+                server.id,
+            )
+            continue
+        server_events.append(
+            ServerEventDetails(
+                event=event_type,
+                date=parse_iso_utc(action.start_time),
+            )
+        )
+    logger.info(
+        "found %d events in the event list of server %s",
+        len(server_events),
+        server.id,
+    )
+    return server_events
+
+
+def get_server_metadata(
+    conn: Connection, server_id: str, all_projects: bool = True
+) -> Dict:
+    """
+    Get the current metadata of a Server
 
     The metadata is the field displayed as "properties"
     when running "openstack server show" commands
 
-    Note, if a key in properties already exists in the Servers metadata,
-    it will be overridden with the new value
+    :param conn: openstack connection object
+    :param server_id: the ID of the Server
+    :param all_projects: if True, search for the server in all projects
+    :return: the current metadata of the Server as a dictionary of key:values
+    """
+    logger.info("getting metadata for server %s", server_id)
+    server = conn.compute.find_server(
+        server_id, ignore_missing=False, all_projects=all_projects
+    )
+    metadata = server.metadata or {}
+    logger.info("found %d metadata entries for server %s", len(metadata), server_id)
+    return metadata
+
+
+def add_metadata_to_server(
+    conn: Connection,
+    server_id: str,
+    properties: Dict,
+    all_projects: bool = True,
+) -> None:
+    """
+    Adds or overrides key:values in the Server metadata
+    Equivalent of server set --property in the CLI
 
     :param conn: openstack connection object
-    :type conn: Connection
     :param server_id: the ID of the Server object
-    :type server_id: str
-    :param properties: the new properties to add to the server metadata
-    :type properties: dictionary
+    :param properties: the new metadata to add to the server metadata
+    :param all_projects: if True, search for the server in all projects,
+        which requires admin credentials. If False, only search the
+        project of the connection
     """
     logger.info(
         "calling function add_metadata for server %s to add properties %s",
         server_id,
         properties,
     )
-    server = conn.compute.find_server(server_id, all_projects=True)
+    server = conn.compute.find_server(
+        server_id, ignore_missing=False, all_projects=all_projects
+    )
     conn.compute.set_server_metadata(server, **properties)
     logger.info("new properties added to server")
 
 
 def delete_metadata_from_server(
-    conn: Connection, server_id: str, properties: List
+    conn: Connection,
+    server_id: str,
+    properties: List,
+    all_projects: bool = True,
 ) -> None:
     """
-    Remove some key:values pair from the Server metadata
-
-    The metadata is the field displayed as "properties"
-    when running "openstack server show" commands
-
+    Remove some key:values pair from the Server metadata. The value
+    is required, as-per the CLI command "openstack server unset --property"
     :param conn: openstack connection object
-    :type conn: Connection
     :param server_id: the ID of the Server object
-    :type server_id: str
     :param properties: the properties to remove from the server metadata
-    :type properties: list
+    :param all_projects: if True, search for the server in all projects,
+        which requires admin credentials. If False, only search the
+        project of the connection
     """
     logger.info(
         "calling function delete_metadata for server %s to remove properties %s",
         server_id,
         properties,
     )
-    server = conn.compute.find_server(server_id, all_projects=True)
+    server = conn.compute.find_server(
+        server_id, ignore_missing=False, all_projects=all_projects
+    )
     conn.compute.delete_server_metadata(server, keys=properties)
     logger.info("properties removed from server")
 
@@ -437,11 +566,8 @@ def get_server_owner_email(conn: Connection, server_id: str) -> str:
     Returns, when possible, the email of User who instantiated a Server
 
     :param conn: openstack connection object
-    :type conn: Connection
     :param server_id: the ID of the Server
-    :type server_id: str
     :return: the email of the User
-    :rtype: str
     :raises ResourceNotFound: if the Server does not have User information
         or the user does not exist
     :raises openstack.exceptions.SDKException:
@@ -483,11 +609,8 @@ def admin_lock_server(conn: Connection, server_id: str, reason: str) -> str:
     should be able to restart it.
 
     :param conn: openstack connection object
-    :type conn: Connection
     :param server_id: the ID of the Server
-    :type server_id: str
     :param reason: the reason for the admin lock
-    :type reason: str
     """
     logger.info("admin locking server %s for reason %s", server_id, reason)
     if len(reason) < 255:
@@ -504,9 +627,7 @@ def admin_unlock_server(conn: Connection, server_id: str) -> str:
     remove the admin lock set to a  Server
 
     :param conn: openstack connection object
-    :type conn: Connection
     :param server_id: the ID of the Server
-    :type server_id: str
     """
     logger.info("admin unlocking server %s", server_id)
     conn.compute.unlock_server(server_id)
