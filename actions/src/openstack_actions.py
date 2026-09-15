@@ -7,12 +7,14 @@ from apis.alertmanager_api.structs.alertmanager_account import AlertManagerAccou
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.icinga_api.structs.icinga_account import IcingaAccount
 from apis.jira_api.structs.jira_account import JiraAccount
+from apis.netbox_api.structs.netbox_account import NetboxAccount
 
 ACCOUNT_CONFIGS = {
     "smtp_account_name": ("smtp_account", SMTPAccount),
     "jira_account_name": ("jira_account", JiraAccount),
     "icinga_account_name": ("icinga_account", IcingaAccount),
     "alertmanager_account_name": ("alertmanager_account", AlertManagerAccount),
+    "netbox_account_name": ("netbox_account", NetboxAccount),
 }
 
 
