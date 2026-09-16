@@ -1,0 +1,13 @@
+Dear Cloud User,
+
+We are writing to inform you one or more virtual machines (VMs) associated with your account are running an unsupported version of the Operating System.
+Because of that, those VMs have been put in SHUTOFF state. 
+
+Please take a moment to review the list of affected VMs provided below and either fix them or delete them if they are no longer needed:
+
+Shutoff VMs:
+{% for item in server_list %}
+  {{ item }}
+{% endfor %}
+
+Please note that this is an automated notification. If you believe you received this email in error or have any concerns, please contact Cloud Operations Group for further assistance.
