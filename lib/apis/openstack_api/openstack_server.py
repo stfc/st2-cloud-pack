@@ -335,6 +335,35 @@ def add_metadata_to_server(conn: Connection, server_id: str, properties: Dict) -
     logger.info("new properties added to server")
 
 
+def get_metadata_from_server(conn: Connection, server_id: str, key: str) -> str:
+    """
+    Retrieve the value for a given metadata key from an OpenStack server.
+
+    :param conn: OpenStack connection object
+    :type conn: Connection
+    :param server_id: The ID of the Server object
+    :type server_id: str
+    :param key: The key value in the metadata dictionary
+    :type key: str
+    :return: The metadata property for that key
+    :rtype: str
+    :raises ValueError: If the server or the metadata key is not found
+    """
+    try:
+        server = conn.compute.find_server(server_id, all_projects=True)
+    except ResourceNotFound as e:
+        msg = f"Server {server_id} does not exist."
+        logger.error(msg)
+        raise ValueError(msg) from e
+    metadata = conn.compute.get_server_metadata(server)
+    try:
+        return metadata[key]
+    except KeyError as e:
+        msg = f"Server {server_id} does not have key '{key}' in its metadata."
+        logger.error(msg)
+        raise ValueError(msg) from e
+
+
 def delete_metadata_from_server(
     conn: Connection, server_id: str, properties: List
 ) -> None:
