@@ -13,6 +13,7 @@ from apis.openstack_api.openstack_server import (
     wait_for_migration_status,
     shutoff_server,
     add_metadata_to_server,
+    get_metadata_from_server,
     delete_metadata_from_server,
     add_tag_to_server,
     remove_tag_from_server,
@@ -712,6 +713,20 @@ def test_add_metadata_to_server():
     mock_conn.compute.set_server_metadata.assert_called_once_with(
         mock_server, env="production", tier="frontend"
     )
+
+
+def test_get_metadata_from_server():
+    conn = MagicMock()
+    server = MagicMock()
+
+    conn.compute.find_server.return_value = server
+    conn.compute.get_server_metadata.return_value = {"test-key": "test-value"}
+
+    result = get_metadata_from_server(conn, "server-123", "test-key")
+
+    conn.compute.find_server.assert_called_once_with("server-123", all_projects=True)
+    conn.compute.get_server_metadata.assert_called_once_with(server)
+    assert result == "test-value"
 
 
 def test_delete_metadata_from_server():
