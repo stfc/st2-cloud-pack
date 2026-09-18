@@ -7,10 +7,10 @@ enabled: false
 criteria:
   trigger.previous_state:
     type: inside
-    pattern: [RUNNING, EMPTY]
+    pattern: [RUNNING, EMPTY, PENDING_MAINTENANCE]
   trigger.current_state:
     type: equals
-    pattern: PENDING_MAINTENANCE
+    pattern: START_DRAIN
 
 trigger:
   type: "stackstorm_openstack.hypervisor.state_change"
@@ -20,4 +20,4 @@ action:
   parameters:
     hypervisor_name: "{{ trigger.hypervisor_name }}"
     cloud_account: "dev"
-    disabled_reason: "Stackstorm: patching"
+    disabled_reason: "Stackstorm: Draining"

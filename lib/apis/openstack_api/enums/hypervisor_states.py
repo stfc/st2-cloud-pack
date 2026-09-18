@@ -10,6 +10,7 @@ class HypervisorState(Enum):
     DOWN = auto()
     DISABLED = auto()
     PENDING_MAINTENANCE = auto()
+    START_DRAIN = auto()
     DRAINING = auto()
     DRAINED = auto()
     REBOOTED = auto()
