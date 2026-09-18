@@ -4,59 +4,123 @@ from apis.openstack_api.enums.hypervisor_states import HypervisorState
 from openstack.connection import Connection
 
 
-def get_hypervisor_state(hypervisor: Dict, uptime_limit: int) -> HypervisorState:
-    """
-    Returns a hypervisor state given a set of hypervisor variables
-    :param hypervisor: Dictionary containing hypervisor: uptime, state, status and server count
-    :param uptime_limit: Number of days of uptime before hypervisor requires maintenance
-    :return: Hypervisor state
-    """
-    if hypervisor["hypervisor_state"] == "down":
-        return HypervisorState.DOWN
-    if hypervisor["hypervisor_disabled_reason"] and not hypervisor[
-        "hypervisor_disabled_reason"
-    ].startswith("Stackstorm:"):
-        return HypervisorState.DISABLED
-    if not valid_state(hypervisor):
+class Hypervisor:
+    name: str
+    uptime: int
+    status: bool
+    state: bool
+    disabled_reason: str
+    num_servers: int
+
+    @staticmethod
+    def from_dict(dictionary: Dict):
+        hypervisor = Hypervisor()
+        hypervisor.name = dictionary["hypervisor_name"]
+        hypervisor.uptime = dictionary["hypervisor_uptime_days"]
+        hypervisor.status = dictionary["hypervisor_status"]
+        hypervisor.state = dictionary["hypervisor_state"]
+        hypervisor.disabled_reason = dictionary["hypervisor_disabled_reason"]
+        hypervisor.num_servers = dictionary["hypervisor_server_count"]
+        return hypervisor
+
+    # pylint:disable=too-many-return-statements
+    def get_hypervisor_state(
+        self, conn: Connection, uptime_limit: int
+    ) -> HypervisorState:
+        """
+        Returns a hypervisor state given a set of hypervisor variables
+
+        :param uptime_limit: Number of days of uptime before hypervisor requires maintenance
+        :return: Hypervisor state
+        """
+        if self.state == "down":
+            return HypervisorState.DOWN
+
+        if self.uptime == 0:
+            return HypervisorState.REBOOTED
+
+        if self.status == "disabled":
+            if not self.is_disabled_by_st2():
+                return HypervisorState.DISABLED
+            return (
+                HypervisorState.DRAINED
+                if self.num_servers == 0
+                else HypervisorState.DRAINING
+            )
+
+        if self.uptime > uptime_limit:
+            return (
+                HypervisorState.PENDING_MAINTENANCE
+                if self.get_aggregate_capacity(conn) > 0.2
+                else HypervisorState.START_DRAIN
+            )
+
+        if self.status == "enabled":
+            return (
+                HypervisorState.EMPTY
+                if self.num_servers == 0
+                else HypervisorState.RUNNING
+            )
+
         return HypervisorState.UNKNOWN
-    if (
-        hypervisor["hypervisor_uptime_days"] >= uptime_limit
-        and hypervisor["hypervisor_status"] == "enabled"
-    ):
-        return HypervisorState.PENDING_MAINTENANCE
-    hv_state = {
-        "uptime": hypervisor["hypervisor_uptime_days"] < uptime_limit,
-        "enabled": hypervisor["hypervisor_status"] == "enabled",
-        "state": hypervisor["hypervisor_state"] == "up",
-        "servers": hypervisor["hypervisor_server_count"] > 0,
-    }
 
-    return HypervisorState(hv_state)
+    def is_disabled_by_st2(self) -> bool:
+        return self.disabled_reason.startswith("Stackstorm:")
 
+    def get_aggregate_capacity(self, conn: Connection) -> float:
+        """
+        Calculates the capacity for the aggregate(s) conatining this hypervisor
+        based on the number of hypervisors diabled in the aggregate(s)
 
-def valid_state(state) -> bool:
-    """
-    Validates the hypervisor state
-    :param state: Dictionary containing hypervisor state
-    :return: True for valid state
-    """
-    if not isinstance(state["hypervisor_uptime_days"], float):
-        return False
-    hypervisor_status = state["hypervisor_status"]
-    if hypervisor_status not in ["enabled", "disabled"]:
-        return False
-    hypervisor_state = state["hypervisor_state"]
-    if hypervisor_state not in ["up", "down"]:
-        return False
-    hypervisor_server_count = state["hypervisor_server_count"]
-    if not isinstance(hypervisor_server_count, int) or hypervisor_server_count < 0:
-        return False
-    return True
+        :param conn: openstack connection object
+        :type conn: Connection
+        :param hypervisor_name: Hostname of a hypervisor
+        :type hypervisor_name: str
+        :return: The percentage of hypervisors disabled as a decimal
+        :rtype: float
+        """
+
+        aggregates = conn.compute.aggregates()
+        hypervisors = list(conn.compute.hypervisors())
+
+        # Find which aggregate(s) the hypervisor belongs to
+        aggreates_for_hv = list(
+            filter(
+                lambda aggregate: self.name in aggregate.hosts,
+                aggregates,
+            )
+        )
+
+        if len(aggreates_for_hv) == 0:
+            raise ValueError
+
+        # Get all details for hypervisors in hypervisor's aggregate
+        # Assume the first aggregate is a good enough representation of
+        # capacity for simplicity.
+        # (We only have 2 HVs that are in multiple aggregates)
+        aggregate = aggreates_for_hv[0]
+        hypervisors = list(
+            filter(
+                lambda self: self.name in aggregate.hosts,
+                hypervisors,
+            )
+        )
+
+        # Filter for diabled hypervisors that belong to hypervisor's aggregate
+        disabled = list(
+            filter(
+                lambda hypervisor: hypervisor.status == "disabled",
+                hypervisors,
+            )
+        )
+
+        return len(disabled) / len(hypervisors)
 
 
 def get_available_flavors(conn: Connection, hypervisor_name: str) -> List[str]:
     """
     Returns names of flavors which can be built on a given hypervisor
+
     :param conn: openstack connection object
     :type conn: Connection
     :param hypervisor_name: Hostname of a hypervisor

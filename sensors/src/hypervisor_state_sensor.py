@@ -1,4 +1,8 @@
-from apis.openstack_api.openstack_hypervisor import get_hypervisor_state
+from time import sleep
+
+import openstack
+
+from apis.openstack_api.openstack_hypervisor import Hypervisor
 from apis.openstack_query_api.hypervisor_queries import query_hypervisor_state
 from st2reactor.sensor.base import PollingSensor
 
@@ -26,6 +30,7 @@ class HypervisorStateSensor(PollingSensor):
         self.state_expire_after = self.config["hypervisor_sensor"].get(
             "state_expire_after", 1209600  # 2 weeks in seconds
         )
+        self.conn = openstack.connect(self.cloud_account)
 
     def setup(self):
         """
@@ -41,17 +46,16 @@ class HypervisorStateSensor(PollingSensor):
         for hypervisor in data:
             if not isinstance(hypervisor, dict):
                 continue
-            current_state = get_hypervisor_state(
-                hypervisor, uptime_limit=self.uptime_limit
+            hypervisor = Hypervisor().from_dict(hypervisor)
+            current_state = hypervisor.get_hypervisor_state(
+                conn=self.conn, uptime_limit=self.uptime_limit
             )
 
-            prev_state = self.sensor_service.get_value(
-                name=hypervisor["hypervisor_name"]
-            )
+            prev_state = self.sensor_service.get_value(name=hypervisor.name)
 
             if not prev_state == current_state.name:
                 payload = {
-                    "hypervisor_name": hypervisor["hypervisor_name"],
+                    "hypervisor_name": hypervisor.name,
                     "previous_state": prev_state,
                     "current_state": current_state.name,
                 }
@@ -60,10 +64,16 @@ class HypervisorStateSensor(PollingSensor):
                     payload=payload,
                 )
                 self.sensor_service.set_value(
-                    name=hypervisor["hypervisor_name"],
+                    name=hypervisor.name,
                     value=current_state.name,
                     ttl=self.state_expire_after,
                 )
+
+                # If a drain was triggered wait a min to allow it
+                # to be disabled before moving on to ensure accurate
+                # capacity calculations
+                if current_state.name == "START_DRAIN":
+                    sleep(60)
 
     def cleanup(self):
         """

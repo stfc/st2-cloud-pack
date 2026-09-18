@@ -6,39 +6,15 @@ class HypervisorState(Enum):
     Class of states used for automating maintenace of hypervisors
     """
 
-    RUNNING = {
-        "uptime": True,
-        "enabled": True,
-        "state": True,
-        "servers": True,
-    }
-    DRAINING = {
-        "uptime": False,
-        "enabled": False,
-        "state": True,
-        "servers": True,
-    }
-    DRAINED = {
-        "uptime": False,
-        "enabled": False,
-        "state": True,
-        "servers": False,
-    }
-    REBOOTED = {
-        "uptime": True,
-        "enabled": False,
-        "state": True,
-        "servers": False,
-    }
-    EMPTY = {
-        "uptime": True,
-        "enabled": True,
-        "state": True,
-        "servers": False,
-    }
-    PENDING_MAINTENANCE = auto()
+    RUNNING = auto()
     DOWN = auto()
     DISABLED = auto()
+    PENDING_MAINTENANCE = auto()
+    START_DRAIN = auto()
+    DRAINING = auto()
+    DRAINED = auto()
+    REBOOTED = auto()
+    EMPTY = auto()
     UNKNOWN = auto()
 
     @classmethod
