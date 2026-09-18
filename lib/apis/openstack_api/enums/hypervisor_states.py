@@ -7,13 +7,14 @@ class HypervisorState(Enum):
     """
 
     RUNNING = auto()
+    DOWN = auto()
+    DISABLED = auto()
     PENDING_MAINTENANCE = auto()
     DRAINING = auto()
     DRAINED = auto()
-    UNKNOWN = auto()
     REBOOTED = auto()
     EMPTY = auto()
-    DOWN = auto()
+    UNKNOWN = auto()
 
     @classmethod
     def _missing_(cls, value):

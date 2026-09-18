@@ -8,6 +8,7 @@ class Hypervisor:
     uptime: int
     status: bool
     state: bool
+    disabled_reason: str
     num_servers: int
 
     @staticmethod
@@ -16,6 +17,7 @@ class Hypervisor:
         hypervisor.uptime = dictionary["hypervisor_uptime_days"]
         hypervisor.status = dictionary["hypervisor_status"]
         hypervisor.state = dictionary["hypervisor_state"]
+        hypervisor.disabled_reason = dictionary["hypervisor_disabled_reason"]
         hypervisor.num_servers = dictionary["hypervisor_server_count"]
         return hypervisor
 
@@ -33,6 +35,8 @@ class Hypervisor:
             return HypervisorState.REBOOTED
 
         if self.status == "disabled":
+            if not self.is_disabled_by_st2():
+                return HypervisorState.DISABLED
             return (
                 HypervisorState.DRAINED
                 if self.num_servers == 0
@@ -50,6 +54,9 @@ class Hypervisor:
             )
 
         return HypervisorState.UNKNOWN
+
+    def is_disabled_by_st2(self) -> bool:
+        return self.disabled_reason.startswith("Stackstorm:")
 
 
 def get_available_flavors(conn: Connection, hypervisor_name: str) -> List[str]:
