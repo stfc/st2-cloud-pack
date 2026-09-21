@@ -36,9 +36,6 @@ class Hypervisor:
         if self.state == "down":
             return HypervisorState.DOWN
 
-        if self.uptime == 0:
-            return HypervisorState.REBOOTED
-
         if self.status == "disabled":
             if not self.is_disabled_by_st2():
                 return HypervisorState.DISABLED

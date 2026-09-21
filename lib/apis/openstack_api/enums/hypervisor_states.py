@@ -13,7 +13,6 @@ class HypervisorState(Enum):
     START_DRAIN = auto()
     DRAINING = auto()
     DRAINED = auto()
-    REBOOTED = auto()
     EMPTY = auto()
     UNKNOWN = auto()
 
