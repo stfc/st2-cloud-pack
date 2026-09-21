@@ -1,5 +1,11 @@
 import pytest
-from apis.utils.diff_utils import DiffUtils, _format_value, _normalize_path, get_diff
+from apis.utils.diff_utils import (
+    DiffUtils,
+    _format_value,
+    _normalize_path,
+    get_diff,
+    compare_2_lists,
+)
 
 # pylint:disable=protected-access
 
@@ -237,3 +243,44 @@ def test_get_diff_root_excluded_skips_completely():
     obj2 = {"a": 2}
     changes = get_diff(obj1, obj2, exclude_paths={"root"})
     assert changes == []
+
+
+@pytest.mark.parametrize(
+    "list1, list2, expected_only_list1, expected_only_list2, expected_both",
+    [
+        # Both lists are empty.
+        ([], [], [], [], []),
+        # First list contains items; second list is empty.
+        (["a", "b"], [], ["a", "b"], [], []),
+        # Second list contains items; first list is empty.
+        ([], ["a", "b"], [], ["a", "b"], []),
+        # Lists contain the same items.
+        (["a", "b"], ["a", "b"], [], [], ["a", "b"]),
+        # Lists have no items in common.
+        (["a", "b"], ["c", "d"], ["a", "b"], ["c", "d"], []),
+        # Lists partially overlap.
+        (["a", "b", "c"], ["b", "c", "d"], ["a"], ["d"], ["b", "c"]),
+        # Duplicate items should be removed because the function uses sets.
+        (["a", "a", "b"], ["b", "b", "c"], ["a"], ["c"], ["b"]),
+        # Comparison is case-sensitive.
+        (["a", "B"], ["A", "B"], ["a"], ["A"], ["B"]),
+    ],
+)
+def test_compare_2_lists(
+    list1,
+    list2,
+    expected_only_list1,
+    expected_only_list2,
+    expected_both,
+):
+    """
+    validate the output of compare_2_lists with different combinations
+    of input values
+    """
+    only_list1, only_list2, both = compare_2_lists(list1, list2)
+
+    # compare_lists() uses sets internally, so the order of returned
+    # elements is not guaranteed. Compare sets instead of lists.
+    assert set(only_list1) == set(expected_only_list1)
+    assert set(only_list2) == set(expected_only_list2)
+    assert set(both) == set(expected_both)
