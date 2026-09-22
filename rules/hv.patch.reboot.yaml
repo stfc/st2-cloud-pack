@@ -4,16 +4,13 @@ pack: "stackstorm_openstack"
 description: "Starts the patch reboot action when the hypervisor is drained"
 enabled: true
 criteria:
-  trigger.previous_state:
-    type: inside
-    pattern: [START_DRAIN, DRAINING]
-  trigger.current_state:
+  trigger.action:
     type: equals
-    pattern: DRAINED
+    pattern: PATCH
 trigger:
   type: "stackstorm_openstack.hypervisor.state_change"
 action:
   ref: "stackstorm_openstack.hypervisor.patch"
   parameters:
     hypervisor_hostname: "{{ trigger.hypervisor_name }}"
-    cloud_account: "dev"
+    cloud_account: "{{ trigger.cloud_account }}"

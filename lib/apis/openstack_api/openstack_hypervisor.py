@@ -1,9 +1,19 @@
+import logging
 from typing import Dict, List
 
-from apis.openstack_api.enums.hypervisor_states import HypervisorState
+import openstack
+
+from apis.openstack_api.enums.hypervisor_enums import (
+    HypervisorAction,
+    HypervisorState,
+    HypervisorStatus,
+)
 from openstack.connection import Connection
 
+logger = logging.getLogger(__name__)
 
+
+# pylint:disable=too-many-instance-attributes
 class Hypervisor:
     name: str
     uptime: int
@@ -12,9 +22,13 @@ class Hypervisor:
     disabled_reason: str
     num_servers: int
 
+    def __init__(self, cloud_account):
+        self.cloud_account = cloud_account
+        self.conn = openstack.connect(self.cloud_account)
+
     @staticmethod
-    def from_dict(dictionary: Dict):
-        hypervisor = Hypervisor()
+    def from_dict(cloud_account: str, dictionary: Dict):
+        hypervisor = Hypervisor(cloud_account)
         hypervisor.name = dictionary["hypervisor_name"]
         hypervisor.uptime = dictionary["hypervisor_uptime_days"]
         hypervisor.status = dictionary["hypervisor_status"]
@@ -23,46 +37,76 @@ class Hypervisor:
         hypervisor.num_servers = dictionary["hypervisor_server_count"]
         return hypervisor
 
-    # pylint:disable=too-many-return-statements
-    def get_hypervisor_state(
-        self, conn: Connection, uptime_limit: int
-    ) -> HypervisorState:
+    def take_action(self, uptime_limit: int) -> HypervisorAction:
         """
-        Returns a hypervisor state given a set of hypervisor variables
+        Returns a hypervisor action based on certain conditions
 
         :param uptime_limit: Number of days of uptime before hypervisor requires maintenance
         :return: Hypervisor state
         """
-        if self.state == "down":
-            return HypervisorState.DOWN
 
-        if self.status == "disabled":
-            if not self.is_disabled_by_st2():
-                return HypervisorState.DISABLED
-            return (
-                HypervisorState.DRAINED
-                if self.num_servers == 0
-                else HypervisorState.DRAINING
-            )
+        if self.state == HypervisorState.DOWN:
+            logger.info("%s is Down take no action", self.name)
+            return HypervisorAction.NOOP  # -> No action if hypervisor is down
 
+        if self.status == HypervisorStatus.DISABLED and not self.is_disabled_by_st2():
+            logger.info("%s is manually disabled take no action", self.name)
+            return HypervisorAction.NOOP  # -> No action if manually disabled
+
+        # If hypervisor has been up long enough to need maintenance
         if self.uptime > uptime_limit:
-            return (
-                HypervisorState.PENDING_MAINTENANCE
-                if self.get_aggregate_capacity(conn) > 0.2
-                else HypervisorState.START_DRAIN
-            )
+            logger.info("%s requires maintenance", self.name)
 
-        if self.status == "enabled":
-            return (
-                HypervisorState.EMPTY
-                if self.num_servers == 0
-                else HypervisorState.RUNNING
-            )
+            # Disabled by stackstorm or enabled
+            if self.should_drain(self.conn):
+                logger.info("%s should be drained", self.name)
+                return HypervisorAction.DRAIN  # -> Drain if and capacity
 
-        return HypervisorState.UNKNOWN
+            # Drained by stackstorm
+            if self.should_patch():
+                logger.info("%s should be patched", self.name)
+                return HypervisorAction.PATCH
+
+        return HypervisorAction.NOOP
 
     def is_disabled_by_st2(self) -> bool:
-        return self.disabled_reason.startswith("Stackstorm:")
+        """
+        Check whether the hypervisor has been diabled by stackstorm
+        by checking the disabled reason starts with `Stackstorm:`
+
+        :rtype: bool
+        """
+        # TODO: Make this a more robust check, maybe something in netbox
+        return (
+            self.status == HypervisorStatus.DISABLED
+            and self.disabled_reason.startswith("Stackstorm:")
+        )
+
+    def should_drain(self, conn: Connection) -> bool:
+        """
+        Check whether the hypervisor should be drained based on its uptime
+        and the percentage of hypervisors disabled in its aggregate
+
+        :param uptime_limit: Number of days of uptime before hypervisor requires maintenance
+                             for maintenance
+        :rtype: bool
+        """
+        # TODO: Check a tag in netbox for whether the hypervisor is draining or failed to drain
+        #       Don't drain if already draining, retry if failed to drain
+        return (
+            self.status == HypervisorStatus.ENABLED or self.is_disabled_by_st2
+        ) and self.get_aggregate_capacity(conn) < 0.2
+
+    def should_patch(self) -> bool:
+        """
+        Check whether the hypervisor should be pacthed based on whether it was
+        disabled by st2 and is empty
+
+        :param self: Description
+        :return: Description
+        :rtype: bool
+        """
+        return self.is_disabled_by_st2() and self.num_servers == 0
 
     def get_aggregate_capacity(self, conn: Connection) -> float:
         """

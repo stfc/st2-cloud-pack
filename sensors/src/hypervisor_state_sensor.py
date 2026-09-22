@@ -1,7 +1,6 @@
 from time import sleep
 
-import openstack
-
+from apis.openstack_api.enums.hypervisor_enums import HypervisorAction
 from apis.openstack_api.openstack_hypervisor import Hypervisor
 from apis.openstack_query_api.hypervisor_queries import query_hypervisor_state
 from st2reactor.sensor.base import PollingSensor
@@ -24,13 +23,9 @@ class HypervisorStateSensor(PollingSensor):
         super().__init__(
             sensor_service=sensor_service, config=config, poll_interval=poll_interval
         )
-        self._log = self._sensor_service.get_logger(__name__)
+        self._logger = self.sensor_service.get_logger(name=self.__class__.__name__)
         self.cloud_account = self.config["sensor_cloud_account"]
         self.uptime_limit = self.config["hypervisor_sensor"].get("uptime_limit", 180)
-        self.state_expire_after = self.config["hypervisor_sensor"].get(
-            "state_expire_after", 1209600  # 2 weeks in seconds
-        )
-        self.conn = openstack.connect(self.cloud_account)
 
     def setup(self):
         """
@@ -41,38 +36,42 @@ class HypervisorStateSensor(PollingSensor):
         """
         Polls the state of hypervisors.
         """
+        self._logger.info("HypervisorSensor querying openstack")
 
         data = query_hypervisor_state(self.cloud_account)
+
+        # TODO: Add a prioritize function which will order the list
+        #       of hypervisors in data by maintenance priority, e.g.
+        #       FW update date, OS version etc.
+
         for hypervisor in data:
             if not isinstance(hypervisor, dict):
                 continue
-            hypervisor = Hypervisor().from_dict(hypervisor)
-            current_state = hypervisor.get_hypervisor_state(
-                conn=self.conn, uptime_limit=self.uptime_limit
-            )
-
-            prev_state = self.sensor_service.get_value(name=hypervisor.name)
-
-            if not prev_state == current_state.name:
+            hypervisor = Hypervisor.from_dict(self.cloud_account, hypervisor)
+            self._logger.info(f"evaluating action for {hypervisor.name}")
+            action = hypervisor.take_action(uptime_limit=self.uptime_limit)
+            self._logger.info(f"{hypervisor.name}: {action.name}")
+            if action is not HypervisorAction.NOOP:
                 payload = {
                     "hypervisor_name": hypervisor.name,
-                    "previous_state": prev_state,
-                    "current_state": current_state.name,
+                    "cloud_account": self.cloud_account,
+                    "action": action.name,
                 }
+                self._logger.info(
+                    f"Dispatching action {action.name} for {hypervisor.name}"
+                )
                 self.sensor_service.dispatch(
                     trigger="stackstorm_openstack.hypervisor.state_change",
                     payload=payload,
-                )
-                self.sensor_service.set_value(
-                    name=hypervisor.name,
-                    value=current_state.name,
-                    ttl=self.state_expire_after,
                 )
 
                 # If a drain was triggered wait a min to allow it
                 # to be disabled before moving on to ensure accurate
                 # capacity calculations
-                if current_state.name == "START_DRAIN":
+                if action is HypervisorAction.DRAIN:
+                    self._logger.info(
+                        f"Waiting for drain of {hypervisor.name} to be started"
+                    )
                     sleep(60)
 
     def cleanup(self):
