@@ -20,6 +20,7 @@ from apis.openstack_api.openstack_server import (
     get_server_owner_email,
     admin_lock_server,
     NOVA_MICROVERSION_FOR_TAGS,
+    get_server_status,
 )
 from openstack.exceptions import (
     ResourceFailure,
@@ -940,3 +941,27 @@ def test_admin_lock_server_rejects_reason_longer_than_255_characters():
 
     # Verify the server was never locked.
     conn.compute.lock_server.assert_not_called()
+
+
+def test_get_server_status():
+    mock_connection = MagicMock()
+    mock_server = MagicMock()
+    mock_server.status = "ACTIVE"
+    mock_connection.compute.find_server.return_value = mock_server
+
+    status = get_server_status(mock_connection, "server1")
+
+    assert status == "ACTIVE"
+    mock_connection.compute.find_server.assert_called_once_with(
+        "server1", all_projects=True
+    )
+
+
+def test_get_server_status_not_found():
+    mock_connection = MagicMock()
+    mock_connection.compute.find_server.side_effect = ResourceNotFound
+
+    with pytest.raises(
+        ResourceNotFound, match="server server1 not found, unable to get its status"
+    ):
+        get_server_status(mock_connection, "server1")
