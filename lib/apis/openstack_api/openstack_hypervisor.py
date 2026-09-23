@@ -75,6 +75,7 @@ class Hypervisor:
 
         return HypervisorAction.NOOP
 
+    # pylint:disable=too-many-return-statements
     def valid_state(self) -> bool:
         """
         Validates the hypervisor state
@@ -130,7 +131,7 @@ class Hypervisor:
         #       Don't drain if already draining, retry if failed to drain
         return (
             self.status == HypervisorStatus.ENABLED.name or self.is_disabled_by_st2
-        ) and self.get_aggregate_capacity(self.conn) < 0.2
+        ) and self.get_aggregate_capacity() < 0.2
 
     def should_patch(self) -> bool:
         """

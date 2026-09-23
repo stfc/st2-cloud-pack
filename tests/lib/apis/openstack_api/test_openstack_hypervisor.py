@@ -372,6 +372,7 @@ def test_garbage_disabled_reason(_mock_get_capacity, mock_connect, disabled_reas
     assert action == HypervisorAction.NOOP
 
 
+# pylint:disable=too-many-locals
 @patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
 def test_get_aggregate_capacity(mock_connect):
     """
