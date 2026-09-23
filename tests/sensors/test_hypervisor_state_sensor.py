@@ -34,7 +34,7 @@ def state_sensor_fixture():
 @pytest.mark.parametrize("action", ["DRAIN", "PATCH"])
 def test_poll(mock_query_hypervisor_state, mock_from_dict, mock_sleep, action, sensor):
     """
-    Test main function of sensor, polling state of hypervisor state
+    Test main function of sensor, polling hypervisor and dispatching actions
     """
     mock_hypervisor = MagicMock()
     mock_hypervisor.name = "hv1"
@@ -70,7 +70,7 @@ def test_poll(mock_query_hypervisor_state, mock_from_dict, mock_sleep, action, s
 @patch("sensors.src.hypervisor_state_sensor.query_hypervisor_state")
 def test_poll_no_action(mock_query_hypervisor_state, mock_from_dict, sensor):
     """
-    Test poll does nothing if hypervisor state hasn't changed
+    Test poll does nothing if hypervisor has a NOOP action
     """
     mock_hypervisor = MagicMock()
     mock_hypervisor.name = "hv1"

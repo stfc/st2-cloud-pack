@@ -1,7 +1,7 @@
 ---
 name: "hv.patch.reboot"
 pack: "stackstorm_openstack"
-description: "Starts the patch reboot action when the hypervisor is drained"
+description: "Starts the patch action on a host"
 enabled: true
 criteria:
   trigger.action:

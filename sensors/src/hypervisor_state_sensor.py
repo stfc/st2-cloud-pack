@@ -33,7 +33,7 @@ class HypervisorStateSensor(PollingSensor):
 
     def poll(self):
         """
-        Polls the state of hypervisors.
+        Polls hypervisors.
         """
         self._logger.info("HypervisorSensor querying openstack")
 

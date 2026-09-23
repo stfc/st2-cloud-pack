@@ -43,7 +43,7 @@ def test_no_maintenance_needed(
     aggregate_capacity,
 ):
     """
-    Test hypervisor state is running for given variables
+    Test hypervisor takes a NOOP action when no maintenance is needed
     """
     mock_connect.return_value = MagicMock()
     mock_get_capacity.return_value = aggregate_capacity
@@ -89,7 +89,7 @@ def test_ignore_manually_disabled(
     aggregate_capacity,
 ):
     """
-    Test hypervisor state is running for given variables
+    Test hypervisor action is NOOP when manually disabled
     """
     mock_connect.return_value = MagicMock()
     mock_get_capacity.return_value = aggregate_capacity
@@ -157,7 +157,7 @@ def test_ignore_down_hosts(
     aggregate_capacity,
 ):
     """
-    Test hypervisor state is running for given variables
+    Test hypervisor action is NOOP when host is down
     """
     mock_connect.return_value = MagicMock()
     mock_get_capacity.return_value = aggregate_capacity
@@ -230,7 +230,7 @@ def test_maintenance_action(
     expected_action,
 ):
     """
-    Test hypervisor state is pending maintenace for given variables, even if the hv is empty
+    Test hypervisor action is DRAIN or PATCH when conditions allow
     """
     mock_connect.return_value = MagicMock()
     mock_get_capacity.return_value = aggregate_capacity
@@ -245,7 +245,7 @@ def test_maintenance_action(
 @pytest.mark.parametrize("hostname", [None, 123, {"host": "host0"}])
 def test_garbage_hostname(_mock_get_capacity, mock_connect, hostname):
     """
-    Test hypervisor state is unknown when missing parameters, when state is up
+    Test hypervisor action is NOOP when invalid hostname
     """
     hypervisor_data = {
         "hypervisor_name": hostname,
@@ -267,7 +267,7 @@ def test_garbage_hostname(_mock_get_capacity, mock_connect, hostname):
 @pytest.mark.parametrize("uptime", [None, "123", 123, {"uptime": 123}])
 def test_garbage_uptime(_mock_get_capacity, mock_connect, uptime):
     """
-    Test hypervisor state is unknown when missing parameters, when state is up
+    Test hypervisor action is NOOP when invalid uptime
     """
     hypervisor_data = {
         "hypervisor_name": "host0",
@@ -289,7 +289,7 @@ def test_garbage_uptime(_mock_get_capacity, mock_connect, uptime):
 @pytest.mark.parametrize("status", [None, "re-enabled", 1, {"enabled": True}])
 def test_garbage_status(_mock_get_capacity, mock_connect, status):
     """
-    Test hypervisor state is unknown when missing parameters, when state is up
+    Test hypervisor action is NOOP when invalid status
     """
     hypervisor_data = {
         "hypervisor_name": "host0",
@@ -311,7 +311,7 @@ def test_garbage_status(_mock_get_capacity, mock_connect, status):
 @pytest.mark.parametrize("state", [None, "started", 1, {"up": True}])
 def test_garbage_state(_mock_get_capacity, mock_connect, state):
     """
-    Test hypervisor state is unknown when missing parameters, when state is up
+    Test hypervisor action is NOOP when invalid state
     """
     hypervisor_data = {
         "hypervisor_name": "host0",
@@ -333,7 +333,7 @@ def test_garbage_state(_mock_get_capacity, mock_connect, state):
 @pytest.mark.parametrize("server_count", [None, "10", -1, 10.0, {"count": 10}])
 def test_garbage_server_count(_mock_get_capacity, mock_connect, server_count):
     """
-    Test hypervisor state is unknown when missing parameters, when state is up
+    Test hypervisor action is NOOP when invalid server count
     """
     hypervisor_data = {
         "hypervisor_name": "host0",
@@ -355,7 +355,7 @@ def test_garbage_server_count(_mock_get_capacity, mock_connect, server_count):
 @pytest.mark.parametrize("disabled_reason", [-1, 10.0, {"reason": "HW fault"}])
 def test_garbage_disabled_reason(_mock_get_capacity, mock_connect, disabled_reason):
     """
-    Test hypervisor state is unknown when missing parameters, when state is up
+    Test hypervisor action is NOOP when invalid disabled reason
     """
     hypervisor_data = {
         "hypervisor_name": "host0",
@@ -376,7 +376,7 @@ def test_garbage_disabled_reason(_mock_get_capacity, mock_connect, disabled_reas
 @patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
 def test_get_aggregate_capacity(mock_connect):
     """
-    Docstring for test_get_aggregate_capacity
+    Test hypervisor aggregate capacity correctly calculates
     """
     hypervisor_data = {
         "hypervisor_name": "host_1",
@@ -446,7 +446,7 @@ def test_get_aggregate_capacity(mock_connect):
 @patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
 def test_get_aggregate_capacity_no_agg(mock_connect):
     """
-    Docstring for test_get_aggregate_capacity
+    Test raises exception when host is not in an aggregate
     """
     hypervisor_data = {
         "hypervisor_name": "host_a",

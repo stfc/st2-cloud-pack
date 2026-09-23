@@ -27,7 +27,19 @@ class Hypervisor:
         self.conn = openstack.connect(self.cloud_account)
 
     @staticmethod
-    def from_dict(cloud_account: str, dictionary: Dict):
+    def from_dict(cloud_account: str, dictionary: Dict) -> "Hypervisor":
+        """
+        Generates a hypervisor object from a dictionary
+
+        :param cloud_account: A string representing the cloud account to use - set in clouds.yaml
+        :type cloud_account: str
+        :param dictionary: A dictionary containing hypervisor details: hypervisor_name, hypervisor_uptime_days
+                           hypervisor_status, hypervisor_state, hypervisor_disabled_reason and hypervisor_server_count
+        :type dictionary: Dict
+
+        :return: A hypervisor object with properties from the dictionary
+        :rtype: Hypervisor
+        """
         hypervisor = Hypervisor(cloud_account)
         hypervisor.name = dictionary["hypervisor_name"]
         hypervisor.uptime = dictionary["hypervisor_uptime_days"]
@@ -42,7 +54,10 @@ class Hypervisor:
         Returns a hypervisor action based on certain conditions
 
         :param uptime_limit: Number of days of uptime before hypervisor requires maintenance
-        :return: Hypervisor state
+        :type uptime_limit: int
+
+        :return: Hypervisor action
+        :rtype: HypervisorAction
         """
 
         if not self.valid_state():
@@ -69,7 +84,7 @@ class Hypervisor:
                 return HypervisorAction.PATCH
 
             # Disabled by stackstorm or enabled
-            if self.should_drain():
+            if self.can_drain():
                 logger.info("%s should be drained", self.name)
                 return HypervisorAction.DRAIN  # -> Drain if and capacity
 
@@ -80,8 +95,10 @@ class Hypervisor:
         """
         Validates the hypervisor state
 
-        :param state: Dictionary containing hypervisor state
+        :param self: The instance of the class
+
         :return: True for valid state
+        :rtype: bool
         """
 
         if not isinstance(self.name, str):
@@ -109,6 +126,9 @@ class Hypervisor:
         Check whether the hypervisor has been diabled by stackstorm
         by checking the disabled reason starts with `Stackstorm:`
 
+        :param self: The instance of the class
+
+        :return: True when disabled by stackstorm
         :rtype: bool
         """
         # TODO: Make this a more robust check, maybe something in netbox
@@ -118,13 +138,14 @@ class Hypervisor:
             else False
         )
 
-    def should_drain(self) -> bool:
+    def can_drain(self) -> bool:
         """
-        Check whether the hypervisor should be drained based on its uptime
+        Check whether the hypervisor can be drained based on its uptime
         and the percentage of hypervisors disabled in its aggregate
 
-        :param uptime_limit: Number of days of uptime before hypervisor requires maintenance
-                             for maintenance
+        :param self: The instance of the class
+
+        :return: True when the hypervisor should be drained
         :rtype: bool
         """
         # TODO: Check a tag in netbox for whether the hypervisor is draining or failed to drain
@@ -138,8 +159,9 @@ class Hypervisor:
         Check whether the hypervisor should be pacthed based on whether it was
         disabled by st2 and is empty
 
-        :param self: Description
-        :return: Description
+        :param self: The instance of the class
+
+        :return: True when the hypervisor should be patched
         :rtype: bool
         """
         return self.is_disabled_by_st2() and self.num_servers == 0
@@ -149,11 +171,9 @@ class Hypervisor:
         Calculates the capacity for the aggregate(s) conatining this hypervisor
         based on the number of hypervisors diabled in the aggregate(s)
 
-        :param conn: openstack connection object
-        :type conn: Connection
-        :param hypervisor_name: Hostname of a hypervisor
-        :type hypervisor_name: str
-        :return: The percentage of hypervisors disabled as a decimal
+        :param self: The instance of the class
+
+        :return: The percentage of hypervisors disabled in the aggregate as a decimal
         :rtype: float
         """
 
@@ -203,6 +223,7 @@ def get_available_flavors(conn: Connection, hypervisor_name: str) -> List[str]:
     :type conn: Connection
     :param hypervisor_name: Hostname of a hypervisor
     :type hypervisor_name: str
+
     :return: List of flavor names
     :rtype: List[str]
     """

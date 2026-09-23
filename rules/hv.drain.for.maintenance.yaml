@@ -1,7 +1,7 @@
 ---
 name: "hv.drain.for.maintenance"
 pack: "stackstorm_openstack"
-description: "Drains a hypervisor for patching"
+description: "Drains a hypervisor"
 enabled: false
 
 criteria:
