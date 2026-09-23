@@ -1,5 +1,4 @@
-from time import sleep
-
+import time
 from apis.openstack_api.enums.hypervisor_enums import HypervisorAction
 from apis.openstack_api.openstack_hypervisor import Hypervisor
 from apis.openstack_query_api.hypervisor_queries import query_hypervisor_state
@@ -72,7 +71,7 @@ class HypervisorStateSensor(PollingSensor):
                     self._logger.info(
                         f"Waiting for drain of {hypervisor.name} to be started"
                     )
-                    sleep(60)
+                    time.sleep(60)
 
     def cleanup(self):
         """

@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 class Hypervisor:
     name: str
     uptime: int
-    status: bool
-    state: bool
+    status: str
+    state: str
     disabled_reason: str
     num_servers: int
 
@@ -45,11 +45,17 @@ class Hypervisor:
         :return: Hypervisor state
         """
 
-        if self.state == HypervisorState.DOWN:
+        if not self.valid_state():
+            return HypervisorAction.NOOP
+
+        if self.state.casefold() == HypervisorState.DOWN.name.casefold():
             logger.info("%s is Down take no action", self.name)
             return HypervisorAction.NOOP  # -> No action if hypervisor is down
 
-        if self.status == HypervisorStatus.DISABLED and not self.is_disabled_by_st2():
+        if (
+            self.status.casefold() == HypervisorStatus.DISABLED.name.casefold()
+            and not self.is_disabled_by_st2()
+        ):
             logger.info("%s is manually disabled take no action", self.name)
             return HypervisorAction.NOOP  # -> No action if manually disabled
 
@@ -57,17 +63,45 @@ class Hypervisor:
         if self.uptime > uptime_limit:
             logger.info("%s requires maintenance", self.name)
 
-            # Disabled by stackstorm or enabled
-            if self.should_drain(self.conn):
-                logger.info("%s should be drained", self.name)
-                return HypervisorAction.DRAIN  # -> Drain if and capacity
-
             # Drained by stackstorm
             if self.should_patch():
                 logger.info("%s should be patched", self.name)
                 return HypervisorAction.PATCH
 
+            # Disabled by stackstorm or enabled
+            if self.should_drain():
+                logger.info("%s should be drained", self.name)
+                return HypervisorAction.DRAIN  # -> Drain if and capacity
+
         return HypervisorAction.NOOP
+
+    def valid_state(self) -> bool:
+        """
+        Validates the hypervisor state
+
+        :param state: Dictionary containing hypervisor state
+        :return: True for valid state
+        """
+
+        if not isinstance(self.name, str):
+            return False
+
+        if not isinstance(self.uptime, float):
+            return False
+
+        if self.status not in ["enabled", "disabled"]:
+            return False
+
+        if self.state not in ["up", "down"]:
+            return False
+
+        if not isinstance(self.num_servers, int) or self.num_servers < 0:
+            return False
+
+        if self.disabled_reason and not isinstance(self.disabled_reason, str):
+            return False
+
+        return True
 
     def is_disabled_by_st2(self) -> bool:
         """
@@ -77,12 +111,13 @@ class Hypervisor:
         :rtype: bool
         """
         # TODO: Make this a more robust check, maybe something in netbox
-        return (
-            self.status == HypervisorStatus.DISABLED
-            and self.disabled_reason.startswith("Stackstorm:")
+        return self.status.casefold() == HypervisorStatus.DISABLED.name.casefold() and (
+            self.disabled_reason.startswith("Stackstorm:")
+            if self.disabled_reason
+            else False
         )
 
-    def should_drain(self, conn: Connection) -> bool:
+    def should_drain(self) -> bool:
         """
         Check whether the hypervisor should be drained based on its uptime
         and the percentage of hypervisors disabled in its aggregate
@@ -94,8 +129,8 @@ class Hypervisor:
         # TODO: Check a tag in netbox for whether the hypervisor is draining or failed to drain
         #       Don't drain if already draining, retry if failed to drain
         return (
-            self.status == HypervisorStatus.ENABLED or self.is_disabled_by_st2
-        ) and self.get_aggregate_capacity(conn) < 0.2
+            self.status == HypervisorStatus.ENABLED.name or self.is_disabled_by_st2
+        ) and self.get_aggregate_capacity(self.conn) < 0.2
 
     def should_patch(self) -> bool:
         """
@@ -108,7 +143,7 @@ class Hypervisor:
         """
         return self.is_disabled_by_st2() and self.num_servers == 0
 
-    def get_aggregate_capacity(self, conn: Connection) -> float:
+    def get_aggregate_capacity(self) -> float:
         """
         Calculates the capacity for the aggregate(s) conatining this hypervisor
         based on the number of hypervisors diabled in the aggregate(s)
@@ -121,8 +156,8 @@ class Hypervisor:
         :rtype: float
         """
 
-        aggregates = conn.compute.aggregates()
-        hypervisors = list(conn.compute.hypervisors())
+        aggregates = self.conn.compute.aggregates()
+        hypervisors = list(self.conn.compute.hypervisors())
 
         # Find which aggregate(s) the hypervisor belongs to
         aggreates_for_hv = list(
@@ -142,7 +177,7 @@ class Hypervisor:
         aggregate = aggreates_for_hv[0]
         hypervisors = list(
             filter(
-                lambda self: self.name in aggregate.hosts,
+                lambda hypervisor: hypervisor.name in aggregate.hosts,
                 hypervisors,
             )
         )
@@ -150,7 +185,8 @@ class Hypervisor:
         # Filter for diabled hypervisors that belong to hypervisor's aggregate
         disabled = list(
             filter(
-                lambda hypervisor: hypervisor.status == "disabled",
+                lambda hypervisor: hypervisor.status.casefold()
+                == HypervisorStatus.DISABLED.name.casefold(),
                 hypervisors,
             )
         )
