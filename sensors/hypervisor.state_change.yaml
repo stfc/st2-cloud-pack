@@ -1,21 +1,21 @@
 ---
 class_name: HypervisorStateSensor
 entry_point: src/hypervisor_state_sensor.py
-description: Monitor state of Hypervisors
+description: Monitors Hypervisors
 poll_interval: 600
 enabled: false
 trigger_types:
   - name: "hypervisor.state_change"
-    description: "Triggers when the state of the hypervisor changes"
+    description: "Triggers when there is an action to take on the hypervisor"
     payload_schema:
       type: "object"
       properties:
         hypervisor_name:
           type: "string"
           description: "Hypervisor Name"
-        previous_state:
+        action:
           type: "string"
-          description: "Hypervisor Previous State"
-        current_state:
+          description: "Action to take on the hypervisor"
+        cloud_account:
           type: "string"
-          description: "Hypervisor Current State"
+          description: "Name of cloud account for running this sensor and actions"
