@@ -4,6 +4,6 @@ logger = logging.getLogger(__name__)
 
 
 def salute():
-    conf = file("etc/config")
+    conf = open("etc/config")
     logger.info("Hello!!")
     logger.info(conf.readlines())
