@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 def salute():
     from pathlib import Path
     BASE_DIR = Path(__file__).resolve().parent
-    conf_path = BASE_DIR + "/etc/conf"
+    conf_path = BASE_DIR / "etc/conf"
     print(conf_path)
     #conf = open("etc/config")
     conf = open(conf_path)
