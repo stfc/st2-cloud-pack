@@ -151,8 +151,9 @@ class Hypervisor:
         # TODO: Check a tag in netbox for whether the hypervisor is draining or failed to drain
         #       Don't drain if already draining, retry if failed to drain
         return (
-            self.status == HypervisorStatus.ENABLED.name or self.is_disabled_by_st2
-        ) and self.get_aggregate_capacity() < 0.2
+            self.get_aggregate_capacity() < 0.2
+            and self.status.casefold() == HypervisorStatus.ENABLED.name.casefold()
+        ) or self.is_disabled_by_st2()
 
     def should_patch(self) -> bool:
         """

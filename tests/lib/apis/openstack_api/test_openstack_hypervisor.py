@@ -220,6 +220,30 @@ def test_ignore_down_hosts(
             0.6,
             HypervisorAction.PATCH,
         ),
+        (
+            {
+                "hypervisor_name": "host4",
+                "hypervisor_uptime_days": 70.0,
+                "hypervisor_status": "disabled",
+                "hypervisor_state": "up",
+                "hypervisor_server_count": 5,
+                "hypervisor_disabled_reason": "Stackstorm: Draining",
+            },
+            0.7,
+            HypervisorAction.DRAIN,
+        ),
+        (
+            {
+                "hypervisor_name": "host5",
+                "hypervisor_uptime_days": 70.0,
+                "hypervisor_status": "disabled",
+                "hypervisor_state": "up",
+                "hypervisor_server_count": 5,
+                "hypervisor_disabled_reason": "Stackstorm: Draining",
+            },
+            0.1,
+            HypervisorAction.DRAIN,
+        ),
     ],
 )
 def test_maintenance_action(
