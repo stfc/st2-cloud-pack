@@ -16,11 +16,11 @@ logger = logging.getLogger(__name__)
 # pylint:disable=too-many-instance-attributes
 class Hypervisor:
     name: str
-    uptime: int
-    status: str
-    state: str
-    disabled_reason: str
-    num_servers: int
+    uptime: float
+    status: HypervisorStatus
+    state: HypervisorState
+    disabled_reason: str | None
+    hypervisor_server_count: int
 
     def __init__(self, cloud_account):
         self.cloud_account = cloud_account
@@ -41,12 +41,37 @@ class Hypervisor:
         :rtype: Hypervisor
         """
         hypervisor = Hypervisor(cloud_account)
+        if not isinstance(dictionary["hypervisor_name"], str):
+            raise ValueError
         hypervisor.name = dictionary["hypervisor_name"]
+
+        if not isinstance(dictionary["hypervisor_uptime_days"], float):
+            raise ValueError
         hypervisor.uptime = dictionary["hypervisor_uptime_days"]
-        hypervisor.status = dictionary["hypervisor_status"]
-        hypervisor.state = dictionary["hypervisor_state"]
+
+        status = dictionary["hypervisor_status"]
+        if status not in ["enabled", "disabled"]:
+            raise ValueError
+        hypervisor.status = HypervisorStatus[status.upper()]
+
+        state = dictionary["hypervisor_state"]
+        if state not in ["up", "down"]:
+            raise ValueError
+        hypervisor.state = HypervisorState[state.upper()]
+
+        if dictionary["hypervisor_disabled_reason"] and not isinstance(
+            dictionary["hypervisor_disabled_reason"], str
+        ):
+            raise ValueError
         hypervisor.disabled_reason = dictionary["hypervisor_disabled_reason"]
-        hypervisor.num_servers = dictionary["hypervisor_server_count"]
+
+        if (
+            not isinstance(dictionary["hypervisor_server_count"], int)
+            or dictionary["hypervisor_server_count"] < 0
+        ):
+            raise ValueError
+        hypervisor.hypervisor_server_count = dictionary["hypervisor_server_count"]
+
         return hypervisor
 
     def take_action(self, uptime_limit: int) -> HypervisorAction:
@@ -60,17 +85,11 @@ class Hypervisor:
         :rtype: HypervisorAction
         """
 
-        if not self.valid_state():
-            return HypervisorAction.NOOP
-
-        if self.state.casefold() == HypervisorState.DOWN.name.casefold():
+        if self.state == HypervisorState.DOWN:
             logger.info("%s is Down take no action", self.name)
             return HypervisorAction.NOOP  # -> No action if hypervisor is down
 
-        if (
-            self.status.casefold() == HypervisorStatus.DISABLED.name.casefold()
-            and not self.is_disabled_by_st2()
-        ):
+        if self.status == HypervisorStatus.DISABLED and not self.is_disabled_by_st2():
             logger.info("%s is manually disabled take no action", self.name)
             return HypervisorAction.NOOP  # -> No action if manually disabled
 
@@ -90,37 +109,6 @@ class Hypervisor:
 
         return HypervisorAction.NOOP
 
-    # pylint:disable=too-many-return-statements
-    def valid_state(self) -> bool:
-        """
-        Validates the hypervisor state
-
-        :param self: The instance of the class
-
-        :return: True for valid state
-        :rtype: bool
-        """
-
-        if not isinstance(self.name, str):
-            return False
-
-        if not isinstance(self.uptime, float):
-            return False
-
-        if self.status not in ["enabled", "disabled"]:
-            return False
-
-        if self.state not in ["up", "down"]:
-            return False
-
-        if not isinstance(self.num_servers, int) or self.num_servers < 0:
-            return False
-
-        if self.disabled_reason and not isinstance(self.disabled_reason, str):
-            return False
-
-        return True
-
     def is_disabled_by_st2(self) -> bool:
         """
         Check whether the hypervisor has been diabled by stackstorm
@@ -132,7 +120,7 @@ class Hypervisor:
         :rtype: bool
         """
         # TODO: Make this a more robust check, maybe something in netbox
-        return self.status.casefold() == HypervisorStatus.DISABLED.name.casefold() and (
+        return self.status == HypervisorStatus.DISABLED and (
             self.disabled_reason.startswith("Stackstorm:")
             if self.disabled_reason
             else False
@@ -152,7 +140,7 @@ class Hypervisor:
         #       Don't drain if already draining, retry if failed to drain
         return (
             self.get_aggregate_capacity() < 0.2
-            and self.status.casefold() == HypervisorStatus.ENABLED.name.casefold()
+            and self.status == HypervisorStatus.ENABLED
         ) or self.is_disabled_by_st2()
 
     def should_patch(self) -> bool:
@@ -165,7 +153,7 @@ class Hypervisor:
         :return: True when the hypervisor should be patched
         :rtype: bool
         """
-        return self.is_disabled_by_st2() and self.num_servers == 0
+        return self.is_disabled_by_st2() and self.hypervisor_server_count == 0
 
     def get_aggregate_capacity(self) -> float:
         """

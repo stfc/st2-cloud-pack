@@ -269,7 +269,7 @@ def test_maintenance_action(
 @pytest.mark.parametrize("hostname", [None, 123, {"host": "host0"}])
 def test_garbage_hostname(_mock_get_capacity, mock_connect, hostname):
     """
-    Test hypervisor action is NOOP when invalid hostname
+    Test hypervisor from_dict fails with invalid hostname
     """
     hypervisor_data = {
         "hypervisor_name": hostname,
@@ -280,10 +280,9 @@ def test_garbage_hostname(_mock_get_capacity, mock_connect, hostname):
         "hypervisor_disabled_reason": None,
     }
     mock_connect.return_value = MagicMock()
-    hypervisor = Hypervisor.from_dict("dev", hypervisor_data)
 
-    action = hypervisor.take_action(uptime_limit=60)
-    assert action == HypervisorAction.NOOP
+    with pytest.raises(ValueError):
+        Hypervisor.from_dict("dev", hypervisor_data)
 
 
 @patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
@@ -291,7 +290,7 @@ def test_garbage_hostname(_mock_get_capacity, mock_connect, hostname):
 @pytest.mark.parametrize("uptime", [None, "123", 123, {"uptime": 123}])
 def test_garbage_uptime(_mock_get_capacity, mock_connect, uptime):
     """
-    Test hypervisor action is NOOP when invalid uptime
+    Test hypervisor from_dict fails with invalid uptime
     """
     hypervisor_data = {
         "hypervisor_name": "host0",
@@ -302,10 +301,9 @@ def test_garbage_uptime(_mock_get_capacity, mock_connect, uptime):
         "hypervisor_disabled_reason": None,
     }
     mock_connect.return_value = MagicMock()
-    hypervisor = Hypervisor.from_dict("dev", hypervisor_data)
 
-    action = hypervisor.take_action(uptime_limit=60)
-    assert action == HypervisorAction.NOOP
+    with pytest.raises(ValueError):
+        Hypervisor.from_dict("dev", hypervisor_data)
 
 
 @patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
@@ -313,7 +311,7 @@ def test_garbage_uptime(_mock_get_capacity, mock_connect, uptime):
 @pytest.mark.parametrize("status", [None, "re-enabled", 1, {"enabled": True}])
 def test_garbage_status(_mock_get_capacity, mock_connect, status):
     """
-    Test hypervisor action is NOOP when invalid status
+    Test hypervisor from_dict fails with invalid status
     """
     hypervisor_data = {
         "hypervisor_name": "host0",
@@ -324,10 +322,9 @@ def test_garbage_status(_mock_get_capacity, mock_connect, status):
         "hypervisor_disabled_reason": None,
     }
     mock_connect.return_value = MagicMock()
-    hypervisor = Hypervisor.from_dict("dev", hypervisor_data)
 
-    action = hypervisor.take_action(uptime_limit=60)
-    assert action == HypervisorAction.NOOP
+    with pytest.raises(ValueError):
+        Hypervisor.from_dict("dev", hypervisor_data)
 
 
 @patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
@@ -335,7 +332,7 @@ def test_garbage_status(_mock_get_capacity, mock_connect, status):
 @pytest.mark.parametrize("state", [None, "started", 1, {"up": True}])
 def test_garbage_state(_mock_get_capacity, mock_connect, state):
     """
-    Test hypervisor action is NOOP when invalid state
+    Test hypervisor from_dict fails with invalid state
     """
     hypervisor_data = {
         "hypervisor_name": "host0",
@@ -346,10 +343,9 @@ def test_garbage_state(_mock_get_capacity, mock_connect, state):
         "hypervisor_disabled_reason": None,
     }
     mock_connect.return_value = MagicMock()
-    hypervisor = Hypervisor.from_dict("dev", hypervisor_data)
 
-    action = hypervisor.take_action(uptime_limit=60)
-    assert action == HypervisorAction.NOOP
+    with pytest.raises(ValueError):
+        Hypervisor.from_dict("dev", hypervisor_data)
 
 
 @patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
@@ -357,7 +353,7 @@ def test_garbage_state(_mock_get_capacity, mock_connect, state):
 @pytest.mark.parametrize("server_count", [None, "10", -1, 10.0, {"count": 10}])
 def test_garbage_server_count(_mock_get_capacity, mock_connect, server_count):
     """
-    Test hypervisor action is NOOP when invalid server count
+    Test hypervisor from_dict fails with invalid server count
     """
     hypervisor_data = {
         "hypervisor_name": "host0",
@@ -368,10 +364,9 @@ def test_garbage_server_count(_mock_get_capacity, mock_connect, server_count):
         "hypervisor_disabled_reason": None,
     }
     mock_connect.return_value = MagicMock()
-    hypervisor = Hypervisor.from_dict("dev", hypervisor_data)
 
-    action = hypervisor.take_action(uptime_limit=60)
-    assert action == HypervisorAction.NOOP
+    with pytest.raises(ValueError):
+        Hypervisor.from_dict("dev", hypervisor_data)
 
 
 @patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
@@ -379,7 +374,7 @@ def test_garbage_server_count(_mock_get_capacity, mock_connect, server_count):
 @pytest.mark.parametrize("disabled_reason", [-1, 10.0, {"reason": "HW fault"}])
 def test_garbage_disabled_reason(_mock_get_capacity, mock_connect, disabled_reason):
     """
-    Test hypervisor action is NOOP when invalid disabled reason
+    Test hypervisor from_dict fails with invalid disabled reason
     """
     hypervisor_data = {
         "hypervisor_name": "host0",
@@ -390,10 +385,9 @@ def test_garbage_disabled_reason(_mock_get_capacity, mock_connect, disabled_reas
         "hypervisor_disabled_reason": disabled_reason,
     }
     mock_connect.return_value = MagicMock()
-    hypervisor = Hypervisor.from_dict("dev", hypervisor_data)
 
-    action = hypervisor.take_action(uptime_limit=60)
-    assert action == HypervisorAction.NOOP
+    with pytest.raises(ValueError):
+        Hypervisor.from_dict("dev", hypervisor_data)
 
 
 # pylint:disable=too-many-locals
