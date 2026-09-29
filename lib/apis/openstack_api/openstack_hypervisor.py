@@ -44,35 +44,32 @@ class Hypervisor:
         """
         hypervisor = Hypervisor(cloud_account)
         if not isinstance(dictionary["hypervisor_name"], str):
-            raise ValueError
+            raise ValueError(
+                f'Invalid hypervisor name: {dictionary["hypervisor_name"]}'
+            )
         hypervisor.name = dictionary["hypervisor_name"]
 
-        if not isinstance(dictionary["hypervisor_uptime_days"], float):
-            raise ValueError
-        hypervisor.uptime_days = dictionary["hypervisor_uptime_days"]
+        hypervisor.uptime_days = int(dictionary["hypervisor_uptime_days"])
 
         status = dictionary["hypervisor_status"]
-        if status not in ["enabled", "disabled"]:
-            raise ValueError
-        hypervisor.status = HypervisorStatus[status.upper()]
+        hypervisor.status = HypervisorStatus[str(status).upper()]
 
         state = dictionary["hypervisor_state"]
-        if state not in ["up", "down"]:
-            raise ValueError
-        hypervisor.state = HypervisorState[state.upper()]
+        hypervisor.state = HypervisorState[str(state).upper()]
 
         if dictionary["hypervisor_disabled_reason"] and not isinstance(
             dictionary["hypervisor_disabled_reason"], str
         ):
-            raise ValueError
+            raise ValueError(
+                f'Invalid disabled reason: {dictionary["hypervisor_disabled_reason"]}'
+            )
         hypervisor.disabled_reason = dictionary["hypervisor_disabled_reason"]
 
-        if (
-            not isinstance(dictionary["hypervisor_server_count"], int)
-            or dictionary["hypervisor_server_count"] < 0
-        ):
-            raise ValueError
-        hypervisor.hypervisor_server_count = dictionary["hypervisor_server_count"]
+        if dictionary["hypervisor_server_count"] < 0:
+            raise ValueError(
+                f'{dictionary["hypervisor_name"]} has a negative server count'
+            )
+        hypervisor.hypervisor_server_count = int(dictionary["hypervisor_server_count"])
 
         return hypervisor
 

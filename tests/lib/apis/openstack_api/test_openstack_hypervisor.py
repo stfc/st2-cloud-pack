@@ -287,7 +287,7 @@ def test_garbage_hostname(_mock_get_capacity, mock_connect, hostname):
 
 @patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
 @patch.object(Hypervisor, "get_aggregate_capacity", return_value=0.1)
-@pytest.mark.parametrize("uptime", [None, "123", 123, {"uptime": 123}])
+@pytest.mark.parametrize("uptime", [None, {"uptime": 123}])
 def test_garbage_uptime(_mock_get_capacity, mock_connect, uptime):
     """
     Test hypervisor from_dict fails with invalid uptime
@@ -302,7 +302,7 @@ def test_garbage_uptime(_mock_get_capacity, mock_connect, uptime):
     }
     mock_connect.return_value = MagicMock()
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         Hypervisor.from_dict("dev", hypervisor_data)
 
 
@@ -323,7 +323,7 @@ def test_garbage_status(_mock_get_capacity, mock_connect, status):
     }
     mock_connect.return_value = MagicMock()
 
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         Hypervisor.from_dict("dev", hypervisor_data)
 
 
@@ -344,13 +344,13 @@ def test_garbage_state(_mock_get_capacity, mock_connect, state):
     }
     mock_connect.return_value = MagicMock()
 
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         Hypervisor.from_dict("dev", hypervisor_data)
 
 
 @patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
 @patch.object(Hypervisor, "get_aggregate_capacity", return_value=0.1)
-@pytest.mark.parametrize("server_count", [None, "10", -1, 10.0, {"count": 10}])
+@pytest.mark.parametrize("server_count", [None, "10", {"count": 10}])
 def test_garbage_server_count(_mock_get_capacity, mock_connect, server_count):
     """
     Test hypervisor from_dict fails with invalid server count
@@ -361,6 +361,26 @@ def test_garbage_server_count(_mock_get_capacity, mock_connect, server_count):
         "hypervisor_status": "enabled",
         "hypervisor_state": "up",
         "hypervisor_server_count": server_count,
+        "hypervisor_disabled_reason": None,
+    }
+    mock_connect.return_value = MagicMock()
+
+    with pytest.raises(TypeError):
+        Hypervisor.from_dict("dev", hypervisor_data)
+
+
+@patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
+@patch.object(Hypervisor, "get_aggregate_capacity", return_value=0.1)
+def test_negative_server_count(_mock_get_capacity, mock_connect):
+    """
+    Test hypervisor from_dict fails with invalid server count
+    """
+    hypervisor_data = {
+        "hypervisor_name": "host0",
+        "hypervisor_uptime_days": 123.0,
+        "hypervisor_status": "enabled",
+        "hypervisor_state": "up",
+        "hypervisor_server_count": -1,
         "hypervisor_disabled_reason": None,
     }
     mock_connect.return_value = MagicMock()
