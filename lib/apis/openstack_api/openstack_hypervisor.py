@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 # pylint:disable=too-many-instance-attributes
 class Hypervisor:
     name: str
-    uptime: float
+    uptime_days: float
     status: HypervisorStatus
     state: HypervisorState
     disabled_reason: str | None
@@ -49,7 +49,7 @@ class Hypervisor:
 
         if not isinstance(dictionary["hypervisor_uptime_days"], float):
             raise ValueError
-        hypervisor.uptime = dictionary["hypervisor_uptime_days"]
+        hypervisor.uptime_days = dictionary["hypervisor_uptime_days"]
 
         status = dictionary["hypervisor_status"]
         if status not in ["enabled", "disabled"]:
@@ -96,7 +96,7 @@ class Hypervisor:
             return HypervisorAction.NOOP  # -> No action if manually disabled
 
         # If hypervisor has been up long enough to need maintenance
-        if self.uptime > uptime_limit:
+        if self.uptime_days > uptime_limit:
             logger.info("%s requires maintenance", self.name)
 
             # Drained by stackstorm
