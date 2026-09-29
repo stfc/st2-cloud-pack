@@ -22,6 +22,8 @@ class Hypervisor:
     disabled_reason: str | None
     hypervisor_server_count: int
 
+    MAX_DISABLED_PERCENTAGE_CAPACITY_IN_AGGREGATE = 0.2  # Max 20% disabled
+
     def __init__(self, cloud_account):
         self.cloud_account = cloud_account
         self.conn = openstack.connect(self.cloud_account)
@@ -128,8 +130,9 @@ class Hypervisor:
 
     def can_drain(self) -> bool:
         """
-        Check whether the hypervisor can be drained based on its uptime
-        and the percentage of hypervisors disabled in its aggregate
+        Check whether the hypervisor can be drained based on
+        the percentage of hypervisors disabled in its aggregate
+        or if its already disabled for draining
 
         :param self: The instance of the class
 
@@ -139,7 +142,8 @@ class Hypervisor:
         # TODO: Check a tag in netbox for whether the hypervisor is draining or failed to drain
         #       Don't drain if already draining, retry if failed to drain
         return (
-            self.get_aggregate_capacity() < 0.2
+            self.get_aggregate_capacity()
+            < self.MAX_DISABLED_PERCENTAGE_CAPACITY_IN_AGGREGATE
             and self.status == HypervisorStatus.ENABLED
         ) or self.is_disabled_by_st2()
 
