@@ -7,17 +7,19 @@ from apis.alertmanager_api.structs.alertmanager_account import AlertManagerAccou
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.icinga_api.structs.icinga_account import IcingaAccount
 from apis.jira_api.structs.jira_account import JiraAccount
+from apis.wazuh_api.structs.wazuh_account import WazuhAccount
 
 ACCOUNT_CONFIGS = {
     "smtp_account_name": ("smtp_account", SMTPAccount),
     "jira_account_name": ("jira_account", JiraAccount),
     "icinga_account_name": ("icinga_account", IcingaAccount),
     "alertmanager_account_name": ("alertmanager_account", AlertManagerAccount),
+    "wazuh_account_name": ("wazuh_account", WazuhAccount),
 }
 
 
 class OpenstackActions(Action):
-    def run(
+    def run(  # pylint: disable=arguments-differ
         self, lib_entry_point: str, create_openstack_connection: bool = False, **kwargs
     ):
         """
