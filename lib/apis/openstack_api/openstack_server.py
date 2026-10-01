@@ -1,10 +1,11 @@
-from datetime import datetime
 import logging
 import time
+from datetime import datetime
 from typing import Optional, List, Dict
-from openstack.connection import Connection
+
 from openstack.compute.v2.image import Image
 from openstack.compute.v2.server import Server
+from openstack.connection import Connection
 from openstack.exceptions import (
     BadRequestException,
     ResourceFailure,
@@ -13,10 +14,8 @@ from openstack.exceptions import (
     ResourceNotFound,
     SDKException,
 )
-from apis.openstack_api.enums.server_event import ServerEvent
+
 from apis.openstack_api.enums.server_status import ServerStatus
-from apis.openstack_api.structs.server_event_details import ServerEventDetails
-from apis.utils.time_utils import parse_iso_utc
 
 NOVA_MICROVERSION_FOR_TAGS = "2.26"
 
@@ -331,40 +330,6 @@ def shelve_server(conn: Connection, server_id: str, all_projects: bool = True) -
     conn.compute.shelve_server(server)
     conn.compute.wait_for_server(server, status="SHELVED", wait=3600)
     logger.info("Shelved: %s", server.id)
-
-
-def get_server_event_list(conn: Connection, server: Server) -> List[ServerEventDetails]:
-    """
-    Parses events from the event list, if any exist, into an enum
-    of events
-
-    :param conn: openstack connection object
-    :param server: the Server to get the event list for
-    :return: the list of ServerEventDetails objects, most recent first
-    """
-    logger.info("getting the event list for server %s", server.id)
-    server_events: List[ServerEventDetails] = []
-    for action in conn.compute.server_actions(server.id):
-        event_type = ServerEvent.from_string(action.action)
-        if event_type is None:
-            logger.debug(
-                "ignoring event %s for server %s - not tracked in ServerEvent",
-                action.action,
-                server.id,
-            )
-            continue
-        server_events.append(
-            ServerEventDetails(
-                event=event_type,
-                date=parse_iso_utc(action.start_time),
-            )
-        )
-    logger.info(
-        "found %d events in the event list of server %s",
-        len(server_events),
-        server.id,
-    )
-    return server_events
 
 
 def get_server_metadata(

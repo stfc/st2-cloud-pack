@@ -13,13 +13,13 @@ def test_server_event_values_match_nova_action_names():
     assert ServerEvent.SHELVE_OFFLOAD.value == "shelveOffload"
 
 
-def test_from_str_returns_none_for_untracked_events():
+def test_from_str_returns_unknown_for_untracked_events():
     """
     Tests that from_string maps known names to their members
-    (case-insensitively) and every other name to None
+    and other names to unknown
     """
     assert ServerEvent.from_string("stop") is ServerEvent.STOP
     assert ServerEvent.from_string("shelveOffload") is ServerEvent.SHELVE_OFFLOAD
     assert ServerEvent.from_string("START") is ServerEvent.START
-    assert ServerEvent.from_string("os-reboot:reboot") is None
-    assert ServerEvent.from_string("foo") is None
+    assert ServerEvent.from_string("os-reboot:reboot") is ServerEvent.UNKNOWN
+    assert ServerEvent.from_string("foo") is ServerEvent.UNKNOWN

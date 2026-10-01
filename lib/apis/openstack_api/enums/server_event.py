@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Optional
 
 
 class ServerEvent(Enum):
@@ -13,9 +12,10 @@ class ServerEvent(Enum):
     SHELVE = "shelve"
     UNSHELVE = "unshelve"
     SHELVE_OFFLOAD = "shelveOffload"
+    UNKNOWN = "unknown"  # For events we don't currently track
 
     @classmethod
-    def from_string(cls, value: str) -> Optional["ServerEvent"]:
+    def from_string(cls, value: str) -> "ServerEvent":
         """
         Return the event enum or None
         if the event is not tracked
@@ -27,4 +27,4 @@ class ServerEvent(Enum):
         for member in cls:
             if member.value.casefold() == value:
                 return member
-        return None
+        return cls.UNKNOWN
