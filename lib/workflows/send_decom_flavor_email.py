@@ -200,9 +200,13 @@ def send_decom_flavor_email(
                 user_name,
                 flavor_table,
                 (
-                    grouped_query.to_string(groups=[user_id])
+                    grouped_query.to_string(
+                        groups=[user_id], include_group_titles=False
+                    )
                     if not as_html
-                    else grouped_query.to_html(groups=[user_id])
+                    else grouped_query.to_html(
+                        groups=[user_id], include_group_titles=False
+                    )
                 ),
                 email_to=send_to,
                 as_html=as_html,
