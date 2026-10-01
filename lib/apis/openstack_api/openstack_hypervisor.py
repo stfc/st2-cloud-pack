@@ -1,6 +1,7 @@
 import logging
 from typing import Dict, List
 
+from dataclasses import dataclass
 import openstack
 
 from apis.openstack_api.enums.hypervisor_enums import (
@@ -14,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 # pylint:disable=too-many-instance-attributes
+@dataclass
 class Hypervisor:
     name: str
     uptime_days: float
