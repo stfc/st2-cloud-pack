@@ -61,6 +61,7 @@ NOTE: this may not be an exhaustive list - see `actions` for all available actio
 | server.search.by.property                           | Search for Openstack Servers by specific property                                                                           |
 | server.search.by.regex                              | Search for Openstack Servers by specific property values using regex                                                        |
 | server.search.by.datetime                           | Search for Openstack Servers by relative time since created/updated                                                         |
+| server.shelve                                       | Shelve a server in SHUTOFF state                                                                                            |
 | ssh.remote.command                                  | Execute command on a remote host                                                                                            |
 | user.search.by.property                             | Search for user with a selected property matching, or not matching given value(s)                                           |
 | user.search.by.regex                                | Search for users property using regex pattern, or not matching given value(s)                                               |
