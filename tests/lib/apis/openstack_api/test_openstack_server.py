@@ -1,3 +1,5 @@
+# pylint: disable=too-many-lines
+
 import itertools
 from datetime import datetime
 from typing import Tuple, Any
@@ -13,6 +15,7 @@ from apis.openstack_api.openstack_server import (
     wait_for_migration_status,
     shutoff_server,
     add_metadata_to_server,
+    get_metadata_from_server,
     delete_metadata_from_server,
     add_tag_to_server,
     remove_tag_from_server,
@@ -20,6 +23,7 @@ from apis.openstack_api.openstack_server import (
     get_server_owner_email,
     admin_lock_server,
     NOVA_MICROVERSION_FOR_TAGS,
+    get_server_status,
 )
 from openstack.exceptions import (
     ResourceFailure,
@@ -714,6 +718,42 @@ def test_add_metadata_to_server():
     )
 
 
+def test_get_metadata_from_server():
+    conn = MagicMock()
+    server = MagicMock()
+
+    # Metadata is now retrieved directly from the server object.
+    server.metadata = {"test-key": "test-value"}
+    conn.compute.find_server.return_value = server
+
+    # When a key is provided, return the value associated with that key.
+    result = get_metadata_from_server(conn, "server-123", "test-key")
+
+    conn.compute.find_server.assert_called_once_with("server-123", all_projects=True)
+    assert result == "test-value"
+
+
+def test_get_metadata_from_server_without_key():
+    conn = MagicMock()
+    server = MagicMock()
+
+    # Metadata is now retrieved directly from the server object.
+    server.metadata = {
+        "test-key": "test-value",
+        "another-key": "another-value",
+    }
+    conn.compute.find_server.return_value = server
+
+    # When no key is provided, return the complete metadata dictionary.
+    result = get_metadata_from_server(conn, "server-123")
+
+    conn.compute.find_server.assert_called_once_with("server-123", all_projects=True)
+    assert result == {
+        "test-key": "test-value",
+        "another-key": "another-value",
+    }
+
+
 def test_delete_metadata_from_server():
     """
     ensures that the Server object found is the one passed
@@ -940,3 +980,27 @@ def test_admin_lock_server_rejects_reason_longer_than_255_characters():
 
     # Verify the server was never locked.
     conn.compute.lock_server.assert_not_called()
+
+
+def test_get_server_status():
+    mock_connection = MagicMock()
+    mock_server = MagicMock()
+    mock_server.status = "ACTIVE"
+    mock_connection.compute.find_server.return_value = mock_server
+
+    status = get_server_status(mock_connection, "server1")
+
+    assert status == "ACTIVE"
+    mock_connection.compute.find_server.assert_called_once_with(
+        "server1", all_projects=True
+    )
+
+
+def test_get_server_status_not_found():
+    mock_connection = MagicMock()
+    mock_connection.compute.find_server.side_effect = ResourceNotFound
+
+    with pytest.raises(
+        ResourceNotFound, match="server server1 not found, unable to get its status"
+    ):
+        get_server_status(mock_connection, "server1")

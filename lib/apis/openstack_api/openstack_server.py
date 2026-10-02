@@ -335,6 +335,41 @@ def add_metadata_to_server(conn: Connection, server_id: str, properties: Dict) -
     logger.info("new properties added to server")
 
 
+def get_metadata_from_server(
+    conn: Connection, server_id: str, key: str | None = None
+) -> str:
+    """
+    Retrieve the value for a given metadata key from an OpenStack server.
+
+    :param conn: OpenStack connection object
+    :type conn: Connection
+    :param server_id: The ID of the Server object
+    :type server_id: str
+    :param key: The key value in the metadata dictionary
+    :type key: str
+    :return: The metadata property for that key
+    :rtype: str
+    :raises ValueError: If the server or the metadata key is not found
+    """
+    try:
+        server = conn.compute.find_server(server_id, all_projects=True)
+    except ResourceNotFound as e:
+        msg = f"Server {server_id} does not exist."
+        logger.error(msg)
+        raise ValueError(msg) from e
+    metadata = server.metadata
+    if not key:
+        # this function has been called without asking for any specific key
+        # just for the whole dictionary of metadata parameters
+        return metadata
+    try:
+        return metadata[key]
+    except KeyError as e:
+        msg = f"Server {server_id} does not have key '{key}' in its metadata."
+        logger.error(msg)
+        raise ValueError(msg) from e
+
+
 def delete_metadata_from_server(
     conn: Connection, server_id: str, properties: List
 ) -> None:
@@ -511,3 +546,23 @@ def admin_unlock_server(conn: Connection, server_id: str) -> str:
     logger.info("admin unlocking server %s", server_id)
     conn.compute.unlock_server(server_id)
     logger.info("server %s admin unlocked", server_id)
+
+
+def get_server_status(conn: Connection, server_id: str) -> str:
+    """
+    get the current status of a Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :return: the status
+    :rtype: str
+    """
+    try:
+        server = conn.compute.find_server(server_id, all_projects=True)
+        return server.status
+    except ResourceNotFound as e:
+        msg = f"server {server_id} not found, unable to get its status"
+        logger.error(msg)
+        raise ResourceNotFound(msg) from e
