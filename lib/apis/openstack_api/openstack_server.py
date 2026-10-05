@@ -566,3 +566,23 @@ def get_server_status(conn: Connection, server_id: str) -> str:
         msg = f"server {server_id} not found, unable to get its status"
         logger.error(msg)
         raise ResourceNotFound(msg) from e
+
+
+def get_server_name(conn: Connection, server_id: str) -> str:
+    """
+    get the OpenStack Name of a Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :return: the name of the Server 
+    :rtype: str
+    """
+    try:
+        server = conn.compute.find_server(server_id, all_projects=True)
+        return server.name
+    except ResourceNotFound as e:
+        msg = f"server {server_id} not found, unable to get its name"
+        logger.error(msg)
+        raise ResourceNotFound(msg) from e

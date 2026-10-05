@@ -24,6 +24,7 @@ from apis.openstack_api.openstack_server import (
     admin_lock_server,
     NOVA_MICROVERSION_FOR_TAGS,
     get_server_status,
+    get_server_name,
 )
 from openstack.exceptions import (
     ResourceFailure,
@@ -1004,3 +1005,27 @@ def test_get_server_status_not_found():
         ResourceNotFound, match="server server1 not found, unable to get its status"
     ):
         get_server_status(mock_connection, "server1")
+
+
+def test_get_server_name():
+    mock_connection = MagicMock()
+    mock_server = MagicMock()
+    mock_server.name = "foo"
+    mock_connection.compute.find_server.return_value = mock_server
+
+    name = get_server_name(mock_connection, "server1")
+
+    assert name == "foo"
+    mock_connection.compute.find_server.assert_called_once_with(
+        "server1", all_projects=True
+    )
+
+
+def test_get_server_name_not_found():
+    mock_connection = MagicMock()
+    mock_connection.compute.find_server.side_effect = ResourceNotFound
+
+    with pytest.raises(
+        ResourceNotFound, match="server server1 not found, unable to get its name"
+    ):
+        get_server_name(mock_connection, "server1")
