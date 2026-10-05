@@ -9,6 +9,8 @@ from apis.openstack_api.enums.hypervisor_enums import (
     HypervisorState,
     HypervisorStatus,
 )
+from apis.utils.weighers import calc_weight, get_weights
+
 from openstack.connection import Connection
 
 logger = logging.getLogger(__name__)
@@ -234,3 +236,24 @@ def get_available_flavors(conn: Connection, hypervisor_name: str) -> List[str]:
                 available_flavors.append(flavor.name)
 
     return available_flavors
+
+
+def prioritse_patching(hosts: List[dict]) -> List[dict]:
+    """
+    Prioritises a list of hyperviosrs to order them by priority of patching
+
+    :param hosts: List of hypervisors
+    :type hosts: List[dict]
+
+    :return: An ordered list of hypervisors by the priority of patching
+    :rtype:  List[dict]
+    """
+    weights = get_weights()
+
+    weighed_hosts = [
+        {"hostname": host["hypervisor_name"], "weight": calc_weight(host, weights)}
+        for host in hosts
+    ]
+
+    sorted_hosts = sorted(weighed_hosts, key=lambda x: x["weight"], reverse=True)
+    return sorted_hosts
