@@ -3,6 +3,7 @@ from apis.openstack_api.enums.hypervisor_enums import HypervisorAction
 from apis.openstack_api.openstack_hypervisor import (
     Hypervisor,
     get_available_flavors,
+    prioritse_patching,
 )
 import pytest
 
@@ -546,3 +547,120 @@ def test_avaliable_flavors():
     mock_conn.compute.flavors.assert_called_once()
 
     assert res == [mock_flavor_1.name, mock_flavor_2.name]
+
+
+@pytest.mark.freeze_time("2026-10-04 15:00:01")
+@patch("apis.openstack_api.openstack_hypervisor.get_weights")
+def test_prioritise_fw_patch_date(mock_get_weights):
+    mock_hypervisors = [
+        {
+            "hypervisor_name": "host1",
+            "os_version": 9,
+            "last_fw_patch_date": "2026-09-30",
+            "hypervisor_server_count": 0,
+        },
+        {
+            "hypervisor_name": "host2",
+            "os_version": 9,
+            "last_fw_patch_date": "2026-10-04",
+            "hypervisor_server_count": 0,
+        },
+        {
+            "hypervisor_name": "host3",
+            "os_version": 9,
+            "last_fw_patch_date": "2025-10-04",
+            "hypervisor_server_count": 0,
+        },
+    ]
+    mock_weights = {
+        "os_version": 1,
+        "last_fw_patch_date": 2,
+        "hypervisor_server_count": 1,
+    }
+    mock_get_weights.return_value = mock_weights
+
+    res = prioritse_patching(mock_hypervisors)
+
+    assert res == [
+        {"hostname": "host3", "weight": 730},
+        {"hostname": "host1", "weight": 8},
+        {"hostname": "host2", "weight": 0},
+    ]
+
+
+@pytest.mark.freeze_time("2026-10-04 15:00:01")
+@patch("apis.openstack_api.openstack_hypervisor.get_weights")
+def test_prioritise_os_version(mock_get_weights):
+    mock_hypervisors = [
+        {
+            "hypervisor_name": "host1",
+            "os_version": 9,
+            "last_fw_patch_date": "2026-10-04",
+            "hypervisor_server_count": 0,
+        },
+        {
+            "hypervisor_name": "host2",
+            "os_version": 8,
+            "last_fw_patch_date": "2026-10-04",
+            "hypervisor_server_count": 0,
+        },
+        {
+            "hypervisor_name": "host3",
+            "os_version": 9,
+            "last_fw_patch_date": "2026-10-04",
+            "hypervisor_server_count": 0,
+        },
+    ]
+    mock_weights = {
+        "os_version": 1,
+        "last_fw_patch_date": 2,
+        "hypervisor_server_count": 1,
+    }
+    mock_get_weights.return_value = mock_weights
+
+    res = prioritse_patching(mock_hypervisors)
+
+    assert res == [
+        {"hostname": "host2", "weight": 1},
+        {"hostname": "host1", "weight": 0},
+        {"hostname": "host3", "weight": 0},
+    ]
+
+
+@pytest.mark.freeze_time("2026-10-04 15:00:01")
+@patch("apis.openstack_api.openstack_hypervisor.get_weights")
+def test_prioritise_num_vms(mock_get_weights):
+    mock_hypervisors = [
+        {
+            "hypervisor_name": "host1",
+            "os_version": 9,
+            "last_fw_patch_date": "2026-10-04",
+            "hypervisor_server_count": 1,
+        },
+        {
+            "hypervisor_name": "host2",
+            "os_version": 9,
+            "last_fw_patch_date": "2026-10-04",
+            "hypervisor_server_count": 10,
+        },
+        {
+            "hypervisor_name": "host3",
+            "os_version": 9,
+            "last_fw_patch_date": "2026-10-04",
+            "hypervisor_server_count": 100,
+        },
+    ]
+    mock_weights = {
+        "os_version": 1,
+        "last_fw_patch_date": 2,
+        "hypervisor_server_count": 1,
+    }
+    mock_get_weights.return_value = mock_weights
+
+    res = prioritse_patching(mock_hypervisors)
+
+    assert res == [
+        {"hostname": "host1", "weight": -1},
+        {"hostname": "host2", "weight": -10},
+        {"hostname": "host3", "weight": -100},
+    ]
