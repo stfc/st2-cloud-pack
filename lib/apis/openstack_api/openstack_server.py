@@ -576,7 +576,7 @@ def get_server_name(conn: Connection, server_id: str) -> str:
     :type conn: Connection
     :param server_id: the ID of the Server
     :type server_id: str
-    :return: the name of the Server 
+    :return: the name of the Server
     :rtype: str
     """
     try:
