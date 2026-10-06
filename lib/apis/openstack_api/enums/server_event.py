@@ -17,8 +17,8 @@ class ServerEvent(Enum):
     @classmethod
     def from_string(cls, value: str) -> "ServerEvent":
         """
-        Return the event enum or None
-        if the event is not tracked
+        Return the event enum or UNKNOWN
+        if the event is not something we track currently
 
         :param value: the event name returned by OpenStack
         :return: the matching ServerEvent member, or None
