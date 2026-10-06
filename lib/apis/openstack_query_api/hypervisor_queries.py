@@ -12,6 +12,11 @@ def query_hypervisor_state(cloud_account: str):
         "hypervisor_name",
         value="hv*",
     )
+    state_query.where(
+        "not_equal_to",
+        "hypervisor_uptime_days",
+        value=None,
+    )
     state_query.select(
         "hypervisor_name",
         "hypervisor_state",

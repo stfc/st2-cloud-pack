@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 
 from paramiko import SSHException
 
@@ -20,10 +20,14 @@ def patch_and_reboot(
     """
     Takes the selected hypervisor, schedules a downtime on it starting immediately then runs
     the patch and reboot scripts on the machine, before ending the downtime.
+
     :param alertmanager_account: Alertmanager Account to use
-    :param icinga_account: IcingaAccount: The icinga account object to use to schedule and remove the downtimes
-    :param hypervisor_name: the name of the hypervisor - should also be the host name on icinga
-    :param private_key_path: Path to the stackstorm key
+    :type alertmanager_account: AlertManagerAccount datclass object
+    :param hypervisor_name: the name of the hypervisor
+    :type hypervisor_name: str
+    :param private_key_path: Path to the stackstorm private key for ssh connections
+    :type private_key_path: str
+
     return: None
     """
     connection_details = SSHDetails(
@@ -31,12 +35,28 @@ def patch_and_reboot(
     )
     ssh_client = SSHConnection(connection_details)
     matcher_instance = AlertMatcherDetails(name="instance", value=hypervisor_name)
+
+    start_time_dt = dt.datetime.now(dt.timezone.utc)
+    weekday = start_time_dt.weekday()
+
+    # Set the silences to a fixed end time of 10:10am
+    # If starting patching on a Friday(4) or Saturday(5) set
+    # the silence to expire on the following Monday
+    if weekday in [4, 5]:
+        delta = dt.timedelta(days=7 - weekday)
+        end_date = start_time_dt + delta
+        end_time_dt = end_date.replace(hour=10, minute=10)
+    else:
+        delta = dt.timedelta(days=1)
+        end_date = start_time_dt + delta
+        end_time_dt = end_date.replace(hour=10, minute=10)
+
     silence_details_instance = SilenceDetails(
         matchers=[matcher_instance],
         author="stackstorm",
         comment="Stackstorm: HV Patching",
-        start_time_dt=datetime.datetime.utcnow(),
-        duration_hours=6,
+        start_time_dt=start_time_dt,
+        end_time_dt=end_time_dt,
     )
     scheduled_silence_id_instance = schedule_silence(
         alertmanager_account, silence_details_instance
@@ -46,8 +66,8 @@ def patch_and_reboot(
         matchers=[matcher_hostname],
         author="stackstorm",
         comment="Stackstorm: HV Patching",
-        start_time_dt=datetime.datetime.utcnow(),
-        duration_hours=6,
+        start_time_dt=start_time_dt,
+        end_time_dt=end_time_dt,
     )
     scheduled_silence_id_hostname = schedule_silence(
         alertmanager_account, silence_details_hostname

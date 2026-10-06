@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, call
 
 from apis.openstack_query_api.hypervisor_queries import (
     query_hypervisor_state,
@@ -54,7 +54,16 @@ def test_basic_hypervisor_info_and_server_count(
     assert hv2["disabled_reason"] == "maintenance"
 
     mock_hv_query_cls.assert_called_once()
-    hv_instance.where.assert_called_once_with("regex", "hypervisor_name", value="hv*")
+    hv_instance.where.assert_has_calls(
+        [
+            call("regex", "hypervisor_name", value="hv*"),
+            call(
+                "not_equal_to",
+                "hypervisor_uptime_days",
+                value=None,
+            ),
+        ]
+    )
     hv_instance.select.assert_called_once_with(
         "hypervisor_name",
         "hypervisor_state",
@@ -95,7 +104,8 @@ def test_empty_hypervisor_list(mock_hv_query_cls, mock_server_query_cls):
 
     assert result == []
 
-    hv_instance.where.assert_called_once()
+    assert hv_instance.where.call_count == 2
+
     hv_instance.select.assert_called_once()
     hv_instance.run.assert_called_once()
     hv_instance.to_props.assert_called_once()
