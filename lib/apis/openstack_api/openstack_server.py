@@ -552,3 +552,18 @@ def get_server_status(conn: Connection, server_id: str) -> str:
     """
     server = _find_server_object(conn, server_id)
     return server.status
+
+
+def get_server_name(conn: Connection, server_id: str) -> str:
+    """
+    get the OpenStack name of a Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :return: the name
+    :rtype: str
+    """
+    server = _find_server_object(conn, server_id)
+    return server.name

@@ -21,6 +21,7 @@ from apis.openstack_api.openstack_server import (
     admin_lock_server,
     _find_server_object,
     get_server_status,
+    get_server_name,
     NOVA_MICROVERSION_FOR_TAGS,
 )
 from openstack.exceptions import (
@@ -976,6 +977,21 @@ def test_get_server_status(mock_find_server):
     result = get_server_status(MagicMock(), "server-id")
 
     assert result == "ACTIVE"
+    mock_find_server.assert_called_once_with(
+        mock_find_server.call_args.args[0],
+        "server-id",
+    )
+
+
+@patch("apis.openstack_api.openstack_server._find_server_object")
+def test_get_server_name(mock_find_server):
+    server = MagicMock()
+    server.name = "my-server"
+    mock_find_server.return_value = server
+
+    result = get_server_name(MagicMock(), "server-id")
+
+    assert result == "my-server"
     mock_find_server.assert_called_once_with(
         mock_find_server.call_args.args[0],
         "server-id",
