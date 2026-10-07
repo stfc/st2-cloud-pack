@@ -1,3 +1,5 @@
+# pylint: disable=too-many-lines
+
 import itertools
 from datetime import datetime
 from typing import Tuple, Any
@@ -14,6 +16,7 @@ from apis.openstack_api.openstack_server import (
     shutoff_server,
     add_metadata_to_server,
     delete_metadata_from_server,
+    get_metadata_from_server,
     add_tag_to_server,
     remove_tag_from_server,
     find_servers_with_tag,
@@ -740,6 +743,42 @@ def test_delete_metadata_from_server():
     mock_conn.compute.delete_server_metadata.assert_called_once_with(
         mock_server, keys=["environment", "temporary_flag"]
     )
+
+
+@patch("apis.openstack_api.openstack_server._find_server_object")
+def test_get_metadata_from_server(mock_find_server):
+    conn = MagicMock()
+    server = MagicMock()
+
+    server.metadata = {"test-key": "test-value"}
+    mock_find_server.return_value = server
+
+    # When a key is provided, return the value associated with that key.
+    result = get_metadata_from_server(conn, "server-123", "test-key")
+
+    mock_find_server.assert_called_once_with(conn, "server-123")
+    assert result == "test-value"
+
+
+@patch("apis.openstack_api.openstack_server._find_server_object")
+def test_get_metadata_from_server_without_key(mock_find_server):
+    conn = MagicMock()
+    server = MagicMock()
+
+    server.metadata = {
+        "test-key": "test-value",
+        "another-key": "another-value",
+    }
+    mock_find_server.return_value = server
+
+    # When no key is provided, return the complete metadata dictionary.
+    result = get_metadata_from_server(conn, "server-123")
+
+    mock_find_server.assert_called_once_with(conn, "server-123")
+    assert result == {
+        "test-key": "test-value",
+        "another-key": "another-value",
+    }
 
 
 def test_add_tag():

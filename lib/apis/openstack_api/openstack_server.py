@@ -387,6 +387,36 @@ def delete_metadata_from_server(
     logger.info("properties removed from server")
 
 
+def get_metadata_from_server(
+    conn: Connection, server_id: str, key: str | None = None
+) -> str:
+    """
+    Retrieve the value for a given metadata key from an OpenStack server.
+
+    :param conn: OpenStack connection object
+    :type conn: Connection
+    :param server_id: The ID of the Server object
+    :type server_id: str
+    :param key: The key value in the metadata dictionary
+    :type key: str
+    :return: The metadata property for that key
+    :rtype: str
+    :raises ValueError: If the server or the metadata key is not found
+    """
+    server = _find_server_object(conn, server_id)
+    metadata = server.metadata
+    if not key:
+        # this function has been called without asking for any specific key
+        # just for the whole dictionary of metadata parameters
+        return metadata
+    try:
+        return metadata[key]
+    except KeyError as e:
+        msg = f"Server {server_id} does not have key '{key}' in its metadata."
+        logger.error(msg)
+        raise ValueError(msg) from e
+
+
 def add_tag_to_server(conn: Connection, server_id: str, tag: str) -> None:
     """
     Adds a tag to a Server
