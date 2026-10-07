@@ -13,6 +13,7 @@ from openstack.exceptions import (
     ResourceNotFound,
     SDKException,
 )
+from apis.openstack_api.enums.server_status import ServerStatus
 
 NOVA_MICROVERSION_FOR_TAGS = "2.26"
 
@@ -535,3 +536,33 @@ def admin_unlock_server(conn: Connection, server_id: str) -> str:
     logger.info("admin unlocking server %s", server_id)
     conn.compute.unlock_server(server_id)
     logger.info("server %s admin unlocked", server_id)
+
+
+def get_server_status(conn: Connection, server_id: str) -> ServerStatus:
+    """
+    get the current status of a Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :return: the status
+    :rtype: ServerStatus
+    """
+    server = _find_server_object(conn, server_id)
+    return ServerStatus.from_string(server.status)
+
+
+def get_server_name(conn: Connection, server_id: str) -> str:
+    """
+    get the OpenStack name of a Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :return: the name
+    :rtype: str
+    """
+    server = _find_server_object(conn, server_id)
+    return server.name

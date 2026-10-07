@@ -20,8 +20,10 @@ from apis.openstack_api.openstack_server import (
     get_server_owner_email,
     admin_lock_server,
     _find_server_object,
+    get_server_status,
     NOVA_MICROVERSION_FOR_TAGS,
 )
+from apis.openstack_api.enums.server_status import ServerStatus
 from openstack.exceptions import (
     ResourceFailure,
     ResourceTimeout,
@@ -960,3 +962,18 @@ def test_find_server_object_not_found():
 
     with pytest.raises(NotFoundException):
         _find_server_object(conn, "server-id")
+
+
+@patch("apis.openstack_api.openstack_server._find_server_object")
+def test_get_server_status(mock_find_server):
+    server = MagicMock()
+    server.status = "ACTIVE"
+    mock_find_server.return_value = server
+
+    result = get_server_status(MagicMock(), "server-id")
+
+    assert result == ServerStatus.ACTIVE
+    mock_find_server.assert_called_once_with(
+        mock_find_server.call_args.args[0],
+        "server-id",
+    )
