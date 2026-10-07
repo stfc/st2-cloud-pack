@@ -20,6 +20,32 @@ NOVA_MICROVERSION_FOR_TAGS = "2.26"
 logger = logging.getLogger(__name__)
 
 
+def _find_server_object(conn: Connection, server_id: str) -> Server:
+    """
+    Find the Server object given its ID
+
+    Many of the functions in this file needs to get the Server object from its ID,
+    or raise and Exception if not found.
+    This ancillary should prevent duplicating the same code so many times.
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :return: the Server object
+    :rtype: openstack.compute.v2.server.Server
+    """
+    try:
+        server = conn.compute.find_server(
+            server_id, all_projects=True, ignore_missing=False
+        )
+        return server
+    except NotFoundException as e:
+        msg = f"server {server_id} not found"
+        logger.error(msg)
+        raise e
+
+
 def can_be_migrated(server: Server):
     if server.flavor.name.startswith("g-") or server.flavor.name.startswith("f-"):
         raise ValueError(

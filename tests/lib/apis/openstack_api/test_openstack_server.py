@@ -19,6 +19,7 @@ from apis.openstack_api.openstack_server import (
     find_servers_with_tag,
     get_server_owner_email,
     admin_lock_server,
+    _find_server_object,
     NOVA_MICROVERSION_FOR_TAGS,
 )
 from openstack.exceptions import (
@@ -940,3 +941,26 @@ def test_admin_lock_server_rejects_reason_longer_than_255_characters():
 
     # Verify the server was never locked.
     conn.compute.lock_server.assert_not_called()
+
+
+def test_find_server_object():
+    conn = MagicMock()
+    server = MagicMock()
+    conn.compute.find_server.return_value = server
+
+    result = _find_server_object(conn, "server-id")
+
+    assert result == server
+    conn.compute.find_server.assert_called_once_with(
+        "server-id",
+        all_projects=True,
+        ignore_missing=False,
+    )
+
+
+def test_find_server_object_not_found():
+    conn = MagicMock()
+    conn.compute.find_server.side_effect = NotFoundException()
+
+    with pytest.raises(NotFoundException):
+        _find_server_object(conn, "server-id")
