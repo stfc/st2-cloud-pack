@@ -537,3 +537,18 @@ def admin_unlock_server(conn: Connection, server_id: str) -> str:
     logger.info("admin unlocking server %s", server_id)
     conn.compute.unlock_server(server_id)
     logger.info("server %s admin unlocked", server_id)
+
+
+def get_server_status(conn: Connection, server_id: str) -> str:
+    """
+    get the current status of a Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :return: the status
+    :rtype: str
+    """
+    server = _find_server_object(conn, server_id)
+    return server.status
