@@ -5,7 +5,7 @@ from apis.openstack_api.enums.cloud_domains import CloudDomains
 from apis.email_api.structs.email_params import EmailParams
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.smtp_account import SMTPAccount
-from apis.email_api.emailer import Emailer
+from apis.email_api.send_emails import send_email as send_it
 from apis.openstack_query_api.server_queries import (
     find_servers_with_errored_vms,
     group_servers_by_user_id,
@@ -145,4 +145,4 @@ def send_errored_vm_email(
             email_cc=("cloud-support@stfc.ac.uk",) if cc_cloud_support else None,
             **email_params_kwargs,
         )
-        Emailer(smtp_account).send_emails([email_params])
+        send_it(smtp_account, [email_params])

@@ -1,3 +1,12 @@
+"""
+Package for sending stfc-cloud email notifications
+
+This package:
+- contains functions to send multiple emails
+- contains jinja2 email templates
+- contains functions to build email body from one or more email templates
+"""
+
 import sys
 import logging
 

@@ -1,9 +1,9 @@
 from unittest.mock import MagicMock, NonCallableMock, mock_open, patch
 
 import pytest
-from apis.email_api.exceptions.email_template_error import EmailTemplateError
+from apis.email_api.exceptions import EmailTemplateError
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
-from apis.email_api.template_handler import TemplateHandler
+from apis.email_api.email_body import EmailBody
 from jinja2.exceptions import TemplateError, TemplateNotFound
 from yaml import YAMLError
 
@@ -36,7 +36,7 @@ def instance_fixture(mock_template_metadata):
     Returns a template parsing instance with the mock template metadata
     injected for testing
     """
-    instance = TemplateHandler(mock_template_metadata)
+    instance = EmailBody(mock_template_metadata)
     instance._template_env = MagicMock()
     return instance
 
