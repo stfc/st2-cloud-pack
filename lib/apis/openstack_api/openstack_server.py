@@ -20,6 +20,32 @@ NOVA_MICROVERSION_FOR_TAGS = "2.26"
 logger = logging.getLogger(__name__)
 
 
+def _find_server_object(conn: Connection, server_id: str) -> Server:
+    """
+    Find the Server object given its ID
+
+    Many of the functions in this file needs to get the Server object from its ID,
+    or raise and Exception if not found.
+    This ancillary should prevent duplicating the same code so many times.
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :return: the Server object
+    :rtype: openstack.compute.v2.server.Server
+    """
+    try:
+        server = conn.compute.find_server(
+            server_id, all_projects=True, ignore_missing=False
+        )
+        return server
+    except NotFoundException as e:
+        msg = f"server {server_id} not found"
+        logger.error(msg)
+        raise e
+
+
 def can_be_migrated(server: Server):
     if server.flavor.name.startswith("g-") or server.flavor.name.startswith("f-"):
         raise ValueError(
@@ -361,6 +387,36 @@ def delete_metadata_from_server(
     logger.info("properties removed from server")
 
 
+def get_metadata_from_server(
+    conn: Connection, server_id: str, key: str | None = None
+) -> str:
+    """
+    Retrieve the value for a given metadata key from an OpenStack server.
+
+    :param conn: OpenStack connection object
+    :type conn: Connection
+    :param server_id: The ID of the Server object
+    :type server_id: str
+    :param key: The key value in the metadata dictionary
+    :type key: str
+    :return: The metadata property for that key
+    :rtype: str
+    :raises ValueError: If the server or the metadata key is not found
+    """
+    server = _find_server_object(conn, server_id)
+    metadata = server.metadata
+    if not key:
+        # this function has been called without asking for any specific key
+        # just for the whole dictionary of metadata parameters
+        return metadata
+    try:
+        return metadata[key]
+    except KeyError as e:
+        msg = f"Server {server_id} does not have key '{key}' in its metadata."
+        logger.error(msg)
+        raise ValueError(msg) from e
+
+
 def add_tag_to_server(conn: Connection, server_id: str, tag: str) -> None:
     """
     Adds a tag to a Server
@@ -511,3 +567,33 @@ def admin_unlock_server(conn: Connection, server_id: str) -> str:
     logger.info("admin unlocking server %s", server_id)
     conn.compute.unlock_server(server_id)
     logger.info("server %s admin unlocked", server_id)
+
+
+def get_server_status(conn: Connection, server_id: str) -> str:
+    """
+    get the current status of a Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :return: the status
+    :rtype: str
+    """
+    server = _find_server_object(conn, server_id)
+    return server.status
+
+
+def get_server_name(conn: Connection, server_id: str) -> str:
+    """
+    get the OpenStack name of a Server
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :return: the name
+    :rtype: str
+    """
+    server = _find_server_object(conn, server_id)
+    return server.name
