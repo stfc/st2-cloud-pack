@@ -1,0 +1,38 @@
+---
+description: Get list of hypervisors and the date they last had a firmware update
+enabled: true
+entry_point: src/openstack_actions.py
+name: hypervisor.firmware.last.update
+parameters:
+  lib_entry_point:
+    default: apis.netbox_api.query_netbox.get_metadata_from_hypervisor
+    immutable: true
+    type: string
+  netbox_account_name:
+    type: string
+    description: "Name of Netbox Account to use. Must be configured in in the pack settings."
+    required: true
+    default: "dev"
+  cloud:
+    description: "The clouds.yaml account to use whilst performing this action"
+    required: true
+    type: string
+    default: "prod"
+    enum:
+      - "dev"
+      - "prod"
+      - "all"
+  status:
+    description: "The status of the hypervisors"
+    required: true
+    type: string
+    default: "active"
+    enum:
+      - "active"
+      - "offline"
+      - "planned"
+      - "staged"
+      - "failed"
+      - "inventory"
+      - "decommissioning"
+runner_type: python-script
