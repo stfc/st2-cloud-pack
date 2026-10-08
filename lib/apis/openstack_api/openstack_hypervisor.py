@@ -81,6 +81,18 @@ class Hypervisor:
 
         return hypervisor
 
+    def to_dict(self) -> dict:
+        return {
+            "hostname": self.name,
+            "uptime_days": self.uptime_days,
+            "state": self.state,
+            "status": self.status,
+            "server_count": self.hypervisor_server_count,
+            "prev_fw_patched": self.previous_fw_patch_date,
+            "os_version": self.os_version,
+            "maint_score": self.maint_score,
+        }
+
     def take_action(self, uptime_limit: int) -> HypervisorAction:
         """
         Returns a hypervisor action based on certain conditions
