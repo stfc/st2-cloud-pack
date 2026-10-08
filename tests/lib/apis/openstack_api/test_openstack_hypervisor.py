@@ -3,6 +3,7 @@ from apis.openstack_api.enums.hypervisor_enums import HypervisorAction
 from apis.openstack_api.openstack_hypervisor import (
     Hypervisor,
     get_available_flavors,
+    prioritse_patching,
 )
 import pytest
 
@@ -546,3 +547,192 @@ def test_avaliable_flavors():
     mock_conn.compute.flavors.assert_called_once()
 
     assert res == [mock_flavor_1.name, mock_flavor_2.name]
+
+
+@pytest.mark.freeze_time("2026-10-04 15:00:01")
+@patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
+@patch("apis.openstack_api.openstack_hypervisor.get_weights")
+def test_prioritise_fw_patch_date(mock_get_weights, _mock_connect):
+    mock_host1 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host1",
+            "hypervisor_server_count": 10,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+        },
+    )
+    mock_host2 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host2",
+            "hypervisor_server_count": 10,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+        },
+    )
+    mock_host3 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host3",
+            "hypervisor_server_count": 10,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+        },
+    )
+
+    date_mapping = {"host1": "2026-09-30", "host2": "2026-10-04", "host3": "2025-10-04"}
+
+    Hypervisor.previous_fw_patch_date = property(
+        lambda self: date_mapping.get(self.name, 0)
+    )
+
+    mock_hypervisors = [mock_host1, mock_host2, mock_host3]
+    mock_weights = {
+        "last_fw_patch_date": 2,
+    }
+    mock_get_weights.return_value = mock_weights
+
+    res = prioritse_patching(mock_hypervisors)
+
+    assert res == [
+        mock_host3,
+        mock_host1,
+        mock_host2,
+    ]
+
+
+@pytest.mark.freeze_time("2026-10-04 15:00:01")
+@patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
+@patch("apis.openstack_api.openstack_hypervisor.get_weights")
+def test_prioritise_os_version(mock_get_weights, _mock_connect):
+    mock_host1 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host1",
+            "hypervisor_server_count": 10,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+        },
+    )
+    mock_host2 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host2",
+            "hypervisor_server_count": 10,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+        },
+    )
+    mock_host3 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host3",
+            "hypervisor_server_count": 10,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+        },
+    )
+
+    version_mapping = {"host1": 9, "host2": 7, "host3": 8}
+
+    Hypervisor.os_version = property(lambda self: version_mapping.get(self.name, 0))
+
+    mock_hypervisors = [mock_host1, mock_host2, mock_host3]
+    mock_weights = {
+        "os_version": 1,
+    }
+    mock_get_weights.return_value = mock_weights
+
+    res = prioritse_patching(mock_hypervisors)
+
+    assert res == [
+        mock_host2,
+        mock_host3,
+        mock_host1,
+    ]
+
+
+@pytest.mark.freeze_time("2026-10-04 15:00:01")
+@patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
+@patch("apis.openstack_api.openstack_hypervisor.get_weights")
+def test_prioritise_num_vms(mock_get_weights, _mock_connect):
+    mock_host1 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host1",
+            "hypervisor_server_count": 1,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+        },
+    )
+    mock_host2 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host2",
+            "hypervisor_server_count": 10,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+        },
+    )
+    mock_host3 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host3",
+            "hypervisor_server_count": 100,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+        },
+    )
+    mock_hypervisors = [mock_host1, mock_host2, mock_host3]
+    mock_weights = {
+        "hypervisor_server_count": 1,
+    }
+    mock_get_weights.return_value = mock_weights
+
+    res = prioritse_patching(mock_hypervisors)
+
+    assert res == [mock_host1, mock_host2, mock_host3]
+
+
+@pytest.mark.freeze_time("2026-10-04 15:00:01")
+@patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
+@patch("apis.openstack_api.openstack_hypervisor.get_weights")
+def test_calc_weight_missing_weigh_fn(mock_get_weights, _mock_connect):
+    mock_host1 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host1",
+            "hypervisor_server_count": 1,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+        },
+    )
+    mock_hypervisors = [mock_host1]
+    mock_weights = {
+        "disabled_reason": 1,
+    }
+    mock_get_weights.return_value = mock_weights
+
+    with pytest.raises(AttributeError):
+        prioritse_patching(mock_hypervisors)
