@@ -1,0 +1,41 @@
+---
+description: Get list of hypervisors and the date they last had a firmware update
+enabled: true
+entry_point: src/openstack_actions.py
+name: hypervisor.firmware.last.update
+parameters:
+  lib_entry_point:
+    default: workflows.query_netbox.query_netbox_for_hypervisor_info
+    immutable: true
+    type: string
+  netbox_account_name:
+    type: string
+    description: "Name of Netbox Account to use. Must be configured in the pack settings."
+    required: true
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  environment:
+    description: "Device environment in Netbox"
+    required: true
+    type: string
+    default: "staging"
+    enum:
+      - "staging"
+      - "prod"
+      - "all"
+  status:
+    description: "Filter by status of the hypervisors"
+    required: true
+    type: string
+    default: "active"
+    enum:
+      - "active"
+      - "offline"
+      - "planned"
+      - "staged"
+      - "failed"
+      - "inventory"
+      - "decommissioning"
+runner_type: python-script
