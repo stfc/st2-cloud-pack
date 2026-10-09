@@ -1,0 +1,35 @@
+---
+description: Shelve a server in the shutdown state
+enabled: true
+entry_point: src/openstack_actions.py
+name: server.shelve
+parameters:
+  timeout:
+    default: 3600
+  lib_entry_point:
+    default: apis.openstack_api.openstack_server.shelve_server
+    immutable: true
+    type: string
+  create_openstack_connection:
+    description: "flag that when set, will create and open a openstack connection object before running action"
+    default: true
+    immutable: true
+    type: boolean
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  server_id:
+    type: string
+    required: true
+    description: Name or ID of server to shelve
+  all_projects:
+    type: boolean
+    required: false
+    default: true
+    description: "Tick to search in all projects - default True"
+runner_type: python-script

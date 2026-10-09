@@ -1,6 +1,9 @@
 import logging
-from datetime import datetime, timezone
-from openstack.exceptions import NotFoundException
+from typing import List
+
+from apis.openstack_api.enums.server_event import ServerEvent
+from apis.openstack_api.structs.server_event_details import ServerEventDetails
+from apis.utils.time_utils import parse_iso_utc
 
 logger = logging.getLogger(__name__)
 
@@ -22,21 +25,34 @@ class EventList:
         :raises Exception: exception raised when the Server ID is not valid
         """
         self.logger = logging.getLogger("EventList")
-        # first we check the Server actually exists
-        try:
-            conn.compute.get_server(server_id)
-            self.logger.debug("Verified the Server ID %s actually exists", server_id)
-        except NotFoundException as ex:
-            self.logger.error(
-                "The Server ID %s does not exist. This EventList object cannot be initialised. Raising an Exception.",
-                server_id,
+
+        self._events = []
+
+        server = conn.compute.get_server(server_id)
+        action_list = conn.compute.server_actions(server)
+
+        for unparsed_event in action_list:
+            event_type = ServerEvent.from_string(unparsed_event.action)
+            self._events.append(
+                ServerEventDetails(
+                    event=event_type,
+                    date=parse_iso_utc(unparsed_event.start_time),
+                )
             )
-            raise ex
-        self.events = list(conn.compute.server_actions(server_id))
+
         # the output of server_actions() is a generator
         self.logger.debug(
             "Object EventList for Server ID %s initialised properly", server_id
         )
+
+    @property
+    def events(self):
+        return self._events
+
+    @events.setter
+    def events(self, events: List[ServerEvent]):
+        assert all(isinstance(event, ServerEventDetails) for event in events)
+        self._events = events
 
     @property
     def last_event(self):
@@ -44,24 +60,4 @@ class EventList:
         return: the last Event for this Server
         rtype: ServerAction
         """
-        self.logger.debug("Getting the last event")
-        # the last Event happens to be the first item in the EventList
-        return self.events[0]
-
-    @property
-    def seconds_in_current_state(self):
-        """
-        :return: for how long the server has been in the current state
-        :rtype: int
-        """
-        self.logger.debug("Getting the number seconds in current state")
-        last_event_t = self.last_event.start_time
-        # last_event_t looks like this
-        # 2024-07-25T12:08:40.000000
-        last_event_dt = datetime.fromisoformat(last_event_t).replace(
-            tzinfo=timezone.utc
-        )
-        time_delta = datetime.now(timezone.utc) - last_event_dt
-        seconds = int(time_delta.total_seconds())
-        self.logger.info("Number seconds in current state is %s", seconds)
-        return seconds
+        return sorted(self.events, key=lambda x: x.date, reverse=True)[0]
