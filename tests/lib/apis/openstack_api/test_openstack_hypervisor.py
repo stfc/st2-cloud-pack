@@ -1,10 +1,12 @@
 from unittest.mock import MagicMock, NonCallableMock, patch
+
+import pytest
+
 from apis.openstack_api.enums.hypervisor_enums import HypervisorAction
 from apis.openstack_api.openstack_hypervisor import (
     Hypervisor,
     get_available_flavors,
 )
-import pytest
 
 
 @patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
@@ -517,12 +519,12 @@ def test_avaliable_flavors():
     mock_aggregate_1 = MagicMock()
     mock_aggregate_2 = MagicMock()
 
-    mock_aggregate_1.metadata.return_value = {
+    mock_aggregate_1.metadata = {
         "hosttype": "amdlocal",
         "local-storage-type": "nvme",
     }
     mock_aggregate_1.hosts = ["hvabc.nubes.rl.ac.uk"]
-    mock_aggregate_2.metadata.return_value = {
+    mock_aggregate_2.metadata = {
         "hosttype": "amdlocal",
         "local-storage-type": "sas-ssd",
     }
@@ -535,14 +537,10 @@ def test_avaliable_flavors():
 
     mock_conn.compute.aggregates.assert_called_once()
 
-    mock_aggregate_1.metadata.get.assert_any_call("hosttype")
-    mock_aggregate_1.metadata.get.assert_any_call("local-storage-type")
-    mock_aggregate_2.metadata.get.assert_any_call("hosttype")
-    mock_aggregate_2.metadata.get.assert_any_call("local-storage-type")
-
-    assert mock_aggregate_1.metadata.get.call_count == 2
-    assert mock_aggregate_2.metadata.get.call_count == 2
-
-    mock_conn.compute.flavors.assert_called_once()
+    expected_extra_specs = {
+        "aggregate_instance_extra_specs:hosttype": "amdlocal",
+        "aggregate_instance_extra_specs:local-storage-type": "sas-ssd",
+    }
+    mock_conn.compute.flavors.assert_called_once_with(extra_specs=expected_extra_specs)
 
     assert res == [mock_flavor_1.name, mock_flavor_2.name]
