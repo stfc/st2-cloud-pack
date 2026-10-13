@@ -13,6 +13,9 @@ from openstack.exceptions import (
     ResourceNotFound,
     SDKException,
 )
+from apis.openstack_api.openstack_project import (
+    get_project_name as get_project_name_from_project_api,
+)
 from apis.openstack_api.enums.server_status import ServerStatus
 
 NOVA_MICROVERSION_FOR_TAGS = "2.26"
@@ -596,3 +599,33 @@ def get_server_name(conn: Connection, server_id: str) -> str:
     """
     server = _find_server_object(conn, server_id)
     return server.name
+
+
+def get_project_id(conn: Connection, server_id: str) -> str:
+    """
+    get the ID of the Project a Server is part of
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :return: the ID of the Project
+    :rtype: str
+    """
+    server = _find_server_object(conn, server_id)
+    return server.project_id
+
+
+def get_project_name(conn: Connection, server_id: str) -> str:
+    """
+    get the name of the Project a Server is part of
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param server_id: the ID of the Server
+    :type server_id: str
+    :return: the name of the Project
+    :rtype: str
+    """
+    project_id = get_project_id(conn, server_id)
+    return get_project_name_from_project_api(conn, project_id)

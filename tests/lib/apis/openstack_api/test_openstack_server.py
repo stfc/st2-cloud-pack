@@ -25,6 +25,8 @@ from apis.openstack_api.openstack_server import (
     _find_server_object,
     get_server_status,
     get_server_name,
+    get_project_id,
+    get_project_name,
     NOVA_MICROVERSION_FOR_TAGS,
 )
 from apis.openstack_api.enums.server_status import ServerStatus
@@ -1032,3 +1034,32 @@ def test_get_server_name(mock_find_server):
         mock_find_server.call_args.args[0],
         "server-id",
     )
+
+
+@patch("apis.openstack_api.openstack_server._find_server_object")
+def test_get_project_id(mock_find_server):
+    server = MagicMock()
+    server.project_id = "123"
+    mock_find_server.return_value = server
+
+    result = get_project_id(MagicMock(), "server-id")
+
+    assert result == "123"
+    mock_find_server.assert_called_once_with(
+        mock_find_server.call_args.args[0],
+        "server-id",
+    )
+
+
+@patch("apis.openstack_api.openstack_server.get_project_name_from_project_api")
+@patch("apis.openstack_api.openstack_server.get_project_id")
+def test_get_project_name(mock_get_project_id, mock_get_project_name):
+    conn = MagicMock()
+    mock_get_project_id.return_value = "123"
+    mock_get_project_name.return_value = "test-project"
+
+    result = get_project_name(conn, "server-id")
+
+    assert result == "test-project"
+    mock_get_project_id.assert_called_once_with(conn, "server-id")
+    mock_get_project_name.assert_called_once_with(conn, "123")

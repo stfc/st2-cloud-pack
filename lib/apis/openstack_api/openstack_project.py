@@ -165,3 +165,18 @@ def _is_project_immutable(project: Project) -> bool:
 
 def _select_project_immutable(tag) -> bool:
     return tag == "immutable"
+
+
+def get_project_name(conn: Connection, project_id: str) -> str:
+    """
+    returns the name of a Project given its ID
+
+    :param conn: the openstack connection object
+    :type conn: Connection
+    :param project_id: the ID of the Project
+    :type project_id: str
+    :return: the Project Name
+    :rtype: str
+    """
+    project = _find_project_object(conn, project_id)
+    return project.name
