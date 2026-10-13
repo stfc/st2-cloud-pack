@@ -2,11 +2,12 @@ from unittest.mock import MagicMock, NonCallableMock
 import pytest
 
 from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
-from openstack.exceptions import ConflictException
+from openstack.exceptions import ConflictException, NotFoundException
 from apis.openstack_api.openstack_project import (
     create_project,
     delete_project,
     add_flavor_to_project,
+    _find_project_object,
 )
 
 
@@ -258,3 +259,22 @@ def test_add_flavor_to_project_fail():
         mock_conn.compute.find_project.return_value.id,
     )
     assert res is True  # mock is not None
+
+
+def test_find_project_object():
+    conn = MagicMock()
+    project = MagicMock()
+    conn.identity.get_project.return_value = project
+
+    result = _find_project_object(conn, "project-id")
+
+    assert result == project
+    conn.identity.get_project.assert_called_once_with("project-id")
+
+
+def test_find_project_object_not_found():
+    conn = MagicMock()
+    conn.identity.get_project.side_effect = NotFoundException()
+
+    with pytest.raises(NotFoundException):
+        _find_project_object(conn, "project-id")
