@@ -1,3 +1,5 @@
+# pylint: disable=too-many-lines
+
 import itertools
 from datetime import datetime
 from typing import Tuple, Any
@@ -14,13 +16,20 @@ from apis.openstack_api.openstack_server import (
     shutoff_server,
     add_metadata_to_server,
     delete_metadata_from_server,
+    get_metadata_from_server,
     add_tag_to_server,
     remove_tag_from_server,
     find_servers_with_tag,
     get_server_owner_email,
     admin_lock_server,
+    _find_server_object,
+    get_server_status,
+    get_server_name,
+    get_project_id,
+    get_project_name,
     NOVA_MICROVERSION_FOR_TAGS,
 )
+from apis.openstack_api.enums.server_status import ServerStatus
 from openstack.exceptions import (
     ResourceFailure,
     ResourceTimeout,
@@ -739,6 +748,42 @@ def test_delete_metadata_from_server():
     )
 
 
+@patch("apis.openstack_api.openstack_server._find_server_object")
+def test_get_metadata_from_server(mock_find_server):
+    conn = MagicMock()
+    server = MagicMock()
+
+    server.metadata = {"test-key": "test-value"}
+    mock_find_server.return_value = server
+
+    # When a key is provided, return the value associated with that key.
+    result = get_metadata_from_server(conn, "server-123", "test-key")
+
+    mock_find_server.assert_called_once_with(conn, "server-123")
+    assert result == "test-value"
+
+
+@patch("apis.openstack_api.openstack_server._find_server_object")
+def test_get_metadata_from_server_without_key(mock_find_server):
+    conn = MagicMock()
+    server = MagicMock()
+
+    server.metadata = {
+        "test-key": "test-value",
+        "another-key": "another-value",
+    }
+    mock_find_server.return_value = server
+
+    # When no key is provided, return the complete metadata dictionary.
+    result = get_metadata_from_server(conn, "server-123")
+
+    mock_find_server.assert_called_once_with(conn, "server-123")
+    assert result == {
+        "test-key": "test-value",
+        "another-key": "another-value",
+    }
+
+
 def test_add_tag():
     """
     Test adding a tag to a server temporarily changes the NOVA microversion
@@ -940,3 +985,81 @@ def test_admin_lock_server_rejects_reason_longer_than_255_characters():
 
     # Verify the server was never locked.
     conn.compute.lock_server.assert_not_called()
+
+
+def test_find_server_object():
+    conn = MagicMock()
+    server = MagicMock()
+    conn.compute.get_server.return_value = server
+
+    result = _find_server_object(conn, "server-id")
+
+    assert result == server
+    conn.compute.get_server.assert_called_once_with("server-id")
+
+
+def test_find_server_object_not_found():
+    conn = MagicMock()
+    conn.compute.get_server.side_effect = NotFoundException()
+
+    with pytest.raises(NotFoundException):
+        _find_server_object(conn, "server-id")
+
+
+@patch("apis.openstack_api.openstack_server._find_server_object")
+def test_get_server_status(mock_find_server):
+    server = MagicMock()
+    server.status = "ACTIVE"
+    mock_find_server.return_value = server
+
+    result = get_server_status(MagicMock(), "server-id")
+
+    assert result == ServerStatus.ACTIVE
+    mock_find_server.assert_called_once_with(
+        mock_find_server.call_args.args[0],
+        "server-id",
+    )
+
+
+@patch("apis.openstack_api.openstack_server._find_server_object")
+def test_get_server_name(mock_find_server):
+    server = MagicMock()
+    server.name = "my-server"
+    mock_find_server.return_value = server
+
+    result = get_server_name(MagicMock(), "server-id")
+
+    assert result == "my-server"
+    mock_find_server.assert_called_once_with(
+        mock_find_server.call_args.args[0],
+        "server-id",
+    )
+
+
+@patch("apis.openstack_api.openstack_server._find_server_object")
+def test_get_project_id(mock_find_server):
+    server = MagicMock()
+    server.project_id = "123"
+    mock_find_server.return_value = server
+
+    result = get_project_id(MagicMock(), "server-id")
+
+    assert result == "123"
+    mock_find_server.assert_called_once_with(
+        mock_find_server.call_args.args[0],
+        "server-id",
+    )
+
+
+@patch("apis.openstack_api.openstack_server.get_project_name_from_project_api")
+@patch("apis.openstack_api.openstack_server.get_project_id")
+def test_get_project_name(mock_get_project_id, mock_get_project_name):
+    conn = MagicMock()
+    mock_get_project_id.return_value = "123"
+    mock_get_project_name.return_value = "test-project"
+
+    result = get_project_name(conn, "server-id")
+
+    assert result == "test-project"
+    mock_get_project_id.assert_called_once_with(conn, "server-id")
+    mock_get_project_name.assert_called_once_with(conn, "123")

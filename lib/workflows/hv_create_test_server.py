@@ -45,6 +45,13 @@ def create_test_server_single_hypervisor(
     # if everything is OK with the hostname we can proceed
     flavors = get_available_flavors(conn, hypervisor_name)
     logger.info("Flavors avaliable to %s: %s", hypervisor_name, flavors)
+
+    if not flavors:
+        raise RuntimeError(
+            "No flavors were found for this HV."
+            " Check the HV is in the correct aggregate and the flavor properties match that aggregate."
+        )
+
     if not test_all_flavors:
         flavors = [random.choice(flavors)]
     for flavor in flavors:

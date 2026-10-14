@@ -1,12 +1,39 @@
 from typing import List, Optional, Callable
 import re
+import logging
 
 from openstack.connection import Connection
-from openstack.exceptions import ConflictException
+from openstack.exceptions import ConflictException, NotFoundException
 from openstack.identity.v3.project import Project
 
 from meta.exceptions.missing_mandatory_param_error import MissingMandatoryParamError
 from apis.openstack_api.structs.project_details import ProjectDetails
+
+logger = logging.getLogger(__name__)
+
+
+def _find_project_object(conn: Connection, project_id: str) -> Project:
+    """
+    Returns the Project object for a given Project ID
+
+    Many of the functions in this file needs to get the Project object from its ID,
+    or raise and Exception if not found.
+    This ancillary should prevent duplicating the same code so many times.
+
+    :param conn: openstack connection object
+    :type conn: Connection
+    :param project_id: the ID of the Project
+    :type project_id: str
+    :return: the Project object
+    :rtype: openstack.identity.v3.project.Project
+    """
+    try:
+        project = conn.identity.get_project(project_id)
+        return project
+    except NotFoundException as e:
+        msg = f"project {project_id} not found"
+        logger.error(msg)
+        raise e
 
 
 def create_project(
@@ -138,3 +165,18 @@ def _is_project_immutable(project: Project) -> bool:
 
 def _select_project_immutable(tag) -> bool:
     return tag == "immutable"
+
+
+def get_project_name(conn: Connection, project_id: str) -> str:
+    """
+    returns the name of a Project given its ID
+
+    :param conn: the openstack connection object
+    :type conn: Connection
+    :param project_id: the ID of the Project
+    :type project_id: str
+    :return: the Project Name
+    :rtype: str
+    """
+    project = _find_project_object(conn, project_id)
+    return project.name
