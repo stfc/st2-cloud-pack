@@ -303,3 +303,20 @@ def get_diff(
     :return: List of differences [Path, SourceValue, TargetValue].
     """
     return DiffUtils(exclude_paths, ignore_order).diff(obj1, obj2)
+
+
+def compare_2_lists(
+    l1: List[str], l2: List[str]
+) -> Tuple[List[str], List[str], List[str]]:
+    """
+    compares 2 lists (A and B) and returns 3:
+    * one with items only in list A
+    * one with items only in list B
+    * one with items in both lists A and B
+    """
+    s1 = set(l1)
+    s2 = set(l2)
+    only_in_list1 = list(s1 - s2)
+    only_in_list2 = list(s2 - s1)
+    in_both_lists = list(s1.intersection(s2))
+    return only_in_list1, only_in_list2, in_both_lists
