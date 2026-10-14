@@ -62,6 +62,22 @@ def test_create_test_server_raises_on_empty_hostname():
         create_test_server_single_hypervisor(mock_conn, "", False, True)
 
 
+@patch("workflows.hv_create_test_server.get_available_flavors")
+def test_create_test_server_raises_no_flavors(get_flavors_mock):
+    """
+    Tests that we throw if there are no flavors associated with a HV
+    which is usually a sign of a missing aggregate
+    """
+
+    mock_conn = MagicMock(0)
+
+    # Pretend nothing was found
+    get_flavors_mock.return_value = []
+
+    with pytest.raises(RuntimeError):
+        create_test_server_single_hypervisor(mock_conn, "example-hv", False, True)
+
+
 def test_create_test_server_single_hypervisor_raises_on_comma_in_hostname():
     """
     Test an Exception is raised when the hostname value passed to function
