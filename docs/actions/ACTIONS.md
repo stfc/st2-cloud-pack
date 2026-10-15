@@ -50,7 +50,7 @@ NOTE: this may not be an exhaustive list - see `actions` for all available actio
 | project.add.group.with.role                         | Add a pre-created group to a given project with given role                                                                  |
 | project.add.user.with.role                          | Add a user directly to a given project with given role                                                                      |
 | project.create                                      | create a pre-configured openstack project                                                                                   |
-| project.delete                                      | delete a project                                                                                                            |
+| project.create.undo                                 | undo a project create (e.g. for a typo) by deleting that project. Should not be used for decommissioning                    |
 | project.remove.user.role                            | Removes a role from a user's project permissions                                                                            |
 | project.search.by.property                          | Search for projects with a selected property matching, or not matching given value(s)                                       |
 | project.search.by.regex                             | Search for projects property using regex pattern, or not matching given value(s)                                            |
