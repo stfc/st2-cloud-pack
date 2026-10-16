@@ -26,5 +26,5 @@ parameters:
   server_id:
     type: string
     required: true
-    description: Name or ID of server to shelve
+    description: ID of the server to shelve
 runner_type: python-script
