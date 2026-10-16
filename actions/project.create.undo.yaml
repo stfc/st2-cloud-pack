@@ -1,8 +1,8 @@
 ---
-description: Delete Openstack Project
+description: Removes a new project from OpenStack. This should be used for new projects with typos, mistakes, or if project.create failed because of an ST2 error.
 enabled: true
 entry_point: src/openstack_actions.py
-name: project.delete
+name: project.create.undo
 parameters:
   lib_entry_point:
     default: workflows.project_actions.delete_project
