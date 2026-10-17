@@ -1,0 +1,9 @@
+SERVERS_EOL_TAG: EOL_SERVER
+SERVERS_EOL_TAG_TEMPLATE: EOL_SERVER_{os_name}_{os_version}
+SERVERS_EOL_METADATA_KEY: EOL_SERVER
+SERVERS_EOL_METADATA_VALUE_TEMPLATE: EOL_SERVER_{os_name}_{os_version}_{timestamp}
+SERVERS_EOL_OPERATING_SYSTEMS:
+  - os: ubuntu
+    version: '20'
+  - os: scientific
+    version: '7'
