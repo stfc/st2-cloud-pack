@@ -1,7 +1,9 @@
+from typing import Dict, List
+
 from openstackquery.api.query_objects import HypervisorQuery, ServerQuery
 
 
-def query_hypervisor_state(cloud_account: str):
+def query_hypervisor_state(cloud_account: str) -> List[Dict]:
     """
     Query the state of hypervisors
     :param cloud_account: A string representing the cloud account to use - set in clouds.yaml

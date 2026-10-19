@@ -1,14 +1,16 @@
+import datetime as dt
 import logging
-from typing import Dict, List
-
 from dataclasses import dataclass
-import openstack
+from typing import Dict, List, Sequence
 
+import openstack
+from apis.netbox_api.device import get_fw_patch_date, get_platform
 from apis.openstack_api.enums.hypervisor_enums import (
     HypervisorAction,
     HypervisorState,
     HypervisorStatus,
 )
+from apis.utils.weighers import get_weights
 from openstack.connection import Connection
 
 logger = logging.getLogger(__name__)
@@ -25,10 +27,14 @@ class Hypervisor:
     hypervisor_server_count: int
 
     MAX_DISABLED_PERCENTAGE_CAPACITY_IN_AGGREGATE = 0.2  # Max 20% disabled
+    TARGET_OS_VERSION = 9
 
     def __init__(self, cloud_account):
         self.cloud_account = cloud_account
         self.conn = openstack.connect(self.cloud_account)
+
+        self._previous_fw_patch_date: str | None = None
+        self._os_version: int | None = None
 
     @staticmethod
     def from_dict(cloud_account: str, dictionary: Dict) -> "Hypervisor":
@@ -74,6 +80,18 @@ class Hypervisor:
         hypervisor.hypervisor_server_count = int(dictionary["hypervisor_server_count"])
 
         return hypervisor
+
+    def to_dict(self) -> dict:
+        return {
+            "hostname": self.name,
+            "uptime_days": self.uptime_days,
+            "state": self.state,
+            "status": self.status,
+            "server_count": self.hypervisor_server_count,
+            "prev_fw_patched": self.previous_fw_patch_date,
+            "os_version": self.os_version,
+            "maint_score": self.maint_score,
+        }
 
     def take_action(self, uptime_limit: int) -> HypervisorAction:
         """
@@ -206,6 +224,84 @@ class Hypervisor:
 
         return len(disabled) / len(hypervisors)
 
+    @property
+    def os_version(self) -> int:
+        if self._os_version is None:
+            self._os_version = get_platform()
+        return self._os_version
+
+    @property
+    def previous_fw_patch_date(self) -> str:
+        if self._previous_fw_patch_date is None:
+            self._previous_fw_patch_date = get_fw_patch_date()
+        return self._previous_fw_patch_date
+
+    def hypervisor_server_count_metric(self) -> int:
+        """
+        Favour hypervisors with fewer VMs on
+
+        :param hypervisor_server_count: Number of servers on the hypervisor
+        :type hypervisor_server_count: int
+
+        :return: Server count metric
+        :rtype: int
+        """
+        return -self.hypervisor_server_count
+
+    def last_fw_patch_date_metric(self) -> int:
+        """
+        Prioritise hosts with longer FW patch date duration
+
+        :param patch_date: Date of the last FW patch date
+        :type patch_date: str
+
+        :return: FW patch date metric
+        :rtype: int
+        """
+        date = dt.datetime.strptime(self.previous_fw_patch_date, "%Y-%m-%d")
+        return (dt.datetime.now() - date).days
+
+    def os_version_metric(self) -> bool:
+        """
+        Deprioritse hosts currently runing the target version
+        of the operating system
+
+        :return: OS version metric
+        :rtype: bool
+        """
+        return self.os_version != self.TARGET_OS_VERSION
+
+    @property
+    def maint_score(self) -> float:
+        """
+        Calculates the score for a host based on property metrics
+        To sort them into priority order
+
+        score = (m1 * w1) + (m2 * w2) + ...
+
+        :param host: Dictionary containing properties of the host to weigh
+        :type host: dict
+        :param weights: Multipliers for the properties to (de)priorities their importance
+        :type weights: dict
+
+        :return: Host priority weight
+        :rtype: float
+        """
+        weights = get_weights()
+        score = 0
+
+        for metric, mult in weights.items():
+            try:
+                metric_fn = getattr(self, f"{metric}_metric")
+            except AttributeError as exc:
+                raise AttributeError() from exc
+
+            value = metric_fn()
+
+            score += value * mult
+
+        return score
+
 
 def get_available_flavors(conn: Connection, hypervisor_name: str) -> List[str]:
     """
@@ -234,3 +330,17 @@ def get_available_flavors(conn: Connection, hypervisor_name: str) -> List[str]:
                 available_flavors.append(flavor.name)
 
     return available_flavors
+
+
+def prioritse_patching(hosts: List[Hypervisor]) -> Sequence[Hypervisor]:
+    """
+    Prioritises a list of hyperviosrs to order them by priority of patching
+
+    :param hosts: List of hypervisors
+    :type hosts: Sequence[dict]
+
+    :return: An ordered list of hypervisors by the priority of patching
+    :rtype:  List[dict]
+    """
+
+    return sorted(hosts, key=lambda x: x.maint_score, reverse=True)

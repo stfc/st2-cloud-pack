@@ -1,0 +1,21 @@
+---
+description: Used to print out the order in which hypervisors will be prioritised for draining for maintenance
+enabled: true
+entry_point: src/openstack_actions.py
+name: hypervisor.print.maintenace.scores
+parameters:
+  timeout:
+    default: 5400
+  lib_entry_point:
+    default: workflows.print_maintenance_scores.print_maintenance_scores
+    immutable: true
+    type: string
+  cloud_account:
+    description: The clouds.yaml account to use whilst performing this action
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+runner_type: python-script
