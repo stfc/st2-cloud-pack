@@ -1,5 +1,6 @@
 from typing import Optional, List, Dict
 import logging
+import re
 import requests
 from apis.wazuh_api.structs.wazuh_account import WazuhAccount
 
@@ -157,7 +158,6 @@ def wazuh_list_servers_by_os(
         "<=": f";(os.major<{os_version} or os.major={os_version})",
     }
     query += operators[comparison]
-    query += ";status=active"
     query += ";group!=kolla"
     # we ensure we only get information about Servers and not Hypervisors
     # by adding conditions
@@ -177,5 +177,43 @@ def wazuh_list_servers_by_os(
             server_id_list.append(server_id)
         except ValueError:
             logger.error("failed to get Server ID for Agent ID %s", agent_id)
+    logger.info("returning a list of %s Server IDs", len(server_id_list))
+    return server_id_list
+
+
+# FIXME
+# this function is almost identical to
+#   wazuh_list_servers_by_os( )
+# maybe they can be merged
+# however, this may be a case of early optimisation
+# therefore, in order to move forward, we keep both for the time being
+# but there is a JIRA ticket for it
+#   https://stfc.atlassian.net/browse/CLDSCRM-4226
+def wazuh_list_all_servers(wazuh_account: WazuhAccount) -> List:
+    """
+    query the Wazuh server to get the entire list of
+    registered OpenStack Servers
+
+    :return: the list of VM IDs
+    :rtype: list
+    """
+    wazuh_token = wazuh_account.get_wazuh_token()
+    logger.info("querying Wazuh for all OpenStack Virtual Machines")
+    query = "group!=kolla"
+    # we ensure we only get information about Servers and not Hypervisors
+    # by adding conditions
+    #   group!=kolla
+    # to the query string
+    data = _query_agents(
+        wazuh_token, wazuh_account.wazuh_endpoint, values=["name"], query=query
+    )
+
+    server_id_list = []
+    agent_name_pattern = r"^.+-([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})$"
+    for agent in data:
+        match = re.search(agent_name_pattern, agent["name"])
+        if match:
+            uuid = match.group(1)
+            server_id_list.append(uuid)
     logger.info("returning a list of %s Server IDs", len(server_id_list))
     return server_id_list
