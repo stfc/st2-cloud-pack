@@ -1,0 +1,36 @@
+---
+description: Shutoff all OpenStack Servers not reporting to Wazuh
+enabled: true
+entry_point: src/openstack_actions.py
+name: shutoff_all_non_wazuh_servers
+parameters:
+  timeout:
+    default: 3600
+  lib_entry_point:
+    default: workflows.shutoff_all_non_wazuh_servers
+    immutable: true
+    type: string
+  create_openstack_connection:
+    description: "flag that when set, will create and open a openstack connection object before running action"
+    default: true
+    immutable: true
+    type: boolean
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  wazuh_account_name:
+    type: string
+    description: "Name of Wazuh Account to use. Must be configured in in the pack settings."
+    required: true
+    default: "default"
+  admin_lock:
+    type: boolean
+    description: "check to admin lock the Server after being set to SHUTOFF"
+    default: true
+    immutable: true
+runner_type: python-script
