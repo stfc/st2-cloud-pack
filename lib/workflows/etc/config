@@ -6,3 +6,13 @@ SERVERS_EOL_OPERATING_SYSTEMS:
     version: '20'
   - os: scientific
     version: '7'
+
+# ---------------------------------------------------------- 
+# Variables for the Action shutoff_all_non_wazuh_servers
+# ---------------------------------------------------------- 
+SHUTOFF_ALL_NON_WAZUH_SERVER_EXCLUDE:
+  - b868860c-960d-460e-ab42-605ddd74ef3c    # wazuh-server-1
+  - 1c92b047-0186-4bc8-ada4-f6236fb299a6    # wazuh-server-2
+  - e6d2907a-7366-4268-bc9e-9de947b80135    # wazuh-server-3
+  - 32633bd9-7492-435b-b260-4df53a86b6ac    # wazuh-server-4
+  - ea16b311-be90-465a-b230-bb17749eb493    # wazuh-server-5
