@@ -7,6 +7,7 @@ from apis.wazuh_api.wazuh_query_agents import (
     _wazuh_get_labels_for_agent,
     wazuh_get_server_id_from_label,
     wazuh_list_servers_by_os,
+    wazuh_list_all_servers,
 )
 
 
@@ -256,6 +257,80 @@ def test_wazuh_list_servers_by_os(mock_query, mock_get_server_id):
     wazuh_account.get_wazuh_token.assert_called_once_with()
 
     expected_query = "os.platform=ubuntu;os.major=22.04;status=active;group!=kolla"
+    mock_query.assert_called_once_with(
+        "jwt-token",
+        "https://wazuh.example.com",
+        values=["name"],
+        query=expected_query,
+    )
+
+    assert mock_get_server_id.call_count == 3
+
+    mock_get_server_id.assert_any_call(
+        "jwt-token",
+        "https://wazuh.example.com",
+        "001",
+    )
+    mock_get_server_id.assert_any_call(
+        "jwt-token",
+        "https://wazuh.example.com",
+        "002",
+    )
+    mock_get_server_id.assert_any_call(
+        "jwt-token",
+        "https://wazuh.example.com",
+        "003",
+    )
+
+
+@patch("apis.wazuh_api.wazuh_query_agents.wazuh_get_server_id_from_label")
+@patch("apis.wazuh_api.wazuh_query_agents._query_agents")
+def test_wazuh_list_all_servers(mock_query, mock_get_server_id):
+    """
+    WHAT IT TESTS:
+        Verifies `wazuh_list_all_servers()` formats the Wazuh query string correctly
+        and retrieves OpenStack Server IDs from all active Wazuh agents,
+        excluding those belonging to the kolla group.
+
+    HOW IT WORKS:
+        Mocks `_query_agents` to return sample Wazuh Agent IDs and mocks
+        `wazuh_get_server_id_from_label` to return the corresponding Server IDs.
+        One agent is configured without a Server ID.
+
+    WHY IT PREVENTS BUGS:
+        Verifies the exact query parameters, ensures only active agents outside
+        the kolla group are requested, confirms Server IDs are retrieved from
+        agent labels, and ensures agents without a Server ID are skipped.
+    """
+    wazuh_account = Mock()
+    wazuh_account.wazuh_endpoint = "https://wazuh.example.com"
+    wazuh_account.get_wazuh_token.return_value = "jwt-token"
+
+    mock_query.return_value = [
+        {"id": "001"},
+        {"id": "002"},
+        {"id": "003"},
+    ]
+
+    mock_get_server_id.side_effect = [
+        "001682d2-79a2-41b9-af7f-c553f7d67b0d",
+        "aabbccdd-1234-5678-90ab-cdef12345678",
+        ValueError("No Server ID found for Agent ID 003"),
+    ]
+
+    server_ids = wazuh_list_all_servers(
+        wazuh_account=wazuh_account,
+    )
+
+    expected_ids = [
+        "001682d2-79a2-41b9-af7f-c553f7d67b0d",
+        "aabbccdd-1234-5678-90ab-cdef12345678",
+    ]
+    assert server_ids == expected_ids
+
+    wazuh_account.get_wazuh_token.assert_called_once_with()
+
+    expected_query = "status=active;group!=kolla"
     mock_query.assert_called_once_with(
         "jwt-token",
         "https://wazuh.example.com",
