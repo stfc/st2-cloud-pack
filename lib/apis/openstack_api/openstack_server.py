@@ -651,3 +651,10 @@ def get_project_name(conn: Connection, server_id: str) -> str:
     """
     project_id = get_project_id(conn, server_id)
     return get_project_name_from_project_api(conn, project_id)
+
+
+def get_all_servers(conn: Connection) -> List:
+    """
+    get the entire list of Server IDs in OpenStack
+    """
+    return [server.id for server in conn.compute.servers(all_projects=True)]
