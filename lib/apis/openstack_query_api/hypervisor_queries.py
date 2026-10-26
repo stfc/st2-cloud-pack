@@ -6,11 +6,18 @@ def query_hypervisor_state(cloud_account: str):
     Query the state of hypervisors
     :param cloud_account: A string representing the cloud account to use - set in clouds.yaml
     """
+
+    # Temp whitelist for prod to limit hypervisors auto drained
+    if cloud_account == "prod":
+        hv_regex = "hv8*"
+    else:
+        hv_regex = "hv*"
+
     state_query = HypervisorQuery()
     state_query.where(
         "regex",
         "hypervisor_name",
-        value="hv*",
+        value=hv_regex,
     )
     state_query.select(
         "hypervisor_name",
