@@ -180,3 +180,18 @@ def get_project_name(conn: Connection, project_id: str) -> str:
     """
     project = _find_project_object(conn, project_id)
     return project.name
+
+
+def get_project_id(conn: Connection, project_name: str) -> str:
+    """
+    returns the ID for a given Project when we only know the name
+
+    :param conn: the openstack connection object
+    :type conn: Connection
+    :param project_name: the name of the Project
+    :type project_name: str
+    :return: the Project ID
+    :rtype: str
+    """
+    project = conn.identity.find_project(project_name)
+    return project.id
