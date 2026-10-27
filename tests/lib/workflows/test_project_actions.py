@@ -5,7 +5,7 @@ from workflows.project_actions import delete_project
 @patch("workflows.project_actions.openstack_project.delete_project")
 def test_project_delete_with_confirmation(mock_api_delete_project):
     """
-    Tests that project_delete function forwards on request to openstack API project_delete function
+    Tests that project.create.undo function forwards on request to openstack API project_delete function
     and returns the correct status and string
     """
 
