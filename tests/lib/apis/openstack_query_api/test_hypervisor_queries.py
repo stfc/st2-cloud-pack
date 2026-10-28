@@ -56,7 +56,7 @@ def test_basic_hypervisor_info_and_server_count(
     mock_hv_query_cls.assert_called_once()
     hv_instance.where.assert_has_calls(
         [
-            call("regex", "hypervisor_name", value="hv*"),
+            call("regex", "hypervisor_name", value="^hv"),
             call(
                 "not_equal_to",
                 "hypervisor_uptime_days",

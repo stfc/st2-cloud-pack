@@ -8,10 +8,10 @@ def query_hypervisor_state(cloud_account: str):
     """
 
     # Temp whitelist for prod to limit hypervisors auto drained
-    if cloud_account == "prod":
-        hv_regex = "hv8*"
+    if cloud_account.casefold() == "prod":
+        hv_regex = "^hv[8].*"
     else:
-        hv_regex = "hv*"
+        hv_regex = "^hv"
 
     state_query = HypervisorQuery()
     state_query.where(
