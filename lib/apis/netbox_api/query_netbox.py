@@ -41,10 +41,7 @@ def get_hypervisors_by_environment_and_status(
     if status.strip().casefold() != "any":
         filters["status"] = status
 
-    print("before")
     nb = pynetbox.api(netbox_account.netbox_endpoint, token=netbox_account.api_token)
-    logger.info("connected to Netbox")
-
     hypervisors = list(nb.dcim.devices.filter(**filters))
 
     logger.info("Found %d hypervisors", len(hypervisors))
