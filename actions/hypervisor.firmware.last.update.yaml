@@ -5,7 +5,7 @@ entry_point: src/openstack_actions.py
 name: hypervisor.firmware.last.update
 parameters:
   lib_entry_point:
-    default: workflows.query_netbox.query_netbox_for_hypervisor_info
+    default: workflows.query_netbox_for_hypervisor_firmware_date.query_netbox_for_hypervisor_firmware_date
     immutable: true
     type: string
   netbox_account_name:
@@ -38,4 +38,5 @@ parameters:
       - "failed"
       - "inventory"
       - "decommissioning"
+      - "any"
 runner_type: python-script
