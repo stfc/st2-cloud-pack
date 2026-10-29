@@ -1,6 +1,31 @@
-SERVERS_EOL_TAG_TEMPLATE: EOL_SERVER_{os_name}_{os_version}
-SERVERS_EOL_METADATA_KEY: EOL_SERVER
-SERVERS_EOL_METADATA_VALUE_TEMPLATE: EOL_SERVER_{os_name}_{os_version}_{timestamp}
+# ---------------------------------------------------------- 
+# Rationale:
+# * to set here variables that can change with time
+# * to set here variables that are used by more than one
+#   action with the same value, irrespective that value
+#   may or may not change over time
+# ---------------------------------------------------------- 
+
+# ---------------------------------------------------------- 
+# Variables for the hygiene automations to handle
+# Servers running on unsuppported versions, 
+# or End Of Life (EOL), of the Operating System
+# ---------------------------------------------------------- 
+
+# OpenStack TAG to mark the Server
+SERVERS_EOL_TAG: EOL_SERVER
+
+# OpenStack metadata key to add the OS name and version
+SERVERS_EOL_METADATA_KEY_OS: EOL_SERVER_OS
+
+# OpenStack metadata key to add the timestamp when the 
+# Server was identified
+SERVERS_EOL_METADATA_KEY_TIMESTAMP: EOL_SERVER_TIMESTAMP
+
+# Number of days since the Server was identify until we SHUTOFF it
+SERVERS_EOL_DAYS_GRACE_PERIOD: 7
+
+# Name and version of the latest retired OSes
 SERVERS_EOL_OPERATING_SYSTEMS:
   - os: ubuntu
     version: '20'
