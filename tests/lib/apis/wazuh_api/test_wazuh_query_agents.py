@@ -208,22 +208,50 @@ def test_wazuh_get_server_id_from_label_missing(mock_get_labels):
     )
 
 
+@pytest.mark.parametrize(
+    "comparison, expected_query",
+    [
+        (
+            "=",
+            "os.platform=ubuntu;os.major=22.04;status=active;group!=kolla",
+        ),
+        (
+            "<",
+            "os.platform=ubuntu;os.major<22.04;status=active;group!=kolla",
+        ),
+        (
+            "<=",
+            "os.platform=ubuntu;(os.major<22.04 or os.major=22.04);status=active;group!=kolla",
+        ),
+    ],
+)
 @patch("apis.wazuh_api.wazuh_query_agents.wazuh_get_server_id_from_label")
 @patch("apis.wazuh_api.wazuh_query_agents._query_agents")
-def test_wazuh_list_servers_by_os(mock_query, mock_get_server_id):
+def test_wazuh_list_servers_by_os(
+    mock_query, mock_get_server_id, comparison, expected_query
+):
     """
     WHAT IT TESTS:
-        Verifies `wazuh_list_servers_by_os()` formats the Wazuh query string correctly
-        and retrieves OpenStack Server IDs from the returned Wazuh agents.
+        Verifies `wazuh_list_servers_by_os()` builds the correct Wazuh query
+        for all supported OS version comparison operators:
+        - "=": Matches the specified OS version exactly.
+        - "<": Matches OS versions below the specified version.
+        - "<=": Matches OS versions up to and including the specified version.
+
+        Also verifies that OpenStack Server IDs are retrieved correctly
+        from Wazuh agents.
 
     HOW IT WORKS:
+        Uses parameterization to test all supported comparison operators.
+
         Mocks `_query_agents` to return sample Wazuh Agent IDs and mocks
         `wazuh_get_server_id_from_label` to return the corresponding Server IDs.
         One agent is configured without a Server ID.
 
     WHY IT PREVENTS BUGS:
-        Verifies the exact query parameters, ensures Server IDs are retrieved from
-        agent labels, and confirms agents without a Server ID are skipped.
+        Verifies the exact query parameters for all supported comparison
+        operators, confirms Server IDs are retrieved from agent labels,
+        and ensures agents without a Server ID are skipped.
     """
     wazuh_account = Mock()
     wazuh_account.wazuh_endpoint = "https://wazuh.example.com"
@@ -245,6 +273,7 @@ def test_wazuh_list_servers_by_os(mock_query, mock_get_server_id):
         wazuh_account=wazuh_account,
         os_name="ubuntu",
         os_version="22.04",
+        comparison=comparison,
     )
 
     expected_ids = [
@@ -255,7 +284,6 @@ def test_wazuh_list_servers_by_os(mock_query, mock_get_server_id):
 
     wazuh_account.get_wazuh_token.assert_called_once_with()
 
-    expected_query = "os.platform=ubuntu;os.major=22.04;status=active;group!=kolla"
     mock_query.assert_called_once_with(
         "jwt-token",
         "https://wazuh.example.com",
@@ -279,4 +307,42 @@ def test_wazuh_list_servers_by_os(mock_query, mock_get_server_id):
         "jwt-token",
         "https://wazuh.example.com",
         "003",
+    )
+
+
+@patch("apis.wazuh_api.wazuh_query_agents._query_agents")
+def test_wazuh_list_servers_by_os_default_comparison(mock_query):
+    """
+    WHAT IT TESTS:
+        Verifies that omitting the `comparison` argument defaults to "=".
+
+    HOW IT WORKS:
+        Calls the function without specifying a comparison operator
+        and checks that the generated query matches the OS version exactly.
+
+    WHY IT PREVENTS BUGS:
+        Ensures the default comparison operator remains "=" and prevents
+        unintended changes to the function's default behaviour.
+    """
+    wazuh_account = Mock()
+    wazuh_account.wazuh_endpoint = "https://wazuh.example.com"
+    wazuh_account.get_wazuh_token.return_value = "jwt-token"
+
+    mock_query.return_value = []
+
+    server_ids = wazuh_list_servers_by_os(
+        wazuh_account=wazuh_account,
+        os_name="ubuntu",
+        os_version="22.04",
+    )
+
+    assert server_ids == []
+
+    wazuh_account.get_wazuh_token.assert_called_once_with()
+
+    mock_query.assert_called_once_with(
+        "jwt-token",
+        "https://wazuh.example.com",
+        values=["name"],
+        query="os.platform=ubuntu;os.major=22.04;status=active;group!=kolla",
     )
