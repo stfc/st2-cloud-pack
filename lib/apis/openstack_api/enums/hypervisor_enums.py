@@ -34,3 +34,14 @@ class HypervisorStatus(Enum):
 
     ENABLED = auto()
     DISABLED = auto()
+
+
+class HypervisorOS(Enum):
+    """
+    Class of hypervisors operating systems, using IDs from netbox
+    https://netbox.esc.rl.ac.uk/dcim/platforms/
+    """
+
+    ROCKY_8 = 14
+    ROCKY_9 = 15
+    ROCKY_10 = 36

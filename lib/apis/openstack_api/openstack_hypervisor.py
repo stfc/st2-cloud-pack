@@ -7,9 +7,11 @@ import openstack
 from apis.netbox_api.device import get_fw_patch_date, get_platform
 from apis.openstack_api.enums.hypervisor_enums import (
     HypervisorAction,
+    HypervisorOS,
     HypervisorState,
     HypervisorStatus,
 )
+from apis.utils.time_utils import parse_iso_utc
 from apis.utils.weighers import get_weights
 from openstack.connection import Connection
 
@@ -27,14 +29,14 @@ class Hypervisor:
     hypervisor_server_count: int
 
     MAX_DISABLED_PERCENTAGE_CAPACITY_IN_AGGREGATE = 0.2  # Max 20% disabled
-    TARGET_OS_VERSION = 9
+    TARGET_OS_VERSION = HypervisorOS.ROCKY_9
 
     def __init__(self, cloud_account):
         self.cloud_account = cloud_account
         self.conn = openstack.connect(self.cloud_account)
 
         self._previous_fw_patch_date: str | None = None
-        self._os_version: int | None = None
+        self._os_version: HypervisorOS | None = None
 
     @staticmethod
     def from_dict(cloud_account: str, dictionary: Dict) -> "Hypervisor":
@@ -61,6 +63,12 @@ class Hypervisor:
 
         status = dictionary["hypervisor_status"]
         hypervisor.status = HypervisorStatus[str(status).upper()]
+
+        os_version = dictionary["platform"]
+        hypervisor._os_version = HypervisorOS(os_version.id)
+
+        fw_patch_date = dictionary["fw_date"]
+        hypervisor._previous_fw_patch_date = fw_patch_date
 
         state = dictionary["hypervisor_state"]
         hypervisor.state = HypervisorState[str(state).upper()]
@@ -225,7 +233,7 @@ class Hypervisor:
         return len(disabled) / len(hypervisors)
 
     @property
-    def os_version(self) -> int:
+    def os_version(self) -> HypervisorOS:
         if self._os_version is None:
             self._os_version = get_platform()
         return self._os_version
@@ -258,8 +266,12 @@ class Hypervisor:
         :return: FW patch date metric
         :rtype: int
         """
-        date = dt.datetime.strptime(self.previous_fw_patch_date, "%Y-%m-%d")
-        return (dt.datetime.now() - date).days
+        try:
+            date = dt.datetime.strptime(self.previous_fw_patch_date, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            # Use created at timestamp if firmware_last_update is not set
+            date = parse_iso_utc(self.previous_fw_patch_date).date()
+        return (dt.datetime.now().date() - date).days
 
     def os_version_metric(self) -> bool:
         """
