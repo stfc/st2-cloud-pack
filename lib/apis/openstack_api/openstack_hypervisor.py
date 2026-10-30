@@ -11,7 +11,6 @@ from apis.openstack_api.enums.hypervisor_enums import (
     HypervisorStatus,
 )
 from apis.utils.time_utils import parse_iso_utc
-from apis.utils.weighers import get_weights
 from openstack.connection import Connection
 
 logger = logging.getLogger(__name__)
@@ -39,6 +38,12 @@ class Hypervisor:
     hypervisor_server_count: int
 
     MAX_DISABLED_PERCENTAGE_CAPACITY_IN_AGGREGATE = 0.2  # Max 20% disabled
+    WEIGHTS = {
+        "os_version": 10,
+        "last_fw_patch_date": 2,
+        "hypervisor_server_count": 0.5,
+    }
+
     TARGET_OS_VERSION = HypervisorOS.ROCKY_9
 
     def __init__(self, cloud_account):
@@ -292,7 +297,7 @@ class Hypervisor:
         :return: Host priority weight
         :rtype: float
         """
-        weights = get_weights()
+        weights = self.WEIGHTS
         score = 0
 
         for metric, mult in weights.items():
@@ -339,7 +344,7 @@ def get_available_flavors(conn: Connection, hypervisor_name: str) -> List[str]:
 
 def prioritse_patching(hosts: List[Hypervisor]) -> Sequence[Hypervisor]:
     """
-    Prioritises a list of hyperviosrs to order them by priority of patching
+    Prioritises a list of hypervisors to order them by priority of patching
 
     :param hosts: List of hypervisors
     :type hosts: Sequence[dict]

@@ -587,8 +587,14 @@ def test_avaliable_flavors():
 
 @pytest.mark.freeze_time("2026-10-04 15:00:01")
 @patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
-@patch("apis.openstack_api.openstack_hypervisor.get_weights")
-def test_prioritise_fw_patch_date(mock_get_weights, _mock_connect):
+@patch.object(
+    Hypervisor,
+    "WEIGHTS",
+    {
+        "last_fw_patch_date": 2,
+    },
+)
+def test_prioritise_fw_patch_date(_mock_connect):
     mock_host1 = Hypervisor.from_dict(
         "dev",
         {
@@ -630,10 +636,6 @@ def test_prioritise_fw_patch_date(mock_get_weights, _mock_connect):
     )
 
     mock_hypervisors = [mock_host1, mock_host2, mock_host3]
-    mock_weights = {
-        "last_fw_patch_date": 2,
-    }
-    mock_get_weights.return_value = mock_weights
 
     res = prioritse_patching(mock_hypervisors)
 
@@ -646,8 +648,8 @@ def test_prioritise_fw_patch_date(mock_get_weights, _mock_connect):
 
 @pytest.mark.freeze_time("2026-10-04 15:00:01")
 @patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
-@patch("apis.openstack_api.openstack_hypervisor.get_weights")
-def test_prioritise_os_version(mock_get_weights, _mock_connect):
+@patch.object(Hypervisor, "WEIGHTS", {"os_version": 1})
+def test_prioritise_os_version(_mock_connect):
     mock_host1 = Hypervisor.from_dict(
         "dev",
         {
@@ -689,10 +691,6 @@ def test_prioritise_os_version(mock_get_weights, _mock_connect):
     )
 
     mock_hypervisors = [mock_host1, mock_host2, mock_host3]
-    mock_weights = {
-        "os_version": 1,
-    }
-    mock_get_weights.return_value = mock_weights
 
     res = prioritse_patching(mock_hypervisors)
 
@@ -701,8 +699,8 @@ def test_prioritise_os_version(mock_get_weights, _mock_connect):
 
 @pytest.mark.freeze_time("2026-10-04 15:00:01")
 @patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
-@patch("apis.openstack_api.openstack_hypervisor.get_weights")
-def test_prioritise_num_vms(mock_get_weights, _mock_connect):
+@patch.object(Hypervisor, "WEIGHTS", {"hypervisor_server_count": 1})
+def test_prioritise_num_vms(_mock_connect):
     mock_host1 = Hypervisor.from_dict(
         "dev",
         {
@@ -743,10 +741,6 @@ def test_prioritise_num_vms(mock_get_weights, _mock_connect):
         },
     )
     mock_hypervisors = [mock_host1, mock_host2, mock_host3]
-    mock_weights = {
-        "hypervisor_server_count": 1,
-    }
-    mock_get_weights.return_value = mock_weights
 
     res = prioritse_patching(mock_hypervisors)
 
@@ -755,8 +749,8 @@ def test_prioritise_num_vms(mock_get_weights, _mock_connect):
 
 @pytest.mark.freeze_time("2026-10-04 15:00:01")
 @patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
-@patch("apis.openstack_api.openstack_hypervisor.get_weights")
-def test_calc_weight_missing_weigh_fn(mock_get_weights, _mock_connect):
+@patch.object(Hypervisor, "WEIGHTS", {"disabled_reason": 1})
+def test_calc_weight_missing_weigh_fn(_mock_connect):
     mock_host1 = Hypervisor.from_dict(
         "dev",
         {
@@ -771,10 +765,6 @@ def test_calc_weight_missing_weigh_fn(mock_get_weights, _mock_connect):
         },
     )
     mock_hypervisors = [mock_host1]
-    mock_weights = {
-        "disabled_reason": 1,
-    }
-    mock_get_weights.return_value = mock_weights
 
     with pytest.raises(AttributeError):
         prioritse_patching(mock_hypervisors)
