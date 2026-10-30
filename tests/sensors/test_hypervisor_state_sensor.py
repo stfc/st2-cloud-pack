@@ -22,7 +22,15 @@ def state_sensor_fixture():
         sensor_service=MagicMock(),
         config={
             "sensor_cloud_account": "dev",
+            "sensor_netbox_account": "dev-netbox",
             "hypervisor_sensor": {"uptime_limit": 180},
+            "netbox_accounts": [
+                {
+                    "api_token": "abc123",
+                    "name": "dev-netbox",
+                    "netbox_endpoint": "https://netbox.example.com/",
+                }
+            ],
         },
         poll_interval=10,
     )
@@ -45,7 +53,7 @@ def test_poll(mock_query_hypervisor_state, mock_from_dict, mock_sleep, action, s
 
     sensor.poll()
 
-    mock_query_hypervisor_state.assert_called_once_with("dev")
+    mock_query_hypervisor_state.assert_called_once_with("dev", sensor.netbox_account)
 
     mock_hypervisor.take_action.assert_called_once_with(uptime_limit=180)
 
@@ -83,7 +91,7 @@ def test_poll_no_action(mock_query_hypervisor_state, mock_from_dict, sensor):
     sensor.poll()
 
     # Should call these
-    mock_query_hypervisor_state.assert_called_once()
+    mock_query_hypervisor_state.assert_called_once_with("dev", sensor.netbox_account)
     mock_hypervisor.take_action.assert_called_once_with(uptime_limit=180)
 
     # Should NOT call these

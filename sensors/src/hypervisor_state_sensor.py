@@ -1,6 +1,7 @@
 import time
+from apis.netbox_api.structs.netbox_account import NetboxAccount
 from apis.openstack_api.enums.hypervisor_enums import HypervisorAction
-from apis.openstack_api.openstack_hypervisor import Hypervisor
+from apis.openstack_api.openstack_hypervisor import Hypervisor, prioritse_patching
 from apis.openstack_query_api.hypervisor_queries import query_hypervisor_state
 from st2reactor.sensor.base import PollingSensor
 
@@ -24,6 +25,9 @@ class HypervisorStateSensor(PollingSensor):
         )
         self._logger = self.sensor_service.get_logger(name=self.__class__.__name__)
         self.cloud_account = self.config["sensor_cloud_account"]
+        self.netbox_account = NetboxAccount.from_pack_config(
+            self.config, self.config["sensor_netbox_account"]
+        )
         self.uptime_limit = self.config["hypervisor_sensor"].get("uptime_limit", 180)
 
     def setup(self):
@@ -37,17 +41,11 @@ class HypervisorStateSensor(PollingSensor):
         """
         self._logger.info("HypervisorSensor querying openstack")
 
-        data = query_hypervisor_state(self.cloud_account)
+        data = query_hypervisor_state(self.cloud_account, self.netbox_account)
 
-        # TODO: Add a prioritize function which will order the list
-        #       of hypervisors in data by maintenance priority, e.g.
-        #       FW update date, OS version etc.
+        hypervisor_list = [Hypervisor.from_dict(self.cloud_account, hv) for hv in data]
 
-        for hypervisor in data:
-            if not isinstance(hypervisor, dict):
-                continue
-            hypervisor = Hypervisor.from_dict(self.cloud_account, hypervisor)
-            self._logger.info(f"evaluating action for {hypervisor.name}")
+        for hypervisor in prioritse_patching(hypervisor_list):
             action = hypervisor.take_action(uptime_limit=self.uptime_limit)
             self._logger.info(f"{hypervisor.name}: {action.name}")
             if action is not HypervisorAction.NOOP:

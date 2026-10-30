@@ -1,30 +1,50 @@
+import datetime as dt
 import logging
-from typing import Dict, List
-
 from dataclasses import dataclass
-import openstack
+from typing import Dict, List, Sequence
 
+import openstack
 from apis.openstack_api.enums.hypervisor_enums import (
     HypervisorAction,
+    HypervisorOS,
     HypervisorState,
     HypervisorStatus,
 )
+from apis.utils.time_utils import parse_iso_utc
 from openstack.connection import Connection
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class HypervisorSysInfo:
+    """
+    Class representing the system information of a hypervisor.
+    """
+
+    uptime_days: float
+    os_version: HypervisorOS
+    fw_patch_date: str
 
 
 # pylint:disable=too-many-instance-attributes
 @dataclass
 class Hypervisor:
     name: str
-    uptime_days: float
+    system_info: HypervisorSysInfo
     status: HypervisorStatus
     state: HypervisorState
     disabled_reason: str | None
     hypervisor_server_count: int
 
     MAX_DISABLED_PERCENTAGE_CAPACITY_IN_AGGREGATE = 0.2  # Max 20% disabled
+    WEIGHTS = {
+        "os_version": 10,
+        "last_fw_patch_date": 2,
+        "hypervisor_server_count": 0.5,
+    }
+
+    TARGET_OS_VERSION = HypervisorOS.ROCKY_9
 
     def __init__(self, cloud_account):
         self.cloud_account = cloud_account
@@ -51,7 +71,11 @@ class Hypervisor:
             )
         hypervisor.name = dictionary["hypervisor_name"]
 
-        hypervisor.uptime_days = int(dictionary["hypervisor_uptime_days"])
+        hypervisor.system_info = HypervisorSysInfo(
+            uptime_days=int(dictionary["hypervisor_uptime_days"]),
+            os_version=HypervisorOS(dictionary["platform"].id),
+            fw_patch_date=dictionary["fw_date"],
+        )
 
         status = dictionary["hypervisor_status"]
         hypervisor.status = HypervisorStatus[str(status).upper()]
@@ -75,6 +99,16 @@ class Hypervisor:
 
         return hypervisor
 
+    def to_dict(self) -> dict:
+        return {
+            "hostname": self.name,
+            "state": self.state,
+            "status": self.status,
+            "server_count": self.hypervisor_server_count,
+            **self.system_info.__dict__,
+            "maint_score": self.maint_score,
+        }
+
     def take_action(self, uptime_limit: int) -> HypervisorAction:
         """
         Returns a hypervisor action based on certain conditions
@@ -95,7 +129,7 @@ class Hypervisor:
             return HypervisorAction.NOOP  # -> No action if manually disabled
 
         # If hypervisor has been up long enough to need maintenance
-        if self.uptime_days > uptime_limit:
+        if self.system_info.uptime_days > uptime_limit:
             logger.info("%s requires maintenance", self.name)
 
             # Drained by stackstorm
@@ -206,6 +240,78 @@ class Hypervisor:
 
         return len(disabled) / len(hypervisors)
 
+    def hypervisor_server_count_metric(self) -> int:
+        """
+        Favour hypervisors with fewer VMs on
+
+        :param hypervisor_server_count: Number of servers on the hypervisor
+        :type hypervisor_server_count: int
+
+        :return: Server count metric
+        :rtype: int
+        """
+        return -self.hypervisor_server_count
+
+    def last_fw_patch_date_metric(self) -> int:
+        """
+        Prioritise hosts with longer FW patch date duration
+
+        :param patch_date: Date of the last FW patch date
+        :type patch_date: str
+
+        :return: FW patch date metric
+        :rtype: int
+        """
+        try:
+            date = dt.datetime.strptime(
+                self.system_info.fw_patch_date, "%Y-%m-%d"
+            ).date()
+        except (ValueError, TypeError):
+            # Use created at timestamp if firmware_last_update is not set
+            date = parse_iso_utc(self.system_info.fw_patch_date).date()
+        return (dt.datetime.now().date() - date).days
+
+    def os_version_metric(self) -> bool:
+        """
+        Deprioritse hosts currently runing the target version
+        of the operating system
+
+        :return: OS version metric
+        :rtype: bool
+        """
+        return self.system_info.os_version != self.TARGET_OS_VERSION
+
+    @property
+    def maint_score(self) -> float:
+        """
+        Calculates the score for a host based on property metrics
+        To sort them into priority order
+
+        score = (m1 * w1) + (m2 * w2) + ...
+
+        :param host: Dictionary containing properties of the host to weigh
+        :type host: dict
+        :param weights: Multipliers for the properties to (de)priorities their importance
+        :type weights: dict
+
+        :return: Host priority weight
+        :rtype: float
+        """
+        weights = self.WEIGHTS
+        score = 0
+
+        for metric, mult in weights.items():
+            try:
+                metric_fn = getattr(self, f"{metric}_metric")
+            except AttributeError as exc:
+                raise AttributeError() from exc
+
+            value = metric_fn()
+
+            score += value * mult
+
+        return score
+
 
 def get_available_flavors(conn: Connection, hypervisor_name: str) -> List[str]:
     """
@@ -234,3 +340,17 @@ def get_available_flavors(conn: Connection, hypervisor_name: str) -> List[str]:
                 available_flavors.append(flavor.name)
 
     return available_flavors
+
+
+def prioritse_patching(hosts: List[Hypervisor]) -> Sequence[Hypervisor]:
+    """
+    Prioritises a list of hypervisors to order them by priority of patching
+
+    :param hosts: List of hypervisors
+    :type hosts: Sequence[dict]
+
+    :return: An ordered list of hypervisors by the priority of patching
+    :rtype:  List[dict]
+    """
+
+    return sorted(hosts, key=lambda x: x.maint_score, reverse=True)
