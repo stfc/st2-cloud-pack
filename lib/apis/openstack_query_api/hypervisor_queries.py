@@ -2,16 +2,20 @@ from typing import Dict, List
 
 from openstackquery.api.query_objects import HypervisorQuery, ServerQuery
 
+from apis.netbox_api.structs.netbox_account import NetboxAccount
 from apis.openstack_query_api import QueryThread
 from workflows.query_netbox_for_hypervisor_firmware_date import (
     query_netbox_for_hypervisor_firmware_date,
 )
 
 
-def query_hypervisor_state(cloud_account: str) -> List[Dict]:
+def query_hypervisor_state(
+    cloud_account: str, netbox_account: NetboxAccount
+) -> List[Dict]:
     """
     Query the state of hypervisors from Openstack and Netbox
     :param cloud_account: A string representing the cloud account to use - set in clouds.yaml
+    :param netbox_account: A NetboxAccount instance representing the netbox account to use
     """
 
     def get_hypervisors():
@@ -52,7 +56,11 @@ def query_hypervisor_state(cloud_account: str) -> List[Dict]:
     hypervisors_thread = QueryThread(target=get_hypervisors)
     netbox_thread = QueryThread(
         target=query_netbox_for_hypervisor_firmware_date,
-        args=(cloud_account, "prod" if cloud_account == "prod" else "staging", "any"),
+        args=(
+            netbox_account,
+            "prod" if cloud_account == "prod" else "staging",
+            "any",
+        ),
     )
     servers_thread = QueryThread(target=get_servers)
 

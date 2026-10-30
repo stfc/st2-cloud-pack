@@ -58,7 +58,7 @@ def test_basic_hypervisor_info_and_server_count(
         },
     ]
 
-    result = query_hypervisor_state("test-cloud")
+    result = query_hypervisor_state("test-cloud", NonCallableMock())
 
     assert isinstance(result, list)
     assert len(result) == 2
@@ -118,7 +118,7 @@ def test_empty_hypervisor_list(mock_hv_query_cls, mock_server_query_cls):
     server_instance.to_props.return_value = {"hv1": [{"id": "srv-1"}]}
     mock_server_query_cls.return_value = server_instance
 
-    result = query_hypervisor_state("test-cloud")
+    result = query_hypervisor_state("test-cloud", NonCallableMock())
 
     assert result == []
 
@@ -177,7 +177,7 @@ def test_servers_missing_hypervisor_key(
         },
     ]
 
-    result = query_hypervisor_state("test-cloud")
+    result = query_hypervisor_state("test-cloud", NonCallableMock())
 
     assert len(result) == 1
     assert result[0]["hypervisor_server_count"] == 0

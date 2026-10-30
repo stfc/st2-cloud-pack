@@ -1,17 +1,18 @@
 import tabulate
 
+from apis.netbox_api.structs.netbox_account import NetboxAccount
 from apis.openstack_api.openstack_hypervisor import Hypervisor, prioritse_patching
 from apis.openstack_query_api.hypervisor_queries import query_hypervisor_state
 
 
-def print_maintenance_scores(cloud_account: str) -> None:
+def print_maintenance_scores(cloud_account: str, netbox_account: NetboxAccount) -> None:
     """
     Action for testing the ordering hypervisors by need of maintenance
 
     :param cloud_account: A string representing the cloud account to use - set in clouds.yaml
     :type cloud_account: str
     """
-    data = query_hypervisor_state(cloud_account)
+    data = query_hypervisor_state(cloud_account, netbox_account)
 
     hypervisor_list = [Hypervisor.from_dict(cloud_account, hv) for hv in data]
     sorted_hypervisors = prioritse_patching(hypervisor_list)

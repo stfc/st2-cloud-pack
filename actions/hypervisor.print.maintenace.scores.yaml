@@ -18,4 +18,12 @@ parameters:
     enum:
       - "dev"
       - "prod"
+  netbox_account_name:
+    description: The etbox account to use whilst performing this action
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
 runner_type: python-script
