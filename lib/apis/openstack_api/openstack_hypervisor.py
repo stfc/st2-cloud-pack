@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import Dict, List, Sequence
 
 import openstack
-from apis.netbox_api.device import get_fw_patch_date, get_platform
 from apis.openstack_api.enums.hypervisor_enums import (
     HypervisorAction,
     HypervisorOS,
