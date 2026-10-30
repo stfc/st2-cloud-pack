@@ -18,11 +18,22 @@ from openstack.connection import Connection
 logger = logging.getLogger(__name__)
 
 
+@dataclass
+class HypervisorSysInfo:
+    """
+    Class representing the system information of a hypervisor.
+    """
+
+    uptime_days: float
+    os_version: HypervisorOS
+    fw_patch_date: str
+
+
 # pylint:disable=too-many-instance-attributes
 @dataclass
 class Hypervisor:
     name: str
-    uptime_days: float
+    system_info: HypervisorSysInfo
     status: HypervisorStatus
     state: HypervisorState
     disabled_reason: str | None
@@ -34,9 +45,6 @@ class Hypervisor:
     def __init__(self, cloud_account):
         self.cloud_account = cloud_account
         self.conn = openstack.connect(self.cloud_account)
-
-        self._previous_fw_patch_date: str | None = None
-        self._os_version: HypervisorOS | None = None
 
     @staticmethod
     def from_dict(cloud_account: str, dictionary: Dict) -> "Hypervisor":
@@ -59,16 +67,14 @@ class Hypervisor:
             )
         hypervisor.name = dictionary["hypervisor_name"]
 
-        hypervisor.uptime_days = int(dictionary["hypervisor_uptime_days"])
+        hypervisor.system_info = HypervisorSysInfo(
+            uptime_days=int(dictionary["hypervisor_uptime_days"]),
+            os_version=HypervisorOS(dictionary["platform"].id),
+            fw_patch_date=dictionary["fw_date"],
+        )
 
         status = dictionary["hypervisor_status"]
         hypervisor.status = HypervisorStatus[str(status).upper()]
-
-        os_version = dictionary["platform"]
-        hypervisor._os_version = HypervisorOS(os_version.id)
-
-        fw_patch_date = dictionary["fw_date"]
-        hypervisor._previous_fw_patch_date = fw_patch_date
 
         state = dictionary["hypervisor_state"]
         hypervisor.state = HypervisorState[str(state).upper()]
@@ -92,12 +98,10 @@ class Hypervisor:
     def to_dict(self) -> dict:
         return {
             "hostname": self.name,
-            "uptime_days": self.uptime_days,
             "state": self.state,
             "status": self.status,
             "server_count": self.hypervisor_server_count,
-            "prev_fw_patched": self.previous_fw_patch_date,
-            "os_version": self.os_version,
+            **self.system_info.__dict__,
             "maint_score": self.maint_score,
         }
 
@@ -121,7 +125,7 @@ class Hypervisor:
             return HypervisorAction.NOOP  # -> No action if manually disabled
 
         # If hypervisor has been up long enough to need maintenance
-        if self.uptime_days > uptime_limit:
+        if self.system_info.uptime_days > uptime_limit:
             logger.info("%s requires maintenance", self.name)
 
             # Drained by stackstorm
@@ -232,18 +236,6 @@ class Hypervisor:
 
         return len(disabled) / len(hypervisors)
 
-    @property
-    def os_version(self) -> HypervisorOS:
-        if self._os_version is None:
-            self._os_version = get_platform()
-        return self._os_version
-
-    @property
-    def previous_fw_patch_date(self) -> str:
-        if self._previous_fw_patch_date is None:
-            self._previous_fw_patch_date = get_fw_patch_date()
-        return self._previous_fw_patch_date
-
     def hypervisor_server_count_metric(self) -> int:
         """
         Favour hypervisors with fewer VMs on
@@ -267,10 +259,12 @@ class Hypervisor:
         :rtype: int
         """
         try:
-            date = dt.datetime.strptime(self.previous_fw_patch_date, "%Y-%m-%d").date()
+            date = dt.datetime.strptime(
+                self.system_info.fw_patch_date, "%Y-%m-%d"
+            ).date()
         except (ValueError, TypeError):
             # Use created at timestamp if firmware_last_update is not set
-            date = parse_iso_utc(self.previous_fw_patch_date).date()
+            date = parse_iso_utc(self.system_info.fw_patch_date).date()
         return (dt.datetime.now().date() - date).days
 
     def os_version_metric(self) -> bool:
@@ -281,7 +275,7 @@ class Hypervisor:
         :return: OS version metric
         :rtype: bool
         """
-        return self.os_version != self.TARGET_OS_VERSION
+        return self.system_info.os_version != self.TARGET_OS_VERSION
 
     @property
     def maint_score(self) -> float:

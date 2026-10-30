@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, NonCallableMock, patch, call
 
 from apis.openstack_query_api.hypervisor_queries import (
     query_hypervisor_state,
@@ -7,10 +7,13 @@ from apis.openstack_query_api.hypervisor_queries import (
 )
 
 
+@patch(
+    "apis.openstack_query_api.hypervisor_queries.query_netbox_for_hypervisor_firmware_date"
+)
 @patch("apis.openstack_query_api.hypervisor_queries.ServerQuery")
 @patch("apis.openstack_query_api.hypervisor_queries.HypervisorQuery")
 def test_basic_hypervisor_info_and_server_count(
-    mock_hv_query_cls, mock_server_query_cls
+    mock_hv_query_cls, mock_server_query_cls, mock_netbox_query
 ):
     hv_instance = MagicMock()
     hv_instance.to_props.return_value = [
@@ -39,6 +42,21 @@ def test_basic_hypervisor_info_and_server_count(
     server_instance.run.return_value = None
     server_instance.to_props.return_value = {"hv1": [{"id": "srv-1"}, {"id": "srv-2"}]}
     mock_server_query_cls.return_value = server_instance
+
+    mock_netbox_query.return_value = [
+        {
+            "name": "hv1",
+            "platform": NonCallableMock(id=15),
+            "status": NonCallableMock(),
+            "fw_date": "2024-05-16",
+        },
+        {
+            "name": "hv2",
+            "platform": NonCallableMock(id=15),
+            "status": NonCallableMock(),
+            "fw_date": "2024-05-16T14:29:36.551410Z",
+        },
+    ]
 
     result = query_hypervisor_state("test-cloud")
 
@@ -115,9 +133,14 @@ def test_empty_hypervisor_list(mock_hv_query_cls, mock_server_query_cls):
     server_instance.to_props.assert_called_once()
 
 
+@patch(
+    "apis.openstack_query_api.hypervisor_queries.query_netbox_for_hypervisor_firmware_date"
+)
 @patch("apis.openstack_query_api.hypervisor_queries.ServerQuery")
 @patch("apis.openstack_query_api.hypervisor_queries.HypervisorQuery")
-def test_servers_missing_hypervisor_key(mock_hv_query_cls, mock_server_query_cls):
+def test_servers_missing_hypervisor_key(
+    mock_hv_query_cls, mock_server_query_cls, mock_netbox_query
+):
     hv_instance = MagicMock()
     hv_instance.where.return_value = None
     hv_instance.select.return_value = None
@@ -136,8 +159,23 @@ def test_servers_missing_hypervisor_key(mock_hv_query_cls, mock_server_query_cls
     server_instance = MagicMock()
     server_instance.group_by.return_value = None
     server_instance.run.return_value = None
-    server_instance.to_props.return_value = {}
+    server_instance.to_props.return_value = {"hv1": [{"id": "srv-1"}]}
     mock_server_query_cls.return_value = server_instance
+
+    mock_netbox_query.return_value = [
+        {
+            "name": "orphan-hv",
+            "platform": NonCallableMock(id=15),
+            "status": NonCallableMock(),
+            "fw_date": "2024-05-16",
+        },
+        {
+            "name": "hv2",
+            "platform": NonCallableMock(id=15),
+            "status": NonCallableMock(),
+            "fw_date": "2024-05-16T14:29:36.551410Z",
+        },
+    ]
 
     result = query_hypervisor_state("test-cloud")
 
