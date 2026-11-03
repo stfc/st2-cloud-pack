@@ -1,5 +1,5 @@
 ---
-description: Used to print out the order in which hypervisors will be prioritised for draining for maintenance
+description: Prints the order in which hypervisors will be prioritised for draining for maintenance
 enabled: true
 entry_point: src/openstack_actions.py
 name: hypervisor.print.maintenace.scores
@@ -19,7 +19,7 @@ parameters:
       - "dev"
       - "prod"
   netbox_account_name:
-    description: The etbox account to use whilst performing this action
+    description: The netbox account to use whilst performing this action
     required: true
     type: string
     default: "dev"

@@ -244,8 +244,7 @@ class Hypervisor:
         """
         Favour hypervisors with fewer VMs on
 
-        :param hypervisor_server_count: Number of servers on the hypervisor
-        :type hypervisor_server_count: int
+        :param self: The instance of the class
 
         :return: Server count metric
         :rtype: int
@@ -256,8 +255,7 @@ class Hypervisor:
         """
         Prioritise hosts with longer FW patch date duration
 
-        :param patch_date: Date of the last FW patch date
-        :type patch_date: str
+        :param self: The instance of the class
 
         :return: FW patch date metric
         :rtype: int
