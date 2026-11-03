@@ -123,7 +123,10 @@ def wazuh_get_server_id_from_label(
 
 
 def wazuh_list_servers_by_os(
-    wazuh_account: WazuhAccount, os_name: str, os_version: str
+    wazuh_account: WazuhAccount,
+    os_name: str,
+    os_version: str,
+    comparison: str = "=",
 ):
     """
     query the Wazuh server to get data only for
@@ -133,6 +136,8 @@ def wazuh_list_servers_by_os(
     :type os_name: str
     :param os_version: the OS version
     :type os_version: str
+    :param comparison: operator applied to the OS major version
+    :type comparison: str
     :return: the list of VM IDs
     :rtype: list
     """
@@ -142,7 +147,18 @@ def wazuh_list_servers_by_os(
         os_name,
         os_version,
     )
-    query = f"os.platform={os_name};os.major={os_version};status=active;group!=kolla"
+    # build the query string
+    query = f"os.platform={os_name}"
+
+    # convert the comparison operator to query expression
+    operators = {
+        "=": f";os.major={os_version}",
+        "<": f";os.major<{os_version}",
+        "<=": f";(os.major<{os_version} or os.major={os_version})",
+    }
+    query += operators[comparison]
+    query += ";status=active"
+    query += ";group!=kolla"
     # we ensure we only get information about Servers and not Hypervisors
     # by adding conditions
     #   group!=kolla
