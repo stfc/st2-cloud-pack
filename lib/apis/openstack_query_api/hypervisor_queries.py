@@ -21,7 +21,7 @@ def query_hypervisor_state(
     def get_hypervisors():
         # Temp whitelist for prod to limit hypervisors auto drained
         if cloud_account.casefold() == "prod":
-            hv_regex = "^hv[8].*"
+            hv_regex = "^hv(?:[8]|-sr|-ref2023)"
         else:
             hv_regex = "^hv"
 
