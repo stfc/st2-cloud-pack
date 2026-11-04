@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from typing import Dict, List, Sequence
 
 import openstack
+from apis.netbox_api.enums.platforms import Platform
 from apis.openstack_api.enums.hypervisor_enums import (
     HypervisorAction,
-    HypervisorOS,
     HypervisorState,
     HypervisorStatus,
 )
@@ -23,7 +23,7 @@ class HypervisorSysInfo:
     """
 
     uptime_days: float
-    os_version: HypervisorOS
+    os_version: Platform
     fw_patch_date: str
 
 
@@ -44,7 +44,7 @@ class Hypervisor:
         "hypervisor_server_count": 0.5,
     }
 
-    TARGET_OS_VERSION = HypervisorOS.ROCKY_9
+    TARGET_OS_VERSION = Platform.ROCKY_9
 
     def __init__(self, cloud_account):
         self.cloud_account = cloud_account
@@ -73,7 +73,7 @@ class Hypervisor:
 
         hypervisor.system_info = HypervisorSysInfo(
             uptime_days=int(dictionary["hypervisor_uptime_days"]),
-            os_version=HypervisorOS(dictionary["platform"].id),
+            os_version=Platform(dictionary["platform"].id),
             fw_patch_date=dictionary["fw_date"],
         )
 
