@@ -299,13 +299,10 @@ class Hypervisor:
         score = 0
 
         for metric, mult in weights.items():
-            try:
-                metric_fn = getattr(self, f"{metric}_metric")
-            except AttributeError as exc:
-                raise AttributeError() from exc
+
+            metric_fn = getattr(self, f"{metric}_metric")
 
             value = metric_fn()
-
             score += value * mult
 
         return score
