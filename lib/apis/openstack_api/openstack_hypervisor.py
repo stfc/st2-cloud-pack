@@ -287,12 +287,7 @@ class Hypervisor:
 
         score = (m1 * w1) + (m2 * w2) + ...
 
-        :param host: Dictionary containing properties of the host to weigh
-        :type host: dict
-        :param weights: Multipliers for the properties to (de)priorities their importance
-        :type weights: dict
-
-        :return: Host priority weight
+        :return: Maintenance score
         :rtype: float
         """
         weights = self.WEIGHTS
