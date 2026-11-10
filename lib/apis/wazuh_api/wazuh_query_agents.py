@@ -7,6 +7,47 @@ from apis.wazuh_api.structs.wazuh_account import WazuhAccount
 logger = logging.getLogger(__name__)
 
 
+def _get_openstack_server_id(agents: List) -> List:
+    """
+    Ancillary function to get the list of OpenStack Server IDs
+    from a list of Wazuh Agents
+
+    NOTE:
+    The proper way to implement this would be by getting the
+    information from the "labels" block for each agent.
+    However, that mechanism has proven to be very fragile.
+    It not always works, and sometimes when the list of agents
+    is long, Wazuh stops responding.
+
+    Therefore, even though it is not the most correct way,
+    we extract the Server ID from the Agent Name using a regular
+    expression. At least for the time being.
+
+    As a reference, this is the code to get the Server ID from labels:
+
+    server_id_list = []
+    for agent in data:
+        agent_id = agent["id"]
+        try:
+            server_id = wazuh_get_server_id_from_label(
+                wazuh_token, wazuh_account.wazuh_endpoint, agent_id
+            )
+            server_id_list.append(server_id)
+        except ValueError:
+            logger.error("failed to get Server ID for Agent ID %s", agent_id)
+    """
+    server_id_list = []
+    uuid_regex = re.compile(
+        r"^.+-([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})$"
+    )
+    for agent in agents:
+        match = uuid_regex.search(agent["name"])
+        if match:
+            uuid = match.group(1)
+            server_id_list.append(uuid)
+    return server_id_list
+
+
 def _query_agents(
     wazuh_token: str,
     endpoint: str,
@@ -166,17 +207,7 @@ def wazuh_list_servers_by_os(
     data = _query_agents(
         wazuh_token, wazuh_account.wazuh_endpoint, values=["name"], query=query
     )
-
-    server_id_list = []
-    for agent in data:
-        agent_id = agent["id"]
-        try:
-            server_id = wazuh_get_server_id_from_label(
-                wazuh_token, wazuh_account.wazuh_endpoint, agent_id
-            )
-            server_id_list.append(server_id)
-        except ValueError:
-            logger.error("failed to get Server ID for Agent ID %s", agent_id)
+    server_id_list = _get_openstack_server_id(data)
     logger.info("returning a list of %s Server IDs", len(server_id_list))
     return server_id_list
 
@@ -207,15 +238,6 @@ def wazuh_list_all_servers(wazuh_account: WazuhAccount) -> List:
     data = _query_agents(
         wazuh_token, wazuh_account.wazuh_endpoint, values=["name"], query=query
     )
-
-    server_id_list = []
-    uuid_regex = re.compile(
-        r"^.+-([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})$"
-    )
-    for agent in data:
-        match = uuid_regex.search(agent["name"])
-        if match:
-            uuid = match.group(1)
-            server_id_list.append(uuid)
+    server_id_list = _get_openstack_server_id(data)
     logger.info("returning a list of %s Server IDs", len(server_id_list))
     return server_id_list
