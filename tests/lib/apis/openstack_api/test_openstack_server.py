@@ -27,6 +27,7 @@ from apis.openstack_api.openstack_server import (
     get_server_name,
     get_project_id,
     get_project_name,
+    get_all_servers,
     NOVA_MICROVERSION_FOR_TAGS,
 )
 from apis.openstack_api.enums.server_status import ServerStatus
@@ -1060,3 +1061,33 @@ def test_get_project_name(mock_get_project_id, mock_get_project_name):
     assert result == "test-project"
     mock_get_project_id.assert_called_once_with(conn, "server-id")
     mock_get_project_name.assert_called_once_with(conn, "123")
+
+
+@pytest.mark.parametrize(
+    "project_id, status, server_ids",
+    [
+        (None, None, ["server-1", "server-2"]),
+        ("project-1", None, ["server-1"]),
+        (None, "ACTIVE", ["server-2"]),
+        (None, None, []),
+    ],
+)
+def test_get_all_servers(project_id, status, server_ids):
+    # Mock the OpenStack connection and server objects.
+    conn = MagicMock()
+    conn.compute.servers.return_value = [
+        MagicMock(id=server_id) for server_id in server_ids
+    ]
+
+    # Call the function under test.
+    result = get_all_servers(conn, project_id=project_id, status=status)
+
+    # Verify the returned server IDs.
+    assert result == server_ids
+
+    # Verify the OpenStack API was called with the expected filters.
+    conn.compute.servers.assert_called_once_with(
+        all_projects=True,
+        project_id=project_id,
+        status=status,
+    )

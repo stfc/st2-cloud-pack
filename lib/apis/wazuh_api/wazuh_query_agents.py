@@ -1,9 +1,51 @@
 from typing import Optional, List, Dict
 import logging
+import re
 import requests
 from apis.wazuh_api.structs.wazuh_account import WazuhAccount
 
 logger = logging.getLogger(__name__)
+
+
+def _get_openstack_server_ids(agents: List) -> List:
+    """
+    Ancillary function to get the list of OpenStack Server IDs
+    from a list of Wazuh Agents
+
+    NOTE:
+    The proper way to implement this would be by getting the
+    information from the "labels" block for each agent.
+    However, that mechanism has proven to be very fragile.
+    It not always works, and sometimes when the list of agents
+    is long, Wazuh stops responding.
+
+    Therefore, even though it is not the most correct way,
+    we extract the Server ID from the Agent Name using a regular
+    expression. At least for the time being.
+
+    As a reference, this is the code to get the Server ID from labels:
+
+    server_id_list = []
+    for agent in data:
+        agent_id = agent["id"]
+        try:
+            server_id = wazuh_get_server_id_from_label(
+                wazuh_token, wazuh_account.wazuh_endpoint, agent_id
+            )
+            server_id_list.append(server_id)
+        except ValueError:
+            logger.error("failed to get Server ID for Agent ID %s", agent_id)
+    """
+    server_id_list = []
+    uuid_regex = re.compile(
+        r"^.+-([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})$"
+    )
+    for agent in agents:
+        match = uuid_regex.search(agent["name"])
+        if match:
+            uuid = match.group(1)
+            server_id_list.append(uuid)
+    return server_id_list
 
 
 def _query_agents(
@@ -157,7 +199,6 @@ def wazuh_list_servers_by_os(
         "<=": f";(os.major<{os_version} or os.major={os_version})",
     }
     query += operators[comparison]
-    query += ";status=active"
     query += ";group!=kolla"
     # we ensure we only get information about Servers and not Hypervisors
     # by adding conditions
@@ -166,16 +207,37 @@ def wazuh_list_servers_by_os(
     data = _query_agents(
         wazuh_token, wazuh_account.wazuh_endpoint, values=["name"], query=query
     )
+    server_id_list = _get_openstack_server_ids(data)
+    logger.info("returning a list of %s Server IDs", len(server_id_list))
+    return server_id_list
 
-    server_id_list = []
-    for agent in data:
-        agent_id = agent["id"]
-        try:
-            server_id = wazuh_get_server_id_from_label(
-                wazuh_token, wazuh_account.wazuh_endpoint, agent_id
-            )
-            server_id_list.append(server_id)
-        except ValueError:
-            logger.error("failed to get Server ID for Agent ID %s", agent_id)
+
+# FIXME
+# this function is almost identical to
+#   wazuh_list_servers_by_os( )
+# maybe they can be merged
+# however, this may be a case of early optimisation
+# therefore, in order to move forward, we keep both for the time being
+# but there is a JIRA ticket for it
+#   https://stfc.atlassian.net/browse/CLDSCRM-4226
+def wazuh_list_all_servers(wazuh_account: WazuhAccount) -> List:
+    """
+    query the Wazuh server to get the entire list of
+    registered OpenStack Servers
+
+    :return: the list of VM IDs
+    :rtype: list
+    """
+    wazuh_token = wazuh_account.get_wazuh_token()
+    logger.info("querying Wazuh for all OpenStack Virtual Machines")
+    query = "group!=kolla"
+    # we ensure we only get information about Servers and not Hypervisors
+    # by adding conditions
+    #   group!=kolla
+    # to the query string
+    data = _query_agents(
+        wazuh_token, wazuh_account.wazuh_endpoint, values=["name"], query=query
+    )
+    server_id_list = _get_openstack_server_ids(data)
     logger.info("returning a list of %s Server IDs", len(server_id_list))
     return server_id_list

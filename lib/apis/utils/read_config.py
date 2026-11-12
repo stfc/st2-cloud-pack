@@ -28,7 +28,7 @@ def read_config_file(key=None):
     # .parents[1] = "../.."
     # .parents[2] = "../../.."
     base_dir = Path(__file__).resolve().parents[2]
-    conf_path = base_dir / "workflows" / "etc" / "config"
+    conf_path = base_dir / "workflows" / "etc" / "config.yaml"
 
     with open(conf_path, "r", encoding="utf-8") as config_file:
         data = yaml.safe_load(config_file)

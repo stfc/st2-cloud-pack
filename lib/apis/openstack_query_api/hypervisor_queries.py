@@ -19,17 +19,17 @@ def query_hypervisor_state(
     """
 
     def get_hypervisors():
-        # Temp whitelist for prod to limit hypervisors auto drained
+        # Blacklist hypervisors from maintenance
         if cloud_account.casefold() == "prod":
-            hv_regex = "^hv(?:[8]|-sr|-ref2023)"
+            hv_blacklist_regex = "^hv(-h200x4)"
         else:
-            hv_regex = "^hv"
+            hv_blacklist_regex = ""
 
         state_query = HypervisorQuery()
         state_query.where(
             "regex",
             "hypervisor_name",
-            value=hv_regex,
+            value=hv_blacklist_regex,
         )
         state_query.where(
             "not_equal_to",

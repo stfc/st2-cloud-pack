@@ -3,10 +3,12 @@ from unittest.mock import Mock, patch
 import pytest
 
 from apis.wazuh_api.wazuh_query_agents import (
+    _get_openstack_server_ids,
     _query_agents,
     _wazuh_get_labels_for_agent,
     wazuh_get_server_id_from_label,
     wazuh_list_servers_by_os,
+    wazuh_list_all_servers,
 )
 
 
@@ -55,7 +57,7 @@ def test_query_agents_pagination(mock_get):
         "jwt-token",
         "https://wazuh.example.com",
         values=["name"],
-        query="status=active",
+        query="group!=kolla",
     )
 
     # Verify aggregated data
@@ -69,7 +71,7 @@ def test_query_agents_pagination(mock_get):
         "limit": 500,
         "offset": 0,
         "select": ["name"],
-        "q": "status=active",
+        "q": "group!=kolla",
     }
 
     # Verify the second request used the updated offset
@@ -77,7 +79,7 @@ def test_query_agents_pagination(mock_get):
         "limit": 500,
         "offset": 500,
         "select": ["name"],
-        "q": "status=active",
+        "q": "group!=kolla",
     }
 
 
@@ -211,79 +213,49 @@ def test_wazuh_get_server_id_from_label_missing(mock_get_labels):
 @pytest.mark.parametrize(
     "comparison, expected_query",
     [
-        (
-            "=",
-            "os.platform=ubuntu;os.major=22.04;status=active;group!=kolla",
-        ),
-        (
-            "<",
-            "os.platform=ubuntu;os.major<22.04;status=active;group!=kolla",
-        ),
-        (
-            "<=",
-            "os.platform=ubuntu;(os.major<22.04 or os.major=22.04);status=active;group!=kolla",
-        ),
+        ("=", "os.platform=ubuntu;os.major=22;group!=kolla"),
+        ("<", "os.platform=ubuntu;os.major<22;group!=kolla"),
+        ("<=", "os.platform=ubuntu;(os.major<22 or os.major=22);group!=kolla"),
     ],
 )
-@patch("apis.wazuh_api.wazuh_query_agents.wazuh_get_server_id_from_label")
 @patch("apis.wazuh_api.wazuh_query_agents._query_agents")
-def test_wazuh_list_servers_by_os(
-    mock_query, mock_get_server_id, comparison, expected_query
-):
+def test_wazuh_list_servers_by_os(mock_query, comparison, expected_query):
     """
     WHAT IT TESTS:
         Verifies `wazuh_list_servers_by_os()` builds the correct Wazuh query
-        for all supported OS version comparison operators:
-        - "=": Matches the specified OS version exactly.
-        - "<": Matches OS versions below the specified version.
-        - "<=": Matches OS versions up to and including the specified version.
-
-        Also verifies that OpenStack Server IDs are retrieved correctly
-        from Wazuh agents.
+        for all supported OS version comparison operators and extracts
+        OpenStack Server IDs from agent names.
 
     HOW IT WORKS:
-        Uses parameterization to test all supported comparison operators.
-
-        Mocks `_query_agents` to return sample Wazuh Agent IDs and mocks
-        `wazuh_get_server_id_from_label` to return the corresponding Server IDs.
-        One agent is configured without a Server ID.
+        Parameterizes the comparison operator and mocks `_query_agents` to
+        return agents with valid and invalid UUID suffixes.
 
     WHY IT PREVENTS BUGS:
-        Verifies the exact query parameters for all supported comparison
-        operators, confirms Server IDs are retrieved from agent labels,
-        and ensures agents without a Server ID are skipped.
+        Ensures the correct query is sent and only valid server UUIDs are
+        returned, without making per-agent label requests.
     """
     wazuh_account = Mock()
     wazuh_account.wazuh_endpoint = "https://wazuh.example.com"
     wazuh_account.get_wazuh_token.return_value = "jwt-token"
 
     mock_query.return_value = [
-        {"id": "001"},
-        {"id": "002"},
-        {"id": "003"},
-    ]
-
-    mock_get_server_id.side_effect = [
-        "001682d2-79a2-41b9-af7f-c553f7d67b0d",
-        "aabbccdd-1234-5678-90ab-cdef12345678",
-        ValueError("No Server ID found for Agent ID 003"),
+        {"id": "001", "name": "server-001682d2-79a2-41b9-af7f-c553f7d67b0d"},
+        {"id": "002", "name": "openstack-vm-aabbccdd-1234-5678-90ab-cdef12345678"},
+        {"id": "003", "name": "server-without-uuid"},
     ]
 
     server_ids = wazuh_list_servers_by_os(
         wazuh_account=wazuh_account,
         os_name="ubuntu",
-        os_version="22.04",
+        os_version="22",
         comparison=comparison,
     )
 
-    expected_ids = [
+    assert server_ids == [
         "001682d2-79a2-41b9-af7f-c553f7d67b0d",
         "aabbccdd-1234-5678-90ab-cdef12345678",
     ]
-    assert server_ids == expected_ids
-
     wazuh_account.get_wazuh_token.assert_called_once_with()
-
     mock_query.assert_called_once_with(
         "jwt-token",
         "https://wazuh.example.com",
@@ -291,23 +263,49 @@ def test_wazuh_list_servers_by_os(
         query=expected_query,
     )
 
-    assert mock_get_server_id.call_count == 3
 
-    mock_get_server_id.assert_any_call(
-        "jwt-token",
-        "https://wazuh.example.com",
-        "001",
-    )
-    mock_get_server_id.assert_any_call(
-        "jwt-token",
-        "https://wazuh.example.com",
-        "002",
-    )
-    mock_get_server_id.assert_any_call(
-        "jwt-token",
-        "https://wazuh.example.com",
-        "003",
-    )
+@pytest.mark.parametrize(
+    "agents, expected_ids",
+    [
+        (
+            [
+                {"name": "server-001682d2-79a2-41b9-af7f-c553f7d67b0d"},
+                {"name": "openstack-vm-aabbccdd-1234-5678-90ab-cdef12345678"},
+                {"name": "server-AABBCCDD-1234-5678-90AB-CDEF12345678"},
+            ],
+            [
+                "001682d2-79a2-41b9-af7f-c553f7d67b0d",
+                "aabbccdd-1234-5678-90ab-cdef12345678",
+                "AABBCCDD-1234-5678-90AB-CDEF12345678",
+            ],
+        ),
+        (
+            [
+                {"name": "server-without-uuid"},
+                {"name": "server-1234-invalid-uuid"},
+                {"name": "001682d2-79a2-41b9-af7f-c553f7d67b0d"},
+                {"name": "server-aabbccdd-1234-5678-90ab-cdef12345678-extra"},
+            ],
+            [],
+        ),
+        ([], []),
+    ],
+)
+def test_get_openstack_server_ids(agents, expected_ids):
+    """
+    WHAT IT TESTS:
+        Verifies `_get_openstack_server_ids()` extracts UUIDs only when they
+        appear at the end of an agent name and are preceded by a hyphenated prefix.
+
+    HOW IT WORKS:
+        Tests valid lowercase and uppercase UUIDs, invalid agent names,
+        UUIDs without a prefix, trailing text, and empty input.
+
+    WHY IT PREVENTS BUGS:
+        Protects the shared UUID extraction logic used by both server-listing
+        functions against false matches and missing results.
+    """
+    assert _get_openstack_server_ids(agents) == expected_ids
 
 
 @patch("apis.wazuh_api.wazuh_query_agents._query_agents")
@@ -333,7 +331,7 @@ def test_wazuh_list_servers_by_os_default_comparison(mock_query):
     server_ids = wazuh_list_servers_by_os(
         wazuh_account=wazuh_account,
         os_name="ubuntu",
-        os_version="22.04",
+        os_version="22",
     )
 
     assert server_ids == []
@@ -344,5 +342,80 @@ def test_wazuh_list_servers_by_os_default_comparison(mock_query):
         "jwt-token",
         "https://wazuh.example.com",
         values=["name"],
-        query="os.platform=ubuntu;os.major=22.04;status=active;group!=kolla",
+        query="os.platform=ubuntu;os.major=22;group!=kolla",
+    )
+
+
+@patch("apis.wazuh_api.wazuh_query_agents._query_agents")
+def test_wazuh_list_all_servers(mock_query):
+    """
+    WHAT IT TESTS:
+        Verifies `wazuh_list_all_servers()` formats the Wazuh query string
+        correctly and extracts OpenStack Server UUIDs from Wazuh agent names,
+        excluding agents belonging to the kolla group.
+
+    HOW IT WORKS:
+        Mocks `_query_agents` to return sample Wazuh agents with names
+        containing valid UUIDs, alongside agents with invalid names
+        or without UUIDs.
+
+    WHY IT PREVENTS BUGS:
+        Verifies the exact query parameters, ensures agents
+        outside the kolla group are requested, confirms UUIDs are correctly
+        extracted using the compiled regular expression, and ensures agents
+        without a valid UUID suffix are skipped.
+    """
+    wazuh_account = Mock()
+    wazuh_account.wazuh_endpoint = "https://wazuh.example.com"
+    wazuh_account.get_wazuh_token.return_value = "jwt-token"
+
+    mock_query.return_value = [
+        {
+            "id": "001",
+            "name": "server-001682d2-79a2-41b9-af7f-c553f7d67b0d",
+        },
+        {
+            "id": "002",
+            "name": "openstack-vm-aabbccdd-1234-5678-90ab-cdef12345678",
+        },
+        {
+            "id": "003",
+            "name": "server-without-uuid",
+        },
+        {
+            "id": "004",
+            "name": "server-1234-invalid-uuid",
+        },
+        {
+            "id": "005",
+            "name": "server-AABBCCDD-1234-5678-90AB-CDEF12345678",
+        },
+        {
+            "id": "006",
+            "name": "001682d2-79a2-41b9-af7f-c553f7d67b0d",
+        },
+        {
+            "id": "007",
+            "name": "server-aabbccdd-1234-5678-90ab-cdef12345678-extra",
+        },
+    ]
+
+    server_ids = wazuh_list_all_servers(
+        wazuh_account=wazuh_account,
+    )
+
+    expected_ids = [
+        "001682d2-79a2-41b9-af7f-c553f7d67b0d",
+        "aabbccdd-1234-5678-90ab-cdef12345678",
+        "AABBCCDD-1234-5678-90AB-CDEF12345678",
+    ]
+    assert server_ids == expected_ids
+
+    wazuh_account.get_wazuh_token.assert_called_once_with()
+
+    mock_query.assert_called_once_with(
+        "jwt-token",
+        "https://wazuh.example.com",
+        values=["name"],
+        query="group!=kolla",
     )
