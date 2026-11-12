@@ -12,6 +12,7 @@ from apis.openstack_query_api.server_queries import (
     group_servers_by_user_id,
 )
 from apis.openstack_query_api.user_queries import find_user_info
+from apis.utils.time_utils import calc_wed_maint_next_week
 
 
 def print_email_params(email_addr: str, user_name: str, as_html: bool, vm_table: str):
@@ -26,6 +27,7 @@ def print_email_params(email_addr: str, user_name: str, as_html: bool, vm_table:
     print(
         f"Send Email To: {email_addr}\n"
         f"email_templates hypervisor-email: username {user_name}\n"
+        f"maint date: {calc_wed_maint_next_week()}\n"
         f"send as html: {as_html}\n"
         f"vm table: {vm_table}\n"
     )
@@ -46,6 +48,7 @@ def build_email_params(
         template_params={
             "username": user_name,
             "vm_table": vm_table,
+            "maint_date": calc_wed_maint_next_week(),
         },
     )
 

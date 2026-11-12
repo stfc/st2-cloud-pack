@@ -2,7 +2,12 @@ from datetime import datetime, timezone
 
 import pytest
 
-from apis.utils.time_utils import timestamp_today, days_since_timestamp, parse_iso_utc
+from apis.utils.time_utils import (
+    calc_wed_maint_next_week,
+    timestamp_today,
+    days_since_timestamp,
+    parse_iso_utc,
+)
 
 
 def test_parse_iso_utc_z_suffix():
@@ -55,3 +60,12 @@ def test_days_since_timestamp_invalid_format():
     """Test that an invalid timestamp format raises ValueError."""
     with pytest.raises(ValueError, match="timestamp must have format YYYY-MM-DD"):
         days_since_timestamp("2026/10/07")
+
+
+@pytest.mark.freeze_time("2026-11-09 09:10:48")
+def test_wed_maint_next_week():
+    """Test that calc_wed_maint_next_week returns a valid date string."""
+    result = calc_wed_maint_next_week()
+    assert (
+        result == "2026-11-18"
+    )  # The next Wednesday window after 2026-11-09 is 2026-11-18

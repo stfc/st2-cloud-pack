@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 
 def parse_iso_utc(value: str) -> datetime:
@@ -23,7 +23,7 @@ def timestamp_today() -> str:
     """
     return a timestamp for the current time in UTC
     """
-    n = datetime.utcnow()
+    n = datetime.now(timezone.utc)
     return n.strftime("%Y-%m-%d")
 
 
@@ -37,4 +37,15 @@ def days_since_timestamp(timestamp: str) -> int:
     except (ValueError, TypeError) as e:
         raise ValueError("timestamp must have format YYYY-MM-DD") from e
 
-    return (datetime.utcnow() - date).days
+    return (datetime.now(timezone.utc) - date).days
+
+
+def calc_wed_maint_next_week():
+    """
+    returns the next week's Wednesday maintenance date
+    """
+    today = datetime.now(timezone.utc)
+    days_ahead = 2 - today.weekday()  # Wednesday is 2
+    days_ahead += 7
+    next_wednesday = today + timedelta(days=days_ahead)
+    return next_wednesday.strftime("%Y-%m-%d")
