@@ -108,6 +108,7 @@ def create_project(
             project_identifier=project.id,
             floating_ips=number_of_floating_ips,
             security_group_rules=number_of_security_group_rules,
+            cinder_storage=100,
         ),
     )
 
