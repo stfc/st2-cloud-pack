@@ -12,6 +12,7 @@ from apis.openstack_query_api.server_queries import (
     group_servers_by_user_id,
 )
 from apis.openstack_query_api.user_queries import find_user_info
+from apis.utils.time_utils import calc_wed_maint_next_week
 
 
 def print_email_params(email_addr: str, user_name: str, as_html: bool, vm_table: str):
@@ -26,6 +27,7 @@ def print_email_params(email_addr: str, user_name: str, as_html: bool, vm_table:
     print(
         f"Send Email To: {email_addr}\n"
         f"email_templates hypervisor-email: username {user_name}\n"
+        f"maint date: {calc_wed_maint_next_week()}\n"
         f"send as html: {as_html}\n"
         f"vm table: {vm_table}\n"
     )
@@ -46,6 +48,7 @@ def build_email_params(
         template_params={
             "username": user_name,
             "vm_table": vm_table,
+            "maint_date": calc_wed_maint_next_week(),
         },
     )
 
@@ -68,7 +71,6 @@ def send_hv_email(
     use_override: bool = False,
     override_email_address: Optional[str] = "cloud-support@stfc.ac.uk",
     cc_cloud_support: bool = False,
-    webhook: Optional[str] = None,
     **email_params_kwargs,
 ):
     """
@@ -95,9 +97,7 @@ def send_hv_email(
             "please provide either a list of project identifiers or with flag 'all_projects' to run globally"
         )
 
-    server_query = find_servers_on_hv(
-        cloud_account, hypervisor_name, limit_by_projects, webhook
-    )
+    server_query = find_servers_on_hv(cloud_account, hypervisor_name, limit_by_projects)
 
     if not server_query.to_props():
         raise RuntimeError(

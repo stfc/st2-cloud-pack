@@ -16,7 +16,6 @@ def test_find_servers_on_hv_no_servers_found(mock_find_servers_on_hv):
     cloud_account = ""
     hypervisor_name = ""
     limit_by_projects = ["proj1", "proj2"]
-    webhook = None
 
     mock_query = mock_find_servers_on_hv.return_value
     mock_query.to_props.return_value = {}
@@ -28,15 +27,15 @@ def test_find_servers_on_hv_no_servers_found(mock_find_servers_on_hv):
             cloud_account=cloud_account,
             hypervisor_name=hypervisor_name,
             limit_by_projects=limit_by_projects,
-            webhook=webhook,
         )
 
     mock_find_servers_on_hv.assert_called_once_with(
-        cloud_account, hypervisor_name, limit_by_projects, webhook
+        cloud_account, hypervisor_name, limit_by_projects
     )
     mock_query.to_props.assert_called_once()
 
 
+@pytest.mark.freeze_time("2026-11-09 09:10:48")
 def test_print_email_params():
     """
     Test print_email_params() function simply prints values
@@ -52,6 +51,7 @@ def test_print_email_params():
     mock_print.assert_called_once_with(
         f"Send Email To: {email_addr}\n"
         f"email_templates hypervisor-email: username {user_name}\n"
+        f"maint date: 2026-11-18\n"
         f"send as html: {as_html}\n"
         f"vm table: {vm_table}\n"
     )
@@ -82,6 +82,7 @@ def test_build_params(mock_email_params, mock_email_template_details):
                 template_params={
                     "username": user_name,
                     "vm_table": vm_table,
+                    "maint_date": "2026-11-18",
                 },
             ),
             call(template_name="footer", template_params={}),
@@ -151,12 +152,11 @@ def test_send_hv_email_send_plaintext(
         as_html=False,
         send_email=True,
         use_override=False,
-        webhook=None,
         **mock_kwargs,
     )
 
     mock_find_servers.assert_called_once_with(
-        cloud_account, mock_hv_name, limit_by_projects, None
+        cloud_account, mock_hv_name, limit_by_projects
     )
     mock_query.to_props.assert_called_once()
     mock_group_servers_by_user_id.assert_called_once_with(mock_query)
@@ -259,12 +259,11 @@ def test_send_hv_email_send_html(
         as_html=True,
         send_email=True,
         use_override=False,
-        webhook=None,
         **mock_kwargs,
     )
 
     mock_find_servers.assert_called_once_with(
-        cloud_account, mock_hv_name, limit_by_projects, None
+        cloud_account, mock_hv_name, limit_by_projects
     )
     mock_query.to_props.assert_called_once()
     mock_group_servers_by_user_id.assert_called_once_with(mock_query)
@@ -365,12 +364,11 @@ def test_send_hv_email_print(
         as_html=False,
         send_email=False,
         use_override=False,
-        webhook=None,
         **mock_kwargs,
     )
 
     mock_find_servers.assert_called_once_with(
-        cloud_account, mock_hv_name, limit_by_projects, None
+        cloud_account, mock_hv_name, limit_by_projects
     )
     mock_query.to_props.assert_called_once()
     mock_group_servers_by_user_id.assert_called_once_with(mock_query)
@@ -460,12 +458,11 @@ def test_send_hv_email_use_override(
         send_email=True,
         use_override=True,
         override_email_address=override_email_address,
-        webhook=None,
         **mock_kwargs,
     )
 
     mock_find_servers.assert_called_once_with(
-        cloud_account, mock_hv_name, limit_by_projects, None
+        cloud_account, mock_hv_name, limit_by_projects
     )
     mock_query.to_props.assert_called_once()
     mock_group_servers_by_user_id.assert_called_once_with(mock_query)
