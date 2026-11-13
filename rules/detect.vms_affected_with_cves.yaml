@@ -1,0 +1,17 @@
+---
+name: detect_vms_affected_with_cves
+pack: stackstorm_openstack
+description: Run every Tuesday at 10:30AM to Detect new VMs that are affected by CVEs
+enabled: true
+
+trigger:
+  type: core.st2.CronTimer
+  parameters:
+    timezone: "Europe/London"
+    day_of_week: tue
+    hour: 10
+    minute: 30
+
+
+action:
+  ref: stackstorm_openstack.detect.vms_affected_with_cves
