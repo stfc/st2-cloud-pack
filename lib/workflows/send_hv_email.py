@@ -71,7 +71,6 @@ def send_hv_email(
     use_override: bool = False,
     override_email_address: Optional[str] = "cloud-support@stfc.ac.uk",
     cc_cloud_support: bool = False,
-    webhook: Optional[str] = None,
     **email_params_kwargs,
 ):
     """
@@ -98,9 +97,7 @@ def send_hv_email(
             "please provide either a list of project identifiers or with flag 'all_projects' to run globally"
         )
 
-    server_query = find_servers_on_hv(
-        cloud_account, hypervisor_name, limit_by_projects, webhook
-    )
+    server_query = find_servers_on_hv(cloud_account, hypervisor_name, limit_by_projects)
 
     if not server_query.to_props():
         raise RuntimeError(
