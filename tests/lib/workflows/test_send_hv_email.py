@@ -37,6 +37,7 @@ def test_find_servers_on_hv_no_servers_found(mock_find_servers_on_hv):
     mock_query.to_props.assert_called_once()
 
 
+@pytest.mark.freeze_time("2026-11-09 09:10:48")
 def test_print_email_params():
     """
     Test print_email_params() function simply prints values
@@ -52,6 +53,7 @@ def test_print_email_params():
     mock_print.assert_called_once_with(
         f"Send Email To: {email_addr}\n"
         f"email_templates hypervisor-email: username {user_name}\n"
+        f"maint date: 2026-11-18\n"
         f"send as html: {as_html}\n"
         f"vm table: {vm_table}\n"
     )
@@ -82,6 +84,7 @@ def test_build_params(mock_email_params, mock_email_template_details):
                 template_params={
                     "username": user_name,
                     "vm_table": vm_table,
+                    "maint_date": "2026-11-18",
                 },
             ),
             call(template_name="footer", template_params={}),

@@ -33,11 +33,11 @@ def days_since_timestamp(timestamp: str) -> int:
     pass as a timestamp with format "%Y-%m-%d"
     """
     try:
-        date = datetime.strptime(timestamp, "%Y-%m-%d")
+        date = datetime.strptime(timestamp, "%Y-%m-%d").date()
     except (ValueError, TypeError) as e:
         raise ValueError("timestamp must have format YYYY-MM-DD") from e
 
-    return (datetime.now(timezone.utc) - date).days
+    return (datetime.now(timezone.utc).date() - date).days
 
 
 def calc_wed_maint_next_week():

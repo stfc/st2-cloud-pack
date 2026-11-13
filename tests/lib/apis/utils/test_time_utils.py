@@ -51,9 +51,10 @@ def test_timestamp_today():
     assert timestamp_today() == datetime.utcnow().strftime("%Y-%m-%d")
 
 
+@pytest.mark.freeze_time("2026-11-09 09:10:48")
 def test_days_since_timestamp():
     """Test that today's timestamp returns zero days elapsed."""
-    assert days_since_timestamp(datetime.utcnow().strftime("%Y-%m-%d")) == 0
+    assert days_since_timestamp("2026-11-09") == 0
 
 
 def test_days_since_timestamp_invalid_format():
