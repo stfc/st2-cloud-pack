@@ -5,6 +5,7 @@ from apis.utils.diff_utils import (
     _normalize_path,
     get_diff,
     compare_2_lists,
+    compare_dict_list,
 )
 
 # pylint:disable=protected-access
@@ -80,7 +81,10 @@ def test_get_diff_dict_add_remove_and_queue():
 
 
 def test_get_diff_dict_queue_added():
-    """Test that differing dict values are queued for deeper comparison instead of reported immediately."""
+    """
+    Test that differing dict values are queued for deeper comparison
+    instead of reported immediately.
+    """
     du = DiffUtils()
     src = {"a": 1}
     tgt = {"a": 2}
@@ -115,7 +119,7 @@ def test_get_diff_list_unhashable_perfect_match():
     """Test that identical unhashable list items (dicts) produce no changes."""
     du = DiffUtils()
     du._get_diff_list_unhashable([{"a": 1}], [{"a": 1}], "root")
-    assert du.changes == []
+    assert not du.changes
 
 
 def test_get_diff_list_unhashable_close_match():
@@ -144,7 +148,10 @@ def test_get_diff_list_unhashable_second_pass_skip():
 
 
 def test_get_diff_list_unhashable_skips_already_matched():
-    """Test that once a target item is matched, later passes skip it (if not matched_in_tgt[j] == False)."""
+    """
+    Test that once a target item is matched,
+    later passes skip it (if not matched_in_tgt[j] == False).
+    """
     du = DiffUtils()
     src = [{"a": 1}, {"a": 1}]
     tgt = [{"a": 1}]
@@ -234,7 +241,7 @@ def test_get_diff_circular_reference():
     a["self"] = a
     b["self"] = b
     changes = get_diff(a, b)
-    assert changes == []
+    assert not changes
 
 
 def test_get_diff_root_excluded_skips_completely():
@@ -242,7 +249,7 @@ def test_get_diff_root_excluded_skips_completely():
     obj1 = {"a": 1}
     obj2 = {"a": 2}
     changes = get_diff(obj1, obj2, exclude_paths={"root"})
-    assert changes == []
+    assert not changes
 
 
 @pytest.mark.parametrize(
@@ -284,3 +291,132 @@ def test_compare_2_lists(
     assert set(only_list1) == set(expected_only_list1)
     assert set(only_list2) == set(expected_only_list2)
     assert set(both) == set(expected_both)
+
+
+# =============================================================================
+#   tests for function compare_dict_list
+# =============================================================================
+
+
+def test_common_keys():
+    """Test that matching keys are returned in the common dictionary."""
+    input_dict = {"a": 1, "b": 2, "c": 3}
+    input_list = ["b", "c"]
+
+    dict_only, list_only, common = compare_dict_list(input_dict, input_list)
+
+    assert dict_only == {"a": 1}
+    assert list_only == []
+    assert common == {"b": 2, "c": 3}
+
+
+def test_no_common_keys():
+    """Test that inputs with no matching keys are returned separately."""
+    input_dict = {"a": 1, "b": 2}
+    input_list = ["c", "d"]
+
+    dict_only, list_only, common = compare_dict_list(input_dict, input_list)
+
+    assert dict_only == {"a": 1, "b": 2}
+    assert list_only == ["c", "d"]
+    assert common == {}
+
+
+def test_all_keys_common():
+    """Test that all dictionary keys are returned when they match the list."""
+    input_dict = {"a": 1, "b": 2}
+    input_list = ["a", "b"]
+
+    dict_only, list_only, common = compare_dict_list(input_dict, input_list)
+
+    assert dict_only == {}
+    assert list_only == []
+    assert common == {"a": 1, "b": 2}
+
+
+def test_empty_dictionary():
+    """Test that an empty dictionary leaves all list items unmatched."""
+    input_dict = {}
+    input_list = ["a", "b"]
+
+    dict_only, list_only, common = compare_dict_list(input_dict, input_list)
+
+    assert dict_only == {}
+    assert list_only == ["a", "b"]
+    assert common == {}
+
+
+def test_empty_list():
+    """Test that an empty list leaves all dictionary keys unmatched."""
+    input_dict = {"a": 1, "b": 2}
+    input_list = []
+
+    dict_only, list_only, common = compare_dict_list(input_dict, input_list)
+
+    assert dict_only == {"a": 1, "b": 2}
+    assert list_only == []
+    assert common == {}
+
+
+def test_both_inputs_empty():
+    """Test that two empty inputs produce three empty outputs."""
+    assert compare_dict_list({}, []) == ({}, [], {})
+
+
+def test_duplicate_list_items():
+    """Test that duplicate unmatched list items are preserved."""
+    input_dict = {"a": 1, "b": 2}
+    input_list = ["b", "c", "c", "d"]
+
+    dict_only, list_only, common = compare_dict_list(input_dict, input_list)
+
+    assert dict_only == {"a": 1}
+    assert list_only == ["c", "c", "d"]
+    assert common == {"b": 2}
+
+
+def test_mixed_key_types():
+    """Test matching dictionary keys with different hashable types."""
+    input_dict = {"a": 1, 2: "two", (3, 4): "tuple"}
+    input_list = [2, (3, 4), "missing"]
+
+    dict_only, list_only, common = compare_dict_list(input_dict, input_list)
+
+    assert dict_only == {"a": 1}
+    assert list_only == ["missing"]
+    assert common == {2: "two", (3, 4): "tuple"}
+
+
+def test_none_values():
+    """Test that dictionary entries with None values are preserved."""
+    input_dict = {"a": None, "b": 2}
+    input_list = ["a"]
+
+    dict_only, list_only, common = compare_dict_list(input_dict, input_list)
+
+    assert dict_only == {"b": 2}
+    assert list_only == []
+    assert common == {"a": None}
+
+
+def test_original_inputs_unchanged():
+    """Test that the function does not modify either input."""
+    input_dict = {"a": 1, "b": 2}
+    input_list = ["b", "c"]
+
+    original_dict = input_dict.copy()
+    original_list = input_list.copy()
+
+    compare_dict_list(input_dict, input_list)
+
+    assert input_dict == original_dict
+    assert input_list == original_list
+
+
+def test_unhashable_list_item():
+    """Test that an unhashable list item raises TypeError."""
+    input_dict = {"a": 1}
+    input_list = ["a", ["b"]]
+
+    with pytest.raises(TypeError):
+        compare_dict_list(input_dict, input_list)
