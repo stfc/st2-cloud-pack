@@ -48,3 +48,10 @@ def add_days_to_timestamp(timestamp: str, days: int) -> str:
     date = datetime.strptime(timestamp, "%Y-%m-%d")
     # Add N days and return the result in the same format
     return (date + timedelta(days=days)).strftime("%Y-%m-%d")
+
+
+def extract_date_from_timestamp(timestamp: str) -> str:
+    """
+    Extract the date (YYYY-MM-DD) from an ISO 8601 timestamp
+    """
+    return datetime.fromisoformat(timestamp.replace("Z", "+00:00")).date().isoformat()

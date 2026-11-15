@@ -7,6 +7,7 @@ from apis.utils.time_utils import (
     days_since_timestamp,
     parse_iso_utc,
     add_days_to_timestamp,
+    extract_date_from_timestamp,
 )
 
 
@@ -150,3 +151,41 @@ def test_invalid_timestamp_type():
     """Test that a non-string timestamp raises TypeError."""
     with pytest.raises(TypeError):
         add_days_to_timestamp(None, 5)
+
+
+def test_extract_date_from_timestamp_valid_timestamp():
+    """Test extraction of a date from a valid ISO 8601 timestamp."""
+    assert extract_date_from_timestamp("2026-11-10T00:38:24.603Z") == "2026-11-10"
+
+
+def test_extract_date_from_timestamp_without_milliseconds():
+    """Test extraction of a date from a timestamp without milliseconds."""
+    assert extract_date_from_timestamp("2026-11-10T00:38:24Z") == "2026-11-10"
+
+
+def test_extract_date_from_timestamp_with_timezone_offset():
+    """Test extraction of a date from a timestamp with a timezone offset."""
+    assert extract_date_from_timestamp("2026-11-10T00:38:24+01:00") == "2026-11-10"
+
+
+def test_extract_date_from_timestamp_without_timezone():
+    """Test extraction of a date from a timestamp without timezone information."""
+    assert extract_date_from_timestamp("2026-11-10T00:38:24") == "2026-11-10"
+
+
+def test_extract_date_from_timestamp_invalid_timestamp():
+    """Test that an invalid timestamp raises a ValueError."""
+    with pytest.raises(ValueError):
+        extract_date_from_timestamp("invalid-timestamp")
+
+
+def test_extract_date_from_timestamp_invalid_date():
+    """Test that an invalid calendar date raises a ValueError."""
+    with pytest.raises(ValueError):
+        extract_date_from_timestamp("2026-02-30T00:38:24Z")
+
+
+def test_extract_date_from_timestamp_empty_string():
+    """Test that an empty timestamp raises a ValueError."""
+    with pytest.raises(ValueError):
+        extract_date_from_timestamp("")
