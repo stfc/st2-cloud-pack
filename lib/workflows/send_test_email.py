@@ -3,7 +3,7 @@ from typing import Optional
 from apis.email_api.structs.smtp_account import SMTPAccount
 from apis.email_api.structs.email_template_details import EmailTemplateDetails
 from apis.email_api.structs.email_params import EmailParams
-from apis.email_api.emailer import Emailer
+from apis.email_api.send_emails import send_email as send_it
 
 
 def send_test_email(
@@ -45,4 +45,4 @@ def send_test_email(
         }
     )
 
-    Emailer(smtp_account).send_emails([email_params])
+    send_it(smtp_account, email_params)

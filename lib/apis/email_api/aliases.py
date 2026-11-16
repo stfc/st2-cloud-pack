@@ -1,3 +1,7 @@
+"""
+type aliases for Email API functions
+"""
+
 from typing import Dict, List
 
 EmailAddress = str
