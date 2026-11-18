@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 
 def parse_iso_utc(value: str) -> datetime:
@@ -38,3 +38,20 @@ def days_since_timestamp(timestamp: str) -> int:
         raise ValueError("timestamp must have format YYYY-MM-DD") from e
 
     return (datetime.utcnow() - date).days
+
+
+def add_days_to_timestamp(timestamp: str, days: int) -> str:
+    """
+    adds a number of days to a timestamp with format YYYY-MM-DD
+    """
+    # Convert the string to a datetime object
+    date = datetime.strptime(timestamp, "%Y-%m-%d")
+    # Add N days and return the result in the same format
+    return (date + timedelta(days=days)).strftime("%Y-%m-%d")
+
+
+def extract_date_from_timestamp(timestamp: str) -> str:
+    """
+    Extract the date (YYYY-MM-DD) from an ISO 8601 timestamp
+    """
+    return datetime.fromisoformat(timestamp.replace("Z", "+00:00")).date().isoformat()
