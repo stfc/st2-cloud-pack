@@ -57,6 +57,7 @@ def test_print_email_params():
     )
 
 
+@pytest.mark.freeze_time("2026-11-09 09:10:48")
 @patch("workflows.send_hv_email.EmailTemplateDetails")
 @patch("workflows.send_hv_email.EmailParams")
 def test_build_params(mock_email_params, mock_email_template_details):
