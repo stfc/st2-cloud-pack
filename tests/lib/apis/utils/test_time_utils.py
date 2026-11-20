@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 import pytest
 
 from apis.utils.time_utils import (
+    calc_wed_maint_next_week,
     timestamp_today,
     days_since_timestamp,
     parse_iso_utc,
@@ -52,15 +53,25 @@ def test_timestamp_today():
     assert timestamp_today() == datetime.utcnow().strftime("%Y-%m-%d")
 
 
+@pytest.mark.freeze_time("2026-11-09 09:10:48")
 def test_days_since_timestamp():
     """Test that today's timestamp returns zero days elapsed."""
-    assert days_since_timestamp(datetime.utcnow().strftime("%Y-%m-%d")) == 0
+    assert days_since_timestamp("2026-11-09") == 0
 
 
 def test_days_since_timestamp_invalid_format():
     """Test that an invalid timestamp format raises ValueError."""
     with pytest.raises(ValueError, match="timestamp must have format YYYY-MM-DD"):
         days_since_timestamp("2026/10/07")
+
+
+@pytest.mark.freeze_time("2026-11-09 09:10:48")
+def test_wed_maint_next_week():
+    """Test that calc_wed_maint_next_week returns a valid date string."""
+    result = calc_wed_maint_next_week()
+    assert (
+        result == "2026-11-18"
+    )  # The next Wednesday window after 2026-11-09 is 2026-11-18
 
 
 def test_add_positive_days():

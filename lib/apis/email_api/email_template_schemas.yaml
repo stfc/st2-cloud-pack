@@ -54,6 +54,14 @@ hypervisor_maintenance_notification:
   html_filepath: "html/hypervisor_maintenance_notification.html.j2"
   plaintext_filepath: "plaintext/hypervisor_maintenance_notification.txt.j2"
 
+cold_migration_notification:
+  schema:
+    username: null
+    vm_table: "No VMs"
+    maint_date: null
+  html_filepath: "html/cold_migration_notification.html.j2"
+  plaintext_filepath: "plaintext/gpu_migration_notification.txt.j2"
+
 hypervisor_fault_notification:
   schema:
     username: null
