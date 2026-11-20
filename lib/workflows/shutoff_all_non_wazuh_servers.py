@@ -72,7 +72,10 @@ def _shutoff_server(conn: Connection, server_id: str, admin_lock: bool) -> bool:
 
 
 def shutoff_all_non_wazuh_servers(
-    conn: Connection, wazuh_account: WazuhAccount, admin_lock: bool
+    conn: Connection,
+    wazuh_account: WazuhAccount,
+    admin_lock: bool,
+    override_vm_limit: bool = False,
 ) -> bool:
     """
     set all OpenStack Servers not reporting to Wazuh in SHUTOFF
@@ -102,6 +105,20 @@ def shutoff_all_non_wazuh_servers(
         "excluding %s servers listed in the config file", len(excluded_from_config)
     )
     selected_list, _, _ = compare_2_lists(selected_list, excluded_from_config)
+
+    # Log all selected VMs before checking the shutdown limit.
+    logger.info(
+        "VMs selected for SHUTOFF (%s total):\n%s",
+        len(selected_list),
+        "\n".join(map(str, selected_list)),
+    )
+
+    if len(selected_list) >= 10 and not override_vm_limit:
+        logger.warning(
+            "VM limit exceeded: %s VMs selected (maximum allowed: 10).",
+            len(selected_list),
+        )
+        return False
 
     action_succeeded = True
     shutted_off_servers = []
