@@ -6,6 +6,7 @@ from apis.openstack_api.enums.hypervisor_enums import HypervisorAction
 from apis.openstack_api.openstack_hypervisor import (
     Hypervisor,
     get_available_flavors,
+    prioritse_patching,
 )
 
 
@@ -22,6 +23,8 @@ from apis.openstack_api.openstack_hypervisor import (
                 "hypervisor_state": "up",
                 "hypervisor_server_count": 0,
                 "hypervisor_disabled_reason": None,
+                "platform": MagicMock(id=14),
+                "fw_date": "2026-09-22",
             },
             0.1,
         ),
@@ -33,6 +36,8 @@ from apis.openstack_api.openstack_hypervisor import (
                 "hypervisor_state": "up",
                 "hypervisor_server_count": 12,
                 "hypervisor_disabled_reason": None,
+                "platform": MagicMock(id=15),
+                "fw_date": "2026-10-11",
             },
             0.5,
         ),
@@ -68,6 +73,8 @@ def test_no_maintenance_needed(
                 "hypervisor_state": "up",
                 "hypervisor_server_count": 0,
                 "hypervisor_disabled_reason": "2026/09/22 - HW Fault - AB",
+                "platform": NonCallableMock(id=14),
+                "fw_date": "2026-09-22",
             },
             0.1,
         ),
@@ -79,6 +86,8 @@ def test_no_maintenance_needed(
                 "hypervisor_state": "up",
                 "hypervisor_server_count": 12,
                 "hypervisor_disabled_reason": None,
+                "platform": NonCallableMock(id=15),
+                "fw_date": "2026-09-22",
             },
             0.5,
         ),
@@ -114,6 +123,8 @@ def test_ignore_manually_disabled(
                 "hypervisor_state": "down",
                 "hypervisor_server_count": 0,
                 "hypervisor_disabled_reason": "2026/09/22 - HW Fault - AB",
+                "platform": NonCallableMock(id=14),
+                "fw_date": "2026-09-22",
             },
             0.1,
         ),
@@ -125,6 +136,8 @@ def test_ignore_manually_disabled(
                 "hypervisor_state": "up",
                 "hypervisor_server_count": 12,
                 "hypervisor_disabled_reason": None,
+                "platform": NonCallableMock(id=15),
+                "fw_date": "2026-09-22",
             },
             0.5,
         ),
@@ -136,6 +149,8 @@ def test_ignore_manually_disabled(
                 "hypervisor_state": "down",
                 "hypervisor_server_count": 10,
                 "hypervisor_disabled_reason": None,
+                "platform": NonCallableMock(id=15),
+                "fw_date": "2026-09-22",
             },
             0.1,
         ),
@@ -147,6 +162,8 @@ def test_ignore_manually_disabled(
                 "hypervisor_state": "down",
                 "hypervisor_server_count": 0,
                 "hypervisor_disabled_reason": None,
+                "platform": NonCallableMock(id=14),
+                "fw_date": "2026-09-22",
             },
             0.5,
         ),
@@ -182,6 +199,8 @@ def test_ignore_down_hosts(
                 "hypervisor_state": "up",
                 "hypervisor_server_count": 0,
                 "hypervisor_disabled_reason": None,
+                "platform": NonCallableMock(id=15),
+                "fw_date": "2026-09-22",
             },
             0.1,
             HypervisorAction.DRAIN,
@@ -194,6 +213,8 @@ def test_ignore_down_hosts(
                 "hypervisor_state": "up",
                 "hypervisor_server_count": 12,
                 "hypervisor_disabled_reason": None,
+                "platform": NonCallableMock(id=15),
+                "fw_date": "2026-09-22",
             },
             0.5,
             HypervisorAction.NOOP,
@@ -206,6 +227,8 @@ def test_ignore_down_hosts(
                 "hypervisor_state": "up",
                 "hypervisor_server_count": 0,
                 "hypervisor_disabled_reason": "Stackstorm: Drained",
+                "platform": NonCallableMock(id=15),
+                "fw_date": "2026-09-22",
             },
             0.1,
             HypervisorAction.PATCH,
@@ -218,6 +241,8 @@ def test_ignore_down_hosts(
                 "hypervisor_state": "up",
                 "hypervisor_server_count": 0,
                 "hypervisor_disabled_reason": "Stackstorm: Drained",
+                "platform": NonCallableMock(id=15),
+                "fw_date": "2026-09-22",
             },
             0.6,
             HypervisorAction.PATCH,
@@ -230,6 +255,8 @@ def test_ignore_down_hosts(
                 "hypervisor_state": "up",
                 "hypervisor_server_count": 5,
                 "hypervisor_disabled_reason": "Stackstorm: Draining",
+                "platform": NonCallableMock(id=14),
+                "fw_date": "2026-09-22",
             },
             0.7,
             HypervisorAction.DRAIN,
@@ -242,6 +269,8 @@ def test_ignore_down_hosts(
                 "hypervisor_state": "up",
                 "hypervisor_server_count": 5,
                 "hypervisor_disabled_reason": "Stackstorm: Draining",
+                "platform": NonCallableMock(id=15),
+                "fw_date": "2026-09-22",
             },
             0.1,
             HypervisorAction.DRAIN,
@@ -364,6 +393,8 @@ def test_garbage_server_count(_mock_get_capacity, mock_connect, server_count):
         "hypervisor_state": "up",
         "hypervisor_server_count": server_count,
         "hypervisor_disabled_reason": None,
+        "platform": NonCallableMock(id=15),
+        "fw_date": "2026-09-22",
     }
     mock_connect.return_value = MagicMock()
 
@@ -384,6 +415,8 @@ def test_negative_server_count(_mock_get_capacity, mock_connect):
         "hypervisor_state": "up",
         "hypervisor_server_count": -1,
         "hypervisor_disabled_reason": None,
+        "platform": NonCallableMock(id=15),
+        "fw_date": "2026-09-22",
     }
     mock_connect.return_value = MagicMock()
 
@@ -405,6 +438,8 @@ def test_garbage_disabled_reason(_mock_get_capacity, mock_connect, disabled_reas
         "hypervisor_state": "up",
         "hypervisor_server_count": 10,
         "hypervisor_disabled_reason": disabled_reason,
+        "platform": NonCallableMock(id=15),
+        "fw_date": "2026-09-22",
     }
     mock_connect.return_value = MagicMock()
 
@@ -425,6 +460,8 @@ def test_get_aggregate_capacity(mock_connect):
         "hypervisor_state": "up",
         "hypervisor_server_count": 10,
         "hypervisor_disabled_reason": None,
+        "platform": NonCallableMock(id=15),
+        "fw_date": "2026-09-22",
     }
     mock_conn = MagicMock()
     mock_connect.return_value = mock_conn
@@ -495,6 +532,8 @@ def test_get_aggregate_capacity_no_agg(mock_connect):
         "hypervisor_state": "up",
         "hypervisor_server_count": 10,
         "hypervisor_disabled_reason": None,
+        "platform": NonCallableMock(id=15),
+        "fw_date": "2026-09-22",
     }
     mock_conn = MagicMock()
     mock_connect.return_value = mock_conn
@@ -544,3 +583,188 @@ def test_avaliable_flavors():
     mock_conn.compute.flavors.assert_called_once_with(extra_specs=expected_extra_specs)
 
     assert res == [mock_flavor_1.name, mock_flavor_2.name]
+
+
+@pytest.mark.freeze_time("2026-10-04 15:00:01")
+@patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
+@patch.object(
+    Hypervisor,
+    "WEIGHTS",
+    {
+        "last_fw_patch_date": 2,
+    },
+)
+def test_prioritise_fw_patch_date(_mock_connect):
+    mock_host1 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host1",
+            "hypervisor_server_count": 10,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+            "platform": NonCallableMock(id=15),
+            "fw_date": "2026-09-30",
+        },
+    )
+    mock_host2 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host2",
+            "hypervisor_server_count": 10,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+            "platform": NonCallableMock(id=15),
+            "fw_date": "2026-10-04",
+        },
+    )
+    mock_host3 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host3",
+            "hypervisor_server_count": 10,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+            "platform": NonCallableMock(id=15),
+            "fw_date": "2025-10-04",
+        },
+    )
+
+    mock_hypervisors = [mock_host1, mock_host2, mock_host3]
+
+    res = prioritse_patching(mock_hypervisors)
+
+    assert res == [
+        mock_host3,
+        mock_host1,
+        mock_host2,
+    ]
+
+
+@pytest.mark.freeze_time("2026-10-04 15:00:01")
+@patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
+@patch.object(Hypervisor, "WEIGHTS", {"os_version": 1})
+def test_prioritise_os_version(_mock_connect):
+    mock_host1 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host1",
+            "hypervisor_server_count": 10,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+            "platform": NonCallableMock(id=15),
+            "fw_date": "2026-10-04",
+        },
+    )
+    mock_host2 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host2",
+            "hypervisor_server_count": 10,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+            "platform": NonCallableMock(id=14),
+            "fw_date": "2026-10-04",
+        },
+    )
+    mock_host3 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host3",
+            "hypervisor_server_count": 10,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+            "platform": NonCallableMock(id=14),
+            "fw_date": "2025-10-04",
+        },
+    )
+
+    mock_hypervisors = [mock_host1, mock_host2, mock_host3]
+
+    res = prioritse_patching(mock_hypervisors)
+
+    assert res[0] == mock_host2
+
+
+@pytest.mark.freeze_time("2026-10-04 15:00:01")
+@patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
+@patch.object(Hypervisor, "WEIGHTS", {"hypervisor_server_count": 1})
+def test_prioritise_num_vms(_mock_connect):
+    mock_host1 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host1",
+            "hypervisor_server_count": 1,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+            "platform": NonCallableMock(id=15),
+            "fw_date": "2026-10-04",
+        },
+    )
+    mock_host2 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host2",
+            "hypervisor_server_count": 10,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+            "platform": NonCallableMock(id=15),
+            "fw_date": "2026-10-04",
+        },
+    )
+    mock_host3 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host3",
+            "hypervisor_server_count": 100,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+            "platform": NonCallableMock(id=15),
+            "fw_date": "2026-10-04",
+        },
+    )
+    mock_hypervisors = [mock_host1, mock_host2, mock_host3]
+
+    res = prioritse_patching(mock_hypervisors)
+
+    assert res == [mock_host1, mock_host2, mock_host3]
+
+
+@pytest.mark.freeze_time("2026-10-04 15:00:01")
+@patch("apis.openstack_api.openstack_hypervisor.openstack.connect")
+@patch.object(Hypervisor, "WEIGHTS", {"disabled_reason": 1})
+def test_calc_weight_missing_weigh_fn(_mock_connect):
+    mock_host1 = Hypervisor.from_dict(
+        "dev",
+        {
+            "hypervisor_name": "host1",
+            "hypervisor_server_count": 1,
+            "hypervisor_uptime_days": 10.0,
+            "hypervisor_status": "enabled",
+            "hypervisor_state": "up",
+            "hypervisor_disabled_reason": None,
+            "platform": NonCallableMock(id=15),
+            "fw_date": "2026-10-04",
+        },
+    )
+    mock_hypervisors = [mock_host1]
+
+    with pytest.raises(AttributeError):
+        prioritse_patching(mock_hypervisors)
