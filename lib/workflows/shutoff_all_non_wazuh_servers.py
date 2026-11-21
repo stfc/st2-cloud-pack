@@ -71,10 +71,12 @@ def _shutoff_server(conn: Connection, server_id: str, admin_lock: bool) -> bool:
     return True
 
 
+# pylint:disable=too-many-locals
 def shutoff_all_non_wazuh_servers(
     conn: Connection,
     wazuh_account: WazuhAccount,
     admin_lock: bool,
+    dry_run: bool,
     override_vm_limit: bool = False,
 ) -> bool:
     """
@@ -113,12 +115,14 @@ def shutoff_all_non_wazuh_servers(
         "\n".join(map(str, selected_list)),
     )
 
+    if dry_run:
+        logger.info("execution in dry-run mode, aborting")
+        return True
+
     if len(selected_list) >= 10 and not override_vm_limit:
-        logger.warning(
-            "VM limit exceeded: %s VMs selected (maximum allowed: 10).",
-            len(selected_list),
-        )
-        return False
+        msg = f"VM limit exceeded: {len(selected_list)} VMs selected (maximum allowed: 10)."
+        logger.warning(msg)
+        raise RuntimeError(msg)
 
     action_succeeded = True
     shutted_off_servers = []
@@ -135,10 +139,13 @@ def shutoff_all_non_wazuh_servers(
         "list of servers that have been set SHUTOFF:\n\n%s",
         "\n".join(shutted_off_servers),
     )
-    logger.info(
+    logger.error(
         "list of servers that failed to SHUTOFF:\n\n%s",
         "\n".join(shutted_off_servers_failed),
     )
 
     logger.info("process to SHUTOFF Wazuh non-compliant servers performed")
-    return action_succeeded
+
+    if not action_succeeded:
+        raise RuntimeError("some Servers failed to SHUTOFF")
+    return True

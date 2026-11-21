@@ -32,6 +32,10 @@ parameters:
     type: boolean
     description: "check to admin lock the Server after being set to SHUTOFF"
     default: true
+  dry_run:
+    type: boolean
+    description: "Execute in dry-run mode, not performing any change"
+    default: true
   override_vm_limit:
     type: boolean
     description: "Check to allow more than 10 VMs being SHUTOFF"
