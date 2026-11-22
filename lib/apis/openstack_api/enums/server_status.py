@@ -12,18 +12,19 @@ class ServerStatus(Enum):
     SHELVED = "SHELVED"
     SHELVED_OFFLOADED = "SHELVED_OFFLOADED"
     SHUTOFF = "SHUTOFF"
+    NONE = None
 
     @classmethod
-    def from_string(cls, value: str) -> Optional["ServerStatus"]:
+    def from_string(cls, value: Optional[str]) -> "ServerStatus":
         """
-        Return the enum member matching the given status string,
-        or None when the status is not tracked
+        Return the matching enum member, or ServerStatus.NONE
+        if the value is None or not recognised.
+        """
+        if value is None:
+            return cls.NONE
 
-        :param value: the status string returned by the OpenStack API
-        :return: the matching ServerStatus member, or None
-        """
-        value = value.casefold()
         for member in cls:
-            if member.value.casefold() == value:
+            if member.value is not None and member.value.casefold() == value.casefold():
                 return member
-        return None
+
+        return cls.NONE

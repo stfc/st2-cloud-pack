@@ -11,6 +11,7 @@ def test_server_status_values_match_nova_status_strings():
     assert ServerStatus.SHELVED.value == "SHELVED"
     assert ServerStatus.SHELVED_OFFLOADED.value == "SHELVED_OFFLOADED"
     assert ServerStatus.SHUTOFF.value == "SHUTOFF"
+    assert ServerStatus.NONE.value is None
 
 
 def test_server_status_from_str_is_case_insensitive():
@@ -24,4 +25,5 @@ def test_server_status_from_str_is_case_insensitive():
     offloaded = ServerStatus.from_string("Shelved_Offloaded")
     assert offloaded is ServerStatus.SHELVED_OFFLOADED
     assert ServerStatus.from_string("ERROR") is ServerStatus.ERROR
-    assert ServerStatus.from_string("foo") is None
+    assert ServerStatus.from_string("foo") is ServerStatus.NONE
+    assert ServerStatus.from_string(None) is ServerStatus.NONE
