@@ -148,6 +148,8 @@ class Hypervisor:
         """
         Check whether the hypervisor has been diabled by stackstorm
         by checking the disabled reason starts with `Stackstorm:`
+        This is so we can exclude a hypervisor from the automoation
+        for example for HW faults etc
 
         :param self: The instance of the class
 
