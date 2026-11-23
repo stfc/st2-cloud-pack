@@ -29,7 +29,7 @@ def query_hypervisor_state(
         state_query.where(
             "notregex",
             "hypervisor_name",
-            value=hv_blacklist_regex,
+            value=hv_blacklist_regex or None,
         )
         state_query.where(
             "not_equal_to",
