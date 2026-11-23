@@ -7,7 +7,7 @@ runner_type: python-script
 parameters:
   lib_entry_point:
     type: string
-    default: workflows.detect_vms_affected_with_cves.detect_vms_affected_with_cves
+    default: workflows.detect_vms_affected_with_cves.detect_vms_with_cves
     immutable: true
   create_openstack_connection:
     description: "Flag that when set, will create and open a openstack connection object before running action."
