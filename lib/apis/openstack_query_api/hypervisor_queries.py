@@ -27,7 +27,7 @@ def query_hypervisor_state(
 
         state_query = HypervisorQuery()
         state_query.where(
-            "regex",
+            "notregex",
             "hypervisor_name",
             value=hv_blacklist_regex,
         )
