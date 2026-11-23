@@ -228,6 +228,15 @@ sensor_cloud_account:
     - dev
     - prod
 
+sensor_netbox_account:
+  description: Which netbox account sensors requiring an netbox connection will use
+  type: "string"
+  required: true
+  default: "dev"
+  enum:
+    - dev
+    - prod
+
 sensor_source_cloud:
   description: The source cloud from which the sensor will apply updates
   type: "string"
@@ -267,9 +276,6 @@ hypervisor_sensor:
     uptime_limit:
       type: "number"
       description: "Number of uptime days before marking hypervisor for maintenance"
-    state_expire_after:
-      type: "integer"
-      description: "Number of seconds before forcefully deleting previous state to update hypervisors stuck in a state"
 
 flavor_sensor:
   description: "Flavor sensor specific settings."
