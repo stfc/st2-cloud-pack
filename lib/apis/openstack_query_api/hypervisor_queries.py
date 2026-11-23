@@ -3,7 +3,7 @@ from typing import Dict, List
 from openstackquery.api.query_objects import HypervisorQuery, ServerQuery
 
 from apis.netbox_api.structs.netbox_account import NetboxAccount
-from apis.openstack_query_api import QueryThread
+from apis.utils.threads import ThreadWithOutput
 from workflows.query_netbox_for_hypervisor_firmware_date import (
     query_netbox_for_hypervisor_firmware_date,
 )
@@ -53,8 +53,8 @@ def query_hypervisor_state(
         return server_query.to_props()
 
     threads = []
-    hypervisors_thread = QueryThread(target=get_hypervisors)
-    netbox_thread = QueryThread(
+    hypervisors_thread = ThreadWithOutput(target=get_hypervisors)
+    netbox_thread = ThreadWithOutput(
         target=query_netbox_for_hypervisor_firmware_date,
         args=(
             netbox_account,
@@ -62,7 +62,7 @@ def query_hypervisor_state(
             "any",
         ),
     )
-    servers_thread = QueryThread(target=get_servers)
+    servers_thread = ThreadWithOutput(target=get_servers)
 
     threads.append(hypervisors_thread)
     threads.append(netbox_thread)
