@@ -6,7 +6,7 @@ from apis.openstack_api.enums.hypervisor_enums import HypervisorAction
 from apis.openstack_api.openstack_hypervisor import (
     Hypervisor,
     get_available_flavors,
-    prioritse_patching,
+    prioritise_draining,
 )
 
 
@@ -637,7 +637,7 @@ def test_prioritise_fw_patch_date(_mock_connect):
 
     mock_hypervisors = [mock_host1, mock_host2, mock_host3]
 
-    res = prioritse_patching(mock_hypervisors)
+    res = prioritise_draining(mock_hypervisors)
 
     assert res == [
         mock_host3,
@@ -692,7 +692,7 @@ def test_prioritise_os_version(_mock_connect):
 
     mock_hypervisors = [mock_host1, mock_host2, mock_host3]
 
-    res = prioritse_patching(mock_hypervisors)
+    res = prioritise_draining(mock_hypervisors)
 
     assert res[0] == mock_host2
 
@@ -742,7 +742,7 @@ def test_prioritise_num_vms(_mock_connect):
     )
     mock_hypervisors = [mock_host1, mock_host2, mock_host3]
 
-    res = prioritse_patching(mock_hypervisors)
+    res = prioritise_draining(mock_hypervisors)
 
     assert res == [mock_host1, mock_host2, mock_host3]
 
@@ -767,4 +767,4 @@ def test_calc_weight_missing_weigh_fn(_mock_connect):
     mock_hypervisors = [mock_host1]
 
     with pytest.raises(AttributeError):
-        prioritse_patching(mock_hypervisors)
+        prioritise_draining(mock_hypervisors)

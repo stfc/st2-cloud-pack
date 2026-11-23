@@ -1,7 +1,7 @@
 import time
 from apis.netbox_api.structs.netbox_account import NetboxAccount
 from apis.openstack_api.enums.hypervisor_enums import HypervisorAction
-from apis.openstack_api.openstack_hypervisor import Hypervisor, prioritse_patching
+from apis.openstack_api.openstack_hypervisor import Hypervisor, prioritise_draining
 from apis.openstack_query_api.hypervisor_queries import query_hypervisor_state
 from st2reactor.sensor.base import PollingSensor
 
@@ -45,7 +45,7 @@ class HypervisorStateSensor(PollingSensor):
 
         hypervisor_list = [Hypervisor.from_dict(self.cloud_account, hv) for hv in data]
 
-        for hypervisor in prioritse_patching(hypervisor_list):
+        for hypervisor in prioritise_draining(hypervisor_list):
             action = hypervisor.take_action(uptime_limit=self.uptime_limit)
             self._logger.info(f"{hypervisor.name}: {action.name}")
             if action is not HypervisorAction.NOOP:

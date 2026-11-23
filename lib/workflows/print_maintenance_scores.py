@@ -1,7 +1,7 @@
 import tabulate
 
 from apis.netbox_api.structs.netbox_account import NetboxAccount
-from apis.openstack_api.openstack_hypervisor import Hypervisor, prioritse_patching
+from apis.openstack_api.openstack_hypervisor import Hypervisor, prioritise_draining
 from apis.openstack_query_api.hypervisor_queries import query_hypervisor_state
 
 
@@ -15,7 +15,7 @@ def print_maintenance_scores(cloud_account: str, netbox_account: NetboxAccount) 
     data = query_hypervisor_state(cloud_account, netbox_account)
 
     hypervisor_list = [Hypervisor.from_dict(cloud_account, hv) for hv in data]
-    sorted_hypervisors = prioritse_patching(hypervisor_list)
+    sorted_hypervisors = prioritise_draining(hypervisor_list)
 
     table_data = [hv.to_dict() for hv in sorted_hypervisors]
     table = tabulate.tabulate(table_data, headers="keys")

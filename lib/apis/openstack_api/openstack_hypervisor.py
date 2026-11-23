@@ -271,7 +271,7 @@ class Hypervisor:
 
     def os_version_metric(self) -> bool:
         """
-        Deprioritse hosts currently runing the target version
+        Deprioritise hosts currently runing the target version
         of the operating system
 
         :return: OS version metric
@@ -332,7 +332,7 @@ def get_available_flavors(conn: Connection, hypervisor_name: str) -> List[str]:
     return available_flavors
 
 
-def prioritse_patching(hosts: List[Hypervisor]) -> Sequence[Hypervisor]:
+def prioritise_draining(hosts: List[Hypervisor]) -> Sequence[Hypervisor]:
     """
     Prioritises a list of hypervisors to order them by priority of patching
 
