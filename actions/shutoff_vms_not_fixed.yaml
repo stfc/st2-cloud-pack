@@ -1,0 +1,90 @@
+---
+description: Shutoff all VMs that are not fixed and notify the owner
+enabled: true
+entry_point: src/openstack_actions.py
+name: shutoff_vms_not_fixed
+runner_type: python-script
+parameters:
+  timeout:
+    default: 3600
+  lib_entry_point:
+    default: workflows.shutoff_vms_not_fixed.shutoff_vms_not_fixed
+    immutable: true
+    type: string
+  create_openstack_connection:
+    description: "Flag that when set, will create and open a openstack connection object before running action"
+    default: true
+    immutable: true
+    type: boolean
+  subject:
+    type: string
+    description: "Subject to add to each email"
+    required: true
+    default: "STFC Cloud VMs affected with CVEs"
+  smtp_account_name:
+    type: string
+    description: "Name of SMTP Account to use. Must be configured in the pack config"
+    required: true
+    default: "default"
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action"
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  wazuh_account_name:
+    type: string
+    description: "Name of Wazuh Account to use. Must be configured in in the pack settings."
+    required: true
+    default: "default"
+  admin_lock:
+    type: boolean
+    description: "check to lock the Server after being set to SHUTOFF"
+    default: true
+  override_vm_limit:
+    type: boolean
+    description: "Check to allow more than 10 VMs being SHUTOFF"
+    default: false
+  limit_by_projects:
+    type: array
+    description: "Comma-spaced project to limit action to — Incompatible with all_projects."
+    required: false
+    default: null
+  all_projects:
+    type: boolean
+    description: "Tick to search in all projects - default is True."
+    required: true
+    default: true
+  use_override:
+    type: boolean
+    description: "Set this flag so all emails will be redirected to override email."
+    required: true
+    default: False
+  as_html:
+    type: boolean
+    description: "Send email body as HTML."
+    required: true
+    default: true
+  send_email:
+    type: boolean
+    description: "Set this flag to actually send emails instead of printing what will be sent."
+    required: true
+    default: false
+  override_email_address:
+    type: string
+    description: "Set an email address to override where to send the emails generated."
+    required: true
+    default: false
+  cc_cloud_support:
+    type: boolean
+    description: "Flag if set, will cc in cloud-support@stfc.ac.uk automatically."
+    required: false
+    default: false
+  email_from:
+    type: string
+    description: "Email address to send email from."
+    required: true
+    default: "cloud-support@stfc.ac.uk"
+    immutable: true
