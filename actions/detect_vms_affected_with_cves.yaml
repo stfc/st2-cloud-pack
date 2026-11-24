@@ -1,0 +1,90 @@
+---
+description: Query wazuh for detection of new VMs affected by CVEs and notify the owner
+enabled: false
+entry_point: src/openstack_actions.py
+name: detect_vms_affected_with_cves
+runner_type: python-script
+parameters:
+  lib_entry_point:
+    type: string
+    default: workflows.detect_vms_affected_with_cves.detect_vms_with_cves
+    immutable: true
+  create_openstack_connection:
+    description: "Flag that when set, will create and open a openstack connection object before running action."
+    default: true
+    immutable: true
+    type: boolean
+  subject:
+    type: string
+    description: "Subject to add to each email"
+    required: true
+    default: "STFC Cloud VMs affected with CVEs"
+  smtp_account_name:
+    type: string
+    description: "Name of SMTP Account to use. Must be configured in the pack config"
+    required: true
+    default: "default"
+  cloud_account:
+    description: "The clouds.yaml account to use whilst performing this action."
+    required: true
+    type: string
+    default: "dev"
+    enum:
+      - "dev"
+      - "prod"
+  wazuh_account_name:
+    type: string
+    description: "Name of Wazuh Account to use. Must be configured in the pack settings."
+    required: true
+    default: "default"
+  notify_users:
+    type: boolean
+    description: Send notifications to VM owners.
+    required: false
+    default: true
+  dry_run:
+    type: boolean
+    description: "Perform detection without sending notifications."
+    required: false
+    default: false
+  limit_by_projects:
+    type: array
+    description: "Comma-spaced project to limit action to — Incompatible with all_projects."
+    required: false
+    default: null
+  all_projects:
+    type: boolean
+    description: "Tick to search in all projects - default is True."
+    required: true
+    default: true
+  use_override:
+    type: boolean
+    description: "Set this flag so all emails will be redirected to override email."
+    required: true
+    default: False
+  as_html:
+    type: boolean
+    description: "Send email body as HTML."
+    required: true
+    default: true
+  send_email:
+    type: boolean
+    description: "Set this flag to actually send emails instead of printing what will be sent."
+    required: true
+    default: false
+  override_email_address:
+    type: string
+    description: "Set an email address to override where to send the emails generated."
+    required: true
+    default: false
+  cc_cloud_support:
+    type: boolean
+    description: "Flag if set, will cc in cloud-support@stfc.ac.uk automatically."
+    required: false
+    default: false
+  email_from:
+    type: string
+    description: "Email address to send email from."
+    required: true
+    default: "cloud-support@stfc.ac.uk"
+    immutable: true
