@@ -1,0 +1,18 @@
+---
+name: detect_tagged_vms_with_cves
+description: Run everyday at 08:45 to identify tagged VMs affected by CVEs and notify owners.
+pack: stackstorm_openstack
+enabled: true
+
+trigger:
+  type: core.st2.CronTimer
+  parameters:
+    timezone: "Europe/London"
+    day_of_week: mon,tue,wed,thu,fri
+    hour: 08
+    minute: 45
+
+# The hv.search.by.property is added for testing purposes
+# this will be replaced in future when the action is added
+action:
+  ref: stackstorm_openstack.hv.search.by.property
