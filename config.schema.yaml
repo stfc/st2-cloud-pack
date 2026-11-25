@@ -111,29 +111,45 @@ icinga_accounts:
 wazuh_accounts:
   type: "array"
   required: true
-  description: Wazuh account
+  description: Wazuh accounts (Indexer and API)
   items:
     type: "object"
     required: true
     properties:
       name:
-        description: "Name of the wazuh account"
+        description: "Name of the wazuh Indexer account"
         type: "string"
         secret: false
         required: true
-      username:
+      api_username:
         type: "string"
-        description: "Username for wazuh"
+        description: "Username for wazuh API"
         secret: false
         required: true
-      password:
+      api_password:
         type: "string"
-        description: "Password for wazuh"
+        description: "Password for wazuh API"
         required: true
         secret: true
-      wazuh_endpoint:
+      api_endpoint:
         type: "string"
-        description: "Wazuh endpoint (URL and port). E.g. https://wazuh.matrix.net:55000/"
+        description:
+        required: true
+        secret: false
+        default: "Wazuh Indexer endpoint (URL and port). E.g. https://wazuh.matrix.net:55000/"
+      indexer_username:
+        type: "string"
+        description: "Username for wazuh Indexer"
+        secret: false
+        required: true
+      indexer_password:
+        type: "string"
+        description: "Password for wazuh Indexer"
+        required: true
+        secret: true
+      indexer_endpoint:
+        type: "string"
+        description: "Wazuh Indexer endpoint (URL and port). E.g. https://wazuh.matrix.net:9200/"
         required: true
         secret: false
         default: ""

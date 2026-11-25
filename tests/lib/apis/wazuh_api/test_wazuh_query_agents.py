@@ -235,8 +235,8 @@ def test_wazuh_list_servers_by_os(mock_query, comparison, expected_query):
         returned, without making per-agent label requests.
     """
     wazuh_account = Mock()
-    wazuh_account.wazuh_endpoint = "https://wazuh.example.com"
-    wazuh_account.get_wazuh_token.return_value = "jwt-token"
+    wazuh_account.api_endpoint = "https://wazuh.example.com"
+    wazuh_account.get_api_token.return_value = "jwt-token"
 
     mock_query.return_value = [
         {"id": "001", "name": "server-001682d2-79a2-41b9-af7f-c553f7d67b0d"},
@@ -255,7 +255,7 @@ def test_wazuh_list_servers_by_os(mock_query, comparison, expected_query):
         "001682d2-79a2-41b9-af7f-c553f7d67b0d",
         "aabbccdd-1234-5678-90ab-cdef12345678",
     ]
-    wazuh_account.get_wazuh_token.assert_called_once_with()
+    wazuh_account.get_api_token.assert_called_once_with()
     mock_query.assert_called_once_with(
         "jwt-token",
         "https://wazuh.example.com",
@@ -323,8 +323,8 @@ def test_wazuh_list_servers_by_os_default_comparison(mock_query):
         unintended changes to the function's default behaviour.
     """
     wazuh_account = Mock()
-    wazuh_account.wazuh_endpoint = "https://wazuh.example.com"
-    wazuh_account.get_wazuh_token.return_value = "jwt-token"
+    wazuh_account.api_endpoint = "https://wazuh.example.com"
+    wazuh_account.get_api_token.return_value = "jwt-token"
 
     mock_query.return_value = []
 
@@ -336,7 +336,7 @@ def test_wazuh_list_servers_by_os_default_comparison(mock_query):
 
     assert server_ids == []
 
-    wazuh_account.get_wazuh_token.assert_called_once_with()
+    wazuh_account.get_api_token.assert_called_once_with()
 
     mock_query.assert_called_once_with(
         "jwt-token",
@@ -366,8 +366,8 @@ def test_wazuh_list_all_servers(mock_query):
         without a valid UUID suffix are skipped.
     """
     wazuh_account = Mock()
-    wazuh_account.wazuh_endpoint = "https://wazuh.example.com"
-    wazuh_account.get_wazuh_token.return_value = "jwt-token"
+    wazuh_account.api_endpoint = "https://wazuh.example.com"
+    wazuh_account.get_api_token.return_value = "jwt-token"
 
     mock_query.return_value = [
         {
@@ -411,7 +411,7 @@ def test_wazuh_list_all_servers(mock_query):
     ]
     assert server_ids == expected_ids
 
-    wazuh_account.get_wazuh_token.assert_called_once_with()
+    wazuh_account.get_api_token.assert_called_once_with()
 
     mock_query.assert_called_once_with(
         "jwt-token",

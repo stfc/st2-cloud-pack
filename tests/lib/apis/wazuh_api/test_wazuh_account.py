@@ -11,9 +11,12 @@ def mock_wazuh_accounts_fixture() -> List[Dict]:
     return [
         {
             "name": "config1",
-            "username": "wazuh",
-            "password": "pass",
-            "wazuh_endpoint": "wazuh.test.com",
+            "api_username": "wazuh",
+            "api_password": "pass",
+            "api_endpoint": "wazuh.test.com",
+            "indexer_username": "foo",
+            "indexer_password": "bar",
+            "indexer_endpoint": "baz",
         }
     ]
 
@@ -30,9 +33,12 @@ def test_from_dict():
     this method should build a WazuhAccount dataclass from a valid dictionary
     """
     mock_valid_kwargs = {
-        "username": "user1",
-        "password": "some-pass",
-        "wazuh_endpoint": "sever",
+        "api_username": "user1",
+        "api_password": "some-pass",
+        "api_endpoint": "sever",
+        "indexer_username": "foo",
+        "indexer_password": "bar",
+        "indexer_endpoint": "baz",
     }
     mock_invalid_kwargs = {"to_ignore1": "val1", "to_ignore2": "val2"}
 

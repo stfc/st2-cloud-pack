@@ -183,7 +183,7 @@ def wazuh_list_servers_by_os(
     :return: the list of VM IDs
     :rtype: list
     """
-    wazuh_token = wazuh_account.get_wazuh_token()
+    wazuh_token = wazuh_account.get_api_token()
     logger.info(
         "query Wazuh for Servers running OS name %s and %s version",
         os_name,
@@ -205,7 +205,7 @@ def wazuh_list_servers_by_os(
     #   group!=kolla
     # to the query string
     data = _query_agents(
-        wazuh_token, wazuh_account.wazuh_endpoint, values=["name"], query=query
+        wazuh_token, wazuh_account.api_endpoint, values=["name"], query=query
     )
     server_id_list = _get_openstack_server_ids(data)
     logger.info("returning a list of %s Server IDs", len(server_id_list))
@@ -228,7 +228,7 @@ def wazuh_list_all_servers(wazuh_account: WazuhAccount) -> List:
     :return: the list of VM IDs
     :rtype: list
     """
-    wazuh_token = wazuh_account.get_wazuh_token()
+    wazuh_token = wazuh_account.get_api_token()
     logger.info("querying Wazuh for all OpenStack Virtual Machines")
     query = "group!=kolla"
     # we ensure we only get information about Servers and not Hypervisors
@@ -236,7 +236,7 @@ def wazuh_list_all_servers(wazuh_account: WazuhAccount) -> List:
     #   group!=kolla
     # to the query string
     data = _query_agents(
-        wazuh_token, wazuh_account.wazuh_endpoint, values=["name"], query=query
+        wazuh_token, wazuh_account.api_endpoint, values=["name"], query=query
     )
     server_id_list = _get_openstack_server_ids(data)
     logger.info("returning a list of %s Server IDs", len(server_id_list))
