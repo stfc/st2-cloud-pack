@@ -39,7 +39,8 @@ def query_netbox_for_hypervisor_firmware_date(
             "name": hv.name,
             "platform": hv.platform,
             "status": hv.status,
-            "fw_date": hv.custom_fields.get("firmware_last_update"),
+            "fw_date": hv.custom_fields.get("firmware_last_update")
+            or hv.created,  # Fall back to created date if firmware_last_update is not set
         }
         for hv in hypervisors
     ]

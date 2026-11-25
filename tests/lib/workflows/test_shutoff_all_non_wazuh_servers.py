@@ -704,3 +704,115 @@ def test_shutoff_all_non_wazuh_servers_event_list_not_found_continues(
         "unable to find Event List information for server_id %s, skipping it",
         "server2",
     )
+
+
+def test_shutoff_all_non_wazuh_servers_vm_limit_exceeded(
+    mock_dependencies,
+):
+    """
+    Verify that 10 or more selected VMs prevent shutdown
+    when override_vm_limit is False.
+    """
+    conn = MagicMock()
+    wazuh_account = MagicMock()
+
+    selected_list = [f"server{i}" for i in range(15)]
+
+    # Simulate 15 VMs remaining after all three filtering stages.
+    mock_dependencies["compare_2_lists"].side_effect = [
+        (selected_list, [], []),
+        (selected_list, [], []),
+        (selected_list, [], []),
+    ]
+
+    result = shutoff_all_non_wazuh_servers(
+        conn,
+        wazuh_account,
+        True,
+        override_vm_limit=False,
+    )
+
+    # Verify the action was cancelled.
+    assert result is False
+
+    # Verify no servers were shut off or locked.
+    mock_dependencies["shutoff_server"].assert_not_called()
+    mock_dependencies["admin_lock_server"].assert_not_called()
+
+    # Verify the VM limit warning was logged.
+    mock_dependencies["logger"].warning.assert_any_call(
+        "VM limit exceeded: %s VMs selected (maximum allowed: 10).",
+        15,
+    )
+
+
+def test_shutoff_all_non_wazuh_servers_vm_limit_override(
+    mock_dependencies,
+):
+    """
+    Verify that override_vm_limit=True allows shutdown
+    of 11 or more selected VMs.
+    """
+    conn = MagicMock()
+    wazuh_account = MagicMock()
+
+    selected_list = [f"server{i}" for i in range(15)]
+
+    # Simulate 15 VMs remaining after all three filtering stages.
+    mock_dependencies["compare_2_lists"].side_effect = [
+        (selected_list, [], []),
+        (selected_list, [], []),
+        (selected_list, [], []),
+    ]
+
+    result = shutoff_all_non_wazuh_servers(
+        conn,
+        wazuh_account,
+        True,
+        override_vm_limit=True,
+    )
+
+    # Verify the action completed successfully.
+    assert result is True
+
+    # Verify all 15 servers were processed.
+    assert mock_dependencies["shutoff_server"].call_count == 15
+
+    # Verify all 15 servers were admin locked.
+    assert mock_dependencies["admin_lock_server"].call_count == 15
+
+
+def test_shutoff_all_non_wazuh_servers_vm_limit_not_exceeded(
+    mock_dependencies,
+):
+    """
+    Verify that exactly 9 VMs can be shut off
+    without enabling override_vm_limit.
+    """
+    conn = MagicMock()
+    wazuh_account = MagicMock()
+
+    selected_list = [f"server{i}" for i in range(9)]
+
+    # Simulate exactly 10 VMs remaining after filtering.
+    mock_dependencies["compare_2_lists"].side_effect = [
+        (selected_list, [], []),
+        (selected_list, [], []),
+        (selected_list, [], []),
+    ]
+
+    result = shutoff_all_non_wazuh_servers(
+        conn,
+        wazuh_account,
+        True,
+        override_vm_limit=False,
+    )
+
+    # Verify the action completed successfully.
+    assert result is True
+
+    # Verify all 10 servers were shut off.
+    assert mock_dependencies["shutoff_server"].call_count == 9
+
+    # Verify all 10 servers were admin locked.
+    assert mock_dependencies["admin_lock_server"].call_count == 9

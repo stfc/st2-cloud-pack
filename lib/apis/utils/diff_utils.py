@@ -320,3 +320,31 @@ def compare_2_lists(
     only_in_list2 = list(s2 - s1)
     in_both_lists = list(s1.intersection(s2))
     return only_in_list1, only_in_list2, in_both_lists
+
+
+def compare_dict_list(input_dict: Dict, input_list: List) -> Tuple[Dict, List, Dict]:
+    """
+    Compare a dictionary's keys against a list.
+
+    Returns:
+        tuple:
+            - Dictionary containing keys NOT in the input list.
+            - List containing items NOT present as dictionary keys.
+            - Dictionary containing keys present in the input list.
+
+    Original inputs are not modified.
+    """
+
+    # Convert the list to a set for efficient membership checks.
+    list_set = set(input_list)
+
+    # Dictionary entries whose keys are not in the list.
+    dict_only = {key: value for key, value in input_dict.items() if key not in list_set}
+
+    # List items that are not dictionary keys.
+    list_only = [item for item in input_list if item not in input_dict]
+
+    # Dictionary entries whose keys are in the list.
+    common = {key: value for key, value in input_dict.items() if key in list_set}
+
+    return dict_only, list_only, common
