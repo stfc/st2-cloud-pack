@@ -75,7 +75,9 @@ def test_shutoff_all_non_wazuh_servers(mock_dependencies, admin_lock):
     conn = MagicMock()
     wazuh_account = MagicMock()
 
-    result = shutoff_all_non_wazuh_servers(conn, wazuh_account, admin_lock)
+    result = shutoff_all_non_wazuh_servers(
+        conn, wazuh_account, admin_lock, dry_run=False
+    )
 
     # All eligible shutoffs should succeed.
     assert result is True
@@ -133,7 +135,9 @@ def test_shutoff_all_non_wazuh_servers(mock_dependencies, admin_lock):
         "server2",
     )
 
-    mock_dependencies["logger"].error.assert_not_called()
+    mock_dependencies["logger"].error.assert_any_call(
+        "list of servers that failed to SHUTOFF:\n\n%s", ""
+    )
 
 
 def test_shutoff_all_non_wazuh_servers_empty_list(mock_dependencies):
@@ -148,7 +152,7 @@ def test_shutoff_all_non_wazuh_servers_empty_list(mock_dependencies):
         ([], [], []),
     ]
 
-    result = shutoff_all_non_wazuh_servers(conn, wazuh_account, True)
+    result = shutoff_all_non_wazuh_servers(conn, wazuh_account, True, dry_run=False)
 
     assert result is True
 
@@ -165,7 +169,9 @@ def test_shutoff_all_non_wazuh_servers_empty_list(mock_dependencies):
         "",
     )
 
-    mock_dependencies["logger"].error.assert_not_called()
+    mock_dependencies["logger"].error.assert_any_call(
+        "list of servers that failed to SHUTOFF:\n\n%s", ""
+    )
 
 
 def test_shutoff_all_non_wazuh_servers_multiple_servers(mock_dependencies):
@@ -180,7 +186,7 @@ def test_shutoff_all_non_wazuh_servers_multiple_servers(mock_dependencies):
         (["server2", "server3"], [], []),
     ]
 
-    result = shutoff_all_non_wazuh_servers(conn, wazuh_account, True)
+    result = shutoff_all_non_wazuh_servers(conn, wazuh_account, True, dry_run=False)
 
     assert result is True
 
@@ -208,12 +214,14 @@ def test_shutoff_all_non_wazuh_servers_multiple_servers(mock_dependencies):
         "server2\nserver3",
     )
 
-    mock_dependencies["logger"].error.assert_not_called()
+    mock_dependencies["logger"].error.assert_any_call(
+        "list of servers that failed to SHUTOFF:\n\n%s", ""
+    )
 
 
 def test_shutoff_all_non_wazuh_servers_shutoff_failure(mock_dependencies):
     """
-    Verify shutoff failures are logged and do not propagate.
+    Verify shutoff failures are logged and raise after processing.
 
     A failed shutoff must prevent admin locking of that server.
     """
@@ -225,9 +233,8 @@ def test_shutoff_all_non_wazuh_servers_shutoff_failure(mock_dependencies):
         "Failed to shut off server"
     )
 
-    result = shutoff_all_non_wazuh_servers(conn, wazuh_account, True)
-
-    assert result is False
+    with pytest.raises(RuntimeError, match="some Servers failed to SHUTOFF"):
+        shutoff_all_non_wazuh_servers(conn, wazuh_account, True, dry_run=False)
 
     # Verify EventList was retrieved.
     mock_dependencies["event_list"].assert_called_once_with(conn, "server2")
@@ -245,7 +252,7 @@ def test_shutoff_all_non_wazuh_servers_shutoff_failure(mock_dependencies):
     )
 
     # Verify the failure was logged.
-    mock_dependencies["logger"].error.assert_called_once_with(
+    mock_dependencies["logger"].error.assert_any_call(
         "unable to SHUTOFF server_id %s, skipping it",
         "server2",
         exc_info=True,
@@ -277,9 +284,8 @@ def test_shutoff_all_non_wazuh_servers_shutoff_failure_continues(
         None,
     ]
 
-    result = shutoff_all_non_wazuh_servers(conn, wazuh_account, True)
-
-    assert result is False
+    with pytest.raises(RuntimeError, match="some Servers failed to SHUTOFF"):
+        shutoff_all_non_wazuh_servers(conn, wazuh_account, True, dry_run=False)
 
     # All three servers should have their event information checked.
     assert mock_dependencies["event_list"].call_args_list == [
@@ -308,7 +314,7 @@ def test_shutoff_all_non_wazuh_servers_shutoff_failure_continues(
     )
 
     # Verify the failed server was logged.
-    mock_dependencies["logger"].error.assert_called_once_with(
+    mock_dependencies["logger"].error.assert_any_call(
         "unable to SHUTOFF server_id %s, skipping it",
         "server2",
         exc_info=True,
@@ -332,7 +338,7 @@ def test_shutoff_all_non_wazuh_servers_admin_lock_failure(
         "Failed to lock server"
     )
 
-    result = shutoff_all_non_wazuh_servers(conn, wazuh_account, True)
+    result = shutoff_all_non_wazuh_servers(conn, wazuh_account, True, dry_run=False)
 
     assert result is True
 
@@ -351,7 +357,7 @@ def test_shutoff_all_non_wazuh_servers_admin_lock_failure(
     )
 
     # Verify the lock failure was logged.
-    mock_dependencies["logger"].error.assert_called_once_with(
+    mock_dependencies["logger"].error.assert_any_call(
         "unable to lock server_id %s, skipping it",
         "server2",
         exc_info=True,
@@ -381,7 +387,7 @@ def test_shutoff_all_non_wazuh_servers_admin_lock_failure_continues(
         None,
     ]
 
-    result = shutoff_all_non_wazuh_servers(conn, wazuh_account, True)
+    result = shutoff_all_non_wazuh_servers(conn, wazuh_account, True, dry_run=False)
 
     assert result is True
 
@@ -404,7 +410,7 @@ def test_shutoff_all_non_wazuh_servers_admin_lock_failure_continues(
     )
 
     # Only the first lock failure should be logged.
-    mock_dependencies["logger"].error.assert_called_once_with(
+    mock_dependencies["logger"].error.assert_any_call(
         "unable to lock server_id %s, skipping it",
         "server2",
         exc_info=True,
@@ -422,9 +428,8 @@ def test_shutoff_all_non_wazuh_servers_shutoff_failure_without_admin_lock(
         "Failed to shut off server"
     )
 
-    result = shutoff_all_non_wazuh_servers(conn, wazuh_account, False)
-
-    assert result is False
+    with pytest.raises(RuntimeError, match="some Servers failed to SHUTOFF"):
+        shutoff_all_non_wazuh_servers(conn, wazuh_account, False, dry_run=False)
 
     mock_dependencies["shutoff_server"].assert_called_once_with(conn, "server2")
 
@@ -432,7 +437,7 @@ def test_shutoff_all_non_wazuh_servers_shutoff_failure_without_admin_lock(
     mock_dependencies["admin_lock_server"].assert_not_called()
 
     # The shutoff failure should still be logged.
-    mock_dependencies["logger"].error.assert_called_once_with(
+    mock_dependencies["logger"].error.assert_any_call(
         "unable to SHUTOFF server_id %s, skipping it",
         "server2",
         exc_info=True,
@@ -623,9 +628,8 @@ def test_shutoff_all_non_wazuh_servers_recent_event(mock_dependencies):
         old_event,
     ]
 
-    result = shutoff_all_non_wazuh_servers(conn, wazuh_account, True)
-
-    assert result is False
+    with pytest.raises(RuntimeError, match="some Servers failed to SHUTOFF"):
+        shutoff_all_non_wazuh_servers(conn, wazuh_account, True, dry_run=False)
 
     # Both servers should have their event lists checked.
     assert mock_dependencies["event_list"].call_args_list == [
@@ -645,7 +649,9 @@ def test_shutoff_all_non_wazuh_servers_recent_event(mock_dependencies):
         "server3",
     )
 
-    mock_dependencies["logger"].error.assert_not_called()
+    mock_dependencies["logger"].error.assert_any_call(
+        "list of servers that failed to SHUTOFF:\n\n%s", "server2"
+    )
 
 
 def test_shutoff_all_non_wazuh_servers_event_list_not_found_continues(
@@ -677,9 +683,8 @@ def test_shutoff_all_non_wazuh_servers_event_list_not_found_continues(
         old_event,
     ]
 
-    result = shutoff_all_non_wazuh_servers(conn, wazuh_account, True)
-
-    assert result is False
+    with pytest.raises(RuntimeError, match="some Servers failed to SHUTOFF"):
+        shutoff_all_non_wazuh_servers(conn, wazuh_account, True, dry_run=False)
 
     # Both servers should be checked.
     assert mock_dependencies["event_list"].call_args_list == [
@@ -700,7 +705,7 @@ def test_shutoff_all_non_wazuh_servers_event_list_not_found_continues(
     )
 
     # Verify the missing event list was logged.
-    mock_dependencies["logger"].error.assert_called_once_with(
+    mock_dependencies["logger"].error.assert_any_call(
         "unable to find Event List information for server_id %s, skipping it",
         "server2",
     )
@@ -725,15 +730,10 @@ def test_shutoff_all_non_wazuh_servers_vm_limit_exceeded(
         (selected_list, [], []),
     ]
 
-    result = shutoff_all_non_wazuh_servers(
-        conn,
-        wazuh_account,
-        True,
-        override_vm_limit=False,
-    )
-
-    # Verify the action was cancelled.
-    assert result is False
+    with pytest.raises(RuntimeError, match="VM limit exceeded: 15 VMs selected"):
+        shutoff_all_non_wazuh_servers(
+            conn, wazuh_account, True, dry_run=False, override_vm_limit=False
+        )
 
     # Verify no servers were shut off or locked.
     mock_dependencies["shutoff_server"].assert_not_called()
@@ -741,8 +741,7 @@ def test_shutoff_all_non_wazuh_servers_vm_limit_exceeded(
 
     # Verify the VM limit warning was logged.
     mock_dependencies["logger"].warning.assert_any_call(
-        "VM limit exceeded: %s VMs selected (maximum allowed: 10).",
-        15,
+        "VM limit exceeded: 15 VMs selected (maximum allowed: 10).",
     )
 
 
@@ -769,6 +768,7 @@ def test_shutoff_all_non_wazuh_servers_vm_limit_override(
         conn,
         wazuh_account,
         True,
+        dry_run=False,
         override_vm_limit=True,
     )
 
@@ -794,7 +794,7 @@ def test_shutoff_all_non_wazuh_servers_vm_limit_not_exceeded(
 
     selected_list = [f"server{i}" for i in range(9)]
 
-    # Simulate exactly 10 VMs remaining after filtering.
+    # Simulate exactly 9 VMs remaining after filtering.
     mock_dependencies["compare_2_lists"].side_effect = [
         (selected_list, [], []),
         (selected_list, [], []),
@@ -805,14 +805,80 @@ def test_shutoff_all_non_wazuh_servers_vm_limit_not_exceeded(
         conn,
         wazuh_account,
         True,
+        dry_run=False,
         override_vm_limit=False,
     )
 
     # Verify the action completed successfully.
     assert result is True
 
-    # Verify all 10 servers were shut off.
+    # Verify all 9 servers were shut off.
     assert mock_dependencies["shutoff_server"].call_count == 9
 
-    # Verify all 10 servers were admin locked.
+    # Verify all 9 servers were admin locked.
     assert mock_dependencies["admin_lock_server"].call_count == 9
+
+
+@pytest.mark.parametrize("admin_lock", [True, False])
+def test_shutoff_all_non_wazuh_servers_dry_run(mock_dependencies, admin_lock):
+    """Dry run completes inventory filtering but performs no destructive actions."""
+    conn = MagicMock()
+    wazuh_account = MagicMock()
+
+    result = shutoff_all_non_wazuh_servers(
+        conn, wazuh_account, admin_lock, dry_run=True
+    )
+
+    assert result is True
+    mock_dependencies["get_all_servers"].assert_any_call(conn, status="ACTIVE")
+    assert mock_dependencies["compare_2_lists"].call_count == 3
+    mock_dependencies["event_list"].assert_not_called()
+    mock_dependencies["shutoff_server"].assert_not_called()
+    mock_dependencies["admin_lock_server"].assert_not_called()
+    mock_dependencies["logger"].info.assert_any_call(
+        "VMs selected for SHUTOFF (%s total):\n%s", 1, "server2"
+    )
+    mock_dependencies["logger"].info.assert_any_call(
+        "execution in dry-run mode, aborting"
+    )
+
+
+def test_shutoff_all_non_wazuh_servers_dry_run_bypasses_limit(mock_dependencies):
+    """Dry run must not raise the VM limit exception, even with 15 servers."""
+    conn = MagicMock()
+    wazuh_account = MagicMock()
+    selected_list = [f"server{i}" for i in range(15)]
+    mock_dependencies["compare_2_lists"].side_effect = [
+        (selected_list, [], []) for _ in range(3)
+    ]
+
+    assert (
+        shutoff_all_non_wazuh_servers(
+            conn, wazuh_account, True, dry_run=True, override_vm_limit=False
+        )
+        is True
+    )
+    mock_dependencies["event_list"].assert_not_called()
+    mock_dependencies["shutoff_server"].assert_not_called()
+    mock_dependencies["admin_lock_server"].assert_not_called()
+    mock_dependencies["logger"].warning.assert_not_called()
+
+
+@pytest.mark.parametrize("vm_count", [10, 11, 15])
+def test_shutoff_all_non_wazuh_servers_vm_limit_boundary(mock_dependencies, vm_count):
+    """Ten or more VMs raise unless the shutdown limit is overridden."""
+    conn = MagicMock()
+    wazuh_account = MagicMock()
+    selected_list = [f"server{i}" for i in range(vm_count)]
+    mock_dependencies["compare_2_lists"].side_effect = [
+        (selected_list, [], []) for _ in range(3)
+    ]
+
+    with pytest.raises(RuntimeError, match=f"VM limit exceeded: {vm_count} VMs"):
+        shutoff_all_non_wazuh_servers(
+            conn, wazuh_account, False, dry_run=False, override_vm_limit=False
+        )
+
+    mock_dependencies["event_list"].assert_not_called()
+    mock_dependencies["shutoff_server"].assert_not_called()
+    mock_dependencies["admin_lock_server"].assert_not_called()
