@@ -7,14 +7,21 @@ import requests
 class WazuhAccount:
     """
     Wazuh account Parameters.
-    :param username: Wazuh API username
-    :param password: Wazuh API password
-    :param wazuh_endpoint: Wazuh API endpoint url
+    :param api_username: Wazuh API username
+    :param api_password: Wazuh API password
+    :param indexer_username: Wazuh Indexer username
+    :param indexer_password: Wazuh Indexer password
+    :param api_endpoint: Wazuh API endpoint url
+    :param indexer_endpoint: Wazuh Indexer endpoint url
     """
 
-    username: str
-    password: str
-    wazuh_endpoint: str
+    api_username: str
+    api_password: str
+    api_endpoint: str
+
+    indexer_username: str
+    indexer_password: str
+    indexer_endpoint: str
 
     @staticmethod
     def from_dict(dictionary: Dict):
@@ -52,16 +59,19 @@ class WazuhAccount:
 
         return WazuhAccount.from_dict(account_data)
 
-    def get_wazuh_token(self) -> str:
+    def get_api_token(self) -> str:
         """
         Authenticates with the Wazuh API and returns a JWT token.
         returns: API JWT token
         """
-        url = f"{self.wazuh_endpoint}/security/user/authenticate"
+        url = f"{self.api_endpoint}/security/user/authenticate"
         try:
             # Wazuh uses Basic Auth to fetch the initial token
             response = requests.get(
-                url, auth=(self.username, self.password), verify=False, timeout=60
+                url,
+                auth=(self.api_username, self.api_password),
+                verify=False,
+                timeout=60,
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
