@@ -133,7 +133,7 @@ wazuh_accounts:
         secret: true
       api_endpoint:
         type: "string"
-        description: "Wazuh Indexer endpoint (URL and port). E.g. https://wazuh.matrix.net:55000/"
+        description: "Wazuh API endpoint (URL and port). E.g. https://wazuh.matrix.net:55000/"
         required: true
         secret: false
         default: ""
