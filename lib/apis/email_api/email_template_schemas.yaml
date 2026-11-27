@@ -102,3 +102,9 @@ decom_capi_image:
     affected_images_table: "No Images"
   html_filepath: "html/decom_capi_image.html.j2"
   plaintext_filepath: "plaintext/decom_capi_image.txt.j2"
+
+shutoff_non_wazuh_vm:
+  schema:
+    shutoff_table: "No Shutoff VMs"
+  html_filepath: "html/shutoff_non_wazuh_vm.html.j2"
+  plaintext_filepath: "plaintext/shutoff_non_wazuh_vm.txt.j2"
