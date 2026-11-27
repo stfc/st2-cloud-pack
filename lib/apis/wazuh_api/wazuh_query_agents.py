@@ -30,7 +30,7 @@ def _get_openstack_server_ids(agents: List) -> List:
         agent_id = agent["id"]
         try:
             server_id = wazuh_get_server_id_from_label(
-                wazuh_token, wazuh_account.wazuh_endpoint, agent_id
+                api_token, wazuh_account.wazuh_endpoint, agent_id
             )
             server_id_list.append(server_id)
         except ValueError:
@@ -49,7 +49,7 @@ def _get_openstack_server_ids(agents: List) -> List:
 
 
 def _query_agents(
-    wazuh_token: str,
+    api_token: str,
     endpoint: str,
     values: Optional[List] = None,
     query: Optional[str] = None,
@@ -58,7 +58,7 @@ def _query_agents(
     Queries all agents in Wazuh to get a certain list of parameters
     for a specific query or filter
 
-    :param wazuh_token: wazuh token to make API call with
+    :param api_token: wazuh token to make API call with
     :param endpoint: Wazuh endpoint to query
     :param values: the list of variables to retrieve
     :type values: list
@@ -70,7 +70,7 @@ def _query_agents(
     logger.info("Querying all agents for values %s and query %s", values, query)
     url = f"{endpoint}/agents"
     headers = {
-        "Authorization": f"Bearer {wazuh_token}",
+        "Authorization": f"Bearer {api_token}",
         "Content-Type": "application/json",
     }
     # we query Wazuh using pagination
@@ -103,15 +103,15 @@ def _query_agents(
 
 
 def _wazuh_get_labels_for_agent(
-    wazuh_token: str,
+    api_token: str,
     endpoint: str,
     agent_id: str,
 ) -> List[Dict]:
     """
     get the entire list of labels associated to a given Agent ID
 
-    :param wazuh_token: wazuh token to make API call with
-    :type wazuh_token: str
+    :param api_token: wazuh token to make API call with
+    :type api_token: str
     :param endpoint: Wazuh endpoint to query
     :type endpoint: str
     :param agent_id: the ID of the Wazuh Agent
@@ -122,7 +122,7 @@ def _wazuh_get_labels_for_agent(
     logger.info("Getting labels for agent %s", agent_id)
     url = f"{endpoint}/agents/{agent_id}/config/agent/labels"
     headers = {
-        "Authorization": f"Bearer {wazuh_token}",
+        "Authorization": f"Bearer {api_token}",
         "Content-Type": "application/json",
     }
     try:
@@ -135,7 +135,7 @@ def _wazuh_get_labels_for_agent(
 
 
 def wazuh_get_server_id_from_label(
-    wazuh_token: str,
+    api_token: str,
     endpoint: str,
     agent_id: str,
 ) -> str:
@@ -143,8 +143,8 @@ def wazuh_get_server_id_from_label(
     extract the OpenStack Server ID from the list of labels
     associated to the corresponding Agent ID in Wazuh
 
-    :param wazuh_token: wazuh token to make API call with
-    :type wazuh_token: str
+    :param api_token: wazuh token to make API call with
+    :type api_token: str
     :param endpoint: Wazuh endpoint to query
     :type endpoint: str
     :param agent_id: the ID of the Wazuh Agent
@@ -153,7 +153,7 @@ def wazuh_get_server_id_from_label(
     :rtype: str
     """
     logger.info("getting the OpenStack Server ID for Agent ID %s", agent_id)
-    labels = _wazuh_get_labels_for_agent(wazuh_token, endpoint, agent_id)
+    labels = _wazuh_get_labels_for_agent(api_token, endpoint, agent_id)
     for label in labels:
         if label["key"] == "openstack.uuid":
             server_id = label["value"]
@@ -183,7 +183,7 @@ def wazuh_list_servers_by_os(
     :return: the list of VM IDs
     :rtype: list
     """
-    wazuh_token = wazuh_account.get_api_token()
+    api_token = wazuh_account.get_api_token()
     logger.info(
         "query Wazuh for Servers running OS name %s and %s version",
         os_name,
@@ -205,7 +205,7 @@ def wazuh_list_servers_by_os(
     #   group!=kolla
     # to the query string
     data = _query_agents(
-        wazuh_token, wazuh_account.api_endpoint, values=["name"], query=query
+        api_token, wazuh_account.api_endpoint, values=["name"], query=query
     )
     server_id_list = _get_openstack_server_ids(data)
     logger.info("returning a list of %s Server IDs", len(server_id_list))
@@ -228,7 +228,7 @@ def wazuh_list_all_servers(wazuh_account: WazuhAccount) -> List:
     :return: the list of VM IDs
     :rtype: list
     """
-    wazuh_token = wazuh_account.get_api_token()
+    api_token = wazuh_account.get_api_token()
     logger.info("querying Wazuh for all OpenStack Virtual Machines")
     query = "group!=kolla"
     # we ensure we only get information about Servers and not Hypervisors
@@ -236,7 +236,7 @@ def wazuh_list_all_servers(wazuh_account: WazuhAccount) -> List:
     #   group!=kolla
     # to the query string
     data = _query_agents(
-        wazuh_token, wazuh_account.api_endpoint, values=["name"], query=query
+        api_token, wazuh_account.api_endpoint, values=["name"], query=query
     )
     server_id_list = _get_openstack_server_ids(data)
     logger.info("returning a list of %s Server IDs", len(server_id_list))
